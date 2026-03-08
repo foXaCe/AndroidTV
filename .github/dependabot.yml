@@ -23,7 +23,6 @@ updates:
         patterns:
           - "org.jellyfin*"
     open-pull-requests-limit: 5
-    versioning-strategy: "widen"
     labels:
       - "dependencies"
       - "automated"
