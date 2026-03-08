@@ -8,17 +8,17 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:orientation="vertical"
-		android:padding="16dp">
+		android:padding="@dimen/ds_space_md">
 
 		<!-- Header -->
 		<TextView
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:text="My Requests"
-			android:textSize="28sp"
+			android:text="@string/jellyseerr_my_requests"
+			android:textSize="@dimen/ds_text_headline_md"
 			android:textStyle="bold"
-			android:textColor="@color/white"
-			android:layout_marginBottom="16dp" />
+			android:textColor="@color/ds_text_primary"
+			android:layout_marginBottom="@dimen/ds_space_md" />
 
 		<!-- Connection Status Warning -->
 		<LinearLayout
@@ -26,26 +26,26 @@
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:orientation="vertical"
-			android:padding="16dp"
+			android:padding="@dimen/ds_space_md"
 			android:background="@color/red"
-			android:layout_marginBottom="16dp"
+			android:layout_marginBottom="@dimen/ds_space_md"
 			android:visibility="gone">
 
 			<TextView
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:text="Jellyseerr Not Connected"
-				android:textSize="16sp"
+				android:text="@string/jellyseerr_not_connected"
+				android:textSize="@dimen/ds_text_body_lg"
 				android:textStyle="bold"
-				android:textColor="@color/white" />
+				android:textColor="@color/ds_text_primary" />
 
 			<TextView
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:text="Go to Settings to configure your server"
-				android:textSize="14sp"
-				android:textColor="@color/grey_light"
-				android:layout_marginTop="8dp" />
+				android:text="@string/jellyseerr_go_to_settings"
+				android:textSize="@dimen/ds_text_body_md"
+				android:textColor="@color/ds_text_secondary"
+				android:layout_marginTop="@dimen/ds_space_sm" />
 
 		</LinearLayout>
 
@@ -61,15 +61,15 @@
 			<ProgressBar
 				android:layout_width="64dp"
 				android:layout_height="64dp"
-				android:layout_marginBottom="16dp"
-				android:indeterminateTint="#7C3AED" />
+				android:layout_marginBottom="@dimen/ds_space_md"
+				android:indeterminateTint="@color/ds_secondary_dark" />
 
 			<TextView
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:text="Loading requests..."
-				android:textSize="16sp"
-				android:textColor="@color/white"
+				android:text="@string/jellyseerr_loading_requests"
+				android:textSize="@dimen/ds_text_body_lg"
+				android:textColor="@color/ds_text_primary"
 				android:gravity="center" />
 
 		</LinearLayout>
@@ -92,19 +92,19 @@
 				<TextView
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
-					android:text="No Requests Yet"
+					android:text="@string/jellyseerr_no_requests"
 					android:textSize="18sp"
 					android:textStyle="bold"
-					android:textColor="@color/white"
+					android:textColor="@color/ds_text_primary"
 					android:gravity="center"
-					android:layout_marginBottom="8dp" />
+					android:layout_marginBottom="@dimen/ds_space_sm" />
 
 				<TextView
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
-					android:text="Submit requests from the Discover tab"
-					android:textSize="14sp"
-					android:textColor="@color/grey_light"
+					android:text="@string/jellyseerr_submit_from_discover"
+					android:textSize="@dimen/ds_text_body_md"
+					android:textColor="@color/ds_text_secondary"
 					android:gravity="center" />
 
 			</LinearLayout>
@@ -123,7 +123,7 @@
 			android:id="@+id/refresh_button"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:text="Refresh"
+			android:text="@string/btn_refresh"
 			android:layout_gravity="center_horizontal"
 			android:layout_marginTop="20dp" />
 

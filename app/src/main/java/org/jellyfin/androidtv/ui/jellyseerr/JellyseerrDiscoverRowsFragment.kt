@@ -52,6 +52,8 @@ class JellyseerrDiscoverRowsFragment : RowsSupportFragment() {
 	private var lastFocusedPosition = 0
 	private var lastFocusedSubPosition = 0
 	private var isReturningFromDetail = false
+	private var restoreRunnable: Runnable? = null
+	private var clearFlagsRunnable: Runnable? = null
 	private var isRestoringPosition = false
 
 	// API pagination loading flags
@@ -147,23 +149,23 @@ class JellyseerrDiscoverRowsFragment : RowsSupportFragment() {
 		if (isReturningFromDetail) {
 			Timber.d("JellyseerrDiscoverRowsFragment: onResume() called with isReturningFromDetail=true")
 			Timber.d("JellyseerrDiscoverRowsFragment: Saved position to restore: row=$lastFocusedPosition, col=$lastFocusedSubPosition")
-			
-			view?.postDelayed({
+
+			restoreRunnable = Runnable {
 				if (isResumed && adapter != null && verticalGridView != null) {
 					Timber.d("JellyseerrDiscoverRowsFragment: Starting restoration process")
-					
+
 					// Validate positions are in bounds BEFORE setting any flags
 					val savedPosition = lastFocusedPosition
 					val savedSubPosition = lastFocusedSubPosition
 					val adapterSize = adapter.size()
-					
+
 					Timber.d("JellyseerrDiscoverRowsFragment: Validating - row=$savedPosition (adapter size=$adapterSize), col=$savedSubPosition")
-					
+
 					if (savedPosition >= 0 && savedPosition < adapterSize) {
 						// Set flag to prevent position updates during restoration
 						isRestoringPosition = true
 						Timber.d("JellyseerrDiscoverRowsFragment: isRestoringPosition=true")
-						
+
 						// Use ListRowPresenter.SelectItemViewHolderTask to restore both positions atomically
 						Timber.d("JellyseerrDiscoverRowsFragment: Calling setSelectedPosition($savedPosition, false, SelectItemViewHolderTask($savedSubPosition))")
 						setSelectedPosition(
@@ -171,28 +173,39 @@ class JellyseerrDiscoverRowsFragment : RowsSupportFragment() {
 							false,
 							androidx.leanback.widget.ListRowPresenter.SelectItemViewHolderTask(savedSubPosition)
 						)
-						
+
 						// Request focus
 						if (!verticalGridView!!.hasFocus()) {
 							Timber.d("JellyseerrDiscoverRowsFragment: Requesting focus on grid view")
 							verticalGridView?.requestFocus()
 						}
-						
+
 						Timber.d("JellyseerrDiscoverRowsFragment: Focus restored successfully, clearing flags after delay")
-						
+
 						// Clear the restoration flag after a delay to allow restoration to complete
-						view?.postDelayed({
+						clearFlagsRunnable = Runnable {
 							isRestoringPosition = false
 							isReturningFromDetail = false
 							Timber.d("JellyseerrDiscoverRowsFragment: Restoration complete - flags cleared")
-						}, 200)
+						}
+						view?.postDelayed(clearFlagsRunnable!!, 200)
 					} else {
 						Timber.w("JellyseerrDiscoverRowsFragment: Invalid position $savedPosition (adapter size: $adapterSize)")
 						isReturningFromDetail = false
 					}
 				}
-			}, 300) // Increased delay to ensure data is loaded
+			}
+			view?.postDelayed(restoreRunnable!!, 300) // Increased delay to ensure data is loaded
 		}
+	}
+
+	override fun onDestroyView() {
+		// Cancel pending runnables to prevent execution on destroyed view
+		restoreRunnable?.let { view?.removeCallbacks(it) }
+		clearFlagsRunnable?.let { view?.removeCallbacks(it) }
+		restoreRunnable = null
+		clearFlagsRunnable = null
+		super.onDestroyView()
 	}
 
 	private fun setupRows() {
@@ -448,8 +461,8 @@ class JellyseerrDiscoverRowsFragment : RowsSupportFragment() {
 				val requestsAsItems = requests.map { request ->
 					JellyseerrDiscoverItemDto(
 						id = request.media?.tmdbId ?: request.media?.id ?: request.id,
-						title = request.media?.title ?: request.media?.name ?: "Unknown",
-						name = request.media?.name ?: request.media?.title ?: "Unknown",
+						title = request.media?.title ?: request.media?.name ?: getString(R.string.lbl_unknown),
+						name = request.media?.name ?: request.media?.title ?: getString(R.string.lbl_unknown),
 						overview = request.media?.overview ?: "",
 						releaseDate = request.media?.releaseDate,
 						firstAirDate = request.media?.firstAirDate,

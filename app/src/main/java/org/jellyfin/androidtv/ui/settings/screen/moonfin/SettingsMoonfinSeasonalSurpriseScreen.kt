@@ -23,6 +23,7 @@ fun SettingsMoonfinSeasonalSurpriseScreen() {
 	var seasonalSurprise by rememberPreference(userPreferences, UserPreferences.seasonalSurprise)
 
 	val options = listOf(
+		"auto" to stringResource(R.string.pref_seasonal_auto),
 		"none" to stringResource(R.string.pref_seasonal_none),
 		"winter" to stringResource(R.string.pref_seasonal_winter),
 		"spring" to stringResource(R.string.pref_seasonal_spring),

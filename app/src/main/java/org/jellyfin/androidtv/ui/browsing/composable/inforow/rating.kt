@@ -35,6 +35,7 @@ import org.jellyfin.androidtv.data.repository.RatingIconProvider
 import org.jellyfin.androidtv.data.repository.TmdbRepository
 import org.jellyfin.androidtv.preference.UserSettingPreferences
 import org.jellyfin.androidtv.ui.base.Icon
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.model.api.BaseItemDto
@@ -55,16 +56,16 @@ private fun RatingItemWithLogo(
 		verticalAlignment = Alignment.CenterVertically,
 		modifier = Modifier
 			.background(
-				Color.White.copy(alpha = 0.1f),
-				RoundedCornerShape(6.dp),
+				JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+				JellyfinTheme.shapes.button,
 			)
 			.padding(horizontal = 10.dp, vertical = 6.dp),
 	) {
 		RatingIconImage(icon = icon, contentDescription = contentDescription, modifier = Modifier.size(22.dp))
 		Column {
-			Text(rating, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.W700)
+			Text(rating, color = JellyfinTheme.colorScheme.onSurface, style = JellyfinTheme.typography.bodyMedium, fontWeight = FontWeight.W700)
 			if (showLabel) {
-				Text(contentDescription, color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp)
+				Text(contentDescription, color = JellyfinTheme.colorScheme.textHint, style = JellyfinTheme.typography.labelSmall)
 			}
 		}
 	}
@@ -266,7 +267,7 @@ fun InfoRowParentalRating(parentalRating: String) {
 		contentDescription = stringResource(R.string.lbl_rating),
 		colors = InfoRowColors.Default,
 	) {
-		Text(parentalRating, color = Color.White)
+		Text(parentalRating, color = JellyfinTheme.colorScheme.onSurface)
 	}
 }
 
@@ -355,13 +356,13 @@ private fun CompactRatingChip(sourceKey: String, rating: Float, baseUrl: String?
 				imageVector = ImageVector.vectorResource(R.drawable.ic_star),
 				contentDescription = null,
 				modifier = Modifier.size(16.dp),
-				tint = Color(0xFFFFC107),
+				tint = JellyfinTheme.colorScheme.rating,
 			)
 			Spacer(modifier = Modifier.width(3.dp))
 			Text(
 				text = String.format("%.1f", rating * 10f),
-				color = Color.White.copy(alpha = 0.7f),
-				fontSize = 15.sp,
+				color = JellyfinTheme.colorScheme.textSecondary,
+				style = JellyfinTheme.typography.bodyMedium,
 				fontWeight = FontWeight.W700
 			)
 		}
@@ -383,6 +384,6 @@ private fun CompactRatingChip(sourceKey: String, rating: Float, baseUrl: String?
 		verticalAlignment = Alignment.CenterVertically,
 	) {
 		RatingIconImage(icon = icon, contentDescription = sourceKey, modifier = Modifier.size(16.dp))
-		Text(formattedRating, color = Color.White.copy(alpha = 0.7f), fontSize = 15.sp, fontWeight = FontWeight.W700)
+		Text(formattedRating, color = JellyfinTheme.colorScheme.textSecondary, style = JellyfinTheme.typography.bodyMedium, fontWeight = FontWeight.W700)
 	}
 }

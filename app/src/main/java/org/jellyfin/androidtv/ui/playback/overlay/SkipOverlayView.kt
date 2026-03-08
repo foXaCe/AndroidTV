@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -29,11 +28,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.Icon
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.playback.segment.MediaSegmentRepository
 import kotlin.time.Duration
@@ -78,12 +77,12 @@ fun SkipOverlayComposable(
 		AnimatedVisibility(visible, enter = fadeIn(), exit = fadeOut()) {
 			Row(
 				modifier = Modifier
-					.clip(RoundedCornerShape(4.dp))
+					.clip(JellyfinTheme.shapes.extraSmall)
 					.background(Color.White.copy(alpha = 0.95f))
 					.border(
 						width = 2.dp,
 						color = Color.White,
-						shape = RoundedCornerShape(4.dp)
+						shape = JellyfinTheme.shapes.extraSmall
 					)
 					.padding(horizontal = 24.dp, vertical = 14.dp),
 				horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -94,7 +93,7 @@ fun SkipOverlayComposable(
 				Text(
 					text = text,
 					color = Color.Black,
-					fontSize = 22.sp,
+					style = JellyfinTheme.typography.titleMedium,
 					fontWeight = FontWeight.SemiBold,
 				)
 				

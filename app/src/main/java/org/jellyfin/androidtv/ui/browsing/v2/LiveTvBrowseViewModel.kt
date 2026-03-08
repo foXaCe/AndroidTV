@@ -19,11 +19,14 @@ import org.jellyfin.sdk.model.api.LocationType
 import org.jellyfin.sdk.model.api.MediaType
 import org.jellyfin.sdk.model.api.TimerInfoDto
 import org.jellyfin.sdk.model.serializer.toUUIDOrNull
+import org.jellyfin.androidtv.ui.base.state.UiError
+import org.jellyfin.androidtv.ui.base.state.toUiError
 import timber.log.Timber
 import java.time.LocalDateTime
 
 data class LiveTvBrowseUiState(
 	val isLoading: Boolean = true,
+	val error: UiError? = null,
 	val libraryName: String = "",
 	val onNow: List<BaseItemDto> = emptyList(),
 	val comingUp: List<BaseItemDto> = emptyList(),
@@ -75,7 +78,7 @@ class LiveTvBrowseViewModel(
 				_uiState.update { it.copy(isLoading = false) }
 			} catch (err: Exception) {
 				Timber.e(err, "Failed to load live TV rows")
-				_uiState.update { it.copy(isLoading = false) }
+				_uiState.update { it.copy(isLoading = false, error = err.toUiError()) }
 			}
 		}
 	}
@@ -203,5 +206,12 @@ class LiveTvBrowseViewModel(
 		return programInfo.copy(
 			locationType = LocationType.VIRTUAL,
 		)
+	}
+
+	fun retry() {
+		_uiState.update { it.copy(error = null) }
+		val name = _uiState.value.libraryName
+		val canManage = _uiState.value.canManageRecordings
+		initialize(name, canManage)
 	}
 }

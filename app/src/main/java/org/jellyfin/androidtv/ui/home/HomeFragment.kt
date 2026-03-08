@@ -32,6 +32,7 @@ import org.jellyfin.androidtv.ui.home.mediabar.ExoPlayerTrailerView
 import org.jellyfin.androidtv.ui.shared.toolbar.LeftSidebarNavigation
 import org.jellyfin.androidtv.ui.shared.toolbar.MainToolbar
 import org.jellyfin.androidtv.ui.shared.toolbar.MainToolbarActiveButton
+import org.jellyfin.androidtv.data.service.BackgroundService
 import org.koin.android.ext.android.inject
 
 class HomeFragment : Fragment() {
@@ -39,6 +40,7 @@ class HomeFragment : Fragment() {
 	private val interactionTrackerViewModel by inject<InteractionTrackerViewModel>()
 	private val userSettingPreferences by inject<UserSettingPreferences>()
 	private val userPreferences by inject<UserPreferences>()
+	private val backgroundService by inject<BackgroundService>()
 
 	private var titleView: TextView? = null
 	private var logoView: ImageView? = null
@@ -127,6 +129,8 @@ class HomeFragment : Fragment() {
 		rowsFragment?.selectedPositionFlow
 			?.flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
 			?.onEach { position ->
+				// Sync media bar focus with Leanback row selection
+				mediaBarViewModel.setFocused(position <= 0)
 				updateMediaBarBackground()
 			}
 			?.launchIn(lifecycleScope)
@@ -178,6 +182,21 @@ class HomeFragment : Fragment() {
 			}
 		}
 
+		// Hide media bar backdrop when BackgroundService has its own background
+		backgroundService.currentBackground
+			.flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
+			.onEach { bg ->
+				val selectedPosition = rowsFragment?.selectedPositionFlow?.value ?: -1
+				if (bg != null && selectedPosition > 0) {
+					// BackgroundService has a background for the focused item - hide media bar backdrop
+					backgroundImage?.isVisible = false
+				} else {
+					// No BackgroundService background - show media bar backdrop as fallback
+					updateMediaBarBackground()
+				}
+			}
+			.launchIn(lifecycleScope)
+
 		mediaBarViewModel.trailerState
 			.flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
 			.onEach { trailerState ->
@@ -202,32 +221,32 @@ class HomeFragment : Fragment() {
 
 	private fun updateMediaBarBackground() {
 		val state = mediaBarViewModel.state.value
-		val isFocused = mediaBarViewModel.isFocused.value
-		val selectedPosition = rowsFragment?.selectedPositionFlow?.value ?: -1
-		
 		val isMediaBarEnabled = userSettingPreferences[UserSettingPreferences.mediaBarEnabled]
-		val shouldShowMediaBar = isMediaBarEnabled && (isFocused || (selectedPosition == 0) || selectedPosition == -1)
-		
-		if (state is org.jellyfin.androidtv.ui.home.mediabar.MediaBarState.Ready && shouldShowMediaBar) {
+
+		if (isMediaBarEnabled && state is org.jellyfin.androidtv.ui.home.mediabar.MediaBarState.Ready) {
 			val playbackState = mediaBarViewModel.playbackState.value
 			val currentItem = state.items.getOrNull(playbackState.currentIndex)
 			val backdropUrl = currentItem?.backdropUrl
-			
+
 			if (backdropUrl != null) {
 				backgroundImage?.isVisible = true
 				backgroundImage?.load(backdropUrl) {
-					crossfade(400) // 400ms crossfade - faster and smoother
+					crossfade(400)
 				}
 			} else {
 				backgroundImage?.isVisible = false
 			}
-			
+
 			logoView?.isVisible = false
 			titleView?.isVisible = false
+			summaryView?.isVisible = false
+			infoRowView?.isVisible = false
 		} else {
 			backgroundImage?.isVisible = false
 			logoView?.isVisible = false
-			titleView?.isVisible = true
+			titleView?.isVisible = false
+			summaryView?.isVisible = false
+			infoRowView?.isVisible = false
 		}
 	}
 
@@ -248,8 +267,29 @@ class HomeFragment : Fragment() {
 		summerView?.stopEffect()
 		halloweenView?.isVisible = false
 		halloweenView?.stopEffect()
-		
-		when (selection) {
+
+		val effectiveSelection = if (selection == "auto") {
+			val cal = java.util.Calendar.getInstance()
+			val month = cal.get(java.util.Calendar.MONTH) // 0-based
+			val day = cal.get(java.util.Calendar.DAY_OF_MONTH)
+			// Day of year for easier range checks (1-366)
+			val dayOfYear = cal.get(java.util.Calendar.DAY_OF_YEAR)
+			// Approximate seasonal boundaries (non-leap year reference):
+			// Winter: Dec 21 (355) – Mar 19 (78)
+			// Spring: Mar 20 (79) – Jun 20 (171)
+			// Summer: Jun 21 (172) – Sep 21 (264)
+			// Fall:   Sep 22 (265) – Dec 20 (354)
+			// Halloween override: Oct 1-31
+			when {
+				month == java.util.Calendar.OCTOBER -> "halloween"
+				dayOfYear >= 79 && dayOfYear <= 171 -> "spring"
+				dayOfYear >= 172 && dayOfYear <= 264 -> "summer"
+				dayOfYear >= 265 && dayOfYear <= 354 -> "fall"
+				else -> "winter"
+			}
+		} else selection
+
+		when (effectiveSelection) {
 			"winter" -> {
 				snowfallView?.isVisible = true
 				snowfallView?.startSnowing()

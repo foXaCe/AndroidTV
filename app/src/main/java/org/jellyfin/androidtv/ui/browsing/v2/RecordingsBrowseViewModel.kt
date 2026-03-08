@@ -18,11 +18,14 @@ import org.jellyfin.sdk.model.api.BaseItemKind
 import org.jellyfin.sdk.model.api.LocationType
 import org.jellyfin.sdk.model.api.MediaType
 import org.jellyfin.sdk.model.serializer.toUUIDOrNull
+import org.jellyfin.androidtv.ui.base.state.UiError
+import org.jellyfin.androidtv.ui.base.state.toUiError
 import timber.log.Timber
 import java.time.LocalDateTime
 
 data class RecordingsBrowseUiState(
 	val isLoading: Boolean = true,
+	val error: UiError? = null,
 	val recentRecordings: List<BaseItemDto> = emptyList(),
 	val seriesRecordings: List<BaseItemDto> = emptyList(),
 	val movieRecordings: List<BaseItemDto> = emptyList(),
@@ -68,7 +71,7 @@ class RecordingsBrowseViewModel(
 				_uiState.update { it.copy(isLoading = false) }
 			} catch (err: Exception) {
 				Timber.e(err, "Failed to load recordings rows")
-				_uiState.update { it.copy(isLoading = false) }
+				_uiState.update { it.copy(isLoading = false, error = err.toUiError()) }
 			}
 		}
 	}
@@ -180,5 +183,9 @@ class RecordingsBrowseViewModel(
 		} catch (err: ApiClientException) {
 			Timber.e(err, "Failed to load scheduled timers")
 		}
+	}
+
+	fun retry() {
+		initialize()
 	}
 }

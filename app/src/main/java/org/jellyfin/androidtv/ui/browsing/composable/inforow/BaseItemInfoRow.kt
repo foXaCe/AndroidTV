@@ -18,9 +18,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.Text
@@ -260,9 +259,8 @@ private fun BulletSeparatedRow(
 				repeat(contentPlaceables.size - 1) {
 					BasicText(
 						text = "\u2022",
-						style = TextStyle(
+						style = JellyfinTheme.typography.bodyMedium.copy(
 							color = Color.White.copy(alpha = 0.6f),
-							fontSize = 14.sp,
 						)
 					)
 				}

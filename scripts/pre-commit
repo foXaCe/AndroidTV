@@ -1,0 +1,17 @@
+#!/bin/sh
+echo "Ktlint check..."
+./gradlew ktlintCheck --daemon -q
+if [ $? -ne 0 ]; then
+  echo "Ktlint failed. Run ./gradlew ktlintFormat then commit again."
+  exit 1
+fi
+
+echo "Detekt check..."
+./gradlew detekt --daemon -q
+if [ $? -ne 0 ]; then
+  echo "Detekt failed. See build/reports/detekt/"
+  exit 1
+fi
+
+echo "Checks passed — commit allowed."
+exit 0

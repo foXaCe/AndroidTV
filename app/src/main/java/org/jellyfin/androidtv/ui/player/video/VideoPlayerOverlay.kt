@@ -4,12 +4,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.composable.rememberQueueEntry
 import org.jellyfin.androidtv.ui.player.base.PlayerOverlayLayout
 import org.jellyfin.androidtv.ui.player.base.rememberPlayerOverlayVisibility
 import org.jellyfin.androidtv.ui.player.base.toast.MediaToastRegistry
 import org.jellyfin.androidtv.ui.player.base.toast.MediaToasts
 import org.jellyfin.playback.core.PlaybackManager
+import org.jellyfin.playback.core.model.PlayState
 import org.jellyfin.playback.jellyfin.queue.baseItem
 import org.jellyfin.playback.jellyfin.queue.baseItemFlow
 import org.koin.compose.koinInject
@@ -28,6 +30,30 @@ fun VideoPlayerOverlay(
 	PlayerOverlayLayout(
 		visibilityState = visibilityState,
 		modifier = modifier,
+		onPlayPause = {
+			when (playbackManager.state.playState.value) {
+				PlayState.PLAYING -> {
+					playbackManager.state.pause()
+					mediaToastRegistry.emit(R.drawable.ic_pause)
+				}
+				PlayState.PAUSED -> {
+					playbackManager.state.unpause()
+					mediaToastRegistry.emit(R.drawable.ic_play)
+				}
+				PlayState.STOPPED, PlayState.ERROR -> {
+					playbackManager.state.play()
+					mediaToastRegistry.emit(R.drawable.ic_play)
+				}
+			}
+		},
+		onSeekForward = {
+			playbackManager.state.fastForward()
+			mediaToastRegistry.emit(R.drawable.ic_fast_forward)
+		},
+		onSeekBackward = {
+			playbackManager.state.rewind()
+			mediaToastRegistry.emit(R.drawable.ic_rewind)
+		},
 		header = {
 			VideoPlayerHeader(
 				item = item,

@@ -1,4 +1,110 @@
 <resources>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         DESIGN SYSTEM — Moonfin Dark Theme for Android TV
+         Premium dark palette optimized for TV viewing (no pure white/black)
+         ══════════════════════════════════════════════════════════════════ -->
+
+    <!-- ── Primary (Cyan-Blue accent) ── -->
+    <color name="ds_primary">#00A4DC</color>
+    <color name="ds_primary_dark">#0084AF</color>
+    <color name="ds_primary_light">#48C7F5</color>
+    <color name="ds_primary_container">#002533</color>
+    <color name="ds_on_primary">#FFFFFF</color>
+    <color name="ds_on_primary_container">#B4EDFE</color>
+
+    <!-- ── Secondary (Purple) ── -->
+    <color name="ds_secondary">#AA5CC3</color>
+    <color name="ds_secondary_dark">#893BE3</color>
+    <color name="ds_secondary_container">#300367</color>
+    <color name="ds_on_secondary">#FFFFFF</color>
+    <color name="ds_on_secondary_container">#EDDBFF</color>
+
+    <!-- ── Tertiary (Gold — ratings, stars) ── -->
+    <color name="ds_tertiary">#FFD700</color>
+    <color name="ds_tertiary_variant">#FFC107</color>
+    <color name="ds_on_tertiary">#1A1400</color>
+
+    <!-- ── Background & Surface hierarchy (dark → light) ── -->
+    <!-- TV-optimized: blue-purple tint avoids LCD halo, softer on OLED -->
+    <color name="ds_background">#0A0A0F</color>
+    <color name="ds_surface_dim">#0F0F18</color>
+    <color name="ds_surface">#12121A</color>
+    <color name="ds_surface_bright">#1C1C28</color>
+    <color name="ds_surface_container">#2A2A3A</color>
+    <color name="ds_on_background">#EEEEF5</color>
+    <color name="ds_on_surface">#EEEEF5</color>
+    <color name="ds_on_surface_variant">#8888AA</color>
+
+    <!-- ── Error ── -->
+    <color name="ds_error">#F85A5A</color>
+    <color name="ds_error_container">#3D0005</color>
+    <color name="ds_on_error">#FFFFFF</color>
+    <color name="ds_on_error_container">#FFDAD9</color>
+
+    <!-- ── Success ── -->
+    <color name="ds_success">#23C762</color>
+    <color name="ds_success_container">#003214</color>
+    <color name="ds_on_success">#FFFFFF</color>
+
+    <!-- ── Warning ── -->
+    <color name="ds_warning">#F0D400</color>
+    <color name="ds_warning_container">#2E2600</color>
+    <color name="ds_on_warning">#1A1400</color>
+
+    <!-- ── Info ── -->
+    <color name="ds_info">#2196F3</color>
+    <color name="ds_info_container">#032767</color>
+    <color name="ds_on_info">#FFFFFF</color>
+
+    <!-- ── Text ── -->
+    <color name="ds_text_primary">#EEEEF5</color>
+    <color name="ds_text_secondary">#8888AA</color>
+    <color name="ds_text_disabled">#5C5C78</color>
+    <color name="ds_text_hint">#7E7EA6</color>
+
+    <!-- ── Outline & Dividers ── -->
+    <color name="ds_outline">#3E3E55</color>
+    <color name="ds_outline_variant">#2E2E42</color>
+    <color name="ds_divider">#222236</color>
+
+    <!-- ── Scrim & Overlays ── -->
+    <color name="ds_scrim">#AA000000</color>
+    <color name="ds_dialog_scrim">#E6141414</color>
+    <color name="ds_overlay_gradient_start">#E6000000</color>
+    <color name="ds_overlay_gradient_end">#00000000</color>
+
+    <!-- ── Focus ── -->
+    <color name="ds_focus_ring">#00A4DC</color>
+    <color name="ds_focus_glow">#3300A4DC</color>
+
+    <!-- ── Toolbar ── -->
+    <color name="ds_toolbar_bg">#CC0D1117</color>
+    <color name="ds_toolbar_divider">#1AFFFFFF</color>
+
+    <!-- ── Rating ── -->
+    <color name="ds_rating">#FFD700</color>
+    <color name="ds_rating_empty">#3E3E55</color>
+
+    <!-- ── Button (Compose parity) ── -->
+    <color name="ds_button_bg">#B3747474</color>
+    <color name="ds_button_bg_focused">#E6CCCCCC</color>
+    <color name="ds_button_text">#DDDDDD</color>
+    <color name="ds_button_text_focused">#444444</color>
+    <color name="ds_button_disabled_bg">#33747474</color>
+    <color name="ds_button_disabled_text">#686868</color>
+
+    <!-- ── Gradient Blue (Details pages) ── -->
+    <color name="ds_gradient_blue_start">#0F3460</color>
+    <color name="ds_gradient_blue_mid">#0B2545</color>
+    <color name="ds_gradient_blue_end">#0A0A0F</color>
+
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         LEGACY COLORS — Kept for backward compatibility
+         Migrate to ds_* equivalents progressively
+         ══════════════════════════════════════════════════════════════════ -->
+
     <!-- Base Colors -->
     <color name="jellyfin_blue">#00a4dc</color>
     <color name="jellyfin_purple">#aa5cc3</color>
@@ -31,9 +137,9 @@
     <color name="red_gradient_end">#900d10</color>
 
     <!-- Live TV Colors -->
-    <color name="channel_scroller_bg">#201b1c</color>
+    <color name="channel_scroller_bg">#1A1418</color>
     <color name="program_scroller_bg">#0b0e14</color>
-    <color name="timeline_bg">#201b1c</color>
+    <color name="timeline_bg">#1A1418</color>
     <!-- ProgramGridCell Background Colors -->
     <color name="guide_movie_bg">#328E24AA</color>
     <color name="guide_sports_bg">#323949AB</color>
@@ -59,15 +165,15 @@
     <color name="input_default_highlight_text">#FFFFFF</color>
 
     <!-- popup_menu -->
-    <color name="popup_menu_background">#202124</color>
+    <color name="popup_menu_background">#1C1C28</color>
 
     <!-- Card Background Color -->
-    <color name="lb_basic_card_info_bg_color">@color/grey</color>
+    <color name="lb_basic_card_info_bg_color">#2A2A3A</color>
 
-    <color name="background_filter">#94101010</color>
+    <color name="background_filter">#940A0A0F</color>
 
     <!-- Login / Startup Screen Colors (Moonfin-inspired) -->
-    <color name="login_bg_start">#0a0a0a</color>
+    <color name="login_bg_start">#0A0A0F</color>
     <color name="login_bg_mid">#1a1a2e</color>
     <color name="login_bg_end">#16213e</color>
     <color name="login_card_bg">#CC111528</color>

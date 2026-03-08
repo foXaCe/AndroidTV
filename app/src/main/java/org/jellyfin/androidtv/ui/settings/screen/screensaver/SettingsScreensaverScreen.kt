@@ -70,7 +70,7 @@ fun SettingsScreensaverScreen() {
 
 		item {
 			var screensaverDimmingLevel by rememberPreference(userPreferences, UserPreferences.screensaverDimmingLevel)
-			val caption = if (screensaverDimmingLevel == 0) "Off" else "$screensaverDimmingLevel%"
+			val caption = if (screensaverDimmingLevel == 0) stringResource(R.string.lbl_off) else "$screensaverDimmingLevel%"
 
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_screensaver_dimming)) },

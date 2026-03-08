@@ -8,6 +8,7 @@ import org.schabi.newpipe.extractor.stream.AudioStream
 import org.schabi.newpipe.extractor.stream.DeliveryMethod
 import org.schabi.newpipe.extractor.stream.VideoStream
 import timber.log.Timber
+import java.util.Locale
 
 /**
  * Resolves direct video stream URLs from YouTube video IDs using
@@ -15,7 +16,7 @@ import timber.log.Timber
  * descrambling to avoid CDN throttling / HTTP 403 errors.
  *
  * This resolver picks:
- *  1. The best H.264 (avc1) video-only stream ≤ 720p (widest device compatibility)
+ *  1. The best H.264 (avc1) video-only stream ≥ 1080p (skips trailers below 1080p)
  *  2. Falls back to VP9 or AV1 if no avc1 is available
  *  3. The best AAC (mp4a) audio stream for the audio track
  */
@@ -103,24 +104,39 @@ object YouTubeStreamResolver {
 	}
 
 	private fun pickBestVideo(streams: List<VideoStream>): VideoStream? {
-		val preferred = streams
-			.filter { it.height in 1..720 }
-			.sortedWith(compareBy<VideoStream> { codecPriority(it.codec) }.thenByDescending { it.height })
-			.firstOrNull()
-		if (preferred != null) return preferred
+		// Only consider streams that are at least 1080p
+		val hdStreams = streams.filter { it.height >= 1080 }
+		if (hdStreams.isEmpty()) {
+			Timber.d("$TAG: No streams >= 1080p available, skipping trailer")
+			return null
+		}
 
-		return streams
+		// Pick the best 1080p stream (prefer H.264, then closest to 1080p)
+		return hdStreams
 			.sortedWith(compareBy<VideoStream> { codecPriority(it.codec) }.thenBy { it.height })
 			.firstOrNull()
 	}
 
 	private fun pickBestAudio(streams: List<AudioStream>): AudioStream? {
+		val deviceLocale = Locale.getDefault()
 		return streams
 			.sortedWith(
 				compareBy<AudioStream> {
+					// Prefer French audio, then device locale, then others
+					val lang = it.audioLocale?.language
+					when {
+						lang == "fr" -> 0
+						lang == deviceLocale.language -> 1
+						else -> 2
+					}
+				}.thenBy {
 					if (it.codec?.startsWith("mp4a") == true) 0 else 1
 				}.thenByDescending { it.averageBitrate }
 			)
+			.also { sorted ->
+				val picked = sorted.firstOrNull()
+				Timber.d("$TAG: Audio locale picked: ${picked?.audioLocale?.language ?: "default"}")
+			}
 			.firstOrNull()
 	}
 

@@ -25,9 +25,9 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -46,6 +46,7 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -57,10 +58,13 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
 import org.jellyfin.androidtv.R
+import org.jellyfin.androidtv.ui.composable.rememberErrorPlaceholder
+import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
 import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.preference.constant.WatchedIndicatorBehavior
 import org.jellyfin.androidtv.ui.base.Badge
 import org.jellyfin.androidtv.ui.base.Icon
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Seekbar
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.button.IconButton
@@ -87,7 +91,7 @@ fun DetailActionButton(
 	val isFocused by interactionSource.collectIsFocusedAsState()
 	val focusColor = focusBorderColor()
 	val resolvedActiveColor = if (activeColor == Color.Unspecified) focusColor else activeColor
-	val focusContentColor = if (focusColor.luminance() > 0.4f) Color(0xFF0A0A0A) else Color.White
+	val focusContentColor = if (focusColor.luminance() > 0.4f) JellyfinTheme.colorScheme.surface else JellyfinTheme.colorScheme.onSurface
 
 	Column(
 		horizontalAlignment = Alignment.CenterHorizontally,
@@ -95,10 +99,10 @@ fun DetailActionButton(
 	) {
 		IconButton(
 			onClick = onClick,
-			shape = RoundedCornerShape(14.dp),
+			shape = JellyfinTheme.shapes.large,
 			colors = IconButtonDefaults.colors(
-				containerColor = Color.White.copy(alpha = 0.08f),
-				contentColor = if (isActive) resolvedActiveColor else Color.White,
+				containerColor = JellyfinTheme.colorScheme.outlineVariant,
+				contentColor = if (isActive) resolvedActiveColor else JellyfinTheme.colorScheme.onSurface,
 				focusedContainerColor = focusColor.copy(alpha = 0.95f),
 				focusedContentColor = if (isActive) resolvedActiveColor else focusContentColor,
 			),
@@ -106,8 +110,8 @@ fun DetailActionButton(
 			interactionSource = interactionSource,
 			modifier = Modifier.border(
 				1.dp,
-				Color.White.copy(alpha = 0.15f),
-				RoundedCornerShape(14.dp),
+				JellyfinTheme.colorScheme.outlineVariant,
+				JellyfinTheme.shapes.large,
 			),
 		) {
 			Icon(
@@ -121,9 +125,8 @@ fun DetailActionButton(
 
 		Text(
 			text = label,
-			fontSize = 12.sp,
-			fontWeight = FontWeight.W600,
-			color = Color.White.copy(alpha = 0.8f),
+			style = JellyfinTheme.typography.labelMedium.copy(fontWeight = FontWeight.W600),
+			color = JellyfinTheme.colorScheme.textPrimary,
 			textAlign = TextAlign.Center,
 			maxLines = 1,
 		)
@@ -131,8 +134,8 @@ fun DetailActionButton(
 		if (detail != null) {
 			Text(
 				text = detail,
-				fontSize = 11.sp,
-				color = if (isFocused) Color.White.copy(alpha = 0.9f) else Color.White.copy(alpha = 0.5f),
+				style = JellyfinTheme.typography.labelSmall,
+				color = if (isFocused) JellyfinTheme.colorScheme.onSurface else JellyfinTheme.colorScheme.textHint,
 				textAlign = TextAlign.Center,
 				maxLines = if (isFocused) 2 else 1,
 				overflow = TextOverflow.Ellipsis,
@@ -150,11 +153,11 @@ fun MediaBadgeChip(
 		text = badge.label,
 		modifier = modifier
 			.background(
-				Color(0xB3FFFFFF),
-				RoundedCornerShape(4.dp),
+				JellyfinTheme.colorScheme.textSecondary,
+				JellyfinTheme.shapes.extraSmall,
 			)
 			.padding(horizontal = 6.dp, vertical = 2.dp),
-		fontSize = 11.sp,
+		style = JellyfinTheme.typography.labelSmall,
 		fontWeight = FontWeight.W700,
 		color = Color.Black,
 		letterSpacing = 0.5.sp,
@@ -169,9 +172,8 @@ fun InfoItemText(
 	Text(
 		text = text,
 		modifier = modifier,
-		fontSize = 15.sp,
-		fontWeight = FontWeight.W700,
-		color = Color.White.copy(alpha = 0.7f),
+		style = JellyfinTheme.typography.listHeader,
+		color = JellyfinTheme.colorScheme.textSecondary,
 	)
 }
 
@@ -186,11 +188,10 @@ fun InfoItemBadge(
 		modifier = Modifier
 			.background(
 				bgColor,
-				RoundedCornerShape(4.dp),
+				JellyfinTheme.shapes.extraSmall,
 			)
 			.padding(horizontal = 6.dp, vertical = 2.dp),
-		fontSize = 14.sp,
-		fontWeight = FontWeight.W900,
+		style = JellyfinTheme.typography.bodyMedium.copy(fontWeight = FontWeight.W900),
 		color = color,
 	)
 }
@@ -201,7 +202,7 @@ fun RuntimeInfo(ticks: Long) {
 		Icon(
 			painter = painterResource(R.drawable.ic_time),
 			contentDescription = null,
-			tint = Color.White.copy(alpha = 0.7f),
+			tint = JellyfinTheme.colorScheme.textSecondary,
 			modifier = Modifier.size(15.dp).padding(end = 4.dp),
 		)
 		InfoItemText(TimeUtils.formatRuntimeHoursMinutes(context, ticks / 10_000))
@@ -213,8 +214,8 @@ fun InfoItemSeparator() {
 	Text(
 		text = "\u2022",
 		modifier = Modifier.padding(horizontal = 8.dp),
-		fontSize = 10.sp,
-		color = Color.White.copy(alpha = 0.35f),
+		style = JellyfinTheme.typography.labelSmall,
+		color = JellyfinTheme.colorScheme.textDisabled,
 	)
 }
 
@@ -228,12 +229,12 @@ fun MetadataGroup(
 	Row(
 		modifier = modifier
 			.fillMaxWidth()
-			.clip(RoundedCornerShape(8.dp))
-			.background(Color.White.copy(alpha = 0.03f))
+			.clip(JellyfinTheme.shapes.small)
+			.background(JellyfinTheme.colorScheme.outlineVariant)
 			.border(
 				1.dp,
-				Color.White.copy(alpha = 0.06f),
-				RoundedCornerShape(8.dp),
+				JellyfinTheme.colorScheme.outlineVariant,
+				JellyfinTheme.shapes.small,
 			)
 			.padding(vertical = 12.dp),
 		verticalAlignment = Alignment.Top,
@@ -246,16 +247,15 @@ fun MetadataGroup(
 			) {
 				Text(
 					text = label.uppercase(),
-					fontSize = 11.sp,
-					fontWeight = FontWeight.W600,
-					color = Color.White.copy(alpha = 0.4f),
+					style = JellyfinTheme.typography.labelSmall.copy(fontWeight = FontWeight.W600),
+					color = JellyfinTheme.colorScheme.textDisabled,
 					letterSpacing = 0.5.sp,
 				)
 				Spacer(modifier = Modifier.height(4.dp))
 				Text(
 					text = value,
-					fontSize = 14.sp,
-					color = Color.White.copy(alpha = 0.85f),
+					style = JellyfinTheme.typography.bodyMedium,
+					color = JellyfinTheme.colorScheme.onSurface,
 				)
 			}
 			if (index < items.lastIndex) {
@@ -263,7 +263,7 @@ fun MetadataGroup(
 					Modifier
 						.width(1.dp)
 						.height(36.dp)
-						.background(Color.White.copy(alpha = 0.08f))
+						.background(JellyfinTheme.colorScheme.outlineVariant)
 				)
 			}
 		}
@@ -299,22 +299,26 @@ fun CastCard(
 					if (isFocused) Modifier.border(2.dp, focusBorderColor(), CircleShape)
 					else Modifier.border(2.dp, Color.Transparent, CircleShape)
 				)
-				.background(Color.White.copy(alpha = 0.05f)),
+				.background(JellyfinTheme.colorScheme.outlineVariant),
 			contentAlignment = Alignment.Center,
 		) {
 			if (imageUrl != null) {
+				val placeholder = rememberGradientPlaceholder()
+				val errorFallback = rememberErrorPlaceholder()
 				AsyncImage(
 					model = imageUrl,
 					contentDescription = name,
 					modifier = Modifier.fillMaxSize(),
 					contentScale = ContentScale.Crop,
+					placeholder = placeholder,
+					error = errorFallback,
 				)
 			} else {
 				Text(
 					text = name.firstOrNull()?.toString() ?: "",
-					fontSize = 32.sp,
+					style = JellyfinTheme.typography.headlineLarge,
 					fontWeight = FontWeight.W600,
-					color = Color.White.copy(alpha = 0.3f),
+					color = JellyfinTheme.colorScheme.textDisabled,
 				)
 			}
 		}
@@ -323,9 +327,8 @@ fun CastCard(
 
 		Text(
 			text = name,
-			fontSize = 13.sp,
-			fontWeight = FontWeight.W500,
-			color = Color.White,
+			style = JellyfinTheme.typography.bodySmall.copy(fontWeight = FontWeight.W500),
+			color = JellyfinTheme.colorScheme.onSurface,
 			textAlign = TextAlign.Center,
 			maxLines = 1,
 			overflow = TextOverflow.Ellipsis,
@@ -334,8 +337,8 @@ fun CastCard(
 		if (role != null) {
 			Text(
 				text = role,
-				fontSize = 11.sp,
-				color = Color.White.copy(alpha = 0.5f),
+				style = JellyfinTheme.typography.labelSmall,
+				color = JellyfinTheme.colorScheme.textHint,
 				textAlign = TextAlign.Center,
 				maxLines = 1,
 				overflow = TextOverflow.Ellipsis,
@@ -369,19 +372,23 @@ fun SeasonCard(
 			modifier = Modifier
 				.width(170.dp)
 				.height(255.dp)
-				.clip(RoundedCornerShape(6.dp))
+				.clip(JellyfinTheme.shapes.button)
 				.then(
-					if (isFocused) Modifier.border(2.dp, focusBorderColor(), RoundedCornerShape(6.dp))
-					else Modifier.border(2.dp, Color.Transparent, RoundedCornerShape(6.dp))
+					if (isFocused) Modifier.border(2.dp, focusBorderColor(), JellyfinTheme.shapes.button)
+					else Modifier.border(2.dp, Color.Transparent, JellyfinTheme.shapes.button)
 				)
-				.background(Color.White.copy(alpha = 0.05f)),
+				.background(JellyfinTheme.colorScheme.outlineVariant),
 		) {
 			if (imageUrl != null) {
+				val placeholder = rememberGradientPlaceholder()
+				val errorFallback = rememberErrorPlaceholder()
 				AsyncImage(
 					model = imageUrl,
 					contentDescription = name,
 					modifier = Modifier.fillMaxSize(),
 					contentScale = ContentScale.Crop,
+					placeholder = placeholder,
+					error = errorFallback,
 				)
 			} else {
 				Box(
@@ -390,8 +397,8 @@ fun SeasonCard(
 				) {
 					Text(
 						text = name,
-						fontSize = 17.sp,
-						color = Color.White.copy(alpha = 0.7f),
+						style = JellyfinTheme.typography.titleMedium,
+						color = JellyfinTheme.colorScheme.textSecondary,
 						textAlign = TextAlign.Center,
 						modifier = Modifier.padding(12.dp),
 					)
@@ -418,8 +425,8 @@ fun SeasonCard(
 
 		Text(
 			text = name,
-			fontSize = 14.sp,
-			color = Color.White.copy(alpha = 0.9f),
+			style = JellyfinTheme.typography.bodyMedium,
+			color = JellyfinTheme.colorScheme.onSurface,
 			textAlign = TextAlign.Center,
 			maxLines = 1,
 			overflow = TextOverflow.Ellipsis,
@@ -484,19 +491,19 @@ fun EpisodeCard(
 	Column(
 		modifier = modifier
 			.width(220.dp)
-			.clip(RoundedCornerShape(6.dp))
+			.clip(JellyfinTheme.shapes.button)
 			.then(
 				if (isCurrent) Modifier.border(
 					2.dp,
 					borderColor.copy(alpha = 0.4f),
-					RoundedCornerShape(8.dp),
+					JellyfinTheme.shapes.small,
 				)
 				else if (isFocused) Modifier.border(
 					2.dp,
 					borderColor,
-					RoundedCornerShape(8.dp),
+					JellyfinTheme.shapes.small,
 				)
-				else Modifier.border(2.dp, Color.Transparent, RoundedCornerShape(8.dp))
+				else Modifier.border(2.dp, Color.Transparent, JellyfinTheme.shapes.small)
 			)
 			.then(
 				if (isCurrent) Modifier.background(borderColor.copy(alpha = 0.08f))
@@ -512,14 +519,18 @@ fun EpisodeCard(
 			modifier = Modifier
 				.fillMaxWidth()
 				.height(124.dp)
-				.background(Color(0xFF111111)),
+				.background(JellyfinTheme.colorScheme.surfaceDim),
 		) {
 			if (imageUrl != null) {
+				val placeholder = rememberGradientPlaceholder()
+				val errorFallback = rememberErrorPlaceholder()
 				AsyncImage(
 					model = imageUrl,
 					contentDescription = title,
 					modifier = Modifier.fillMaxSize(),
 					contentScale = ContentScale.Crop,
+					placeholder = placeholder,
+					error = errorFallback,
 				)
 			}
 
@@ -543,7 +554,7 @@ fun EpisodeCard(
 						modifier = Modifier
 							.fillMaxWidth(fraction = (progress / 100.0).toFloat().coerceIn(0f, 1f))
 							.height(2.dp)
-							.background(Color(0xFF00A4DC)),
+							.background(JellyfinTheme.colorScheme.primary),
 					)
 				}
 			}
@@ -554,16 +565,15 @@ fun EpisodeCard(
 			verticalAlignment = Alignment.CenterVertically,
 		) {
 			Text(
-				text = "E${episodeNumber ?: "?"}",
-				fontSize = 12.sp,
-				fontWeight = FontWeight.W700,
-				color = Color.White.copy(alpha = 0.5f),
+				text = stringResource(R.string.lbl_episode_number_str, episodeNumber?.toString() ?: "?"),
+				style = JellyfinTheme.typography.labelMedium.copy(fontWeight = FontWeight.W700),
+				color = JellyfinTheme.colorScheme.textHint,
 			)
 			Spacer(modifier = Modifier.width(6.dp))
 			Text(
 				text = title,
-				fontSize = 13.sp,
-				color = Color.White.copy(alpha = 0.9f),
+				style = JellyfinTheme.typography.bodySmall,
+				color = JellyfinTheme.colorScheme.onSurface,
 				maxLines = 1,
 				overflow = TextOverflow.Ellipsis,
 				modifier = Modifier.weight(1f),
@@ -572,8 +582,8 @@ fun EpisodeCard(
 				Spacer(modifier = Modifier.width(6.dp))
 				Text(
 					text = runtime,
-					fontSize = 11.sp,
-					color = Color.White.copy(alpha = 0.4f),
+					style = JellyfinTheme.typography.labelSmall,
+					color = JellyfinTheme.colorScheme.textDisabled,
 				)
 			}
 		}
@@ -599,18 +609,18 @@ fun SeasonEpisodeItem(
 	Row(
 		modifier = modifier
 			.fillMaxWidth()
-			.clip(RoundedCornerShape(8.dp))
+			.clip(JellyfinTheme.shapes.small)
 			.background(
-				if (isFocused) Color.White.copy(alpha = 0.08f)
-				else Color.White.copy(alpha = 0.04f)
+				if (isFocused) JellyfinTheme.colorScheme.outlineVariant
+				else JellyfinTheme.colorScheme.outlineVariant
 			)
 			.then(
 				if (isFocused) Modifier.border(
 					2.dp,
 					seasonBorderColor.copy(alpha = 0.4f),
-					RoundedCornerShape(8.dp),
+					JellyfinTheme.shapes.small,
 				)
-				else Modifier.border(2.dp, Color.Transparent, RoundedCornerShape(8.dp))
+				else Modifier.border(2.dp, Color.Transparent, JellyfinTheme.shapes.small)
 			)
 			.clickable(
 				interactionSource = interactionSource,
@@ -622,14 +632,18 @@ fun SeasonEpisodeItem(
 			modifier = Modifier
 				.width(240.dp)
 				.height(135.dp)
-				.background(Color(0xFF111111)),
+				.background(JellyfinTheme.colorScheme.surfaceDim),
 		) {
 			if (imageUrl != null) {
+				val placeholder = rememberGradientPlaceholder()
+				val errorFallback = rememberErrorPlaceholder()
 				AsyncImage(
 					model = imageUrl,
 					contentDescription = title,
 					modifier = Modifier.fillMaxSize(),
 					contentScale = ContentScale.Crop,
+					placeholder = placeholder,
+					error = errorFallback,
 				)
 			}
 
@@ -645,7 +659,7 @@ fun SeasonEpisodeItem(
 						modifier = Modifier
 							.fillMaxWidth(fraction = (progress / 100.0).toFloat().coerceIn(0f, 1f))
 							.height(3.dp)
-							.background(Color(0xFF00A4DC)),
+							.background(JellyfinTheme.colorScheme.primary),
 					)
 				}
 			}
@@ -672,16 +686,15 @@ fun SeasonEpisodeItem(
 				horizontalArrangement = Arrangement.SpaceBetween,
 			) {
 				Text(
-					text = "Episode ${episodeNumber ?: "?"}",
-					fontSize = 13.sp,
-					fontWeight = FontWeight.W600,
-					color = Color.White.copy(alpha = 0.5f),
+					text = stringResource(R.string.lbl_episode_label, episodeNumber?.toString() ?: "?"),
+					style = JellyfinTheme.typography.bodySmall.copy(fontWeight = FontWeight.W600),
+					color = JellyfinTheme.colorScheme.textHint,
 				)
 				if (runtime != null) {
 					Text(
 						text = runtime,
-						fontSize = 13.sp,
-						color = Color.White.copy(alpha = 0.4f),
+						style = JellyfinTheme.typography.bodySmall,
+						color = JellyfinTheme.colorScheme.textDisabled,
 					)
 				}
 			}
@@ -690,9 +703,8 @@ fun SeasonEpisodeItem(
 
 			Text(
 				text = title,
-				fontSize = 17.sp,
-				fontWeight = FontWeight.W600,
-				color = Color.White,
+				style = JellyfinTheme.typography.titleMedium,
+				color = JellyfinTheme.colorScheme.onSurface,
 				maxLines = 1,
 				overflow = TextOverflow.Ellipsis,
 			)
@@ -701,8 +713,8 @@ fun SeasonEpisodeItem(
 				Spacer(modifier = Modifier.height(4.dp))
 				Text(
 					text = overview,
-					fontSize = 14.sp,
-					color = Color.White.copy(alpha = 0.55f),
+					style = JellyfinTheme.typography.bodyMedium,
+					color = JellyfinTheme.colorScheme.textHint,
 					maxLines = 2,
 					overflow = TextOverflow.Ellipsis,
 					lineHeight = 20.sp,
@@ -720,9 +732,8 @@ fun SectionHeader(
 	Text(
 		text = title,
 		modifier = modifier.padding(bottom = 10.dp),
-		fontSize = 20.sp,
-		fontWeight = FontWeight.W600,
-		color = Color.White,
+		style = JellyfinTheme.typography.titleLarge,
+		color = JellyfinTheme.colorScheme.onSurface,
 	)
 }
 
@@ -749,23 +760,27 @@ fun PosterImage(
 						.height(248.dp)
 				}
 			)
-			.clip(RoundedCornerShape(8.dp))
-			.background(Color.White.copy(alpha = 0.05f)),
+			.clip(JellyfinTheme.shapes.small)
+			.background(JellyfinTheme.colorScheme.outlineVariant),
 		contentAlignment = Alignment.Center,
 	) {
 		if (imageUrl != null) {
+			val placeholder = rememberGradientPlaceholder()
+			val errorFallback = rememberErrorPlaceholder()
 			AsyncImage(
 				model = imageUrl,
 				contentDescription = null,
 				modifier = Modifier.fillMaxSize(),
 				contentScale = ContentScale.Crop,
+				placeholder = placeholder,
+				error = errorFallback,
 			)
 		} else {
 			Icon(
 				imageVector = ImageVector.vectorResource(R.drawable.ic_movie),
 				contentDescription = null,
 				modifier = Modifier.size(64.dp),
-				tint = Color.White.copy(alpha = 0.15f),
+				tint = JellyfinTheme.colorScheme.outlineVariant,
 			)
 		}
 
@@ -783,6 +798,7 @@ fun DetailBackdrop(
 ) {
 	Box(modifier = modifier.fillMaxSize()) {
 		if (imageUrl != null) {
+			val placeholder = rememberGradientPlaceholder()
 			AsyncImage(
 				model = imageUrl,
 				contentDescription = null,
@@ -791,6 +807,7 @@ fun DetailBackdrop(
 					.then(if (blurAmount > 0) Modifier.blur(blurAmount.dp) else Modifier),
 				contentScale = ContentScale.Crop,
 				alpha = 0.8f,
+				placeholder = placeholder,
 			)
 		}
 
@@ -802,10 +819,10 @@ fun DetailBackdrop(
 						colorStops = arrayOf(
 							0.0f to Color.Transparent,
 							0.3f to Color.Transparent,
-							0.5f to Color(0x40101010),
-							0.65f to Color(0xA0101010),
-							0.8f to Color(0xE0101010),
-							1.0f to Color(0xFF101010),
+							0.5f to JellyfinTheme.colorScheme.gradientEnd.copy(alpha = 0.25f),
+							0.65f to JellyfinTheme.colorScheme.gradientEnd.copy(alpha = 0.63f),
+							0.8f to JellyfinTheme.colorScheme.gradientEnd.copy(alpha = 0.88f),
+							1.0f to JellyfinTheme.colorScheme.gradientEnd,
 						),
 					)
 				)
@@ -843,19 +860,23 @@ fun SimilarItemCard(
 			modifier = Modifier
 				.fillMaxWidth()
 				.height(200.dp)
-				.clip(RoundedCornerShape(6.dp))
+				.clip(JellyfinTheme.shapes.button)
 				.then(
-					if (isFocused) Modifier.border(2.dp, focusBorderColor(), RoundedCornerShape(6.dp))
-					else Modifier.border(2.dp, Color.Transparent, RoundedCornerShape(6.dp))
+					if (isFocused) Modifier.border(2.dp, focusBorderColor(), JellyfinTheme.shapes.button)
+					else Modifier.border(2.dp, Color.Transparent, JellyfinTheme.shapes.button)
 				)
-				.background(Color.White.copy(alpha = 0.05f)),
+				.background(JellyfinTheme.colorScheme.outlineVariant),
 		) {
 			if (imageUrl != null) {
+				val placeholder = rememberGradientPlaceholder()
+				val errorFallback = rememberErrorPlaceholder()
 				AsyncImage(
 					model = imageUrl,
 					contentDescription = title,
 					modifier = Modifier.fillMaxSize(),
 					contentScale = ContentScale.Crop,
+					placeholder = placeholder,
+					error = errorFallback,
 				)
 			}
 
@@ -868,9 +889,8 @@ fun SimilarItemCard(
 
 		Text(
 			text = title,
-			fontSize = 13.sp,
-			fontWeight = FontWeight.W500,
-			color = Color.White.copy(alpha = 0.9f),
+			style = JellyfinTheme.typography.bodySmall.copy(fontWeight = FontWeight.W500),
+			color = JellyfinTheme.colorScheme.onSurface,
 			maxLines = 1,
 			overflow = TextOverflow.Ellipsis,
 		)
@@ -878,8 +898,8 @@ fun SimilarItemCard(
 		if (year != null) {
 			Text(
 				text = year.toString(),
-				fontSize = 11.sp,
-				color = Color.White.copy(alpha = 0.5f),
+				style = JellyfinTheme.typography.labelSmall,
+				color = JellyfinTheme.colorScheme.textHint,
 			)
 		}
 	}
@@ -915,19 +935,23 @@ fun LandscapeItemCard(
 			modifier = Modifier
 				.fillMaxWidth()
 				.height(124.dp)
-				.clip(RoundedCornerShape(6.dp))
+				.clip(JellyfinTheme.shapes.button)
 				.then(
-					if (isFocused) Modifier.border(2.dp, focusBorderColor(), RoundedCornerShape(6.dp))
-					else Modifier.border(2.dp, Color.Transparent, RoundedCornerShape(6.dp))
+					if (isFocused) Modifier.border(2.dp, focusBorderColor(), JellyfinTheme.shapes.button)
+					else Modifier.border(2.dp, Color.Transparent, JellyfinTheme.shapes.button)
 				)
-				.background(Color.White.copy(alpha = 0.05f)),
+				.background(JellyfinTheme.colorScheme.outlineVariant),
 		) {
 			if (imageUrl != null) {
+				val placeholder = rememberGradientPlaceholder()
+				val errorFallback = rememberErrorPlaceholder()
 				AsyncImage(
 					model = imageUrl,
 					contentDescription = title,
 					modifier = Modifier.fillMaxSize(),
 					contentScale = ContentScale.Crop,
+					placeholder = placeholder,
+					error = errorFallback,
 				)
 			}
 
@@ -940,9 +964,8 @@ fun LandscapeItemCard(
 
 		Text(
 			text = title,
-			fontSize = 13.sp,
-			fontWeight = FontWeight.W500,
-			color = Color.White.copy(alpha = 0.9f),
+			style = JellyfinTheme.typography.bodySmall.copy(fontWeight = FontWeight.W500),
+			color = JellyfinTheme.colorScheme.onSurface,
 			maxLines = 1,
 			overflow = TextOverflow.Ellipsis,
 		)
@@ -950,8 +973,8 @@ fun LandscapeItemCard(
 		if (subtitle != null) {
 			Text(
 				text = subtitle,
-				fontSize = 11.sp,
-				color = Color.White.copy(alpha = 0.5f),
+				style = JellyfinTheme.typography.labelSmall,
+				color = JellyfinTheme.colorScheme.textHint,
 			)
 		}
 	}
@@ -979,7 +1002,7 @@ fun TrackItemCard(
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
 	val canReorder = onMoveUp != null || onMoveDown != null
-	val focusColor = if (canReorder) focusBorderColor() else Color.White
+	val focusColor = if (canReorder) focusBorderColor() else JellyfinTheme.colorScheme.onSurface
 
 	LaunchedEffect(isFocused) {
 		if (isFocused) onFocused?.invoke()
@@ -1019,21 +1042,21 @@ fun TrackItemCard(
 			)
 			.focusable(interactionSource = interactionSource)
 			.background(
-				color = if (isFocused) Color.White.copy(alpha = 0.15f) else Color.Transparent,
-				shape = RoundedCornerShape(8.dp),
+				color = if (isFocused) JellyfinTheme.colorScheme.outlineVariant else Color.Transparent,
+				shape = JellyfinTheme.shapes.small,
 			)
 			.border(
 				width = if (isFocused) 2.dp else 0.dp,
 				color = if (isFocused) focusColor else Color.Transparent,
-				shape = RoundedCornerShape(8.dp),
+				shape = JellyfinTheme.shapes.small,
 			)
 			.padding(horizontal = 16.dp, vertical = 12.dp),
 		verticalAlignment = Alignment.CenterVertically,
 	) {
 		Text(
 			text = trackNumber.toString(),
-			fontSize = 16.sp,
-			color = Color.White.copy(alpha = 0.6f),
+			style = JellyfinTheme.typography.titleMedium,
+			color = JellyfinTheme.colorScheme.onSurfaceVariant,
 			modifier = Modifier.width(40.dp),
 		)
 
@@ -1042,17 +1065,16 @@ fun TrackItemCard(
 		) {
 			Text(
 				text = title,
-				fontSize = 18.sp,
-				fontWeight = FontWeight.W500,
-				color = Color.White,
+				style = JellyfinTheme.typography.titleLarge.copy(fontWeight = FontWeight.W500),
+				color = JellyfinTheme.colorScheme.onSurface,
 				maxLines = 1,
 				overflow = TextOverflow.Ellipsis,
 			)
 			if (artist != null) {
 				Text(
 					text = artist,
-					fontSize = 14.sp,
-					color = Color.White.copy(alpha = 0.6f),
+					style = JellyfinTheme.typography.bodyMedium,
+					color = JellyfinTheme.colorScheme.onSurfaceVariant,
 					maxLines = 1,
 					overflow = TextOverflow.Ellipsis,
 				)
@@ -1062,8 +1084,8 @@ fun TrackItemCard(
 		if (runtime != null) {
 			Text(
 				text = runtime,
-				fontSize = 16.sp,
-				color = Color.White.copy(alpha = 0.6f),
+				style = JellyfinTheme.typography.titleMedium,
+				color = JellyfinTheme.colorScheme.onSurfaceVariant,
 			)
 		}
 
@@ -1075,15 +1097,15 @@ fun TrackItemCard(
 			) {
 				Icon(
 					imageVector = ImageVector.vectorResource(R.drawable.ic_up),
-					contentDescription = "Move up",
+					contentDescription = stringResource(R.string.cd_move_up),
 					modifier = Modifier.size(18.dp),
-					tint = if (!isFirst) focusColor else Color.White.copy(alpha = 0.2f),
+					tint = if (!isFirst) focusColor else JellyfinTheme.colorScheme.textDisabled,
 				)
 				Icon(
 					imageVector = ImageVector.vectorResource(R.drawable.ic_down),
-					contentDescription = "Move down",
+					contentDescription = stringResource(R.string.cd_move_down),
 					modifier = Modifier.size(18.dp),
-					tint = if (!isLast) focusColor else Color.White.copy(alpha = 0.2f),
+					tint = if (!isLast) focusColor else JellyfinTheme.colorScheme.textDisabled,
 				)
 			}
 		}
@@ -1118,16 +1140,15 @@ fun TrackSelectorDialog(
 			Column(
 				modifier = Modifier
 					.widthIn(min = 340.dp, max = 440.dp)
-					.clip(RoundedCornerShape(20.dp))
-					.background(Color(0xE6141414))
-					.border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
+					.clip(JellyfinTheme.shapes.dialog)
+					.background(JellyfinTheme.colorScheme.dialogScrim)
+					.border(1.dp, JellyfinTheme.colorScheme.outlineVariant, JellyfinTheme.shapes.dialog)
 					.padding(vertical = 20.dp),
 			) {
 				Text(
 					text = title,
-					fontSize = 20.sp,
-					fontWeight = FontWeight.W600,
-					color = Color.White,
+					style = JellyfinTheme.typography.titleLarge,
+					color = JellyfinTheme.colorScheme.onSurface,
 					modifier = Modifier
 						.padding(horizontal = 24.dp)
 						.padding(bottom = 12.dp),
@@ -1137,7 +1158,7 @@ fun TrackSelectorDialog(
 					modifier = Modifier
 						.fillMaxWidth()
 						.height(1.dp)
-						.background(Color.White.copy(alpha = 0.08f)),
+						.background(JellyfinTheme.colorScheme.outlineVariant),
 				)
 
 				Spacer(modifier = Modifier.height(8.dp))
@@ -1164,7 +1185,7 @@ fun TrackSelectorDialog(
 								.focusable(interactionSource = interactionSource)
 								.background(
 									when {
-										isFocused -> Color.White.copy(alpha = 0.12f)
+										isFocused -> JellyfinTheme.colorScheme.outlineVariant
 										else -> Color.Transparent
 									},
 								)
@@ -1176,7 +1197,7 @@ fun TrackSelectorDialog(
 									.size(18.dp)
 									.border(
 										width = 2.dp,
-										color = if (isSelected) focusBorderColor() else Color.White.copy(alpha = 0.3f),
+										color = if (isSelected) focusBorderColor() else JellyfinTheme.colorScheme.textDisabled,
 										shape = CircleShape,
 									),
 								contentAlignment = Alignment.Center,
@@ -1194,12 +1215,13 @@ fun TrackSelectorDialog(
 
 							Text(
 								text = option,
-								fontSize = 16.sp,
-								fontWeight = if (isSelected) FontWeight.W600 else FontWeight.W400,
+								style = JellyfinTheme.typography.titleMedium.copy(
+									fontWeight = if (isSelected) FontWeight.W600 else FontWeight.W400,
+								),
 								color = when {
 									isSelected -> focusBorderColor()
-									isFocused -> Color.White
-									else -> Color.White.copy(alpha = 0.8f)
+									isFocused -> JellyfinTheme.colorScheme.onSurface
+									else -> JellyfinTheme.colorScheme.textPrimary
 								},
 								maxLines = 1,
 								overflow = TextOverflow.Ellipsis,
@@ -1220,6 +1242,7 @@ fun TrackSelectorDialog(
 /**
  * Data class representing an action in the track context menu.
  */
+@Stable
 data class TrackAction(
 	val label: String,
 	val onClick: () -> Unit,
@@ -1248,16 +1271,15 @@ fun TrackActionDialog(
 			Column(
 				modifier = Modifier
 					.widthIn(min = 340.dp, max = 440.dp)
-					.clip(RoundedCornerShape(20.dp))
-					.background(Color(0xE6141414))
-					.border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
+					.clip(JellyfinTheme.shapes.dialog)
+					.background(JellyfinTheme.colorScheme.dialogScrim)
+					.border(1.dp, JellyfinTheme.colorScheme.outlineVariant, JellyfinTheme.shapes.dialog)
 					.padding(vertical = 20.dp),
 			) {
 				Text(
 					text = trackTitle,
-					fontSize = 20.sp,
-					fontWeight = FontWeight.W600,
-					color = Color.White,
+					style = JellyfinTheme.typography.titleLarge,
+					color = JellyfinTheme.colorScheme.onSurface,
 					maxLines = 1,
 					overflow = TextOverflow.Ellipsis,
 					modifier = Modifier
@@ -1269,7 +1291,7 @@ fun TrackActionDialog(
 					modifier = Modifier
 						.fillMaxWidth()
 						.height(1.dp)
-						.background(Color.White.copy(alpha = 0.08f)),
+						.background(JellyfinTheme.colorScheme.outlineVariant),
 				)
 
 				Spacer(modifier = Modifier.height(8.dp))
@@ -1296,16 +1318,15 @@ fun TrackActionDialog(
 							}
 							.focusable(interactionSource = interactionSource)
 							.background(
-								if (isFocused) Color.White.copy(alpha = 0.12f) else Color.Transparent,
+								if (isFocused) JellyfinTheme.colorScheme.outlineVariant else Color.Transparent,
 							)
 							.padding(horizontal = 24.dp, vertical = 14.dp),
 						verticalAlignment = Alignment.CenterVertically,
 					) {
 						Text(
 							text = action.label,
-							fontSize = 16.sp,
-							fontWeight = FontWeight.W400,
-							color = if (isFocused) Color.White else Color.White.copy(alpha = 0.8f),
+							style = JellyfinTheme.typography.bodyLarge,
+							color = if (isFocused) JellyfinTheme.colorScheme.onSurface else JellyfinTheme.colorScheme.textPrimary,
 							maxLines = 1,
 							overflow = TextOverflow.Ellipsis,
 						)

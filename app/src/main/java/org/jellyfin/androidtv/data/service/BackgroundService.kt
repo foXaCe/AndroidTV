@@ -25,7 +25,11 @@ import org.jellyfin.androidtv.util.sdk.ApiClientFactory
 import org.jellyfin.sdk.Jellyfin
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.extensions.imageApi
+import org.jellyfin.sdk.api.client.extensions.itemsApi
 import org.jellyfin.sdk.model.api.BaseItemDto
+import org.jellyfin.sdk.model.api.BaseItemKind
+import org.jellyfin.sdk.model.api.ImageType
+import org.jellyfin.sdk.model.api.ItemSortBy
 import timber.log.Timber
 import java.util.UUID
 import java.time.Instant
@@ -91,11 +95,17 @@ class BackgroundService(
 
 		// Get the appropriate API client for this item's server
 		val itemApi = apiClientFactory.getApiClientForItemOrFallback(baseItem, api)
-		
+
 		// Get all backdrop urls
 		val backdropUrls = (baseItem.itemBackdropImages + baseItem.parentBackdropImages)
 			.map { it.getUrl(itemApi) }
 			.toSet()
+
+		if (backdropUrls.isEmpty() && (baseItem.type == BaseItemKind.USER_VIEW || baseItem.type == BaseItemKind.COLLECTION_FOLDER)) {
+			// Library views don't have backdrops — fetch a random item from this library
+			loadLibraryBackdrop(baseItem.id, itemApi)
+			return
+		}
 
 		loadBackgrounds(backdropUrls)
 	}
@@ -137,33 +147,62 @@ class BackgroundService(
 		loadBackgrounds(setOf(imageUrl))
 	}
 
-	private fun loadBackgrounds(backdropUrls: Set<String>) {
-		if (backdropUrls.isEmpty()) return clearBackgrounds()
+	private fun loadLibraryBackdrop(libraryId: UUID, itemApi: ApiClient) {
+		loadBackgroundsJob?.cancel()
+		loadBackgroundsJob = scope.launch(Dispatchers.IO) {
+			try {
+				val result by itemApi.itemsApi.getItems(
+					parentId = libraryId,
+					includeItemTypes = listOf(BaseItemKind.MOVIE, BaseItemKind.SERIES),
+					recursive = true,
+					sortBy = listOf(ItemSortBy.RANDOM),
+					limit = 1,
+					imageTypes = listOf(ImageType.BACKDROP),
+				)
+				val randomItem = result.items?.firstOrNull() ?: return@launch
+				val urls = (randomItem.itemBackdropImages + randomItem.parentBackdropImages)
+					.map { it.getUrl(itemApi) }
+					.toSet()
+				if (urls.isNotEmpty()) {
+					loadBackgroundImages(urls)
+				}
+			} catch (e: Exception) {
+				Timber.w(e, "Failed to load library backdrop")
+			}
+		}
+	}
 
+	private suspend fun loadBackgroundImages(backdropUrls: Set<String>) {
 		_enabled.value = true
-		
+
 		val blurAmount = when (_blurContext.value) {
 			BlurContext.DETAILS -> userSettingPreferences[UserSettingPreferences.detailsBackgroundBlurAmount]
 			BlurContext.BROWSING -> userSettingPreferences[UserSettingPreferences.browsingBackgroundBlurAmount]
 			BlurContext.NONE -> 0
 		}
 
+		_backgrounds = backdropUrls.mapNotNull { url ->
+			val bitmap = imageLoader.execute(
+				request = ImageRequest.Builder(context).data(url).build()
+			).image?.toBitmap()
+
+			if (bitmap != null && !useComposeBlur && blurAmount > 0) {
+				BitmapBlur.blur(bitmap, blurAmount).asImageBitmap()
+			} else {
+				bitmap?.asImageBitmap()
+			}
+		}
+
+		_currentIndex = 0
+		update()
+	}
+
+	private fun loadBackgrounds(backdropUrls: Set<String>) {
+		if (backdropUrls.isEmpty()) return clearBackgrounds()
+
 		loadBackgroundsJob?.cancel()
 		loadBackgroundsJob = scope.launch(Dispatchers.IO) {
-			_backgrounds = backdropUrls.mapNotNull { url ->
-				val bitmap = imageLoader.execute(
-					request = ImageRequest.Builder(context).data(url).build()
-				).image?.toBitmap()
-				
-				if (bitmap != null && !useComposeBlur && blurAmount > 0) {
-					BitmapBlur.blur(bitmap, blurAmount).asImageBitmap()
-				} else {
-					bitmap?.asImageBitmap()
-				}
-			}
-
-			_currentIndex = 0
-			update()
+			loadBackgroundImages(backdropUrls)
 		}
 	}
 

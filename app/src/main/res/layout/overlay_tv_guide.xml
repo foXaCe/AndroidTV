@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent" android:layout_height="match_parent">
 
     <ImageView
@@ -77,14 +78,14 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="30sp"
-        android:text="Medium Text"
+        tools:text="Medium Text"
         android:id="@+id/displayDate"
         android:layout_above="@+id/programVScroller"
         android:layout_toStartOf="@+id/timelineHScroller"
         android:background="@color/timeline_bg"
         android:gravity="center"
         android:layout_alignParentStart="true"
-        android:textSize="14sp"
+        android:textSize="@dimen/ds_text_body_md"
         android:enabled="false" />
 
 
@@ -127,7 +128,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/summary"
-        android:textSize="16sp"
+        android:textSize="@dimen/ds_text_body_lg"
         android:layout_below="@+id/guideInfoRow"
         android:layout_above="@+id/timelineHScroller"
         android:layout_marginBottom="10sp"
@@ -146,8 +147,8 @@
         android:layout_alignParentBottom="true"
         android:layout_marginStart="2sp"
         android:layout_marginBottom="2sp"
-        android:textColor="@color/grey_light"
-        android:textSize="12sp"
+        android:textColor="@color/ds_text_secondary"
+        android:textSize="@dimen/ds_text_body_sm"
         android:fontFamily="sans-serif-light" />
 
     <TextView
@@ -161,8 +162,8 @@
         android:layout_marginBottom="2sp"
         android:layout_marginEnd="10sp"
         android:textStyle="bold"
-        android:textSize="12sp"
-        android:textColor="@color/grey_light"
+        android:textSize="@dimen/ds_text_body_sm"
+        android:textColor="@color/ds_text_secondary"
         android:fontFamily="sans-serif-light" />
 
     <RelativeLayout
@@ -199,7 +200,7 @@
         android:layout_height="40sp"
         android:id="@+id/guideCurrentTitle"
         android:layout_toStartOf="@+id/imageView15"
-        android:textSize="20sp"
+        android:textSize="@dimen/ds_text_title_lg"
         android:gravity="center_vertical"
         android:background="@color/black_transparent"
         android:textStyle="bold"

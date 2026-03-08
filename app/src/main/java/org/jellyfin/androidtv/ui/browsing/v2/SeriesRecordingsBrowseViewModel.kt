@@ -13,10 +13,13 @@ import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.exception.ApiClientException
 import org.jellyfin.sdk.api.client.extensions.liveTvApi
 import org.jellyfin.sdk.model.api.SeriesTimerInfoDto
+import org.jellyfin.androidtv.ui.base.state.UiError
+import org.jellyfin.androidtv.ui.base.state.toUiError
 import timber.log.Timber
 
 data class SeriesRecordingsBrowseUiState(
 	val isLoading: Boolean = true,
+	val error: UiError? = null,
 	val seriesTimers: List<SeriesTimerInfoDto> = emptyList(),
 	val focusedTimer: SeriesTimerInfoDto? = null,
 )
@@ -50,8 +53,12 @@ class SeriesRecordingsBrowseViewModel(
 				) }
 			} catch (err: ApiClientException) {
 				Timber.e(err, "Failed to load series timers")
-				_uiState.update { it.copy(isLoading = false) }
+				_uiState.update { it.copy(isLoading = false, error = err.toUiError()) }
 			}
 		}
+	}
+
+	fun retry() {
+		initialize()
 	}
 }

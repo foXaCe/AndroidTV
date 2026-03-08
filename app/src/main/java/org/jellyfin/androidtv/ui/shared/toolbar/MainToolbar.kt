@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -33,7 +34,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImagePainter
 import coil3.compose.rememberAsyncImagePainter
@@ -50,8 +50,10 @@ import org.jellyfin.androidtv.data.repository.MultiServerRepository
 import org.jellyfin.androidtv.data.repository.UserViewsRepository
 import org.jellyfin.androidtv.util.sdk.ApiClientFactory
 import org.jellyfin.androidtv.ui.NowPlayingComposable
+import org.jellyfin.androidtv.ui.base.AnimationDefaults
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
+import org.jellyfin.androidtv.ui.base.OverlayColors
 import org.jellyfin.androidtv.ui.base.ProvideTextStyle
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.button.Button
@@ -258,7 +260,7 @@ private fun MainToolbar(
 	val isShuffling by shuffleManager.isShuffling.collectAsState()
 
 	val focusColor = focusBorderColor()
-	val focusContentColor = if (focusColor.luminance() > 0.4f) Color(0xFF444444) else Color(0xFFDDDDDD)
+	val focusContentColor = if (focusColor.luminance() > 0.4f) JellyfinTheme.colorScheme.onButtonFocused else JellyfinTheme.colorScheme.onButton
 
 	val activeButtonColors = ButtonDefaults.colors(
 		containerColor = JellyfinTheme.colorScheme.buttonActive,
@@ -274,20 +276,7 @@ private fun MainToolbar(
 
 	// Get overlay preferences for toolbar styling
 	val overlayOpacity = userSettingPreferences[UserSettingPreferences.mediaBarOverlayOpacity] / 100f
-	val overlayColor = when (userSettingPreferences[UserSettingPreferences.mediaBarOverlayColor]) {
-		"black" -> Color.Black
-		"dark_blue" -> Color(0xFF1A2332)
-		"purple" -> Color(0xFF4A148C)
-		"teal" -> Color(0xFF00695C)
-		"navy" -> Color(0xFF0D1B2A)
-		"charcoal" -> Color(0xFF36454F)
-		"brown" -> Color(0xFF3E2723)
-		"dark_red" -> Color(0xFF8B0000)
-		"dark_green" -> Color(0xFF0B4F0F)
-		"slate" -> Color(0xFF475569)
-		"indigo" -> Color(0xFF1E3A8A)
-		else -> Color.Gray
-	}
+	val overlayColor = OverlayColors.get(userSettingPreferences[UserSettingPreferences.mediaBarOverlayColor])
 
 	Toolbar(
 		modifier = Modifier
@@ -295,7 +284,7 @@ private fun MainToolbar(
 			.focusGroup(),
 		start = {
 			Row(
-				horizontalArrangement = Arrangement.spacedBy(8.dp),
+				horizontalArrangement = Arrangement.spacedBy(4.dp),
 				verticalAlignment = Alignment.CenterVertically,
 			) {
 				val userImagePainter = userImage?.let { rememberAsyncImagePainter(it) }
@@ -305,7 +294,7 @@ private fun MainToolbar(
 
 				val interactionSource = remember { MutableInteractionSource() }
 				val isFocused by interactionSource.collectIsFocusedAsState()
-				val scale by animateFloatAsState(if (isFocused) 1.1f else 1f, label = "UserAvatarFocusScale")
+				val scale by animateFloatAsState(if (isFocused) AnimationDefaults.FOCUS_SCALE else 1f, label = "UserAvatarFocusScale")
 
 				IconButton(
 					onClick = {
@@ -330,7 +319,9 @@ private fun MainToolbar(
 					},
 					contentPadding = if (userImageVisible) PaddingValues(0.dp) else IconButtonDefaults.ContentPadding,
 					interactionSource = interactionSource,
-					modifier = Modifier.scale(scale),
+					modifier = Modifier
+						.size(36.dp)
+						.scale(scale),
 				) {
 					if (!userImageVisible) {
 						Icon(
@@ -377,7 +368,7 @@ private fun MainToolbar(
 					onClick = {
 						navigationRepository.reset(Destinations.home)
 					},
-					colors = toolbarButtonColors,
+					colors = if (activeButton == MainToolbarActiveButton.Home) activeButtonColors else toolbarButtonColors,
 				)
 
 				ExpandableIconButton(
@@ -386,13 +377,13 @@ private fun MainToolbar(
 					onClick = {
 						navigationRepository.navigate(Destinations.search())
 					},
-					colors = toolbarButtonColors,
+					colors = if (activeButton == MainToolbarActiveButton.Search) activeButtonColors else toolbarButtonColors,
 				)
 
 				if (showShuffleButton) {
 					ExpandableIconButton(
 						icon = ImageVector.vectorResource(R.drawable.ic_shuffle),
-						label = if (isShuffling) "..." else "Shuffle",
+						label = if (isShuffling) "..." else stringResource(R.string.lbl_shuffle),
 						onClick = {
 							if (!isShuffling) {
 								kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
@@ -437,7 +428,7 @@ private fun MainToolbar(
 						onClick = {
 							navigationRepository.navigate(Destinations.jellyseerrDiscover)
 						},
-						colors = toolbarButtonColors,
+						colors = if (activeButton == MainToolbarActiveButton.Jellyseerr) activeButtonColors else toolbarButtonColors,
 					)
 				}
 
@@ -479,7 +470,7 @@ private fun MainToolbar(
 
 				ExpandableIconButton(
 					icon = ImageVector.vectorResource(R.drawable.ic_settings),
-					label = "Settings",
+					label = stringResource(R.string.settings),
 					onClick = {
 						settingsViewModel.show()
 					},

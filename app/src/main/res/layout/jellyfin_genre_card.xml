@@ -4,8 +4,8 @@
     android:id="@+id/genre_card"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp"
+    app:cardCornerRadius="@dimen/ds_radius_sm"
+    app:cardElevation="@dimen/ds_elevation_md"
     android:foreground="?android:attr/selectableItemBackground"
     android:focusable="true"
     android:focusableInTouchMode="true">
@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
-            android:background="#1a1a1a" />
+            android:background="@color/ds_surface_dim" />
 
         <!-- Gradient Overlay for text readability -->
         <View
@@ -35,7 +35,7 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="@dimen/ds_space_md">
 
             <TextView
                 android:id="@+id/genre_title"
@@ -44,10 +44,10 @@
                 android:gravity="center"
                 android:maxLines="2"
                 android:ellipsize="end"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
+                android:textAppearance="@style/TextAppearance.DS.TitleSmall"
+                android:textColor="@color/ds_text_primary"
                 android:textStyle="bold"
-                android:shadowColor="#000000"
+                android:shadowColor="@color/black"
                 android:shadowDx="1"
                 android:shadowDy="1"
                 android:shadowRadius="3" />
@@ -57,11 +57,11 @@
                 android:id="@+id/genre_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="@dimen/ds_space_xs"
                 android:gravity="center"
-                android:textColor="#CCCCCC"
-                android:textSize="12sp"
-                android:shadowColor="#000000"
+                android:textAppearance="@style/TextAppearance.DS.BodySmall"
+                android:textColor="@color/ds_text_secondary"
+                android:shadowColor="@color/black"
                 android:shadowDx="1"
                 android:shadowDy="1"
                 android:shadowRadius="2"

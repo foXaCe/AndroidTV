@@ -1,5 +1,6 @@
 package org.jellyfin.androidtv.ui.browsing.v2
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
@@ -27,7 +28,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,15 +46,18 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
 import org.jellyfin.androidtv.R
+import org.jellyfin.androidtv.ui.composable.rememberErrorPlaceholder
+import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
 import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.preference.constant.WatchedIndicatorBehavior
+import org.jellyfin.androidtv.ui.base.AnimationDefaults
 import org.jellyfin.androidtv.ui.base.Badge
 import org.jellyfin.androidtv.ui.base.Icon
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Seekbar
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.focusBorderColor
@@ -69,12 +72,6 @@ import org.jellyfin.design.Tokens
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.BaseItemKind
 import org.koin.compose.koinInject
-
-// Jellyfin accent blue
-val JellyfinBlue = Color(0xFF00A4DC)
-
-// Dark navy backdrop matching the webOS/web client
-val NavyBackground = Color(0xFF101528)
 
 /**
  * Maps item kind to a short display label for the type badge.
@@ -95,9 +92,10 @@ private fun getTypeBadgeLabel(kind: BaseItemKind?): String? = when (kind) {
 /**
  * Returns the badge background color for a given item kind.
  */
+@Composable
 private fun getTypeBadgeColor(kind: BaseItemKind?): Color = when (kind) {
-	BaseItemKind.SERIES -> Color(0xFF9333EA) // Purple
-	else -> JellyfinBlue
+	BaseItemKind.SERIES -> JellyfinTheme.colorScheme.secondary
+	else -> JellyfinTheme.colorScheme.primary
 }
 
 /**
@@ -152,7 +150,11 @@ fun LibraryPosterCard(
 		if (isFocused) onFocused()
 	}
 
-	val scale = if (isFocused) 1.08f else 1.0f
+	val scale by animateFloatAsState(
+		targetValue = if (isFocused) AnimationDefaults.FOCUS_SCALE else 1f,
+		animationSpec = AnimationDefaults.focusSpec(),
+		label = "CardFocusScale",
+	)
 	val borderColor = focusBorderColor()
 
 	Column(
@@ -173,19 +175,23 @@ fun LibraryPosterCard(
 		Box(
 			modifier = Modifier
 				.size(width = cardWidth.dp, height = cardHeight.dp)
-				.clip(RoundedCornerShape(4.dp))
+				.clip(JellyfinTheme.shapes.extraSmall)
 				.then(
-					if (isFocused) Modifier.border(2.dp, borderColor, RoundedCornerShape(4.dp))
+					if (isFocused) Modifier.border(2.dp, borderColor, JellyfinTheme.shapes.extraSmall)
 					else Modifier
 				)
-				.background(Color.White.copy(alpha = 0.06f)),
+				.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.06f)),
 		) {
 			if (imageUrl != null) {
+				val placeholder = rememberGradientPlaceholder()
+				val errorFallback = rememberErrorPlaceholder()
 				AsyncImage(
 					model = imageUrl,
 					contentDescription = item.name,
 					modifier = Modifier.fillMaxSize(),
 					contentScale = ContentScale.Crop,
+					placeholder = placeholder,
+					error = errorFallback,
 				)
 			}
 
@@ -197,14 +203,14 @@ fun LibraryPosterCard(
 						modifier = Modifier
 							.align(Alignment.TopStart)
 							.padding(5.dp)
-							.background(getTypeBadgeColor(item.type), RoundedCornerShape(3.dp))
+							.background(getTypeBadgeColor(item.type), JellyfinTheme.shapes.extraSmall)
 							.padding(horizontal = 5.dp, vertical = 2.dp),
 					) {
 						Text(
 							text = badgeLabel,
-							fontSize = 8.sp,
+							style = JellyfinTheme.typography.labelSmall,
 							fontWeight = FontWeight.Bold,
-							color = Color.White,
+							color = JellyfinTheme.colorScheme.onSurface,
 						)
 					}
 				}
@@ -257,9 +263,9 @@ fun LibraryPosterCard(
 			// Title
 			Text(
 				text = item.name ?: "",
-				fontSize = 13.sp,
+				style = JellyfinTheme.typography.bodyMedium,
 				fontWeight = FontWeight.Medium,
-				color = Color.White,
+				color = JellyfinTheme.colorScheme.onSurface,
 				maxLines = 1,
 				overflow = TextOverflow.Ellipsis,
 			)
@@ -270,9 +276,9 @@ fun LibraryPosterCard(
 			if (meta.isNotEmpty()) {
 				Text(
 					text = meta,
-					fontSize = 11.sp,
+					style = JellyfinTheme.typography.bodySmall,
 					fontWeight = FontWeight.Normal,
-					color = Color.White.copy(alpha = 0.5f),
+					color = JellyfinTheme.colorScheme.textSecondary,
 					maxLines = 1,
 					overflow = TextOverflow.Ellipsis,
 				)
@@ -297,21 +303,21 @@ fun LibraryToolbarButton(
 	val isFocused by interactionSource.collectIsFocusedAsState()
 
 	val bgColor = when {
-		isFocused -> Color.White
-		isActive -> Color.White.copy(alpha = 0.15f)
+		isFocused -> JellyfinTheme.colorScheme.onSurface
+		isActive -> JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.15f)
 		else -> Color.Transparent
 	}
 
 	val tintColor = when {
-		isFocused -> Color.Black
-		isActive -> JellyfinBlue
-		else -> Color.White.copy(alpha = 0.5f)
+		isFocused -> JellyfinTheme.colorScheme.surface
+		isActive -> JellyfinTheme.colorScheme.primary
+		else -> JellyfinTheme.colorScheme.textSecondary
 	}
 
 	Box(
 		modifier = modifier
 			.size(34.dp)
-			.clip(RoundedCornerShape(6.dp))
+			.clip(JellyfinTheme.shapes.button)
 			.background(bgColor)
 			.clickable(
 				interactionSource = interactionSource,
@@ -347,7 +353,7 @@ fun AlphaPickerBar(
 		contentPadding = PaddingValues(horizontal = 2.dp),
 		verticalAlignment = Alignment.CenterVertically,
 	) {
-		items(letters) { letter ->
+		items(letters, key = { it }) { letter ->
 			val isSelected = when {
 				letter == "#" && selectedLetter == null -> true
 				letter == selectedLetter -> true
@@ -376,9 +382,9 @@ private fun AlphaPickerLetter(
 	val isFocused by interactionSource.collectIsFocusedAsState()
 
 	val textColor = when {
-		isSelected -> JellyfinBlue
-		isFocused -> Color.White
-		else -> Color.White.copy(alpha = 0.4f)
+		isSelected -> JellyfinTheme.colorScheme.primary
+		isFocused -> JellyfinTheme.colorScheme.onSurface
+		else -> JellyfinTheme.colorScheme.textHint
 	}
 
 	Box(
@@ -386,7 +392,7 @@ private fun AlphaPickerLetter(
 			.size(width = 26.dp, height = 28.dp)
 			.then(
 				if (isFocused) Modifier
-					.background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(3.dp))
+					.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.1f), JellyfinTheme.shapes.extraSmall)
 				else Modifier
 			)
 			.clickable(
@@ -398,7 +404,7 @@ private fun AlphaPickerLetter(
 	) {
 		Text(
 			text = letter,
-			fontSize = 13.sp,
+			style = JellyfinTheme.typography.bodyMedium,
 			fontWeight = if (isSelected || isFocused) FontWeight.Bold else FontWeight.Normal,
 			color = textColor,
 		)
@@ -428,9 +434,9 @@ fun FocusedItemHud(
 			) {
 				Text(
 					text = item.name ?: "",
-					fontSize = 20.sp,
+					style = JellyfinTheme.typography.titleMedium,
 					fontWeight = FontWeight.SemiBold,
-					color = Color.White,
+					color = JellyfinTheme.colorScheme.onSurface,
 					maxLines = 1,
 					overflow = TextOverflow.Clip,
 				)
@@ -456,7 +462,7 @@ fun FocusedItemHud(
 								InfoItemBadge(
 									text = stringResource(labelRes),
 									bgColor = color,
-									color = Color.White,
+									color = JellyfinTheme.colorScheme.onSurface,
 								)
 							}
 						}
@@ -501,13 +507,13 @@ fun LibraryStatusBar(
 	) {
 		Text(
 			text = statusText,
-			fontSize = 11.sp,
-			color = Color.White.copy(alpha = 0.3f),
+			style = JellyfinTheme.typography.bodySmall,
+			color = JellyfinTheme.colorScheme.textHint,
 		)
 		Text(
 			text = counterText,
-			fontSize = 13.sp,
-			color = Color.White.copy(alpha = 0.45f),
+			style = JellyfinTheme.typography.bodyMedium,
+			color = JellyfinTheme.colorScheme.textSecondary,
 		)
 	}
 }
@@ -545,17 +551,17 @@ fun FilterSortDialog(
 			Column(
 				modifier = Modifier
 					.widthIn(min = 340.dp, max = 440.dp)
-					.clip(RoundedCornerShape(20.dp))
-					.background(Color(0xE6141414))
-					.border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
+					.clip(JellyfinTheme.shapes.dialog)
+					.background(JellyfinTheme.colorScheme.dialogScrim)
+					.border(1.dp, JellyfinTheme.colorScheme.outline, JellyfinTheme.shapes.dialog)
 					.padding(vertical = 20.dp),
 			) {
 				// Title
 				Text(
 					text = title,
-					fontSize = 20.sp,
+					style = JellyfinTheme.typography.titleMedium,
 					fontWeight = FontWeight.W600,
-					color = Color.White,
+					color = JellyfinTheme.colorScheme.onSurface,
 					modifier = Modifier
 						.padding(horizontal = 24.dp)
 						.padding(bottom = 12.dp),
@@ -566,7 +572,7 @@ fun FilterSortDialog(
 					modifier = Modifier
 						.fillMaxWidth()
 						.height(1.dp)
-						.background(Color.White.copy(alpha = 0.08f)),
+						.background(JellyfinTheme.colorScheme.divider),
 				)
 
 				Spacer(modifier = Modifier.height(4.dp))
@@ -579,15 +585,15 @@ fun FilterSortDialog(
 					item {
 						Text(
 							text = stringResource(R.string.lbl_sort_by),
-							fontSize = 13.sp,
+							style = JellyfinTheme.typography.bodyMedium,
 							fontWeight = FontWeight.W500,
-							color = Color.White.copy(alpha = 0.45f),
+							color = JellyfinTheme.colorScheme.textSecondary,
 							modifier = Modifier
 								.padding(horizontal = 24.dp, vertical = 8.dp),
 						)
 					}
 
-					itemsIndexed(sortOptions) { index, option ->
+					itemsIndexed(sortOptions, key = { _, option -> option.nameRes }) { index, option ->
 						val isSelected = option.sortBy == currentSort.sortBy
 
 						val focusModifier =
@@ -611,7 +617,7 @@ fun FilterSortDialog(
 								.fillMaxWidth()
 								.height(1.dp)
 								.padding(horizontal = 24.dp)
-								.background(Color.White.copy(alpha = 0.06f)),
+								.background(JellyfinTheme.colorScheme.divider),
 						)
 						Spacer(modifier = Modifier.height(4.dp))
 					}
@@ -620,9 +626,9 @@ fun FilterSortDialog(
 					item {
 						Text(
 							text = stringResource(R.string.filters),
-							fontSize = 13.sp,
+							style = JellyfinTheme.typography.bodyMedium,
 							fontWeight = FontWeight.W500,
-							color = Color.White.copy(alpha = 0.45f),
+							color = JellyfinTheme.colorScheme.textSecondary,
 							modifier = Modifier
 								.padding(horizontal = 24.dp, vertical = 8.dp),
 						)
@@ -638,8 +644,7 @@ fun FilterSortDialog(
 
 					// Played status section
 					if (showPlayedStatus) {
-						items(PlayedStatusFilter.entries.size) { index ->
-							val filter = PlayedStatusFilter.entries[index]
+						items(PlayedStatusFilter.entries, key = { it.name }) { filter ->
 							val isSelected = filter == filterPlayedStatus
 
 							FilterRadioRow(
@@ -656,7 +661,7 @@ fun FilterSortDialog(
 									.fillMaxWidth()
 									.height(1.dp)
 									.padding(horizontal = 24.dp)
-									.background(Color.White.copy(alpha = 0.06f)),
+									.background(JellyfinTheme.colorScheme.divider),
 							)
 							Spacer(modifier = Modifier.height(4.dp))
 						}
@@ -667,16 +672,15 @@ fun FilterSortDialog(
 						item {
 							Text(
 								text = stringResource(R.string.lbl_status_title),
-								fontSize = 13.sp,
+								style = JellyfinTheme.typography.bodyMedium,
 								fontWeight = FontWeight.W500,
-								color = Color.White.copy(alpha = 0.45f),
+								color = JellyfinTheme.colorScheme.textSecondary,
 								modifier = Modifier
 									.padding(horizontal = 24.dp, vertical = 8.dp),
 							)
 						}
 
-						items(SeriesStatusFilter.entries.size) { index ->
-							val filter = SeriesStatusFilter.entries[index]
+						items(SeriesStatusFilter.entries, key = { it.name }) { filter ->
 							val isSelected = filter == filterSeriesStatus
 
 							FilterRadioRow(
@@ -718,7 +722,7 @@ private fun FilterRadioRow(
 			) { onClick() }
 			.focusable(interactionSource = interactionSource)
 			.background(
-				if (isFocused) Color.White.copy(alpha = 0.12f) else Color.Transparent,
+				if (isFocused) JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.12f) else Color.Transparent,
 			)
 			.padding(horizontal = 24.dp, vertical = 12.dp),
 		verticalAlignment = Alignment.CenterVertically,
@@ -729,7 +733,7 @@ private fun FilterRadioRow(
 				.size(18.dp)
 				.border(
 					width = 2.dp,
-					color = if (isSelected) JellyfinBlue else Color.White.copy(alpha = 0.3f),
+					color = if (isSelected) JellyfinTheme.colorScheme.primary else JellyfinTheme.colorScheme.textHint,
 					shape = CircleShape,
 				),
 			contentAlignment = Alignment.Center,
@@ -738,7 +742,7 @@ private fun FilterRadioRow(
 				Box(
 					modifier = Modifier
 						.size(10.dp)
-						.background(JellyfinBlue, CircleShape),
+						.background(JellyfinTheme.colorScheme.primary, CircleShape),
 				)
 			}
 		}
@@ -747,12 +751,12 @@ private fun FilterRadioRow(
 
 		Text(
 			text = label,
-			fontSize = 16.sp,
+			style = JellyfinTheme.typography.bodyLarge,
 			fontWeight = if (isSelected) FontWeight.W600 else FontWeight.W400,
 			color = when {
-				isSelected -> JellyfinBlue
-				isFocused -> Color.White
-				else -> Color.White.copy(alpha = 0.8f)
+				isSelected -> JellyfinTheme.colorScheme.primary
+				isFocused -> JellyfinTheme.colorScheme.onSurface
+				else -> JellyfinTheme.colorScheme.textPrimary
 			},
 			maxLines = 1,
 			overflow = TextOverflow.Ellipsis,
@@ -782,7 +786,7 @@ private fun FilterToggleRow(
 			) { onClick() }
 			.focusable(interactionSource = interactionSource)
 			.background(
-				if (isFocused) Color.White.copy(alpha = 0.12f) else Color.Transparent,
+				if (isFocused) JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.12f) else Color.Transparent,
 			)
 			.padding(horizontal = 24.dp, vertical = 12.dp),
 		verticalAlignment = Alignment.CenterVertically,
@@ -793,18 +797,18 @@ private fun FilterToggleRow(
 				.size(18.dp)
 				.then(
 					if (isActive) Modifier
-						.background(JellyfinBlue, RoundedCornerShape(4.dp))
+						.background(JellyfinTheme.colorScheme.primary, JellyfinTheme.shapes.extraSmall)
 					else Modifier
-						.border(2.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
+						.border(2.dp, JellyfinTheme.colorScheme.textHint, JellyfinTheme.shapes.extraSmall)
 				),
 			contentAlignment = Alignment.Center,
 		) {
 			if (isActive) {
 				Text(
 					text = "✓",
-					fontSize = 12.sp,
+					style = JellyfinTheme.typography.labelMedium,
 					fontWeight = FontWeight.Bold,
-					color = Color.White,
+					color = JellyfinTheme.colorScheme.onSurface,
 				)
 			}
 		}
@@ -813,12 +817,12 @@ private fun FilterToggleRow(
 
 		Text(
 			text = label,
-			fontSize = 16.sp,
+			style = JellyfinTheme.typography.bodyLarge,
 			fontWeight = if (isActive) FontWeight.W600 else FontWeight.W400,
 			color = when {
-				isActive -> JellyfinBlue
-				isFocused -> Color.White
-				else -> Color.White.copy(alpha = 0.8f)
+				isActive -> JellyfinTheme.colorScheme.primary
+				isFocused -> JellyfinTheme.colorScheme.onSurface
+				else -> JellyfinTheme.colorScheme.textPrimary
 			},
 			maxLines = 1,
 			overflow = TextOverflow.Ellipsis,

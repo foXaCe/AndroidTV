@@ -5,7 +5,7 @@
 	android:layout_width="wrap_content"
 	android:layout_height="wrap_content"
 	android:orientation="vertical"
-	android:padding="8dp"
+	android:padding="@dimen/ds_space_sm"
 	android:background="?attr/selectableItemBackground">
 
 	<!-- Title at top -->
@@ -13,18 +13,18 @@
 		android:id="@+id/title_text"
 		android:layout_width="160dp"
 		android:layout_height="wrap_content"
-		android:textSize="14sp"
+		android:textSize="@dimen/ds_text_body_md"
 		android:textStyle="bold"
-		android:textColor="@color/white"
+		android:textColor="@color/ds_text_primary"
 		android:maxLines="2"
 		android:ellipsize="end"
-		android:layout_marginBottom="4dp"
+		android:layout_marginBottom="@dimen/ds_space_xs"
 		tools:text="The Matrix" />
 
 	<FrameLayout
 		android:layout_width="160dp"
 		android:layout_height="240dp"
-		android:layout_marginBottom="8dp">
+		android:layout_marginBottom="@dimen/ds_space_sm">
 
 		<!-- Type Badge -->
 		<TextView
@@ -32,16 +32,16 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_gravity="top|start"
-			android:text="MOVIE"
-			android:textSize="10sp"
+			android:text="@string/lbl_movie_type_upper"
+			android:textSize="@dimen/ds_text_label_sm"
 			android:textStyle="bold"
-			android:textColor="@color/white"
+			android:textColor="@color/ds_text_primary"
 			android:paddingStart="6dp"
 			android:paddingEnd="6dp"
-			android:paddingTop="4dp"
-			android:paddingBottom="4dp"
+			android:paddingTop="@dimen/ds_space_xs"
+			android:paddingBottom="@dimen/ds_space_xs"
 			android:background="@color/red"
-			android:layout_margin="8dp" />
+			android:layout_margin="@dimen/ds_space_sm" />
 
 		<!-- Rating Badge -->
 		<LinearLayout
@@ -51,7 +51,7 @@
 			android:orientation="horizontal"
 			android:gravity="center"
 			android:background="@color/not_quite_black"
-			android:layout_margin="8dp"
+			android:layout_margin="@dimen/ds_space_sm"
 			android:paddingStart="6dp"
 			android:paddingEnd="6dp"
 			android:paddingTop="3dp"
@@ -61,8 +61,8 @@
 				android:id="@+id/rating_text"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:textSize="10sp"
-				android:textColor="@color/white"
+				android:textSize="@dimen/ds_text_label_sm"
+				android:textColor="@color/ds_text_primary"
 				tools:text="7.5" />
 
 		</LinearLayout>
@@ -74,8 +74,8 @@
 		android:id="@+id/description_text"
 		android:layout_width="160dp"
 		android:layout_height="wrap_content"
-		android:textSize="12sp"
-		android:textColor="@color/white"
+		android:textSize="@dimen/ds_text_body_sm"
+		android:textColor="@color/ds_text_primary"
 		android:alpha="0.8"
 		android:maxLines="3"
 		android:ellipsize="end"

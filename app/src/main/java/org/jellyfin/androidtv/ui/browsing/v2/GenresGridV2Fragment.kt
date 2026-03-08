@@ -33,7 +33,6 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -52,26 +51,32 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.fragment.app.Fragment
 import coil3.compose.AsyncImage
+import org.jellyfin.androidtv.ui.composable.rememberErrorPlaceholder
+import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
 import kotlinx.serialization.json.Json
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.constant.Extras
 import org.jellyfin.androidtv.data.service.BackgroundService
 import org.jellyfin.androidtv.data.service.BlurContext
 import org.jellyfin.androidtv.ui.background.AppBackground
-import org.jellyfin.androidtv.ui.base.CircularProgressIndicator
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.skeleton.SkeletonGenreGrid
+import org.jellyfin.androidtv.ui.base.state.DisplayState
+import org.jellyfin.androidtv.ui.base.state.EmptyState
+import org.jellyfin.androidtv.ui.base.state.ErrorState
+import org.jellyfin.androidtv.ui.base.state.StateContainer
 import org.jellyfin.androidtv.ui.base.focusBorderColor
 import org.jellyfin.androidtv.ui.browsing.genre.JellyfinGenreItem
 import org.jellyfin.androidtv.ui.navigation.Destinations
@@ -146,7 +151,7 @@ class GenresGridV2Fragment : Fragment() {
 			Box(
 				modifier = Modifier
 					.fillMaxSize()
-					.background(NavyBackground.copy(alpha = overlayAlpha)),
+					.background(JellyfinTheme.colorScheme.surfaceDim.copy(alpha = overlayAlpha)),
 			)
 
 			Column(modifier = Modifier.fillMaxSize()) {
@@ -154,41 +159,36 @@ class GenresGridV2Fragment : Fragment() {
 				GenresHeader(uiState = uiState)
 
 				// ── Grid ──
-				when {
-					uiState.isLoading -> {
-						Box(
-							modifier = Modifier
-								.weight(1f)
-								.fillMaxWidth(),
-							contentAlignment = Alignment.Center,
-						) {
-							CircularProgressIndicator(
-								modifier = Modifier.size(48.dp),
-								color = JellyfinBlue,
-							)
-						}
-					}
-					uiState.genres.isEmpty() -> {
-						Box(
-							modifier = Modifier
-								.weight(1f)
-								.fillMaxWidth(),
-							contentAlignment = Alignment.Center,
-						) {
-							Text(
-								text = stringResource(R.string.lbl_no_items),
-								fontSize = 18.sp,
-								color = Color.White.copy(alpha = 0.5f),
-							)
-						}
-					}
-					else -> {
+				val displayState = when {
+					uiState.isLoading -> DisplayState.LOADING
+					uiState.error != null && uiState.genres.isEmpty() -> DisplayState.ERROR
+					uiState.genres.isEmpty() -> DisplayState.EMPTY
+					else -> DisplayState.CONTENT
+				}
+				StateContainer(
+					state = displayState,
+					modifier = Modifier.weight(1f),
+					loadingContent = {
+						SkeletonGenreGrid()
+					},
+					emptyContent = {
+						EmptyState(
+							title = stringResource(R.string.state_empty_genres),
+						)
+					},
+					errorContent = {
+						ErrorState(
+							message = stringResource(uiState.error?.messageRes ?: R.string.state_error_generic),
+							onRetry = { viewModel.retry() },
+						)
+					},
+					content = {
 						GenresGrid(
 							uiState = uiState,
-							modifier = Modifier.weight(1f),
+							modifier = Modifier.fillMaxSize(),
 						)
-					}
-				}
+					},
+				)
 
 				// ── Status bar ──
 				LibraryStatusBar(
@@ -218,18 +218,18 @@ class GenresGridV2Fragment : Fragment() {
 				Row(verticalAlignment = Alignment.CenterVertically) {
 					Text(
 						text = uiState.title,
-						fontSize = 26.sp,
+						style = JellyfinTheme.typography.headlineMedium,
 						fontWeight = FontWeight.Light,
-						color = Color.White,
+						color = JellyfinTheme.colorScheme.onSurface,
 					)
 
 					if (uiState.totalGenres > 0) {
 						Spacer(modifier = Modifier.width(12.dp))
 						Text(
-							text = "${uiState.totalGenres} Genres",
-							fontSize = 12.sp,
+							text = stringResource(R.string.lbl_genres_count, uiState.totalGenres),
+							style = JellyfinTheme.typography.bodySmall,
 							fontWeight = FontWeight.Normal,
-							color = Color.White.copy(alpha = 0.4f),
+							color = JellyfinTheme.colorScheme.textDisabled,
 						)
 					}
 				}
@@ -268,19 +268,19 @@ class GenresGridV2Fragment : Fragment() {
 				) {
 					Text(
 						text = genre.name,
-						fontSize = 20.sp,
+						style = JellyfinTheme.typography.titleLarge,
 						fontWeight = FontWeight.SemiBold,
-						color = Color.White,
+						color = JellyfinTheme.colorScheme.onSurface,
 						maxLines = 1,
 						overflow = TextOverflow.Clip,
 					)
 				}
 
 				Text(
-					text = "${genre.itemCount} Items",
-					fontSize = 14.sp,
+					text = pluralStringResource(R.plurals.items, genre.itemCount, genre.itemCount),
+					style = JellyfinTheme.typography.bodyMedium,
 					fontWeight = FontWeight.Normal,
-					color = Color.White.copy(alpha = 0.6f),
+					color = JellyfinTheme.colorScheme.textSecondary,
 					maxLines = 1,
 				)
 			}
@@ -314,7 +314,7 @@ class GenresGridV2Fragment : Fragment() {
 			if (uiState.libraries.size > 1 && folder == null) {
 				LibraryToolbarButton(
 					iconRes = R.drawable.ic_filter,
-					contentDescription = "Filter by Library",
+					contentDescription = stringResource(R.string.lbl_filter_by_library),
 					isActive = uiState.selectedLibraryId != null,
 					onClick = { showLibraryDialog = true },
 				)
@@ -423,12 +423,12 @@ class GenresGridV2Fragment : Fragment() {
 					scaleY = scale
 					alpha = cardAlpha
 				}
-				.clip(RoundedCornerShape(6.dp))
+				.clip(JellyfinTheme.shapes.small)
 				.then(
-					if (isFocused) Modifier.border(2.dp, borderColor, RoundedCornerShape(6.dp))
+					if (isFocused) Modifier.border(2.dp, borderColor, JellyfinTheme.shapes.small)
 					else Modifier
 				)
-				.background(Color.White.copy(alpha = 0.06f))
+				.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.06f))
 				.clickable(
 					interactionSource = interactionSource,
 					indication = null,
@@ -437,11 +437,15 @@ class GenresGridV2Fragment : Fragment() {
 		) {
 			// Backdrop image
 			if (genre.backdropUrl != null) {
+				val placeholder = rememberGradientPlaceholder()
+				val errorFallback = rememberErrorPlaceholder()
 				AsyncImage(
 					model = genre.backdropUrl,
 					contentDescription = genre.name,
 					modifier = Modifier.fillMaxSize(),
 					contentScale = ContentScale.Crop,
+					placeholder = placeholder,
+					error = errorFallback,
 				)
 			}
 
@@ -468,17 +472,17 @@ class GenresGridV2Fragment : Fragment() {
 			) {
 				Text(
 					text = genre.name,
-					fontSize = 18.sp,
+					style = JellyfinTheme.typography.titleLarge,
 					fontWeight = FontWeight.SemiBold,
-					color = Color.White,
+					color = JellyfinTheme.colorScheme.onSurface,
 					maxLines = 1,
 					overflow = TextOverflow.Ellipsis,
 				)
 				Text(
-					text = "${genre.itemCount} Items",
-					fontSize = 12.sp,
+					text = pluralStringResource(R.plurals.items, genre.itemCount, genre.itemCount),
+					style = JellyfinTheme.typography.bodySmall,
 					fontWeight = FontWeight.Normal,
-					color = Color.White.copy(alpha = 0.6f),
+					color = JellyfinTheme.colorScheme.textSecondary,
 				)
 			}
 		}
@@ -507,17 +511,17 @@ class GenresGridV2Fragment : Fragment() {
 				Column(
 					modifier = Modifier
 						.widthIn(min = 340.dp, max = 440.dp)
-						.clip(RoundedCornerShape(20.dp))
-						.background(Color(0xE6141414))
-						.border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
+						.clip(JellyfinTheme.shapes.dialog)
+						.background(JellyfinTheme.colorScheme.dialogScrim)
+						.border(1.dp, JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.1f), JellyfinTheme.shapes.dialog)
 						.padding(vertical = 20.dp),
 				) {
 					// Title
 					Text(
-						text = "Sort Genres",
-						fontSize = 20.sp,
+						text = stringResource(R.string.lbl_sort_genres),
+						style = JellyfinTheme.typography.titleLarge,
 						fontWeight = FontWeight.W600,
-						color = Color.White,
+						color = JellyfinTheme.colorScheme.onSurface,
 						modifier = Modifier
 							.padding(horizontal = 24.dp)
 							.padding(bottom = 12.dp),
@@ -528,7 +532,7 @@ class GenresGridV2Fragment : Fragment() {
 						modifier = Modifier
 							.fillMaxWidth()
 							.height(1.dp)
-							.background(Color.White.copy(alpha = 0.08f)),
+							.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.08f)),
 					)
 
 					Spacer(modifier = Modifier.height(4.dp))
@@ -554,7 +558,7 @@ class GenresGridV2Fragment : Fragment() {
 									) { onSortSelected(option) }
 									.focusable(interactionSource = interactionSource)
 									.background(
-										if (isFocused) Color.White.copy(alpha = 0.12f) else Color.Transparent,
+										if (isFocused) JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.12f) else Color.Transparent,
 									)
 									.padding(horizontal = 24.dp, vertical = 12.dp),
 								verticalAlignment = Alignment.CenterVertically,
@@ -565,7 +569,7 @@ class GenresGridV2Fragment : Fragment() {
 										.size(18.dp)
 										.border(
 											width = 2.dp,
-											color = if (isSelected) JellyfinBlue else Color.White.copy(alpha = 0.3f),
+											color = if (isSelected) JellyfinTheme.colorScheme.primary else JellyfinTheme.colorScheme.textDisabled,
 											shape = CircleShape,
 										),
 									contentAlignment = Alignment.Center,
@@ -574,7 +578,7 @@ class GenresGridV2Fragment : Fragment() {
 										Box(
 											modifier = Modifier
 												.size(10.dp)
-												.background(JellyfinBlue, CircleShape),
+												.background(JellyfinTheme.colorScheme.primary, CircleShape),
 										)
 									}
 								}
@@ -582,13 +586,13 @@ class GenresGridV2Fragment : Fragment() {
 								Spacer(modifier = Modifier.width(16.dp))
 
 								Text(
-									text = option.label,
-									fontSize = 16.sp,
+									text = stringResource(option.labelRes),
+									style = JellyfinTheme.typography.titleMedium,
 									fontWeight = if (isSelected) FontWeight.W600 else FontWeight.W400,
 									color = when {
-										isSelected -> JellyfinBlue
-										isFocused -> Color.White
-										else -> Color.White.copy(alpha = 0.8f)
+										isSelected -> JellyfinTheme.colorScheme.primary
+										isFocused -> JellyfinTheme.colorScheme.onSurface
+										else -> JellyfinTheme.colorScheme.textSecondary
 									},
 									maxLines = 1,
 									overflow = TextOverflow.Ellipsis,
@@ -631,17 +635,17 @@ class GenresGridV2Fragment : Fragment() {
 				Column(
 					modifier = Modifier
 						.widthIn(min = 340.dp, max = 440.dp)
-						.clip(RoundedCornerShape(20.dp))
-						.background(Color(0xE6141414))
-						.border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
+						.clip(JellyfinTheme.shapes.dialog)
+						.background(JellyfinTheme.colorScheme.dialogScrim)
+						.border(1.dp, JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.1f), JellyfinTheme.shapes.dialog)
 						.padding(vertical = 20.dp),
 				) {
 					// Title
 					Text(
-						text = "Filter by Library",
-						fontSize = 20.sp,
+						text = stringResource(R.string.lbl_filter_by_library),
+						style = JellyfinTheme.typography.titleLarge,
 						fontWeight = FontWeight.W600,
-						color = Color.White,
+						color = JellyfinTheme.colorScheme.onSurface,
 						modifier = Modifier
 							.padding(horizontal = 24.dp)
 							.padding(bottom = 12.dp),
@@ -652,7 +656,7 @@ class GenresGridV2Fragment : Fragment() {
 						modifier = Modifier
 							.fillMaxWidth()
 							.height(1.dp)
-							.background(Color.White.copy(alpha = 0.08f)),
+							.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.08f)),
 					)
 
 					Spacer(modifier = Modifier.height(4.dp))
@@ -679,7 +683,7 @@ class GenresGridV2Fragment : Fragment() {
 									) { onLibrarySelected(null) }
 									.focusable(interactionSource = interactionSource)
 									.background(
-										if (isFocused) Color.White.copy(alpha = 0.12f) else Color.Transparent,
+										if (isFocused) JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.12f) else Color.Transparent,
 									)
 									.padding(horizontal = 24.dp, vertical = 12.dp),
 								verticalAlignment = Alignment.CenterVertically,
@@ -689,7 +693,7 @@ class GenresGridV2Fragment : Fragment() {
 										.size(18.dp)
 										.border(
 											width = 2.dp,
-											color = if (isSelected) JellyfinBlue else Color.White.copy(alpha = 0.3f),
+											color = if (isSelected) JellyfinTheme.colorScheme.primary else JellyfinTheme.colorScheme.textDisabled,
 											shape = CircleShape,
 										),
 									contentAlignment = Alignment.Center,
@@ -698,7 +702,7 @@ class GenresGridV2Fragment : Fragment() {
 										Box(
 											modifier = Modifier
 												.size(10.dp)
-												.background(JellyfinBlue, CircleShape),
+												.background(JellyfinTheme.colorScheme.primary, CircleShape),
 										)
 									}
 								}
@@ -706,13 +710,13 @@ class GenresGridV2Fragment : Fragment() {
 								Spacer(modifier = Modifier.width(16.dp))
 
 								Text(
-									text = "All Libraries",
-									fontSize = 16.sp,
+									text = stringResource(R.string.all_libraries),
+									style = JellyfinTheme.typography.titleMedium,
 									fontWeight = if (isSelected) FontWeight.W600 else FontWeight.W400,
 									color = when {
-										isSelected -> JellyfinBlue
-										isFocused -> Color.White
-										else -> Color.White.copy(alpha = 0.8f)
+										isSelected -> JellyfinTheme.colorScheme.primary
+										isFocused -> JellyfinTheme.colorScheme.onSurface
+										else -> JellyfinTheme.colorScheme.textSecondary
 									},
 								)
 							}
@@ -747,7 +751,7 @@ class GenresGridV2Fragment : Fragment() {
 									) { onLibrarySelected(library) }
 									.focusable(interactionSource = interactionSource)
 									.background(
-										if (isFocused) Color.White.copy(alpha = 0.12f) else Color.Transparent,
+										if (isFocused) JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.12f) else Color.Transparent,
 									)
 									.padding(horizontal = 24.dp, vertical = 12.dp),
 								verticalAlignment = Alignment.CenterVertically,
@@ -757,7 +761,7 @@ class GenresGridV2Fragment : Fragment() {
 										.size(18.dp)
 										.border(
 											width = 2.dp,
-											color = if (isSelected) JellyfinBlue else Color.White.copy(alpha = 0.3f),
+											color = if (isSelected) JellyfinTheme.colorScheme.primary else JellyfinTheme.colorScheme.textDisabled,
 											shape = CircleShape,
 										),
 									contentAlignment = Alignment.Center,
@@ -766,7 +770,7 @@ class GenresGridV2Fragment : Fragment() {
 										Box(
 											modifier = Modifier
 												.size(10.dp)
-												.background(JellyfinBlue, CircleShape),
+												.background(JellyfinTheme.colorScheme.primary, CircleShape),
 										)
 									}
 								}
@@ -775,12 +779,12 @@ class GenresGridV2Fragment : Fragment() {
 
 								Text(
 									text = displayText,
-									fontSize = 16.sp,
+									style = JellyfinTheme.typography.titleMedium,
 									fontWeight = if (isSelected) FontWeight.W600 else FontWeight.W400,
 									color = when {
-										isSelected -> JellyfinBlue
-										isFocused -> Color.White
-										else -> Color.White.copy(alpha = 0.8f)
+										isSelected -> JellyfinTheme.colorScheme.primary
+										isFocused -> JellyfinTheme.colorScheme.onSurface
+										else -> JellyfinTheme.colorScheme.textSecondary
 									},
 								)
 							}
@@ -826,7 +830,7 @@ class GenresGridV2Fragment : Fragment() {
 		} else {
 			parts.add("${stringResource(R.string.lbl_from)} all libraries")
 		}
-		parts.add("sorted by ${uiState.currentSort.label}")
+		parts.add("sorted by ${stringResource(uiState.currentSort.labelRes)}")
 		return parts.joinToString(" ")
 	}
 }

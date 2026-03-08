@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,7 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
@@ -43,12 +41,15 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.service.BackgroundService
 import org.jellyfin.androidtv.ui.background.AppBackground
-import org.jellyfin.androidtv.ui.base.CircularProgressIndicator
+import org.jellyfin.androidtv.ui.base.skeleton.SkeletonLandscapeCardRow
+import org.jellyfin.androidtv.ui.base.state.DisplayState
+import org.jellyfin.androidtv.ui.base.state.EmptyState
+import org.jellyfin.androidtv.ui.base.state.ErrorState
+import org.jellyfin.androidtv.ui.base.state.StateContainer
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
@@ -106,33 +107,45 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 			Box(
 				modifier = Modifier
 					.fillMaxSize()
-					.background(NavyBackground.copy(alpha = overlayAlpha)),
+					.background(JellyfinTheme.colorScheme.surfaceDim.copy(alpha = overlayAlpha)),
 			)
 
 			Column(modifier = Modifier.fillMaxSize()) {
 				SeriesRecordingsHeader(uiState = uiState)
 
-				when {
-					uiState.isLoading -> {
-						Box(
-							Modifier
-								.fillMaxSize()
-								.weight(1f),
-							contentAlignment = Alignment.Center,
-						) {
-							CircularProgressIndicator(
-								modifier = Modifier.size(48.dp),
-								color = JellyfinBlue,
-							)
+				val displayState = when {
+					uiState.isLoading -> DisplayState.LOADING
+					uiState.error != null -> DisplayState.ERROR
+					else -> DisplayState.CONTENT
+				}
+				StateContainer(
+					state = displayState,
+					modifier = Modifier.weight(1f),
+					loadingContent = {
+						Column(verticalArrangement = Arrangement.spacedBy(28.dp)) {
+							SkeletonLandscapeCardRow()
+							SkeletonLandscapeCardRow()
 						}
-					}
-					else -> {
+					},
+					emptyContent = {
+						EmptyState(
+							title = stringResource(R.string.state_empty_recordings),
+							message = stringResource(R.string.state_empty_recordings_message),
+						)
+					},
+					errorContent = {
+						ErrorState(
+							message = stringResource(uiState.error?.messageRes ?: R.string.state_error_generic),
+							onRetry = { viewModel.retry() },
+						)
+					},
+					content = {
 						SeriesRecordingsRows(
 							uiState = uiState,
-							modifier = Modifier.weight(1f),
+							modifier = Modifier.fillMaxSize(),
 						)
-					}
-				}
+					},
+				)
 
 				LibraryStatusBar(
 					statusText = stringResource(R.string.lbl_series_recordings),
@@ -155,9 +168,9 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 			) {
 				Text(
 					text = stringResource(R.string.lbl_series_recordings),
-					fontSize = 26.sp,
+					style = JellyfinTheme.typography.headlineMedium,
 					fontWeight = FontWeight.Light,
-					color = Color.White,
+					color = JellyfinTheme.colorScheme.onSurface,
 				)
 			}
 
@@ -196,9 +209,9 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 				Column {
 					Text(
 						text = timer.name ?: "",
-						fontSize = 16.sp,
+						style = JellyfinTheme.typography.titleMedium,
 						fontWeight = FontWeight.SemiBold,
-						color = Color.White,
+						color = JellyfinTheme.colorScheme.onSurface,
 						maxLines = 1,
 						overflow = TextOverflow.Ellipsis,
 					)
@@ -206,9 +219,9 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 					if (subtitle.isNotEmpty()) {
 						Text(
 							text = subtitle,
-							fontSize = 12.sp,
+							style = JellyfinTheme.typography.bodySmall,
 							fontWeight = FontWeight.Normal,
-							color = Color.White.copy(alpha = 0.6f),
+							color = JellyfinTheme.colorScheme.textSecondary,
 							maxLines = 1,
 							overflow = TextOverflow.Ellipsis,
 						)
@@ -240,8 +253,8 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 				) {
 					Text(
 						text = stringResource(R.string.lbl_no_items),
-						fontSize = 16.sp,
-						color = Color.White.copy(alpha = 0.5f),
+						style = JellyfinTheme.typography.titleMedium,
+						color = JellyfinTheme.colorScheme.textHint,
 					)
 				}
 			} else {
@@ -252,9 +265,9 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 				) {
 					Text(
 						text = stringResource(R.string.lbl_series_recordings),
-						fontSize = 18.sp,
+						style = JellyfinTheme.typography.titleMedium,
 						fontWeight = FontWeight.SemiBold,
-						color = Color.White,
+						color = JellyfinTheme.colorScheme.onSurface,
 						modifier = Modifier.padding(start = 60.dp, bottom = 8.dp),
 					)
 
@@ -262,7 +275,7 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 						horizontalArrangement = Arrangement.spacedBy(12.dp),
 						contentPadding = PaddingValues(horizontal = 60.dp),
 					) {
-						items(uiState.seriesTimers) { timer ->
+						items(uiState.seriesTimers, key = { it.id ?: it.name.orEmpty() }) { timer ->
 							SeriesTimerCard(
 								timer = timer,
 								onClick = { launchSeriesTimer(timer) },
@@ -312,19 +325,19 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 				modifier = Modifier
 					.width(cardWidth.dp)
 					.height(cardHeight.dp)
-					.clip(RoundedCornerShape(4.dp))
+					.clip(JellyfinTheme.shapes.extraSmall)
 					.then(
-						if (isFocused) Modifier.background(Color.White.copy(alpha = 0.12f))
+						if (isFocused) Modifier.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.12f))
 						else Modifier
 					)
-					.background(Color.White.copy(alpha = 0.06f)),
+					.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.06f)),
 				contentAlignment = Alignment.Center,
 			) {
 				Icon(
 					imageVector = ImageVector.vectorResource(R.drawable.ic_record_series),
 					contentDescription = null,
 					modifier = Modifier.size(48.dp),
-					tint = if (isFocused) Color.White.copy(alpha = 0.4f) else Color.White.copy(alpha = 0.15f),
+					tint = if (isFocused) JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.4f) else JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.15f),
 				)
 			}
 
@@ -332,9 +345,9 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 
 			Text(
 				text = timer.name ?: "",
-				fontSize = 13.sp,
+				style = JellyfinTheme.typography.bodySmall,
 				fontWeight = FontWeight.Medium,
-				color = Color.White,
+				color = JellyfinTheme.colorScheme.onSurface,
 				maxLines = 1,
 				overflow = TextOverflow.Ellipsis,
 			)
@@ -343,9 +356,9 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 			if (subtitle.isNotEmpty()) {
 				Text(
 					text = subtitle,
-					fontSize = 11.sp,
+					style = JellyfinTheme.typography.labelSmall,
 					fontWeight = FontWeight.Normal,
-					color = Color.White.copy(alpha = 0.5f),
+					color = JellyfinTheme.colorScheme.textHint,
 					maxLines = 1,
 					overflow = TextOverflow.Ellipsis,
 				)

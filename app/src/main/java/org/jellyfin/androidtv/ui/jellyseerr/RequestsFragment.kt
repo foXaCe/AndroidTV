@@ -51,7 +51,7 @@ class RequestsFragment : BaseFragment(R.layout.fragment_jellyseerr_requests) {
 				is JellyseerrLoadingState.Error -> {
 					binding.loadingState.visibility = View.GONE
 					binding.emptyState.visibility = View.VISIBLE
-					showError("Error: ${state.message}")
+					showError(getString(R.string.jellyseerr_error_generic, state.message))
 				}
 				else -> {}
 			}

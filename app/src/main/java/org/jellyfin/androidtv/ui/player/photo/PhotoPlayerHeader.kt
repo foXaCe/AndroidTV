@@ -2,10 +2,8 @@ package org.jellyfin.androidtv.ui.player.photo
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.sp
-import org.jellyfin.androidtv.ui.base.LocalTextStyle
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.player.base.PlayerHeader
 import org.jellyfin.sdk.model.api.BaseItemDto
@@ -21,9 +19,8 @@ fun PhotoPlayerHeader(
 				text = item.name.orEmpty(),
 				overflow = TextOverflow.Ellipsis,
 				maxLines = 1,
-				style = LocalTextStyle.current.copy(
-					color = Color.White,
-					fontSize = 22.sp
+				style = JellyfinTheme.typography.titleMedium.copy(
+					color = JellyfinTheme.colorScheme.onSurface,
 				)
 			)
 
@@ -32,9 +29,8 @@ fun PhotoPlayerHeader(
 					text = album,
 					overflow = TextOverflow.Ellipsis,
 					maxLines = 1,
-					style = LocalTextStyle.current.copy(
-						color = Color.White,
-						fontSize = 18.sp
+					style = JellyfinTheme.typography.titleSmall.copy(
+						color = JellyfinTheme.colorScheme.onSurfaceVariant,
 					)
 				)
 			}

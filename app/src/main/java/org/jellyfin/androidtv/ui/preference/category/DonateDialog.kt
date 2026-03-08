@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import org.jellyfin.androidtv.R
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
 
 @Composable
@@ -58,18 +58,17 @@ fun DonateDialog(onDismiss: () -> Unit) {
 				horizontalAlignment = Alignment.CenterHorizontally,
 				modifier = Modifier
 					.widthIn(min = 340.dp, max = 480.dp)
-					.clip(RoundedCornerShape(20.dp))
-					.background(Color(0xE6141414))
-					.border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
+					.clip(JellyfinTheme.shapes.dialog)
+					.background(JellyfinTheme.colorScheme.dialogScrim)
+					.border(1.dp, Color.White.copy(alpha = 0.1f), JellyfinTheme.shapes.dialog)
 					.padding(vertical = 20.dp)
 					.verticalScroll(rememberScrollState()),
 			) {
 				// Title
 				Text(
 					text = stringResource(R.string.donate_dialog_title),
-					fontSize = 20.sp,
-					fontWeight = FontWeight.W600,
-					color = Color.White,
+					style = JellyfinTheme.typography.titleLarge,
+					color = JellyfinTheme.colorScheme.textPrimary,
 					textAlign = TextAlign.Center,
 					modifier = Modifier
 						.padding(horizontal = 24.dp)
@@ -81,7 +80,7 @@ fun DonateDialog(onDismiss: () -> Unit) {
 					modifier = Modifier
 						.fillMaxWidth()
 						.height(1.dp)
-						.background(Color.White.copy(alpha = 0.08f)),
+						.background(JellyfinTheme.colorScheme.divider),
 				)
 
 				Spacer(modifier = Modifier.height(16.dp))
@@ -89,8 +88,8 @@ fun DonateDialog(onDismiss: () -> Unit) {
 				// Message
 				Text(
 					text = stringResource(R.string.donate_dialog_message),
-					fontSize = 15.sp,
-					color = Color.White.copy(alpha = 0.7f),
+					style = JellyfinTheme.typography.bodyMedium,
+					color = JellyfinTheme.colorScheme.textSecondary,
 					textAlign = TextAlign.Center,
 					lineHeight = 22.sp,
 					modifier = Modifier.padding(horizontal = 24.dp),
@@ -102,14 +101,14 @@ fun DonateDialog(onDismiss: () -> Unit) {
 				Box(
 					modifier = Modifier
 						.size(260.dp)
-						.clip(RoundedCornerShape(12.dp))
+						.clip(JellyfinTheme.shapes.medium)
 						.background(Color.White)
 						.padding(12.dp),
 					contentAlignment = Alignment.Center,
 				) {
 					Image(
 						painter = painterResource(R.drawable.qr_code),
-						contentDescription = "Donation QR Code",
+						contentDescription = stringResource(R.string.donate_qr_description),
 						contentScale = ContentScale.Fit,
 						modifier = Modifier.fillMaxSize(),
 					)
@@ -119,9 +118,9 @@ fun DonateDialog(onDismiss: () -> Unit) {
 
 				// URL
 				Text(
-					text = "buymeacoffee.com/moonfin",
-					fontSize = 14.sp,
-					color = Color(0xFF00A4DC),
+					text = stringResource(R.string.donate_url),
+					style = JellyfinTheme.typography.bodyMedium,
+					color = JellyfinTheme.colorScheme.primary,
 					fontFamily = FontFamily.Monospace,
 					textAlign = TextAlign.Center,
 					modifier = Modifier.padding(horizontal = 24.dp),
@@ -132,8 +131,8 @@ fun DonateDialog(onDismiss: () -> Unit) {
 				// Thanks
 				Text(
 					text = stringResource(R.string.donate_dialog_thanks),
-					fontSize = 13.sp,
-					color = Color.White.copy(alpha = 0.5f),
+					style = JellyfinTheme.typography.bodySmall,
+					color = JellyfinTheme.colorScheme.textHint,
 					textAlign = TextAlign.Center,
 					modifier = Modifier.padding(horizontal = 24.dp),
 				)
@@ -145,14 +144,14 @@ fun DonateDialog(onDismiss: () -> Unit) {
 					modifier = Modifier
 						.fillMaxWidth()
 						.height(1.dp)
-						.background(Color.White.copy(alpha = 0.08f)),
+						.background(JellyfinTheme.colorScheme.divider),
 				)
 
 				Spacer(modifier = Modifier.height(16.dp))
 
 				// Close button
 				GlassDialogButton(
-					text = "Close",
+					text = stringResource(R.string.btn_close),
 					onClick = onDismiss,
 					modifier = Modifier
 						.padding(horizontal = 24.dp)
@@ -178,26 +177,26 @@ fun GlassDialogButton(
 	val isFocused by interactionSource.collectIsFocusedAsState()
 
 	val bgColor = when {
-		isFocused -> if (isPrimary) Color(0xFF00A4DC) else Color.White.copy(alpha = 0.15f)
-		isPrimary -> Color(0xFF00A4DC).copy(alpha = 0.8f)
+		isFocused -> if (isPrimary) JellyfinTheme.colorScheme.primary else Color.White.copy(alpha = 0.15f)
+		isPrimary -> JellyfinTheme.colorScheme.primary.copy(alpha = 0.8f)
 		else -> Color.White.copy(alpha = 0.06f)
 	}
 	val textColor = when {
-		isFocused && isPrimary -> Color.White
-		isFocused -> Color.White
-		isPrimary -> Color.White
-		else -> Color.White.copy(alpha = 0.7f)
+		isFocused && isPrimary -> JellyfinTheme.colorScheme.onPrimary
+		isFocused -> JellyfinTheme.colorScheme.textPrimary
+		isPrimary -> JellyfinTheme.colorScheme.onPrimary
+		else -> JellyfinTheme.colorScheme.textSecondary
 	}
 
 	Box(
 		modifier = modifier
 			.fillMaxWidth()
-			.clip(RoundedCornerShape(10.dp))
+			.clip(JellyfinTheme.shapes.small)
 			.background(bgColor)
 			.border(
 				1.dp,
-				if (isFocused) Color.White.copy(alpha = 0.3f) else Color.White.copy(alpha = 0.08f),
-				RoundedCornerShape(10.dp),
+				if (isFocused) JellyfinTheme.colorScheme.textDisabled else JellyfinTheme.colorScheme.divider,
+				JellyfinTheme.shapes.small,
 			)
 			.clickable(interactionSource = interactionSource, indication = null) { onClick() }
 			.focusable(interactionSource = interactionSource)
@@ -206,7 +205,7 @@ fun GlassDialogButton(
 	) {
 		Text(
 			text = text,
-			fontSize = 15.sp,
+			style = JellyfinTheme.typography.bodyMedium,
 			fontWeight = FontWeight.W600,
 			color = textColor,
 		)

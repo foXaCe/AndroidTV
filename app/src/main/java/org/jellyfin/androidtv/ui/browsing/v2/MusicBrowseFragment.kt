@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,7 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -44,15 +42,20 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
 import coil3.compose.AsyncImage
 import org.jellyfin.androidtv.R
+import org.jellyfin.androidtv.ui.composable.rememberErrorPlaceholder
+import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
 import org.jellyfin.androidtv.constant.Extras
 import org.jellyfin.androidtv.data.service.BackgroundService
 import org.jellyfin.androidtv.data.service.BlurContext
 import org.jellyfin.androidtv.ui.background.AppBackground
-import org.jellyfin.androidtv.ui.base.CircularProgressIndicator
+import org.jellyfin.androidtv.ui.base.skeleton.SkeletonCardRow
+import org.jellyfin.androidtv.ui.base.state.DisplayState
+import org.jellyfin.androidtv.ui.base.state.EmptyState
+import org.jellyfin.androidtv.ui.base.state.ErrorState
+import org.jellyfin.androidtv.ui.base.state.StateContainer
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
@@ -138,7 +141,7 @@ class MusicBrowseFragment : Fragment() {
 			Box(
 				modifier = Modifier
 					.fillMaxSize()
-					.background(NavyBackground.copy(alpha = overlayAlpha)),
+					.background(JellyfinTheme.colorScheme.surfaceDim.copy(alpha = overlayAlpha)),
 			)
 
 			Column(modifier = Modifier.fillMaxSize()) {
@@ -146,28 +149,40 @@ class MusicBrowseFragment : Fragment() {
 				MusicHeader(uiState = uiState, folder = folder)
 
 				// ── Content ──
-				when {
-					uiState.isLoading -> {
-						Box(
-							Modifier
-								.fillMaxSize()
-								.weight(1f),
-							contentAlignment = Alignment.Center,
-						) {
-							CircularProgressIndicator(
-								modifier = Modifier.size(48.dp),
-								color = JellyfinBlue,
-							)
+				val displayState = when {
+					uiState.isLoading -> DisplayState.LOADING
+					uiState.error != null -> DisplayState.ERROR
+					else -> DisplayState.CONTENT
+				}
+				StateContainer(
+					state = displayState,
+					modifier = Modifier.weight(1f),
+					loadingContent = {
+						Column(verticalArrangement = Arrangement.spacedBy(28.dp)) {
+							SkeletonCardRow()
+							SkeletonCardRow()
 						}
-					}
-					else -> {
+					},
+					emptyContent = {
+						EmptyState(
+							title = stringResource(R.string.state_empty_music),
+							message = stringResource(R.string.state_empty_music_message),
+						)
+					},
+					errorContent = {
+						ErrorState(
+							message = stringResource(uiState.error?.messageRes ?: R.string.state_error_generic),
+							onRetry = { viewModel.retry() },
+						)
+					},
+					content = {
 						MusicRows(
 							uiState = uiState,
 							folder = folder,
-							modifier = Modifier.weight(1f),
+							modifier = Modifier.fillMaxSize(),
 						)
-					}
-				}
+					},
+				)
 
 				// ── Status bar ──
 				LibraryStatusBar(
@@ -199,9 +214,9 @@ class MusicBrowseFragment : Fragment() {
 			) {
 				Text(
 					text = uiState.libraryName,
-					fontSize = 26.sp,
+					style = JellyfinTheme.typography.headlineMedium,
 					fontWeight = FontWeight.Light,
-					color = Color.White,
+					color = JellyfinTheme.colorScheme.onSurface,
 				)
 			}
 
@@ -303,9 +318,9 @@ class MusicBrowseFragment : Fragment() {
 			// Row title
 			Text(
 				text = title,
-				fontSize = 18.sp,
+				style = JellyfinTheme.typography.titleLarge,
 				fontWeight = FontWeight.SemiBold,
-				color = Color.White,
+				color = JellyfinTheme.colorScheme.onSurface,
 				modifier = Modifier.padding(start = 60.dp, bottom = 8.dp),
 			)
 
@@ -314,7 +329,7 @@ class MusicBrowseFragment : Fragment() {
 				horizontalArrangement = Arrangement.spacedBy(12.dp),
 				contentPadding = PaddingValues(horizontal = 60.dp),
 			) {
-				items(items) { item ->
+				items(items, key = { it.id }) { item ->
 					MusicSquareCard(
 						item = item,
 						onClick = { launchItem(item) },
@@ -368,20 +383,24 @@ class MusicBrowseFragment : Fragment() {
 			Box(
 				modifier = Modifier
 					.size(cardSize.dp)
-					.clip(RoundedCornerShape(4.dp))
+					.clip(JellyfinTheme.shapes.extraSmall)
 					.then(
-						if (isFocused) Modifier.background(Color.White.copy(alpha = 0.08f))
+						if (isFocused) Modifier.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.08f))
 						else Modifier
 					)
-					.background(Color.White.copy(alpha = 0.06f)),
+					.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.06f)),
 			) {
 				val imageUrl = getMusicImageUrl(item)
 				if (imageUrl != null) {
+					val placeholder = rememberGradientPlaceholder()
+					val errorFallback = rememberErrorPlaceholder()
 					AsyncImage(
 						model = imageUrl,
 						contentDescription = item.name,
 						modifier = Modifier.fillMaxSize(),
 						contentScale = ContentScale.Crop,
+						placeholder = placeholder,
+						error = errorFallback,
 					)
 				} else {
 					// Placeholder icon for items without artwork
@@ -393,7 +412,7 @@ class MusicBrowseFragment : Fragment() {
 							imageVector = ImageVector.vectorResource(R.drawable.ic_album),
 							contentDescription = null,
 							modifier = Modifier.size(48.dp),
-							tint = Color.White.copy(alpha = 0.2f),
+							tint = JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.2f),
 						)
 					}
 				}
@@ -404,9 +423,9 @@ class MusicBrowseFragment : Fragment() {
 			// Title
 			Text(
 				text = item.name ?: "",
-				fontSize = 13.sp,
+				style = JellyfinTheme.typography.bodySmall,
 				fontWeight = FontWeight.Medium,
-				color = Color.White,
+				color = JellyfinTheme.colorScheme.onSurface,
 				maxLines = 1,
 				overflow = TextOverflow.Ellipsis,
 			)
@@ -416,9 +435,9 @@ class MusicBrowseFragment : Fragment() {
 			if (subtitle.isNotEmpty()) {
 				Text(
 					text = subtitle,
-					fontSize = 11.sp,
+					style = JellyfinTheme.typography.labelSmall,
 					fontWeight = FontWeight.Normal,
-					color = Color.White.copy(alpha = 0.5f),
+					color = JellyfinTheme.colorScheme.textHint,
 					maxLines = 1,
 					overflow = TextOverflow.Ellipsis,
 				)
@@ -439,9 +458,9 @@ class MusicBrowseFragment : Fragment() {
 		) {
 			Text(
 				text = stringResource(R.string.lbl_views),
-				fontSize = 18.sp,
+				style = JellyfinTheme.typography.titleLarge,
 				fontWeight = FontWeight.SemiBold,
-				color = Color.White,
+				color = JellyfinTheme.colorScheme.onSurface,
 				modifier = Modifier.padding(start = 60.dp, bottom = 8.dp),
 			)
 
@@ -534,19 +553,19 @@ class MusicBrowseFragment : Fragment() {
 		val isFocused by interactionSource.collectIsFocusedAsState()
 
 		val bgColor = when {
-			isFocused -> Color.White.copy(alpha = 0.20f)
-			else -> Color.White.copy(alpha = 0.08f)
+			isFocused -> JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.20f)
+			else -> JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.08f)
 		}
 
 		val borderColor = when {
-			isFocused -> Color.White.copy(alpha = 0.4f)
-			else -> Color.White.copy(alpha = 0.12f)
+			isFocused -> JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+			else -> JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.12f)
 		}
 
 		Column(
 			modifier = Modifier
 				.width(140.dp)
-				.clip(RoundedCornerShape(8.dp))
+				.clip(JellyfinTheme.shapes.small)
 				.background(bgColor)
 				.clickable(
 					interactionSource = interactionSource,
@@ -560,16 +579,16 @@ class MusicBrowseFragment : Fragment() {
 				imageVector = ImageVector.vectorResource(iconRes),
 				contentDescription = label,
 				modifier = Modifier.size(32.dp),
-				tint = if (isFocused) Color.White else Color.White.copy(alpha = 0.6f),
+				tint = if (isFocused) JellyfinTheme.colorScheme.onSurface else JellyfinTheme.colorScheme.textSecondary,
 			)
 
 			Spacer(modifier = Modifier.height(8.dp))
 
 			Text(
 				text = label,
-				fontSize = 14.sp,
+				style = JellyfinTheme.typography.bodyMedium,
 				fontWeight = if (isFocused) FontWeight.SemiBold else FontWeight.Normal,
-				color = if (isFocused) Color.White else Color.White.copy(alpha = 0.7f),
+				color = if (isFocused) JellyfinTheme.colorScheme.onSurface else JellyfinTheme.colorScheme.textSecondary,
 				maxLines = 1,
 				overflow = TextOverflow.Ellipsis,
 			)
@@ -615,11 +634,11 @@ class MusicBrowseFragment : Fragment() {
 			}
 			BaseItemKind.PLAYLIST -> {
 				val count = item.childCount ?: 0
-				if (count > 0) "$count items" else ""
+				if (count > 0) resources.getQuantityString(R.plurals.items, count, count) else ""
 			}
 			BaseItemKind.MUSIC_ARTIST -> {
 				val count = item.albumCount ?: 0
-				if (count > 0) "$count albums" else ""
+				if (count > 0) resources.getQuantityString(R.plurals.albums, count, count) else ""
 			}
 			else -> ""
 		}

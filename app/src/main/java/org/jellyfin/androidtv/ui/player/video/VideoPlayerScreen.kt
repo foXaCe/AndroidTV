@@ -12,8 +12,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.flow.map
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.data.service.BackgroundService
 import org.jellyfin.androidtv.ui.ScreensaverLock
 import org.jellyfin.androidtv.ui.player.base.PlayerSubtitles
@@ -51,7 +51,7 @@ fun VideoPlayerScreen() {
 
 	Box(
 		modifier = Modifier
-			.background(Color.Black)
+			.background(JellyfinTheme.colorScheme.background)
 			.fillMaxSize()
 	) {
 		PlayerSurface(

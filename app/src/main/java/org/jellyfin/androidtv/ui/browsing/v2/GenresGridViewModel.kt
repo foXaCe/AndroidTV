@@ -27,19 +27,23 @@ import org.jellyfin.sdk.model.api.BaseItemKind
 import org.jellyfin.sdk.model.api.CollectionType
 import org.jellyfin.sdk.model.api.ImageType
 import org.jellyfin.sdk.model.api.ItemSortBy
+import org.jellyfin.androidtv.R
+import org.jellyfin.androidtv.ui.base.state.UiError
+import org.jellyfin.androidtv.ui.base.state.toUiError
 import timber.log.Timber
 import java.util.UUID
 
-enum class GenreSortOption(val label: String) {
-	NAME_ASC("Name (A-Z)"),
-	NAME_DESC("Name (Z-A)"),
-	MOST_ITEMS("Most Items"),
-	LEAST_ITEMS("Least Items"),
-	RANDOM("Random"),
+enum class GenreSortOption(@androidx.annotation.StringRes val labelRes: Int) {
+	NAME_ASC(R.string.sort_a_z),
+	NAME_DESC(R.string.sort_z_a),
+	MOST_ITEMS(R.string.sort_most_items),
+	LEAST_ITEMS(R.string.sort_least_items),
+	RANDOM(R.string.sort_random),
 }
 
 data class GenresGridUiState(
 	val isLoading: Boolean = true,
+	val error: UiError? = null,
 	val title: String = "Genres",
 	val genres: List<JellyfinGenreItem> = emptyList(),
 	val totalGenres: Int = 0,
@@ -181,7 +185,7 @@ class GenresGridViewModel(
 			applySortAndFilter()
 		} catch (e: Exception) {
 			Timber.e(e, "Failed to load multi-server genres")
-			_uiState.value = _uiState.value.copy(isLoading = false)
+			_uiState.value = _uiState.value.copy(isLoading = false, error = e.toUiError())
 		}
 	}
 
@@ -199,7 +203,7 @@ class GenresGridViewModel(
 	}
 
 	private suspend fun loadGenres() {
-		_uiState.value = _uiState.value.copy(isLoading = true)
+		_uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
 		try {
 			val selectedLibraryId = _uiState.value.selectedLibraryId
@@ -224,7 +228,7 @@ class GenresGridViewModel(
 			applySortAndFilter()
 		} catch (e: Exception) {
 			Timber.e(e, "Failed to load genres")
-			_uiState.value = _uiState.value.copy(isLoading = false)
+			_uiState.value = _uiState.value.copy(isLoading = false, error = e.toUiError())
 		}
 	}
 
@@ -256,7 +260,7 @@ class GenresGridViewModel(
 						itemId = item.id,
 						imageType = ImageType.BACKDROP,
 						tag = item.backdropImageTags!!.first(),
-						maxWidth = 780,
+						maxWidth = 480,
 						quality = 80,
 					)
 				} else null
@@ -274,6 +278,11 @@ class GenresGridViewModel(
 			Timber.w(e, "Failed to get info for genre ${genre.name}")
 			null
 		}
+	}
+
+	fun retry() {
+		_uiState.value = _uiState.value.copy(error = null, isLoading = true)
+		viewModelScope.launch { loadData() }
 	}
 
 	private fun applySortAndFilter() {

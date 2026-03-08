@@ -34,7 +34,7 @@ fun SettingsAboutScreen(launchedFromLogin: Boolean = false) {
 		}
 
 		item {
-			val heading = "Moonfin app version"
+			val heading = stringResource(R.string.lbl_app_version_heading)
 			val caption = "moonfin-androidtv ${BuildConfig.VERSION_NAME} ${BuildConfig.BUILD_TYPE}"
 			ListButton(
 				leadingContent = { Icon(painterResource(R.drawable.ic_moonfin), contentDescription = null) },

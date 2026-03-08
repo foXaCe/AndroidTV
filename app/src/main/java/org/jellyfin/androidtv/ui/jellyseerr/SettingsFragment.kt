@@ -104,22 +104,22 @@ class SettingsFragment : BaseFragment(R.layout.fragment_jellyseerr_settings) {
 			when (state) {
 				is JellyseerrLoadingState.Loading -> {
 					binding.testConnectionButton.isEnabled = false
-					binding.statusText.text = "Testing connection..."
+					binding.statusText.text = getString(R.string.jellyseerr_testing_connection)
 				}
 				is JellyseerrLoadingState.Success -> {
 					binding.testConnectionButton.isEnabled = true
-					binding.statusText.text = "✓ Connected successfully!"
+					binding.statusText.text = "✓ ${getString(R.string.jellyseerr_connected_successfully)}"
 					binding.statusIcon.setImageResource(R.drawable.ic_check)
-					showSuccess("Connected to Jellyseerr!")
+					showSuccess(getString(R.string.jellyseerr_connected_successfully))
 				}
 				is JellyseerrLoadingState.Error -> {
 					binding.testConnectionButton.isEnabled = true
-					binding.statusText.text = "✗ Connection failed: ${state.message}"
-					showError("Connection error: ${state.message}")
+					binding.statusText.text = "✗ ${getString(R.string.jellyseerr_connection_failed, state.message)}"
+					showError(getString(R.string.jellyseerr_connection_error_detail, state.message))
 				}
 				is JellyseerrLoadingState.Idle -> {
 					binding.testConnectionButton.isEnabled = true
-					binding.statusText.text = "Not tested"
+					binding.statusText.text = getString(R.string.jellyseerr_not_tested)
 				}
 			}
 		}
@@ -142,7 +142,7 @@ class SettingsFragment : BaseFragment(R.layout.fragment_jellyseerr_settings) {
 		if (savedUrl.isNotBlank()) {
 			val wasSuccessful = globalPreferences[JellyseerrPreferences.lastConnectionSuccess]
 			if (wasSuccessful) {
-				binding.statusText.text = "✓ Connected"
+				binding.statusText.text = "✓ ${getString(R.string.jellyseerr_connected)}"
 				binding.statusIcon.setImageResource(R.drawable.ic_check)
 			}
 		}
@@ -153,7 +153,7 @@ class SettingsFragment : BaseFragment(R.layout.fragment_jellyseerr_settings) {
 
 		// Validate that connection was set up
 		if (serverUrl.isNullOrEmpty()) {
-			showError("Please connect with Jellyfin first")
+			showError(getString(R.string.jellyseerr_please_connect_jellyfin))
 			return
 		}
 
@@ -167,20 +167,20 @@ class SettingsFragment : BaseFragment(R.layout.fragment_jellyseerr_settings) {
 		val jellyseerrServerUrl = binding.serverUrlInput.text.toString().trim()
 		
 		if (jellyseerrServerUrl.isEmpty()) {
-			showError("Please enter Jellyseerr server URL first")
+			showError(getString(R.string.jellyseerr_enter_server_url))
 			return
 		}
 
 		// Get the Jellyfin server URL from current connection
 		val jellyfinServerUrl = apiClient.baseUrl ?: run {
-			showError("Could not determine Jellyfin server URL")
+			showError(getString(R.string.jellyseerr_cannot_determine_server))
 			return
 		}
 
 		// Get the current logged-in user's username
 		val currentUser = userRepository.currentUser.value
 		val username = currentUser?.name ?: run {
-			showError("Could not determine current user")
+			showError(getString(R.string.jellyseerr_cannot_determine_user))
 			return
 		}
 
@@ -188,32 +188,24 @@ class SettingsFragment : BaseFragment(R.layout.fragment_jellyseerr_settings) {
 		val passwordInput = android.widget.EditText(requireContext()).apply {
 			hint = "Enter your Jellyfin password"
 			inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-		}
-
-		val layout = android.widget.LinearLayout(requireContext()).apply {
-			orientation = android.widget.LinearLayout.VERTICAL
-			setPadding(48, 32, 48, 32)
-			addView(android.widget.TextView(requireContext()).apply {
-				text = "Connecting as: $username\n\nEnter your Jellyfin password to authenticate with Jellyseerr"
-				setPadding(0, 0, 0, 32)
-			})
-			addView(passwordInput)
+			setPadding(48, 0, 48, 0)
 		}
 
 		android.app.AlertDialog.Builder(requireContext())
-			.setTitle("Login with Jellyfin")
-			.setView(layout)
-			.setPositiveButton("Connect") { _, _ ->
+			.setTitle(getString(R.string.jellyseerr_login_with_jellyfin))
+			.setMessage(getString(R.string.jellyseerr_connecting_as, username))
+			.setView(passwordInput)
+			.setPositiveButton(getString(R.string.btn_connect)) { _, _ ->
 				val password = passwordInput.text.toString().trim()
-				
+
 				if (password.isEmpty()) {
-					showError("Password is required")
+					showError(getString(R.string.jellyseerr_password_required))
 					return@setPositiveButton
 				}
 
 				performJellyfinLogin(jellyseerrServerUrl, username, password, jellyfinServerUrl)
 			}
-			.setNegativeButton("Cancel", null)
+			.setNegativeButton(getString(R.string.btn_cancel), null)
 			.show()
 	}
 
@@ -224,7 +216,7 @@ class SettingsFragment : BaseFragment(R.layout.fragment_jellyseerr_settings) {
 		jellyfinServerUrl: String
 	) {
 		binding.connectJellyfinButton.isEnabled = false
-		binding.statusText.text = "Connecting..."
+		binding.statusText.text = getString(R.string.jellyseerr_connecting)
 
 		lifecycleScope.launch {
 			try {
@@ -239,12 +231,12 @@ class SettingsFragment : BaseFragment(R.layout.fragment_jellyseerr_settings) {
 				// Initialize connection (using cookie-based auth)
 				viewModel.initializeJellyseerr(jellyseerrServerUrl, "")
 				
-				showSuccess("Connected successfully using session cookie!")
+				showSuccess(getString(R.string.jellyseerr_connected_session_cookie))
 				
 				Timber.d("Jellyseerr: Jellyfin authentication successful using cookie authentication")
 			}.onFailure { error ->
-				showError("Connection failed: ${error.message}", error)
-					binding.statusText.text = "✗ Connection failed"
+				showError(getString(R.string.jellyseerr_connection_failed, error.message ?: ""), error)
+					binding.statusText.text = "✗ ${getString(R.string.jellyseerr_connection_failed, "")}"
 					Timber.e(error, "Jellyseerr: Jellyfin authentication failed")
 				}
 			} finally {

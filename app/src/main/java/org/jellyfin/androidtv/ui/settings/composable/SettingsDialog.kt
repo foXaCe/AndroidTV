@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import org.jellyfin.androidtv.ui.base.AnimationDefaults
 import org.jellyfin.androidtv.ui.base.dialog.DialogBase
 
 @Composable
@@ -19,7 +20,7 @@ fun SettingsDialog(
 	modifier: Modifier = Modifier,
 	screen: @Composable BoxScope.() -> Unit,
 ) {
-	val duration = 400
+	val duration = AnimationDefaults.DURATION_MEDIUM
 	DialogBase(
 		visible = visible,
 		onDismissRequest = onDismissRequest,

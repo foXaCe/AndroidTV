@@ -35,7 +35,7 @@ class PositionableListRowPresenter : CustomListRowPresenter {
 
 	private fun init() {
 		shadowEnabled = false
-		selectEffectEnabled = true
+		selectEffectEnabled = false
 
 		// Configure header to always be visible
 		headerPresenter = object : RowHeaderPresenter() {
@@ -47,7 +47,7 @@ class PositionableListRowPresenter : CustomListRowPresenter {
 		}
 	}
 
-	override fun isUsingDefaultListSelectEffect() = true
+	override fun isUsingDefaultListSelectEffect() = false
 
 	override fun isUsingDefaultShadow() = false
 

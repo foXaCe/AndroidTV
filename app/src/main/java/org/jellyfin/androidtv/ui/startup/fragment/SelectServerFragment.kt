@@ -176,7 +176,7 @@ class SelectServerFragment : Fragment() {
 						Text(
 							text = notification.message,
 							modifier = Modifier.padding(10.dp),
-							color = colorResource(id = R.color.white),
+							color = JellyfinTheme.colorScheme.onSurface,
 						)
 					}
 				}
@@ -190,8 +190,7 @@ class SelectServerFragment : Fragment() {
 			}
 		}
 
-		@Suppress("SetTextI18n")
-		binding.appVersion.text = "Moonfin version ${BuildConfig.VERSION_NAME} ${BuildConfig.BUILD_TYPE}"
+		binding.appVersion.text = getString(R.string.app_version_display, BuildConfig.VERSION_NAME, BuildConfig.BUILD_TYPE)
 
 		binding.enterServerAddress.requestFocus()
 

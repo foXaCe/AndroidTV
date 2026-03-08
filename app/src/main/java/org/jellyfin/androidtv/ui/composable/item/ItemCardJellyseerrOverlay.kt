@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
@@ -14,10 +13,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrDiscoverItemDto
 import org.jellyfin.androidtv.ui.base.Icon
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
 
 /**
@@ -55,18 +56,18 @@ private fun MediaTypeBadge(
 	if (mediaType == null) return
 
 	val (text, bgColor) = when (mediaType) {
-		"movie" -> "MOVIE" to Color(0xFF3B82F6) // blue-500
-		"tv" -> "SERIES" to Color(0xFF8B5CF6) // purple-500
+		"movie" -> stringResource(R.string.lbl_movie_type_upper) to JellyfinTheme.colorScheme.info
+		"tv" -> stringResource(R.string.lbl_series_type_upper) to JellyfinTheme.colorScheme.secondary
 		else -> return
 	}
 
 	Text(
 		text = text,
-		fontSize = 10.sp,
-		color = Color.White,
+		style = JellyfinTheme.typography.labelSmall,
+		color = JellyfinTheme.colorScheme.onPrimary,
 		letterSpacing = 0.8.sp,
 		modifier = modifier
-			.background(bgColor.copy(alpha = 0.85f), RoundedCornerShape(4.dp))
+			.background(bgColor.copy(alpha = 0.85f), JellyfinTheme.shapes.extraSmall)
 			.padding(horizontal = 6.dp, vertical = 2.dp),
 	)
 }

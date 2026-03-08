@@ -43,7 +43,7 @@ class RequestsAdapter :
 					posterImage.setImageResource(R.drawable.app_logo)
 				}
 
-				val displayTitle = item.media?.title ?: item.media?.name ?: "Unknown"
+				val displayTitle = item.media?.title ?: item.media?.name ?: itemView.context.getString(R.string.lbl_unknown)
 				titleText.text = displayTitle
 
 				typeText.text = item.type.uppercase()
@@ -57,13 +57,13 @@ class RequestsAdapter :
 
 				// Determine status text and icon
 				val (statusTextValue, statusColor, iconRes) = when {
-					item.status == 1 -> Triple("Pending", R.color.grey_light, R.drawable.ic_pending)
-					item.status == 3 -> Triple("Declined", R.color.red, R.drawable.ic_declined)
-					isAvailable -> Triple("Available", R.color.white, R.drawable.ic_available)
-					isPartial -> Triple("Partially Available", R.color.white, R.drawable.ic_partially_available)
-					isDownloading -> Triple("Downloading", R.color.white, R.drawable.ic_indigo_spinner)
-					item.status == 2 -> Triple("Approved", R.color.white, null)
-					else -> Triple("Unknown", R.color.grey_light, null)
+					item.status == 1 -> Triple(itemView.context.getString(R.string.jellyseerr_status_pending), R.color.grey_light, R.drawable.ic_pending)
+					item.status == 3 -> Triple(itemView.context.getString(R.string.jellyseerr_status_declined), R.color.red, R.drawable.ic_declined)
+					isAvailable -> Triple(itemView.context.getString(R.string.jellyseerr_status_available), R.color.white, R.drawable.ic_available)
+					isPartial -> Triple(itemView.context.getString(R.string.jellyseerr_status_partially_available), R.color.white, R.drawable.ic_partially_available)
+					isDownloading -> Triple(itemView.context.getString(R.string.jellyseerr_status_downloading), R.color.white, R.drawable.ic_indigo_spinner)
+					item.status == 2 -> Triple(itemView.context.getString(R.string.jellyseerr_status_approved), R.color.white, null)
+					else -> Triple(itemView.context.getString(R.string.jellyseerr_status_unknown), R.color.grey_light, null)
 				}
 
 				statusText.text = statusTextValue
@@ -79,11 +79,11 @@ class RequestsAdapter :
 					statusIcon.clearAnimation()
 				}
 
-				val requesterName = item.requestedBy?.username ?: "Unknown"
-				requestedByText.text = "Requested by: $requesterName"
+				val requesterName = item.requestedBy?.username ?: itemView.context.getString(R.string.lbl_unknown)
+				requestedByText.text = itemView.context.getString(R.string.jellyseerr_requested_by, requesterName)
 
-				val dateStr = item.createdAt?.substringBefore("T") ?: "Unknown"
-				dateText.text = "Date: $dateStr"
+				val dateStr = item.createdAt?.substringBefore("T") ?: itemView.context.getString(R.string.lbl_unknown)
+				dateText.text = itemView.context.getString(R.string.jellyseerr_request_date, dateStr)
 			}
 		}
 	}

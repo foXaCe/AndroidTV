@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,7 +27,6 @@ import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
@@ -67,12 +65,21 @@ fun ToolbarClock(
 	modifier: Modifier = Modifier,
 ) {
 	val currentTime by rememberCurrentTime()
-	Text(
-		text = currentTime,
-		fontSize = 20.sp,
-		color = Color.White,
-		modifier = modifier,
-	)
+	Row(
+		modifier = modifier
+			.background(
+				color = JellyfinTheme.colorScheme.toolbarBackground,
+				shape = JellyfinTheme.shapes.extraLarge,
+			)
+			.padding(horizontal = 16.dp, vertical = 8.dp),
+		verticalAlignment = Alignment.CenterVertically,
+	) {
+		Text(
+			text = currentTime,
+			style = JellyfinTheme.typography.titleLarge,
+			color = JellyfinTheme.colorScheme.onSurface,
+		)
+	}
 }
 
 @Composable
@@ -117,7 +124,7 @@ fun ToolbarButtons(
 ) {
 	val scrollState = rememberScrollState()
 	val scope = rememberCoroutineScope()
-	val pillShape = RoundedCornerShape(28.dp)
+	val pillShape = JellyfinTheme.shapes.extraLarge
 
 	Row(
 		modifier = modifier

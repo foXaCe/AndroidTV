@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.compose.runtime.Immutable
 import org.jellyfin.androidtv.data.repository.ItemRepository
 import org.jellyfin.androidtv.util.Utils
 import org.jellyfin.androidtv.util.sdk.ApiClientFactory
@@ -26,9 +27,12 @@ import org.jellyfin.sdk.model.api.BaseItemPerson
 import org.jellyfin.sdk.model.api.MediaStreamType
 import org.jellyfin.sdk.model.api.PersonKind
 import org.jellyfin.sdk.model.api.VideoRangeType
+import org.jellyfin.androidtv.ui.base.state.UiError
+import org.jellyfin.androidtv.ui.base.state.toUiError
 import timber.log.Timber
 import java.util.UUID
 
+@Immutable
 data class MediaBadge(
 	val type: String,
 	val label: String,
@@ -36,6 +40,7 @@ data class MediaBadge(
 
 data class ItemDetailsUiState(
 	val isLoading: Boolean = true,
+	val error: UiError? = null,
 	val item: BaseItemDto? = null,
 	val seasons: List<BaseItemDto> = emptyList(),
 	val episodes: List<BaseItemDto> = emptyList(),
@@ -64,9 +69,12 @@ class ItemDetailsViewModel(
 	var serverId: UUID? = null
 		private set
 
+	private var lastItemId: UUID? = null
+
 	fun loadItem(itemId: UUID, serverId: UUID? = null) {
 		viewModelScope.launch {
 			_uiState.value = ItemDetailsUiState(isLoading = true)
+			lastItemId = itemId
 
 			if (serverId != null) {
 				this@ItemDetailsViewModel.serverId = serverId
@@ -111,7 +119,7 @@ class ItemDetailsViewModel(
 				loadAdditionalData(item)
 			} catch (err: ApiClientException) {
 				Timber.e(err, "Failed to load item $itemId")
-				_uiState.value = ItemDetailsUiState(isLoading = false)
+				_uiState.value = ItemDetailsUiState(isLoading = false, error = err.toUiError())
 			}
 		}
 	}
@@ -419,6 +427,11 @@ class ItemDetailsViewModel(
 				)
 			}
 		}
+	}
+
+	fun retry() {
+		val itemId = lastItemId ?: return
+		loadItem(itemId, serverId)
 	}
 
 	companion object {

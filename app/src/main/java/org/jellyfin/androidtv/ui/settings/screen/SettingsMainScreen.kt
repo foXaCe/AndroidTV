@@ -20,7 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,9 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -152,7 +150,7 @@ fun SettingsMainScreen() {
 
 		item {
 			ListSection(
-				headingContent = { Text("Support & Updates") },
+				headingContent = { Text(stringResource(R.string.settings_support_updates)) },
 			)
 		}
 
@@ -165,8 +163,8 @@ fun SettingsMainScreen() {
 							contentDescription = null
 						)
 					},
-					headingContent = { Text("Check for Updates") },
-					captionContent = { Text("Download latest Moonfin version") },
+					headingContent = { Text(stringResource(R.string.settings_check_updates)) },
+					captionContent = { Text(stringResource(R.string.settings_check_updates_desc)) },
 					onClick = {
 						checkForUpdates(context, updateChecker) { info ->
 							updateInfoForDialog = info
@@ -178,8 +176,8 @@ fun SettingsMainScreen() {
 			item {
 				var updateNotificationsEnabled by rememberPreference(userPreferences, UserPreferences.updateNotificationsEnabled)
 				ListButton(
-					headingContent = { Text("Update Notifications") },
-					captionContent = { Text("Show notification on app launch when updates are available") },
+					headingContent = { Text(stringResource(R.string.settings_update_notifications)) },
+					captionContent = { Text(stringResource(R.string.settings_update_notifications_desc)) },
 					trailingContent = { Checkbox(checked = updateNotificationsEnabled) },
 					onClick = { updateNotificationsEnabled = !updateNotificationsEnabled }
 				)
@@ -195,8 +193,8 @@ fun SettingsMainScreen() {
 						tint = Color.Red
 					)
 				},
-				headingContent = { Text("Support Moonfin") },
-				captionContent = { Text("Help us continue development") },
+				headingContent = { Text(stringResource(R.string.settings_support_moonfin)) },
+				captionContent = { Text(stringResource(R.string.settings_support_moonfin_desc)) },
 				onClick = {
 					showDonateDialog = true
 				}
@@ -255,28 +253,28 @@ private fun checkForUpdates(
 	onUpdateFound: (UpdateCheckerService.UpdateInfo) -> Unit,
 ) {
 	CoroutineScope(Dispatchers.Main).launch {
-		Toast.makeText(context, "Checking for updates…", Toast.LENGTH_SHORT).show()
+		Toast.makeText(context, context.getString(R.string.update_checking), Toast.LENGTH_SHORT).show()
 
 		try {
 			val result = updateChecker.checkForUpdate()
 			result.fold(
 				onSuccess = { updateInfo ->
 					if (updateInfo == null) {
-						Toast.makeText(context, "Failed to check for updates", Toast.LENGTH_LONG).show()
+						Toast.makeText(context, context.getString(R.string.update_check_failed), Toast.LENGTH_LONG).show()
 					} else if (!updateInfo.isNewer) {
-						Toast.makeText(context, "No updates available", Toast.LENGTH_LONG).show()
+						Toast.makeText(context, context.getString(R.string.update_none_available), Toast.LENGTH_LONG).show()
 					} else {
 						onUpdateFound(updateInfo)
 					}
 				},
 				onFailure = { error ->
 					Timber.e(error, "Failed to check for updates")
-					Toast.makeText(context, "Failed to check for updates", Toast.LENGTH_LONG).show()
+					Toast.makeText(context, context.getString(R.string.update_check_failed), Toast.LENGTH_LONG).show()
 				}
 			)
 		} catch (e: Exception) {
 			Timber.e(e, "Error checking for updates")
-			Toast.makeText(context, "Error checking for updates", Toast.LENGTH_LONG).show()
+			Toast.makeText(context, context.getString(R.string.update_check_error), Toast.LENGTH_LONG).show()
 		}
 	}
 }
@@ -302,17 +300,16 @@ private fun UpdateAvailableDialog(
 			Column(
 				modifier = Modifier
 					.widthIn(min = 340.dp, max = 460.dp)
-					.clip(RoundedCornerShape(20.dp))
-					.background(Color(0xE6141414))
-					.border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
+					.clip(JellyfinTheme.shapes.dialog)
+					.background(JellyfinTheme.colorScheme.dialogScrim)
+					.border(1.dp, JellyfinTheme.colorScheme.toolbarDivider, JellyfinTheme.shapes.dialog)
 					.padding(vertical = 20.dp),
 			) {
 				// Title
 				Text(
-					text = "Update Available",
-					fontSize = 20.sp,
-					fontWeight = FontWeight.W600,
-					color = Color.White,
+					text = stringResource(R.string.update_dialog_title),
+					style = JellyfinTheme.typography.titleLarge,
+					color = JellyfinTheme.colorScheme.onSurface,
 					modifier = Modifier
 						.padding(horizontal = 24.dp)
 						.padding(bottom = 12.dp),
@@ -323,25 +320,25 @@ private fun UpdateAvailableDialog(
 					modifier = Modifier
 						.fillMaxWidth()
 						.height(1.dp)
-						.background(Color.White.copy(alpha = 0.08f)),
+						.background(JellyfinTheme.colorScheme.divider),
 				)
 
 				Spacer(modifier = Modifier.height(16.dp))
 
 				// Version info
 				Text(
-					text = "New version ${updateInfo.version} is available!",
-					fontSize = 16.sp,
-					color = Color.White.copy(alpha = 0.85f),
+					text = stringResource(R.string.update_new_version, updateInfo.version),
+					style = JellyfinTheme.typography.titleMedium,
+					color = JellyfinTheme.colorScheme.onSurface,
 					modifier = Modifier.padding(horizontal = 24.dp),
 				)
 
 				Spacer(modifier = Modifier.height(8.dp))
 
 				Text(
-					text = "Size: ${String.format("%.1f", sizeMB)} MB",
-					fontSize = 14.sp,
-					color = Color.White.copy(alpha = 0.5f),
+					text = stringResource(R.string.update_size, String.format("%.1f", sizeMB)),
+					style = JellyfinTheme.typography.bodyMedium,
+					color = JellyfinTheme.colorScheme.textHint,
 					modifier = Modifier.padding(horizontal = 24.dp),
 				)
 
@@ -352,7 +349,7 @@ private fun UpdateAvailableDialog(
 					modifier = Modifier
 						.fillMaxWidth()
 						.height(1.dp)
-						.background(Color.White.copy(alpha = 0.08f)),
+						.background(JellyfinTheme.colorScheme.divider),
 				)
 
 				Spacer(modifier = Modifier.height(16.dp))
@@ -363,19 +360,19 @@ private fun UpdateAvailableDialog(
 					verticalArrangement = Arrangement.spacedBy(8.dp),
 				) {
 					GlassDialogButton(
-						text = "Download",
+						text = stringResource(R.string.btn_download),
 						onClick = onDownload,
 						isPrimary = true,
 						modifier = Modifier.focusRequester(downloadFocusRequester),
 					)
 
 					GlassDialogButton(
-						text = "Release Notes",
+						text = stringResource(R.string.update_release_notes),
 						onClick = onReleaseNotes,
 					)
 
 					GlassDialogButton(
-						text = "Later",
+						text = stringResource(R.string.btn_later),
 						onClick = onDismiss,
 					)
 				}
@@ -453,17 +450,16 @@ private fun ReleaseNotesDialog(
 			Column(
 				modifier = Modifier
 					.widthIn(min = 500.dp, max = 800.dp)
-					.clip(RoundedCornerShape(20.dp))
-					.background(Color(0xE6141414))
-					.border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
+					.clip(JellyfinTheme.shapes.dialog)
+					.background(JellyfinTheme.colorScheme.dialogScrim)
+					.border(1.dp, JellyfinTheme.colorScheme.toolbarDivider, JellyfinTheme.shapes.dialog)
 					.padding(vertical = 20.dp),
 			) {
 				// Title
 				Text(
-					text = "Release Notes",
-					fontSize = 20.sp,
-					fontWeight = FontWeight.W600,
-					color = Color.White,
+					text = stringResource(R.string.update_release_notes),
+					style = JellyfinTheme.typography.titleLarge,
+					color = JellyfinTheme.colorScheme.onSurface,
 					modifier = Modifier
 						.padding(horizontal = 24.dp)
 						.padding(bottom = 12.dp),
@@ -474,7 +470,7 @@ private fun ReleaseNotesDialog(
 					modifier = Modifier
 						.fillMaxWidth()
 						.height(1.dp)
-						.background(Color.White.copy(alpha = 0.08f)),
+						.background(JellyfinTheme.colorScheme.divider),
 				)
 
 				// WebView for release notes content
@@ -503,7 +499,7 @@ private fun ReleaseNotesDialog(
 					modifier = Modifier
 						.fillMaxWidth()
 						.height(1.dp)
-						.background(Color.White.copy(alpha = 0.08f)),
+						.background(JellyfinTheme.colorScheme.divider),
 				)
 
 				Spacer(modifier = Modifier.height(16.dp))
@@ -514,19 +510,19 @@ private fun ReleaseNotesDialog(
 					verticalArrangement = Arrangement.spacedBy(8.dp),
 				) {
 					GlassDialogButton(
-						text = "Download",
+						text = stringResource(R.string.btn_download),
 						onClick = onDownload,
 						isPrimary = true,
 						modifier = Modifier.focusRequester(downloadFocusRequester),
 					)
 
 					GlassDialogButton(
-						text = "View on GitHub",
+						text = stringResource(R.string.btn_view_on_github),
 						onClick = onViewOnGitHub,
 					)
 
 					GlassDialogButton(
-						text = "Close",
+						text = stringResource(R.string.btn_close),
 						onClick = onDismiss,
 					)
 				}
@@ -547,19 +543,19 @@ private fun downloadAndInstall(
 	if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 		if (!context.packageManager.canRequestPackageInstalls()) {
 			androidx.appcompat.app.AlertDialog.Builder(context)
-				.setTitle("Install Permission Required")
-				.setMessage("This app needs permission to install updates. Please grant it in the settings.")
-				.setPositiveButton("Open Settings") { _, _ ->
+				.setTitle(context.getString(R.string.settings_install_permission_title))
+				.setMessage(context.getString(R.string.settings_install_permission_message))
+				.setPositiveButton(context.getString(R.string.btn_open_settings)) { _, _ ->
 					openInstallPermissionSettings(context)
 				}
-				.setNegativeButton("Cancel", null)
+				.setNegativeButton(context.getString(R.string.btn_cancel), null)
 				.show()
 			return
 		}
 	}
 
 	CoroutineScope(Dispatchers.Main).launch {
-		Toast.makeText(context, "Downloading update…", Toast.LENGTH_SHORT).show()
+		Toast.makeText(context, context.getString(R.string.update_downloading), Toast.LENGTH_SHORT).show()
 
 		try {
 			val result = updateChecker.downloadUpdate(updateInfo.downloadUrl) { progress ->
@@ -568,17 +564,17 @@ private fun downloadAndInstall(
 
 			result.fold(
 				onSuccess = { apkUri ->
-					Toast.makeText(context, "Update downloaded", Toast.LENGTH_SHORT).show()
+					Toast.makeText(context, context.getString(R.string.update_downloaded), Toast.LENGTH_SHORT).show()
 					updateChecker.installUpdate(apkUri)
 				},
 				onFailure = { error ->
 					Timber.e(error, "Failed to download update")
-					Toast.makeText(context, "Failed to download update", Toast.LENGTH_LONG).show()
+					Toast.makeText(context, context.getString(R.string.update_download_failed), Toast.LENGTH_LONG).show()
 				}
 			)
 		} catch (e: Exception) {
 			Timber.e(e, "Error downloading update")
-			Toast.makeText(context, "Error downloading update", Toast.LENGTH_LONG).show()
+			Toast.makeText(context, context.getString(R.string.update_download_error), Toast.LENGTH_LONG).show()
 		}
 	}
 }
@@ -589,7 +585,7 @@ private fun openUrl(context: Context, url: String) {
 		context.startActivity(intent)
 	} catch (e: Exception) {
 		Timber.e(e, "Failed to open URL")
-		Toast.makeText(context, "Failed to open URL", Toast.LENGTH_LONG).show()
+		Toast.makeText(context, context.getString(R.string.update_failed_open_url), Toast.LENGTH_LONG).show()
 	}
 }
 
@@ -603,6 +599,6 @@ private fun openInstallPermissionSettings(context: Context) {
 		}
 	} catch (e: Exception) {
 		Timber.e(e, "Failed to open install permission settings")
-		Toast.makeText(context, "Failed to open settings", Toast.LENGTH_LONG).show()
+		Toast.makeText(context, context.getString(R.string.update_failed_open_settings), Toast.LENGTH_LONG).show()
 	}
 }

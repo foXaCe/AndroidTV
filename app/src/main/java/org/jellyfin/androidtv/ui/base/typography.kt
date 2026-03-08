@@ -10,6 +10,83 @@ import androidx.compose.ui.unit.sp
 object TypographyDefaults {
 	val Default: TextStyle = TextStyle.Default
 
+	// Full type scale — TV-optimized sizes
+
+	val Display: TextStyle = Default.copy(
+		fontSize = 48.sp,
+		lineHeight = 56.sp,
+		fontWeight = FontWeight.W500,
+	)
+
+	val HeadlineLarge: TextStyle = Default.copy(
+		fontSize = 32.sp,
+		lineHeight = 40.sp,
+		fontWeight = FontWeight.W500,
+	)
+
+	val HeadlineMedium: TextStyle = Default.copy(
+		fontSize = 24.sp,
+		lineHeight = 32.sp,
+		fontWeight = FontWeight.W500,
+	)
+
+	val TitleLarge: TextStyle = Default.copy(
+		fontSize = 20.sp,
+		lineHeight = 28.sp,
+		fontWeight = FontWeight.W600,
+	)
+
+	val TitleMedium: TextStyle = Default.copy(
+		fontSize = 16.sp,
+		lineHeight = 24.sp,
+		fontWeight = FontWeight.W600,
+	)
+
+	val TitleSmall: TextStyle = Default.copy(
+		fontSize = 14.sp,
+		lineHeight = 20.sp,
+		fontWeight = FontWeight.W600,
+	)
+
+	val BodyLarge: TextStyle = Default.copy(
+		fontSize = 16.sp,
+		lineHeight = 24.sp,
+		fontWeight = FontWeight.W400,
+	)
+
+	val BodyMedium: TextStyle = Default.copy(
+		fontSize = 14.sp,
+		lineHeight = 20.sp,
+		fontWeight = FontWeight.W400,
+	)
+
+	val BodySmall: TextStyle = Default.copy(
+		fontSize = 12.sp,
+		lineHeight = 16.sp,
+		fontWeight = FontWeight.W400,
+	)
+
+	val LabelLarge: TextStyle = Default.copy(
+		fontSize = 14.sp,
+		lineHeight = 20.sp,
+		fontWeight = FontWeight.W600,
+	)
+
+	val LabelMedium: TextStyle = Default.copy(
+		fontSize = 12.sp,
+		lineHeight = 16.sp,
+		fontWeight = FontWeight.W500,
+	)
+
+	val LabelSmall: TextStyle = Default.copy(
+		fontSize = 10.sp,
+		lineHeight = 12.sp,
+		fontWeight = FontWeight.W500,
+		letterSpacing = 0.5.sp,
+	)
+
+	// Legacy list styles (still used by base components)
+
 	val ListHeader: TextStyle = Default.copy(
 		fontSize = 15.sp,
 		lineHeight = 20.sp,
@@ -43,6 +120,22 @@ object TypographyDefaults {
 @Immutable
 data class Typography(
 	val default: TextStyle = TypographyDefaults.Default,
+
+	// Full type scale
+	val display: TextStyle = TypographyDefaults.Display,
+	val headlineLarge: TextStyle = TypographyDefaults.HeadlineLarge,
+	val headlineMedium: TextStyle = TypographyDefaults.HeadlineMedium,
+	val titleLarge: TextStyle = TypographyDefaults.TitleLarge,
+	val titleMedium: TextStyle = TypographyDefaults.TitleMedium,
+	val titleSmall: TextStyle = TypographyDefaults.TitleSmall,
+	val bodyLarge: TextStyle = TypographyDefaults.BodyLarge,
+	val bodyMedium: TextStyle = TypographyDefaults.BodyMedium,
+	val bodySmall: TextStyle = TypographyDefaults.BodySmall,
+	val labelLarge: TextStyle = TypographyDefaults.LabelLarge,
+	val labelMedium: TextStyle = TypographyDefaults.LabelMedium,
+	val labelSmall: TextStyle = TypographyDefaults.LabelSmall,
+
+	// Legacy
 	val listHeader: TextStyle = TypographyDefaults.ListHeader,
 	val listOverline: TextStyle = TypographyDefaults.ListOverline,
 	val listHeadline: TextStyle = TypographyDefaults.ListHeadline,

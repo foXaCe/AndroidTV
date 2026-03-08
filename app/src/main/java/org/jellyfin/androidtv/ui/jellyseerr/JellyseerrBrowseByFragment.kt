@@ -19,6 +19,7 @@ import androidx.leanback.widget.VerticalGridPresenter
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import androidx.core.content.ContextCompat
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.service.BackgroundService
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrDiscoverItemDto
@@ -76,30 +77,35 @@ class JellyseerrBrowseByFragment : Fragment() {
 	private var isLoading = false
 	
 	// Sorting
-	private var currentSortOption: JellyseerrSortOption = SORT_OPTIONS[0]
+	private lateinit var currentSortOption: JellyseerrSortOption
 	private var sortButton: ImageButton? = null
 	
 	// Filtering
 	private var showAvailableOnly: Boolean = false
 	private var showRequestedOnly: Boolean = false
 	private var filterButton: ImageButton? = null
+
+	// Cached info row text view (avoids repeated removeAllViews/addView)
+	private var infoTextView: android.widget.TextView? = null
 	
+	// TMDB sort options (lazy because getString requires fragment to be attached)
+	val sortOptions: List<JellyseerrSortOption> by lazy {
+		listOf(
+			JellyseerrSortOption(getString(R.string.jellyseerr_sort_popularity), "popularity.desc"),
+			JellyseerrSortOption(getString(R.string.jellyseerr_sort_rating), "vote_average.desc"),
+			JellyseerrSortOption(getString(R.string.jellyseerr_sort_release_date), "primary_release_date.desc"),
+			JellyseerrSortOption(getString(R.string.jellyseerr_sort_title), "original_title.asc"),
+			JellyseerrSortOption(getString(R.string.jellyseerr_sort_revenue), "revenue.desc")
+		)
+	}
+
 	companion object {
 		private const val ARG_FILTER_ID = "filter_id"
 		private const val ARG_FILTER_NAME = "filter_name"
 		private const val ARG_MEDIA_TYPE = "media_type"
 		private const val ARG_FILTER_TYPE = "filter_type"
 		private const val NUM_COLUMNS = 7
-		
-		// TMDB sort options
-		val SORT_OPTIONS = listOf(
-			JellyseerrSortOption("Popularity", "popularity.desc"),
-			JellyseerrSortOption("Rating", "vote_average.desc"),
-			JellyseerrSortOption("Release Date", "primary_release_date.desc"),
-			JellyseerrSortOption("Title", "original_title.asc"),
-			JellyseerrSortOption("Revenue", "revenue.desc")
-		)
-		
+
 		fun newInstance(
 			filterId: Int, 
 			filterName: String, 
@@ -130,6 +136,7 @@ class JellyseerrBrowseByFragment : Fragment() {
 				BrowseFilterType.GENRE
 			}
 		}
+		currentSortOption = sortOptions[0]
 	}
 	
 	override fun onCreateView(
@@ -155,6 +162,7 @@ class JellyseerrBrowseByFragment : Fragment() {
 		binding = null
 		gridViewHolder = null
 		sortButton = null
+		infoTextView = null
 	}
 	
 	private fun setupHeader() {
@@ -171,13 +179,12 @@ class JellyseerrBrowseByFragment : Fragment() {
 	private fun setupToolbar() {
 		val context = context ?: return
 		val toolbar = binding?.toolBar ?: return
-		
+
 		toolbar.visibility = View.VISIBLE
-		toolbar.removeAllViews()
-		
+
 		val buttonSize = Utils.convertDpToPixel(context, 26)
-		
-		// Filter button
+
+		// Filter button — inflated directly in the toolbar via XML-compatible approach
 		filterButton = ImageButton(context, null, 0, R.style.Button_Icon).apply {
 			setImageResource(R.drawable.ic_filter)
 			maxHeight = buttonSize
@@ -185,8 +192,7 @@ class JellyseerrBrowseByFragment : Fragment() {
 			contentDescription = getString(R.string.lbl_filters)
 			setOnClickListener { showFilterMenu() }
 		}
-		toolbar.addView(filterButton)
-		
+
 		// Sort button
 		sortButton = ImageButton(context, null, 0, R.style.Button_Icon).apply {
 			setImageResource(R.drawable.ic_sort)
@@ -195,7 +201,10 @@ class JellyseerrBrowseByFragment : Fragment() {
 			contentDescription = getString(R.string.lbl_sort_by)
 			setOnClickListener { showSortMenu() }
 		}
-		toolbar.addView(sortButton)
+
+		// Replace toolbar children atomically
+		toolbar.removeAllViews()
+		arrayOf(filterButton!!, sortButton!!).forEach { toolbar.addView(it) }
 	}
 	
 	private fun showFilterMenu() {
@@ -205,9 +214,9 @@ class JellyseerrBrowseByFragment : Fragment() {
 		val filterMenu = PopupMenu(context, toolbar, Gravity.END)
 		
 		// Filter options
-		filterMenu.menu.add(0, 0, 0, "Show All").isChecked = !showAvailableOnly && !showRequestedOnly
-		filterMenu.menu.add(0, 1, 1, "Available Only").isChecked = showAvailableOnly
-		filterMenu.menu.add(0, 2, 2, "Requested Only").isChecked = showRequestedOnly
+		filterMenu.menu.add(0, 0, 0, getString(R.string.jellyseerr_filter_show_all)).isChecked = !showAvailableOnly && !showRequestedOnly
+		filterMenu.menu.add(0, 1, 1, getString(R.string.jellyseerr_filter_available_only)).isChecked = showAvailableOnly
+		filterMenu.menu.add(0, 2, 2, getString(R.string.jellyseerr_filter_requested_only)).isChecked = showRequestedOnly
 		filterMenu.menu.setGroupCheckable(0, true, true)
 		
 		filterMenu.setOnMenuItemClickListener { item ->
@@ -246,14 +255,14 @@ class JellyseerrBrowseByFragment : Fragment() {
 		
 		val sortMenu = PopupMenu(context, toolbar, Gravity.END)
 		
-		SORT_OPTIONS.forEachIndexed { index, option ->
+		sortOptions.forEachIndexed { index, option ->
 			val item = sortMenu.menu.add(0, index, index, option.name)
 			item.isChecked = option.value == currentSortOption.value
 		}
 		sortMenu.menu.setGroupCheckable(0, true, true)
 		
 		sortMenu.setOnMenuItemClickListener { item ->
-			val selectedOption = SORT_OPTIONS[item.itemId]
+			val selectedOption = sortOptions[item.itemId]
 			if (selectedOption.value != currentSortOption.value) {
 				currentSortOption = selectedOption
 				item.isChecked = true
@@ -330,7 +339,7 @@ gridPresenter.setOnItemViewSelectedListener(OnItemViewSelectedListener {
 		
 		// Update title on the left to show selected item name (filterLogo stays centered)
 		binding?.title?.apply {
-			text = item.title ?: item.name ?: "Unknown"
+			text = item.title ?: item.name ?: getString(R.string.lbl_unknown)
 			visibility = View.VISIBLE
 		}
 		
@@ -348,76 +357,61 @@ gridPresenter.setOnItemViewSelectedListener(OnItemViewSelectedListener {
 	}
 	
 	private fun updateInfoRow(item: JellyseerrDiscoverItemDto) {
-		val context = context ?: return
 		val infoRow = binding?.infoRow ?: return
-		
-		// Clear existing views
-		infoRow.removeAllViews()
-		
+
 		val metadataItems = mutableListOf<String>()
-		
+
 		// Year
 		val year = item.releaseDate?.take(4) ?: item.firstAirDate?.take(4)
 		year?.let { metadataItems.add(it) }
-		
+
 		// Rating (if available)
 		item.voteAverage?.let { rating ->
 			if (rating > 0) {
 				metadataItems.add("★ %.1f".format(rating))
 			}
 		}
-		
+
 		// Media type
 		val typeLabel = when (item.mediaType) {
-			"movie" -> "Movie"
+			"movie" -> getString(R.string.lbl_movie_type)
 			"tv" -> getString(R.string.lbl_tv_series)
 			else -> ""
 		}
 		if (typeLabel.isNotEmpty()) metadataItems.add(typeLabel)
-		
+
 		// Status indicator
 		item.mediaInfo?.status?.let { status ->
 			val statusText = when (status) {
-				1 -> "Unknown"
-				2 -> "Pending"
-				3 -> "Processing"
-				4 -> "Partially Available"
-				5 -> "Available"
+				1 -> getString(R.string.jellyseerr_status_unknown)
+				2 -> getString(R.string.jellyseerr_status_pending)
+				3 -> getString(R.string.jellyseerr_status_processing)
+				4 -> getString(R.string.jellyseerr_status_partially_available)
+				5 -> getString(R.string.jellyseerr_status_available)
 				else -> null
 			}
 			statusText?.let { metadataItems.add(it) }
 		}
-		
-		// Add metadata text views
-		metadataItems.forEachIndexed { index, text ->
-			if (index > 0) {
-				// Add separator
-				val separator = android.widget.TextView(context).apply {
-					this.text = " • "
-					textSize = 14f
-					setTextColor(android.graphics.Color.WHITE)
-					alpha = 0.7f
-				}
-				infoRow.addView(separator)
-			}
-			
-			val textView = android.widget.TextView(context).apply {
-				this.text = text
+
+		// Reuse a single cached TextView instead of removeAllViews/addView
+		if (infoTextView == null) {
+			infoTextView = android.widget.TextView(requireContext()).apply {
 				textSize = 14f
-				setTextColor(android.graphics.Color.WHITE)
+				setTextColor(ContextCompat.getColor(requireContext(), R.color.ds_text_primary))
 				alpha = 0.7f
 			}
-			infoRow.addView(textView)
+			infoRow.addView(infoTextView)
 		}
+		infoTextView?.text = if (metadataItems.isNotEmpty()) metadataItems.joinToString(" \u2022 ") else ""
 	}
 	
 	private fun updateStatusText() {
 		val sortName = currentSortOption.name
 		val filterTypeName = when (filterType) {
 			BrowseFilterType.GENRE -> getString(R.string.lbl_genres)
-			BrowseFilterType.NETWORK -> "Network"
-			BrowseFilterType.STUDIO -> "Studio"
-			BrowseFilterType.KEYWORD -> "Keyword"
+			BrowseFilterType.NETWORK -> getString(R.string.jellyseerr_filter_network)
+			BrowseFilterType.STUDIO -> getString(R.string.jellyseerr_filter_studio)
+			BrowseFilterType.KEYWORD -> getString(R.string.jellyseerr_filter_keyword)
 		}
 		val mediaTypeName = if (mediaType == "movie") getString(R.string.lbl_movies) else getString(R.string.lbl_tv_series)
 		

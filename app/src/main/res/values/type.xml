@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         DESIGN SYSTEM — Text Appearances
+         Based on Material 3 type scale, optimized for TV readability
+         ══════════════════════════════════════════════════════════════════ -->
+
+    <style name="TextAppearance.DS" parent="android:TextAppearance" />
+
+    <!-- Display — Hero text, splash screens -->
+    <style name="TextAppearance.DS.Display">
+        <item name="android:textSize">@dimen/ds_text_display</item>
+        <item name="android:textColor">@color/ds_text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Headline Large — Screen titles -->
+    <style name="TextAppearance.DS.HeadlineLarge">
+        <item name="android:textSize">@dimen/ds_text_headline_lg</item>
+        <item name="android:textColor">@color/ds_text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Headline Medium — Section titles -->
+    <style name="TextAppearance.DS.HeadlineMedium">
+        <item name="android:textSize">@dimen/ds_text_headline_md</item>
+        <item name="android:textColor">@color/ds_text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Title Large — Card titles, prominent labels -->
+    <style name="TextAppearance.DS.TitleLarge">
+        <item name="android:textSize">@dimen/ds_text_title_lg</item>
+        <item name="android:textColor">@color/ds_text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Title Medium — Subtitles -->
+    <style name="TextAppearance.DS.TitleMedium">
+        <item name="android:textSize">@dimen/ds_text_title_md</item>
+        <item name="android:textColor">@color/ds_text_primary</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <!-- Title Small — List item titles -->
+    <style name="TextAppearance.DS.TitleSmall">
+        <item name="android:textSize">@dimen/ds_text_title_sm</item>
+        <item name="android:textColor">@color/ds_text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Body Large — Primary body text -->
+    <style name="TextAppearance.DS.BodyLarge">
+        <item name="android:textSize">@dimen/ds_text_body_lg</item>
+        <item name="android:textColor">@color/ds_text_primary</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <!-- Body Medium — Default body text -->
+    <style name="TextAppearance.DS.BodyMedium">
+        <item name="android:textSize">@dimen/ds_text_body_md</item>
+        <item name="android:textColor">@color/ds_text_primary</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <!-- Body Small — Secondary info -->
+    <style name="TextAppearance.DS.BodySmall">
+        <item name="android:textSize">@dimen/ds_text_body_sm</item>
+        <item name="android:textColor">@color/ds_text_secondary</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <!-- Label Large — Button text -->
+    <style name="TextAppearance.DS.LabelLarge">
+        <item name="android:textSize">@dimen/ds_text_label_lg</item>
+        <item name="android:textColor">@color/ds_text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Label Medium — Badges, tags -->
+    <style name="TextAppearance.DS.LabelMedium">
+        <item name="android:textSize">@dimen/ds_text_label_md</item>
+        <item name="android:textColor">@color/ds_text_secondary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Label Small — Metadata, timestamps -->
+    <style name="TextAppearance.DS.LabelSmall">
+        <item name="android:textSize">@dimen/ds_text_label_sm</item>
+        <item name="android:textColor">@color/ds_text_secondary</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+</resources>

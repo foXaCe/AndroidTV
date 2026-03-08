@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import org.jellyfin.androidtv.R
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.focusBorderColor
 
@@ -55,16 +56,16 @@ fun ExitConfirmationDialog(
 			Column(
 				modifier = Modifier
 					.widthIn(min = 340.dp, max = 440.dp)
-					.clip(RoundedCornerShape(20.dp))
-					.background(Color(0xE6141414))
-					.border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
+					.clip(JellyfinTheme.shapes.dialog)
+					.background(JellyfinTheme.colorScheme.dialogScrim)
+					.border(1.dp, JellyfinTheme.colorScheme.outlineVariant, JellyfinTheme.shapes.dialog)
 					.padding(vertical = 20.dp),
 			) {
 				Text(
 					text = stringResource(R.string.exit_confirmation_title),
-					fontSize = 20.sp,
+					style = JellyfinTheme.typography.titleLarge,
 					fontWeight = FontWeight.W600,
-					color = Color.White,
+					color = JellyfinTheme.colorScheme.onSurface,
 					modifier = Modifier
 						.padding(horizontal = 24.dp)
 						.padding(bottom = 12.dp),
@@ -74,14 +75,13 @@ fun ExitConfirmationDialog(
 					modifier = Modifier
 						.fillMaxWidth()
 						.height(1.dp)
-						.background(Color.White.copy(alpha = 0.08f)),
+						.background(JellyfinTheme.colorScheme.divider),
 				)
 
 				Text(
 					text = stringResource(R.string.exit_confirmation_message),
-					fontSize = 16.sp,
-					fontWeight = FontWeight.W400,
-					color = Color.White.copy(alpha = 0.8f),
+					style = JellyfinTheme.typography.bodyLarge,
+					color = JellyfinTheme.colorScheme.textSecondary,
 					modifier = Modifier
 						.padding(horizontal = 24.dp)
 						.padding(top = 16.dp, bottom = 16.dp),
@@ -91,7 +91,7 @@ fun ExitConfirmationDialog(
 					modifier = Modifier
 						.fillMaxWidth()
 						.height(1.dp)
-						.background(Color.White.copy(alpha = 0.08f)),
+						.background(JellyfinTheme.colorScheme.divider),
 				)
 
 				Spacer(modifier = Modifier.height(8.dp))
@@ -109,16 +109,16 @@ fun ExitConfirmationDialog(
 						) { onConfirm() }
 						.focusable(interactionSource = exitInteractionSource)
 						.background(
-							if (exitFocused) Color.White.copy(alpha = 0.12f) else Color.Transparent,
+							if (exitFocused) JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.12f) else Color.Transparent,
 						)
 						.padding(horizontal = 24.dp, vertical = 14.dp),
 					verticalAlignment = Alignment.CenterVertically,
 				) {
 					Text(
 						text = stringResource(R.string.lbl_exit),
-						fontSize = 16.sp,
+						style = JellyfinTheme.typography.titleMedium,
 						fontWeight = FontWeight.W600,
-						color = if (exitFocused) accentColor else Color.White.copy(alpha = 0.8f),
+						color = if (exitFocused) accentColor else JellyfinTheme.colorScheme.textSecondary,
 					)
 				}
 
@@ -134,16 +134,15 @@ fun ExitConfirmationDialog(
 						) { onDismiss() }
 						.focusable(interactionSource = cancelInteractionSource)
 						.background(
-							if (cancelFocused) Color.White.copy(alpha = 0.12f) else Color.Transparent,
+							if (cancelFocused) JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.12f) else Color.Transparent,
 						)
 						.padding(horizontal = 24.dp, vertical = 14.dp),
 					verticalAlignment = Alignment.CenterVertically,
 				) {
 					Text(
 						text = stringResource(android.R.string.cancel),
-						fontSize = 16.sp,
-						fontWeight = FontWeight.W400,
-						color = if (cancelFocused) Color.White else Color.White.copy(alpha = 0.8f),
+						style = JellyfinTheme.typography.titleMedium,
+						color = if (cancelFocused) JellyfinTheme.colorScheme.onSurface else JellyfinTheme.colorScheme.textSecondary,
 					)
 				}
 			}

@@ -1,6 +1,7 @@
 package org.jellyfin.androidtv.ui.itemhandling
 
 import android.content.Context
+import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.constant.ImageType
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrDiscoverItemDto
 import org.jellyfin.androidtv.util.ImageHelper
@@ -41,8 +42,8 @@ class JellyseerrMediaBaseRowItem(
 	override fun getSubText(context: Context): String? {
 		val year = item.releaseDate?.take(4) ?: item.firstAirDate?.take(4)
 		return year ?: when (item.mediaType) {
-			"movie" -> "Movie"
-			"tv" -> "TV Series"
+			"movie" -> context.getString(R.string.lbl_movie_type)
+			"tv" -> context.getString(R.string.lbl_tv_series)
 			else -> null
 		}
 	}

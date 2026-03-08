@@ -19,10 +19,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,11 +35,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.Dispatchers
@@ -58,6 +59,7 @@ internal enum class ShuffleMode {
 	MAIN, LIBRARIES, GENRES
 }
 
+@Stable
 internal data class LibrarySelection(
 	val library: BaseItemDto,
 	val serverId: UUID?,
@@ -121,9 +123,9 @@ fun ShuffleOptionsDialog(
 			Column(
 				modifier = Modifier
 					.widthIn(min = 340.dp, max = 440.dp)
-					.clip(RoundedCornerShape(20.dp))
-					.background(Color(0xE6141414))
-					.border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
+					.clip(JellyfinTheme.shapes.dialog)
+					.background(JellyfinTheme.colorScheme.dialogScrim)
+					.border(1.dp, Color.White.copy(alpha = 0.1f), JellyfinTheme.shapes.dialog)
 					.padding(vertical = 20.dp),
 			) {
 				// Title row with optional back button
@@ -140,8 +142,8 @@ fun ShuffleOptionsDialog(
 						Box(
 							modifier = Modifier
 								.size(32.dp)
-								.clip(RoundedCornerShape(8.dp))
-								.background(if (backFocused) Color.White.copy(alpha = 0.12f) else Color.Transparent)
+								.clip(JellyfinTheme.shapes.small)
+								.background(if (backFocused) JellyfinTheme.colorScheme.listButtonFocused else Color.Transparent)
 								.clickable(
 									interactionSource = backInteraction,
 									indication = null,
@@ -151,8 +153,8 @@ fun ShuffleOptionsDialog(
 						) {
 							androidx.compose.material3.Text(
 								text = "\u276E",
-								fontSize = 16.sp,
-								color = if (backFocused) Color.White else Color.White.copy(alpha = 0.6f),
+								style = JellyfinTheme.typography.titleMedium,
+								color = if (backFocused) JellyfinTheme.colorScheme.textPrimary else JellyfinTheme.colorScheme.textSecondary,
 							)
 						}
 						Spacer(modifier = Modifier.width(12.dp))
@@ -160,13 +162,12 @@ fun ShuffleOptionsDialog(
 
 					androidx.compose.material3.Text(
 						text = when (mode) {
-							ShuffleMode.MAIN -> "Shuffle By"
-							ShuffleMode.LIBRARIES -> "Select Library"
-							ShuffleMode.GENRES -> "Select Genre"
+							ShuffleMode.MAIN -> stringResource(R.string.lbl_shuffle_by)
+							ShuffleMode.LIBRARIES -> stringResource(R.string.lbl_select_library)
+							ShuffleMode.GENRES -> stringResource(R.string.lbl_select_genre)
 						},
-						fontSize = 20.sp,
-						fontWeight = FontWeight.W600,
-						color = Color.White,
+						style = JellyfinTheme.typography.titleLarge,
+						color = JellyfinTheme.colorScheme.textPrimary,
 					)
 				}
 
@@ -175,7 +176,7 @@ fun ShuffleOptionsDialog(
 					modifier = Modifier
 						.fillMaxWidth()
 						.height(1.dp)
-						.background(Color.White.copy(alpha = 0.08f)),
+						.background(JellyfinTheme.colorScheme.divider),
 				)
 
 				Spacer(modifier = Modifier.height(8.dp))
@@ -185,13 +186,13 @@ fun ShuffleOptionsDialog(
 					ShuffleMode.MAIN -> {
 						GlassDialogRow(
 							icon = ImageVector.vectorResource(R.drawable.ic_folder),
-							label = "Library",
+							label = stringResource(R.string.lbl_library),
 							onClick = { mode = ShuffleMode.LIBRARIES },
 							focusRequester = initialFocusRequester,
 						)
 						GlassDialogRow(
 							icon = ImageVector.vectorResource(R.drawable.ic_masks),
-							label = "Genre",
+							label = stringResource(R.string.lbl_genre),
 							onClick = { mode = ShuffleMode.GENRES },
 						)
 					}
@@ -219,7 +220,7 @@ fun ShuffleOptionsDialog(
 							) {
 								CircularProgressIndicator(
 									strokeWidth = 2.dp,
-									color = Color(0xFF00A4DC),
+									color = JellyfinTheme.colorScheme.primary,
 								)
 							}
 						} else {
@@ -245,14 +246,14 @@ fun ShuffleOptionsDialog(
 					modifier = Modifier
 						.fillMaxWidth()
 						.height(1.dp)
-						.background(Color.White.copy(alpha = 0.08f)),
+						.background(JellyfinTheme.colorScheme.divider),
 				)
 				Spacer(modifier = Modifier.height(4.dp))
 
 				GlassDialogRow(
-					label = "Cancel",
+					label = stringResource(R.string.lbl_cancel),
 					onClick = onDismiss,
-					contentColor = Color.White.copy(alpha = 0.5f),
+					contentColor = JellyfinTheme.colorScheme.textHint,
 				)
 			}
 		}
@@ -273,7 +274,7 @@ internal fun GlassDialogRow(
 	modifier: Modifier = Modifier,
 	icon: ImageVector? = null,
 	focusRequester: FocusRequester? = null,
-	contentColor: Color = Color.White.copy(alpha = 0.8f),
+	contentColor: Color = JellyfinTheme.colorScheme.textPrimary,
 ) {
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
@@ -294,7 +295,7 @@ internal fun GlassDialogRow(
 			) { onClick() }
 			.focusable(interactionSource = interactionSource)
 			.background(
-				if (isFocused) Color.White.copy(alpha = 0.12f) else Color.Transparent,
+				if (isFocused) JellyfinTheme.colorScheme.listButtonFocused else Color.Transparent,
 			)
 			.padding(horizontal = 24.dp, vertical = 14.dp),
 		verticalAlignment = Alignment.CenterVertically,
@@ -303,7 +304,7 @@ internal fun GlassDialogRow(
 			Icon(
 				imageVector = icon,
 				contentDescription = null,
-				tint = if (isFocused) Color.White else contentColor,
+				tint = if (isFocused) JellyfinTheme.colorScheme.onSurface else contentColor,
 				modifier = Modifier.size(20.dp),
 			)
 			Spacer(modifier = Modifier.width(16.dp))
@@ -311,9 +312,9 @@ internal fun GlassDialogRow(
 
 		androidx.compose.material3.Text(
 			text = label,
-			fontSize = 16.sp,
+			style = JellyfinTheme.typography.titleMedium,
 			fontWeight = FontWeight.W400,
-			color = if (isFocused) Color.White else contentColor,
+			color = if (isFocused) JellyfinTheme.colorScheme.onSurface else contentColor,
 			maxLines = 1,
 			overflow = TextOverflow.Ellipsis,
 			modifier = Modifier.weight(1f),

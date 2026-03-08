@@ -24,4 +24,5 @@ enum class AppTheme(
 	DARK_GREEN(R.string.pref_media_bar_color_dark_green, 0xFF66BB6A),
 	SLATE(R.string.pref_media_bar_color_slate, 0xFF90A4AE),
 	INDIGO(R.string.pref_media_bar_color_indigo, 0xFF7986CB),
+	ORANGE(R.string.pref_focus_color_orange, 0xFFE5A00D),
 }

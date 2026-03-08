@@ -19,11 +19,14 @@ import org.jellyfin.sdk.model.api.BaseItemKind
 import org.jellyfin.sdk.model.api.ItemFilter
 import org.jellyfin.sdk.model.api.ItemSortBy
 import org.jellyfin.sdk.model.api.SortOrder
+import org.jellyfin.androidtv.ui.base.state.UiError
+import org.jellyfin.androidtv.ui.base.state.toUiError
 import timber.log.Timber
 import java.util.UUID
 
 data class MusicBrowseUiState(
 	val isLoading: Boolean = true,
+	val error: UiError? = null,
 	val libraryName: String = "",
 	val latestAudio: List<BaseItemDto> = emptyList(),
 	val lastPlayed: List<BaseItemDto> = emptyList(),
@@ -92,7 +95,7 @@ class MusicBrowseViewModel(
 				_uiState.value = _uiState.value.copy(isLoading = false)
 			} catch (err: Exception) {
 				Timber.e(err, "Failed to load music library rows")
-				_uiState.value = _uiState.value.copy(isLoading = false)
+				_uiState.value = _uiState.value.copy(isLoading = false, error = err.toUiError())
 			}
 		}
 	}
@@ -172,5 +175,10 @@ class MusicBrowseViewModel(
 		} catch (err: ApiClientException) {
 			Timber.e(err, "Failed to load playlists")
 		}
+	}
+
+	fun retry() {
+		_uiState.value = _uiState.value.copy(error = null, isLoading = true)
+		loadAllRows()
 	}
 }

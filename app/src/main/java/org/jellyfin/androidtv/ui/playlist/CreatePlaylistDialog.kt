@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Switch
@@ -42,10 +41,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.CoroutineScope
@@ -53,7 +50,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jellyfin.androidtv.R
-import org.jellyfin.androidtv.ui.base.Icon
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.shuffle.GlassDialogRow
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.extensions.playlistsApi
@@ -86,9 +83,9 @@ fun CreatePlaylistDialog(
 			Column(
 				modifier = Modifier
 					.widthIn(min = 340.dp, max = 440.dp)
-					.clip(RoundedCornerShape(20.dp))
-					.background(Color(0xE6141414))
-					.border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
+					.clip(JellyfinTheme.shapes.dialog)
+					.background(JellyfinTheme.colorScheme.dialogScrim)
+					.border(1.dp, Color.White.copy(alpha = 0.1f), JellyfinTheme.shapes.dialog)
 					.padding(vertical = 20.dp),
 			) {
 				// Title row with back button
@@ -104,8 +101,8 @@ fun CreatePlaylistDialog(
 					Box(
 						modifier = Modifier
 							.size(32.dp)
-							.clip(RoundedCornerShape(8.dp))
-							.background(if (backFocused) Color.White.copy(alpha = 0.12f) else Color.Transparent)
+							.clip(JellyfinTheme.shapes.small)
+							.background(if (backFocused) JellyfinTheme.colorScheme.listButtonFocused else Color.Transparent)
 							.clickable(
 								interactionSource = backInteraction,
 								indication = null,
@@ -115,17 +112,16 @@ fun CreatePlaylistDialog(
 					) {
 						Text(
 							text = "\u276E",
-							fontSize = 16.sp,
-							color = if (backFocused) Color.White else Color.White.copy(alpha = 0.6f),
+							style = JellyfinTheme.typography.titleMedium,
+							color = if (backFocused) JellyfinTheme.colorScheme.textPrimary else JellyfinTheme.colorScheme.textSecondary,
 						)
 					}
 					Spacer(modifier = Modifier.width(12.dp))
 
 					Text(
 						text = stringResource(R.string.lbl_create_new_playlist),
-						fontSize = 20.sp,
-						fontWeight = FontWeight.W600,
-						color = Color.White,
+						style = JellyfinTheme.typography.titleLarge,
+						color = JellyfinTheme.colorScheme.textPrimary,
 					)
 				}
 
@@ -134,7 +130,7 @@ fun CreatePlaylistDialog(
 					modifier = Modifier
 						.fillMaxWidth()
 						.height(1.dp)
-						.background(Color.White.copy(alpha = 0.08f)),
+						.background(JellyfinTheme.colorScheme.divider),
 				)
 
 				Spacer(modifier = Modifier.height(16.dp))
@@ -142,8 +138,8 @@ fun CreatePlaylistDialog(
 				// Playlist name label
 				Text(
 					text = stringResource(R.string.lbl_playlist_name),
-					fontSize = 12.sp,
-					color = Color.White.copy(alpha = 0.5f),
+					style = JellyfinTheme.typography.bodySmall,
+					color = JellyfinTheme.colorScheme.textHint,
 					modifier = Modifier.padding(horizontal = 24.dp),
 				)
 
@@ -155,22 +151,22 @@ fun CreatePlaylistDialog(
 				BasicTextField(
 					value = playlistName,
 					onValueChange = { playlistName = it },
-					textStyle = TextStyle(
-						color = Color.White,
-						fontSize = 16.sp,
+					textStyle = JellyfinTheme.typography.titleMedium.copy(
+						color = JellyfinTheme.colorScheme.textPrimary,
+						fontWeight = FontWeight.W400,
 					),
-					cursorBrush = SolidColor(Color(0xFF00A4DC)),
+					cursorBrush = SolidColor(JellyfinTheme.colorScheme.primary),
 					singleLine = true,
 					interactionSource = nameInteraction,
 					modifier = Modifier
 						.fillMaxWidth()
 						.padding(horizontal = 24.dp)
-						.clip(RoundedCornerShape(12.dp))
-						.background(Color.White.copy(alpha = 0.08f))
+						.clip(JellyfinTheme.shapes.medium)
+						.background(JellyfinTheme.colorScheme.divider)
 						.border(
 							width = 1.dp,
-							color = if (nameFieldFocused) Color(0xFF00A4DC) else Color.White.copy(alpha = 0.15f),
-							shape = RoundedCornerShape(12.dp),
+							color = if (nameFieldFocused) JellyfinTheme.colorScheme.primary else Color.White.copy(alpha = 0.15f),
+							shape = JellyfinTheme.shapes.medium,
 						)
 						.padding(horizontal = 16.dp, vertical = 14.dp)
 						.focusRequester(nameInputFocusRequester),
@@ -179,8 +175,8 @@ fun CreatePlaylistDialog(
 							if (playlistName.isEmpty()) {
 								Text(
 									text = stringResource(R.string.lbl_playlist_name),
-									color = Color.White.copy(alpha = 0.3f),
-									fontSize = 16.sp,
+									color = JellyfinTheme.colorScheme.textDisabled,
+									style = JellyfinTheme.typography.titleMedium,
 								)
 							}
 							innerTextField()
@@ -202,27 +198,27 @@ fun CreatePlaylistDialog(
 						) { isPublic = !isPublic }
 						.focusable(interactionSource = switchInteraction)
 						.background(
-							if (switchFocused) Color.White.copy(alpha = 0.12f) else Color.Transparent,
+							if (switchFocused) JellyfinTheme.colorScheme.listButtonFocused else Color.Transparent,
 						)
 						.padding(horizontal = 24.dp, vertical = 14.dp),
 					verticalAlignment = Alignment.CenterVertically,
 				) {
 					Text(
 						text = stringResource(R.string.lbl_public_playlist),
-						fontSize = 16.sp,
+						style = JellyfinTheme.typography.titleMedium,
 						fontWeight = FontWeight.W400,
-						color = if (switchFocused) Color.White else Color.White.copy(alpha = 0.8f),
+						color = if (switchFocused) JellyfinTheme.colorScheme.onSurface else JellyfinTheme.colorScheme.textPrimary,
 						modifier = Modifier.weight(1f),
 					)
 					Switch(
 						checked = isPublic,
 						onCheckedChange = null,
 						colors = SwitchDefaults.colors(
-							checkedThumbColor = Color.White,
-							checkedTrackColor = Color(0xFF00A4DC),
-							uncheckedThumbColor = Color.White.copy(alpha = 0.7f),
+							checkedThumbColor = JellyfinTheme.colorScheme.onPrimary,
+							checkedTrackColor = JellyfinTheme.colorScheme.primary,
+							uncheckedThumbColor = JellyfinTheme.colorScheme.textSecondary,
 							uncheckedTrackColor = Color.White.copy(alpha = 0.2f),
-							uncheckedBorderColor = Color.White.copy(alpha = 0.3f),
+							uncheckedBorderColor = JellyfinTheme.colorScheme.textDisabled,
 						),
 					)
 				}
@@ -234,7 +230,7 @@ fun CreatePlaylistDialog(
 					modifier = Modifier
 						.fillMaxWidth()
 						.height(1.dp)
-						.background(Color.White.copy(alpha = 0.08f)),
+						.background(JellyfinTheme.colorScheme.divider),
 				)
 
 				Spacer(modifier = Modifier.height(4.dp))
@@ -249,7 +245,7 @@ fun CreatePlaylistDialog(
 					) {
 						CircularProgressIndicator(
 							strokeWidth = 2.dp,
-							color = Color(0xFF00A4DC),
+							color = JellyfinTheme.colorScheme.primary,
 						)
 					}
 				} else {
@@ -299,9 +295,9 @@ fun CreatePlaylistDialog(
 
 					// Cancel
 					GlassDialogRow(
-						label = "Cancel",
+						label = stringResource(R.string.lbl_cancel),
 						onClick = onDismiss,
-						contentColor = Color.White.copy(alpha = 0.5f),
+						contentColor = JellyfinTheme.colorScheme.textHint,
 					)
 				}
 			}

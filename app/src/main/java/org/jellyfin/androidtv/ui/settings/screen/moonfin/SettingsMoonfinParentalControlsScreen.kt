@@ -55,7 +55,7 @@ fun SettingsMoonfinParentalControlsScreen() {
 		} else if (availableRatings.isEmpty()) {
 			item {
 				ListButton(
-					headingContent = { Text("No ratings available") },
+					headingContent = { Text(stringResource(R.string.lbl_no_ratings_available)) },
 					enabled = false,
 					onClick = { }
 				)

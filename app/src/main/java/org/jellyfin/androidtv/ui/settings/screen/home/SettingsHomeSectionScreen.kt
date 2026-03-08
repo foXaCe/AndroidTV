@@ -26,7 +26,7 @@ fun SettingsHomeSectionScreen(index: Int) {
 
 	if (sectionPreference == null) {
 		ListMessage {
-			Text("Unknown section $index")
+			Text(stringResource(R.string.item_unknown_section, index))
 		}
 
 		return

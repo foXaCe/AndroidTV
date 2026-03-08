@@ -8,6 +8,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
+import org.jellyfin.androidtv.ui.base.AnimationDefaults
 import org.jellyfin.androidtv.ui.navigation.RouterContent
 
 /**
@@ -15,7 +16,7 @@ import org.jellyfin.androidtv.ui.navigation.RouterContent
  */
 @Composable
 fun SettingsRouterContent() {
-	val duration = 400 // milliseconds
+	val duration = AnimationDefaults.DURATION_MEDIUM
 
 	val transitionIn = slideInHorizontally(
 		initialOffsetX = { it },

@@ -8,7 +8,6 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.ProvideTextStyle
 import org.jellyfin.design.Tokens
@@ -49,9 +48,8 @@ private fun ItemPreviewMetadata(
 	) {
 		title?.let { content ->
 			ProvideTextStyle(
-				value = JellyfinTheme.typography.default.copy(
+				value = JellyfinTheme.typography.bodySmall.copy(
 					color = Tokens.Color.colorGrey100,
-					fontSize = 12.sp,
 				),
 				content = content,
 			)
@@ -59,9 +57,8 @@ private fun ItemPreviewMetadata(
 
 		subtitle?.let { content ->
 			ProvideTextStyle(
-				value = JellyfinTheme.typography.default.copy(
+				value = JellyfinTheme.typography.labelSmall.copy(
 					color = Tokens.Color.colorGrey300,
-					fontSize = 10.sp,
 				),
 				content = content,
 			)

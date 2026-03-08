@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,11 +47,12 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.activity.compose.LocalActivity
 import coil3.compose.AsyncImage
+import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
@@ -69,6 +69,7 @@ import org.jellyfin.androidtv.preference.JellyseerrPreferences
 import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.preference.constant.ClockBehavior
 import org.jellyfin.androidtv.ui.base.Icon
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.focusBorderColor
 import org.jellyfin.androidtv.ui.itemhandling.ItemLauncher
@@ -187,7 +188,7 @@ fun LeftSidebarNavigation(
 		activeButton = activeButton,
 		activeLibraryId = activeLibraryId,
 		userImageUrl = userImageUrl,
-		userName = currentUser?.name ?: "User",
+		userName = currentUser?.name ?: stringResource(R.string.lbl_user_fallback),
 		activity = activity,
 		sessionRepository = sessionRepository,
 		mediaManager = mediaManager,
@@ -431,6 +432,7 @@ private fun CollapsibleSidebarContent(
 					label = context.getString(R.string.lbl_home),
 					showLabel = isExpanded,
 					isExpanded = isExpanded,
+					isActive = activeButton == MainToolbarActiveButton.Home,
 					focusRequester = homeFocusRequester,
 					onClick = {
 						navigationRepository.navigate(Destinations.home)
@@ -444,6 +446,7 @@ private fun CollapsibleSidebarContent(
 					label = context.getString(R.string.lbl_search),
 					showLabel = isExpanded,
 					isExpanded = isExpanded,
+					isActive = activeButton == MainToolbarActiveButton.Search,
 					onClick = {
 						navigationRepository.navigate(Destinations.search())
 					}
@@ -454,7 +457,7 @@ private fun CollapsibleSidebarContent(
 				if (showShuffle) {
 					SidebarIconItem(
 						icon = shuffleIcon,
-						label = if (isShuffling) "..." else "Shuffle",
+						label = if (isShuffling) "..." else stringResource(R.string.lbl_shuffle),
 						showLabel = isExpanded,
 						isExpanded = isExpanded,
 						onClick = {
@@ -501,6 +504,7 @@ private fun CollapsibleSidebarContent(
 						label = jellyseerrDisplayName,
 						showLabel = isExpanded,
 						isExpanded = isExpanded,
+					isActive = activeButton == MainToolbarActiveButton.Jellyseerr,
 						onClick = {
 							navigationRepository.navigate(Destinations.jellyseerrDiscover)
 						}
@@ -537,7 +541,7 @@ private fun CollapsibleSidebarContent(
 				if (showLibrariesInToolbar) {
 					SidebarIconItem(
 						icon = librariesIcon,
-						label = "Libraries",
+						label = stringResource(R.string.pref_libraries),
 						showLabel = isExpanded,
 						isExpanded = isExpanded,
 						onFocusChanged = { hasFocus ->
@@ -611,7 +615,7 @@ private fun CollapsibleSidebarContent(
 			Column {
 				SidebarIconItem(
 					icon = settingsIcon,
-					label = "Settings",
+					label = stringResource(R.string.settings),
 					showLabel = isExpanded,
 					isExpanded = isExpanded,
 					onClick = {
@@ -683,6 +687,7 @@ private fun SidebarIconItem(
 	label: String,
 	showLabel: Boolean,
 	isExpanded: Boolean,
+	isActive: Boolean = false,
 	focusRequester: FocusRequester? = null,
 	onFocusChanged: ((Boolean) -> Unit)? = null,
 	onClick: () -> Unit,
@@ -700,11 +705,11 @@ private fun SidebarIconItem(
 	
 	val focusedColor = focusBorderColor()
 	val iconAlpha by animateFloatAsState(
-		targetValue = if (isExpanded || imageUrl != null) 1f else 0.5f,
+		targetValue = if (isActive || isExpanded || imageUrl != null) 1f else 0.5f,
 		label = "iconAlpha"
 	)
-	val iconColor = Color.White.copy(alpha = iconAlpha)
-	val textColor = Color.White
+	val iconColor = if (isActive && !isFocused) focusedColor else JellyfinTheme.colorScheme.onSurface.copy(alpha = iconAlpha)
+	val textColor = if (isActive && !isFocused) focusedColor else JellyfinTheme.colorScheme.onSurface
 
 	// Delay label appearance until sidebar width animation has partially completed
 	var delayedShowLabel by remember { mutableStateOf(showLabel) }
@@ -724,7 +729,11 @@ private fun SidebarIconItem(
 			.then(
 				if (isFocused) {
 					Modifier
-						.border(2.dp, focusedColor, RoundedCornerShape(24.dp))
+						.border(2.dp, focusedColor, JellyfinTheme.shapes.extraLarge)
+						.padding(horizontal = 4.dp)
+				} else if (isActive) {
+					Modifier
+						.border(2.dp, focusedColor.copy(alpha = 0.6f), JellyfinTheme.shapes.extraLarge)
 						.padding(horizontal = 4.dp)
 				} else {
 					Modifier.padding(horizontal = 4.dp)
@@ -774,13 +783,15 @@ private fun SidebarIconItem(
 			contentAlignment = Alignment.Center
 		) {
 			if (imageUrl != null) {
+				val placeholder = rememberGradientPlaceholder()
 				AsyncImage(
 					model = imageUrl,
 					contentDescription = label,
 					modifier = Modifier
 						.size(32.dp)
 						.clip(CircleShape),
-					contentScale = ContentScale.Crop
+					contentScale = ContentScale.Crop,
+					placeholder = placeholder,
 				)
 			} else if (icon != null) {
 				Icon(
@@ -798,7 +809,7 @@ private fun SidebarIconItem(
 				Text(
 					text = label,
 					color = textColor,
-					fontSize = 16.sp
+					style = JellyfinTheme.typography.titleMedium,
 				)
 				Spacer(modifier = Modifier.width(8.dp))
 			}
@@ -820,7 +831,7 @@ private fun SidebarTextItem(
 	}
 	
 	val focusedColor = focusBorderColor()
-	val textColor = Color.White
+	val textColor = JellyfinTheme.colorScheme.onSurface
 
 	Row(
 		modifier = Modifier
@@ -842,7 +853,7 @@ private fun SidebarTextItem(
 			.then(
 				if (isFocused) {
 					Modifier
-						.border(2.dp, focusedColor, RoundedCornerShape(24.dp))
+						.border(2.dp, focusedColor, JellyfinTheme.shapes.extraLarge)
 						.padding(horizontal = 4.dp)
 				} else {
 					Modifier.padding(horizontal = 4.dp)
@@ -860,7 +871,7 @@ private fun SidebarTextItem(
 		Text(
 			text = label,
 			color = textColor,
-			fontSize = 16.sp
+			style = JellyfinTheme.typography.titleMedium,
 		)
 		Spacer(modifier = Modifier.width(8.dp))
 	}

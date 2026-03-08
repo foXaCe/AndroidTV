@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
@@ -18,17 +17,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.auth.repository.ServerRepository
 import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.preference.constant.WatchedIndicatorBehavior
 import org.jellyfin.androidtv.ui.base.Badge
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.Seekbar
 import org.jellyfin.androidtv.ui.base.Text
@@ -108,15 +106,15 @@ private fun ServerBadge(
 	Box(
 		modifier = modifier
 			.background(
-				color = Color.Black.copy(alpha = 0.7f),
-				shape = RoundedCornerShape(4.dp),
+				color = JellyfinTheme.colorScheme.scrim,
+				shape = JellyfinTheme.shapes.extraSmall,
 			)
 			.padding(horizontal = 4.dp, vertical = 2.dp),
 	) {
 		Text(
 			text = serverName,
-			color = Color.White,
-			fontSize = 9.sp,
+			color = JellyfinTheme.colorScheme.onSurface,
+			style = JellyfinTheme.typography.labelSmall,
 			maxLines = 1,
 			overflow = TextOverflow.Ellipsis,
 		)

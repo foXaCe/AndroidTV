@@ -55,7 +55,10 @@
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:background="?android:attr/selectableItemBackground"
-            android:padding="8dp">
+            android:padding="8dp"
+            android:nextFocusRight="@id/sortContainer"
+            android:nextFocusLeft="@id/libraryFilterContainer"
+            android:nextFocusDown="@id/gridContainer">
 
             <ImageView
                 android:id="@+id/libraryFilterIcon"
@@ -92,7 +95,10 @@
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:background="?android:attr/selectableItemBackground"
-            android:padding="8dp">
+            android:padding="8dp"
+            android:nextFocusLeft="@id/libraryFilterContainer"
+            android:nextFocusRight="@id/sortContainer"
+            android:nextFocusDown="@id/gridContainer">
 
             <TextView
                 android:id="@+id/sortText"

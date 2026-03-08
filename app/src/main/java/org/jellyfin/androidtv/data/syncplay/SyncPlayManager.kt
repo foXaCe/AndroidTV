@@ -2,6 +2,7 @@ package org.jellyfin.androidtv.data.syncplay
 
 import android.content.Context
 import android.widget.Toast
+import org.jellyfin.androidtv.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -154,7 +155,7 @@ class SyncPlayManager(
                 Timber.w("SyncPlay: Group no longer exists on server, clearing local state")
                 _state.value = SyncPlayState()
                 scope.launch(Dispatchers.Main) {
-                    Toast.makeText(context, "SyncPlay group was disbanded", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.syncplay_group_disbanded), Toast.LENGTH_SHORT).show()
                 }
             } else {
                 Timber.e(e, "SyncPlay: Failed to refresh group info")
@@ -346,15 +347,15 @@ class SyncPlayManager(
     fun getStats(): Map<String, String> {
         val drift = getCurrentDriftMs()
         return mapOf(
-            "Time Offset" to "${timeSyncManager.timeOffset}ms",
-            "RTT" to "${timeSyncManager.roundTripTime}ms",
-            "Sync Mode" to if (timeSyncManager.isGreedyMode) "Greedy" else "Low-Profile",
-            "Measurements" to "${timeSyncManager.measurementCount}",
-            "Group State" to _state.value.groupState.name,
-            "In Group" to "${_state.value.enabled}",
-            "Sync Correction" to if (enableSyncCorrection) "ON" else "OFF",
-            "Speed Correcting" to if (isSpeedCorrecting) "$currentSpeedCorrectionTarget" else "OFF",
-            "Drift" to if (drift != null) "${drift}ms" else "N/A",
+            context.getString(R.string.syncplay_stats_time_offset) to "${timeSyncManager.timeOffset}ms",
+            context.getString(R.string.syncplay_stats_rtt) to "${timeSyncManager.roundTripTime}ms",
+            context.getString(R.string.syncplay_stats_sync_mode) to if (timeSyncManager.isGreedyMode) context.getString(R.string.syncplay_stats_greedy) else context.getString(R.string.syncplay_stats_low_profile),
+            context.getString(R.string.syncplay_stats_measurements) to "${timeSyncManager.measurementCount}",
+            context.getString(R.string.syncplay_stats_group_state) to _state.value.groupState.name,
+            context.getString(R.string.syncplay_stats_in_group) to "${_state.value.enabled}",
+            context.getString(R.string.syncplay_stats_sync_correction) to if (enableSyncCorrection) context.getString(R.string.syncplay_stats_on) else context.getString(R.string.syncplay_stats_off),
+            context.getString(R.string.syncplay_stats_speed_correcting) to if (isSpeedCorrecting) "$currentSpeedCorrectionTarget" else context.getString(R.string.syncplay_stats_off),
+            context.getString(R.string.syncplay_stats_drift) to if (drift != null) "${drift}ms" else context.getString(R.string.syncplay_stats_na),
         )
     }
     
@@ -396,7 +397,7 @@ class SyncPlayManager(
                 Timber.w("SyncPlay: Group $groupId no longer exists")
                 _state.value = SyncPlayState()
                 scope.launch(Dispatchers.Main) {
-                    Toast.makeText(context, "SyncPlay group was disbanded", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.syncplay_group_disbanded), Toast.LENGTH_SHORT).show()
                 }
             }
             false
@@ -651,7 +652,7 @@ class SyncPlayManager(
             is org.jellyfin.sdk.model.api.SyncPlayUserJoinedUpdate -> {
                 val userName = update.data
                 scope.launch(Dispatchers.Main) {
-                    Toast.makeText(context, "$userName joined the SyncPlay group", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.syncplay_user_joined, userName), Toast.LENGTH_SHORT).show()
                 }
                 scope.launch(Dispatchers.IO) {
                     refreshGroupInfo()
@@ -660,7 +661,7 @@ class SyncPlayManager(
             is org.jellyfin.sdk.model.api.SyncPlayUserLeftUpdate -> {
                 val userName = update.data
                 scope.launch(Dispatchers.Main) {
-                    Toast.makeText(context, "$userName left the SyncPlay group", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.syncplay_user_left, userName), Toast.LENGTH_SHORT).show()
                 }
                 scope.launch(Dispatchers.IO) {
                     refreshGroupInfo()

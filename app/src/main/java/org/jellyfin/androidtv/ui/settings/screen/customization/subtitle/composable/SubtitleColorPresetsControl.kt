@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import org.jellyfin.androidtv.ui.base.AnimationDefaults
 import org.jellyfin.androidtv.ui.base.form.ColorSwatch
 import org.jellyfin.design.Tokens
 
@@ -35,7 +36,7 @@ fun SubtitleColorPresetsControl(
 		for (color in presets) {
 			val interactionSource = remember { MutableInteractionSource() }
 			val focused by interactionSource.collectIsFocusedAsState()
-			val scale by animateFloatAsState(if (focused) 1.25f else 1f)
+			val scale by animateFloatAsState(if (focused) AnimationDefaults.FOCUS_SCALE else 1f)
 
 			ColorSwatch(
 				color = color,

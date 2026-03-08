@@ -106,7 +106,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:text="@string/connect_manually_by_address"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:nextFocusUp="@id/stored_servers"
+                    android:nextFocusDown="@id/discovery_servers" />
 
                 <View
                     android:layout_width="match_parent"

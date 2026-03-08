@@ -28,7 +28,8 @@ class SearchViewModel(
 	private val userPreferences: UserPreferences,
 ) : ViewModel() {
 	companion object {
-		private val debounceDuration = 600.milliseconds
+		private val debounceDuration = 300.milliseconds
+		private const val MIN_QUERY_LENGTH = 2
 
 		private val groups = mapOf(
 			R.string.lbl_movies to setOf(BaseItemKind.MOVIE),
@@ -64,7 +65,7 @@ class SearchViewModel(
 
 		searchJob?.cancel()
 
-		if (trimmed.isBlank()) {
+		if (trimmed.isBlank() || trimmed.length < MIN_QUERY_LENGTH) {
 			_searchResultsFlow.value = emptyList()
 			return true
 		}

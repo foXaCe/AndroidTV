@@ -1,10 +1,14 @@
 package org.jellyfin.androidtv.ui.home.mediabar
 
 import android.graphics.RenderEffect
+import androidx.compose.ui.res.stringResource
 import android.graphics.Shader
 import android.os.Build
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
@@ -48,10 +52,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImagePainter
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
@@ -65,6 +67,8 @@ import org.jellyfin.androidtv.data.repository.RatingIconProvider
 import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.preference.UserSettingPreferences
 import org.jellyfin.androidtv.preference.constant.NavbarPosition
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
+import org.jellyfin.androidtv.ui.base.OverlayColors
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.shared.LogoView
 import org.jellyfin.androidtv.util.TimeUtils
@@ -96,20 +100,7 @@ fun MediaBarSlideshowView(
 
 	// Get overlay preferences
 	val overlayOpacity = userSettingPreferences[UserSettingPreferences.mediaBarOverlayOpacity] / 100f
-	val overlayColor = when (userSettingPreferences[UserSettingPreferences.mediaBarOverlayColor]) {
-		"black" -> Color.Black
-		"dark_blue" -> Color(0xFF1A2332)
-		"purple" -> Color(0xFF4A148C)
-		"teal" -> Color(0xFF00695C)
-		"navy" -> Color(0xFF0D1B2A)
-		"charcoal" -> Color(0xFF36454F)
-		"brown" -> Color(0xFF3E2723)
-		"dark_red" -> Color(0xFF8B0000)
-		"dark_green" -> Color(0xFF0B4F0F)
-		"slate" -> Color(0xFF475569)
-		"indigo" -> Color(0xFF1E3A8A)
-		else -> Color.Gray
-	}
+	val overlayColor = OverlayColors.get(userSettingPreferences[UserSettingPreferences.mediaBarOverlayColor])
 
 	DisposableEffect(Unit) {
 		onDispose {
@@ -187,26 +178,36 @@ fun MediaBarSlideshowView(
 			is MediaBarState.Ready -> {
 				val item = currentState.items.getOrNull(playbackState.currentIndex)
 
-				Crossfade(
-					targetState = item?.logoUrl,
-					animationSpec = tween(300),
-					label = "mediabar_logo_transition",
+				AnimatedVisibility(
+					visible = isFocused,
+					enter = fadeIn(animationSpec = tween(300)),
+					exit = fadeOut(animationSpec = tween(300)),
 					modifier = Modifier
 						.align(Alignment.TopStart)
 						.offset(x = 70.dp, y = (-220).dp)
 						.width(250.dp)
 						.height(100.dp)
-				) { logoUrl ->
-					if (logoUrl != null) {
-						LogoView(
-							url = logoUrl,
-							modifier = Modifier.fillMaxSize()
-						)
+				) {
+					Crossfade(
+						targetState = item?.logoUrl,
+						animationSpec = tween(300),
+						label = "mediabar_logo_transition",
+						modifier = Modifier.fillMaxSize()
+					) { logoUrl ->
+						if (logoUrl != null) {
+							LogoView(
+								url = logoUrl,
+								modifier = Modifier.fillMaxSize()
+							)
+						}
 					}
 				}
 
 				// Info overlay at bottom
-				Box(
+				AnimatedVisibility(
+					visible = isFocused,
+					enter = fadeIn(animationSpec = tween(300)),
+					exit = fadeOut(animationSpec = tween(300)),
 					modifier = Modifier
 						.align(Alignment.BottomStart)
 						.fillMaxWidth()
@@ -226,44 +227,60 @@ fun MediaBarSlideshowView(
 				if (currentState.items.size > 1) {
 					// Left arrow (hidden when sidebar is enabled)
 					if (!isSidebarEnabled) {
-						Box(
+						AnimatedVisibility(
+							visible = isFocused,
+							enter = fadeIn(animationSpec = tween(300)),
+							exit = fadeOut(animationSpec = tween(300)),
 							modifier = Modifier
 								.align(Alignment.TopStart)
 								.offset(y = (-70).dp)
 								.padding(start = 5.dp)
+						) {
+							Box(
+								modifier = Modifier
+									.size(48.dp)
+									.background(overlayColor.copy(alpha = overlayOpacity), CircleShape),
+								contentAlignment = Alignment.Center
+							) {
+								Icon(
+									painter = painterResource(id = R.drawable.chevron_left),
+									contentDescription = stringResource(R.string.cd_previous),
+									tint = JellyfinTheme.colorScheme.onSurface,
+									modifier = Modifier.size(24.dp)
+								)
+							}
+						}
+					}
+
+					AnimatedVisibility(
+						visible = isFocused,
+						enter = fadeIn(animationSpec = tween(300)),
+						exit = fadeOut(animationSpec = tween(300)),
+						modifier = Modifier
+							.align(Alignment.TopEnd)
+							.offset(y = (-70).dp)
+							.padding(end = 16.dp)
+					) {
+						Box(
+							modifier = Modifier
 								.size(48.dp)
 								.background(overlayColor.copy(alpha = overlayOpacity), CircleShape),
 							contentAlignment = Alignment.Center
 						) {
 							Icon(
-								painter = painterResource(id = R.drawable.chevron_left),
-								contentDescription = "Previous",
-								tint = Color.White.copy(alpha = 0.9f),
+								painter = painterResource(id = R.drawable.chevron_right),
+								contentDescription = stringResource(R.string.cd_next),
+								tint = JellyfinTheme.colorScheme.onSurface,
 								modifier = Modifier.size(24.dp)
 							)
 						}
 					}
 
-					// Right arrow
-					Box(
-						modifier = Modifier
-							.align(Alignment.TopEnd)
-							.offset(y = (-70).dp)
-							.padding(end = 16.dp)
-							.size(48.dp)
-							.background(overlayColor.copy(alpha = overlayOpacity), CircleShape),
-						contentAlignment = Alignment.Center
-					) {
-						Icon(
-							painter = painterResource(id = R.drawable.chevron_right),
-							contentDescription = "Next",
-							tint = Color.White.copy(alpha = 0.9f),
-							modifier = Modifier.size(24.dp)
-						)
-					}
-
 					// Indicator dots - centered at bottom
-					Box(
+					AnimatedVisibility(
+						visible = isFocused,
+						enter = fadeIn(animationSpec = tween(300)),
+						exit = fadeOut(animationSpec = tween(300)),
 						modifier = Modifier
 							.align(Alignment.BottomCenter)
 							.padding(bottom = 8.dp)
@@ -303,13 +320,13 @@ private fun MediaInfoOverlay(
 						overlayColor.copy(alpha = overlayOpacity)
 					)
 				),
-				shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+				shape = JellyfinTheme.shapes.medium,
 			)
-			.padding(16.dp)
+			.padding(horizontal = 14.dp, vertical = 10.dp)
 	) {
 		Column(
 			modifier = Modifier.fillMaxWidth(),
-			verticalArrangement = Arrangement.spacedBy(8.dp)
+			verticalArrangement = Arrangement.spacedBy(4.dp)
 		) {
 			// Metadata + genres row
 			val context = LocalContext.current
@@ -326,8 +343,8 @@ private fun MediaInfoOverlay(
 			if (infoParts.isNotEmpty()) {
 				Text(
 					text = infoParts.joinToString(" • "),
-					fontSize = 16.sp,
-					color = Color.White
+					style = JellyfinTheme.typography.bodySmall,
+					color = JellyfinTheme.colorScheme.onSurface,
 				)
 			}
 
@@ -338,11 +355,10 @@ private fun MediaInfoOverlay(
 			item.overview?.let { overview ->
 				Text(
 					text = overview.toHtmlSpanned().toString(),
-					fontSize = 14.sp,
-					color = Color.White,
-					maxLines = 3,
+					style = JellyfinTheme.typography.bodySmall,
+					color = JellyfinTheme.colorScheme.onSurface,
+					maxLines = 2,
 					overflow = TextOverflow.Ellipsis,
-					lineHeight = 20.sp
 				)
 			}
 		}
@@ -362,7 +378,7 @@ private fun CarouselIndicatorDots(
 			.padding(top = 80.dp) // Push dots down much lower
 			.background(
 				color = overlayColor.copy(alpha = overlayOpacity * 0.6f),
-				shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+				shape = JellyfinTheme.shapes.medium,
 			)
 			.padding(horizontal = 12.dp, vertical = 6.dp),
 		horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -374,9 +390,9 @@ private fun CarouselIndicatorDots(
 					.size(if (index == currentIndex) 10.dp else 8.dp)
 					.background(
 						color = if (index == currentIndex)
-							Color.White
+							JellyfinTheme.colorScheme.onSurface
 						else
-							Color.White.copy(alpha = 0.5f),
+							JellyfinTheme.colorScheme.onSurfaceVariant,
 						shape = CircleShape
 					)
 			)
@@ -400,13 +416,13 @@ private fun ErrorView(message: String) {
 	Box(
 		modifier = Modifier
 			.fillMaxSize()
-			.background(Color.Gray.copy(alpha = 0.5f)),
+			.background(JellyfinTheme.colorScheme.surfaceDim.copy(alpha = 0.5f)),
 		contentAlignment = Alignment.Center
 	) {
 		Text(
 			text = message,
-			fontSize = 16.sp,
-			color = Color.White.copy(alpha = 0.7f)
+			style = JellyfinTheme.typography.bodyLarge,
+			color = JellyfinTheme.colorScheme.textSecondary,
 		)
 	}
 }
@@ -490,18 +506,18 @@ private fun SingleRating(source: String, rating: Float, baseUrl: String?) {
 		val displayText = when (source) {
 			"tomatoes" -> "${rating.toInt()}%"
 			"popcorn" -> "${rating.toInt()}%"
-			"stars" -> String.format("%.1f", rating)
-			"imdb", "myanimelist" -> String.format("%.1f", rating)
+			"stars" -> if (rating % 1f == 0f) rating.toInt().toString() else String.format(java.util.Locale.US, "%.1f", rating)
+			"imdb", "myanimelist" -> if (rating % 1f == 0f) rating.toInt().toString() else String.format(java.util.Locale.US, "%.1f", rating)
 			"tmdb", "metacritic", "metacriticuser", "trakt", "anilist" -> "${rating.toInt()}%"
-			"letterboxd", "rogerebert" -> String.format("%.1f", rating)
-			else -> String.format("%.1f", rating)
+			"letterboxd", "rogerebert" -> if (rating % 1f == 0f) rating.toInt().toString() else String.format(java.util.Locale.US, "%.1f", rating)
+			else -> if (rating % 1f == 0f) rating.toInt().toString() else String.format(java.util.Locale.US, "%.1f", rating)
 		}
 
 		if (source == "stars") {
 			Text(
 				text = "★",
-				color = Color(0xFFFFD700),
-				fontSize = 16.sp
+				color = JellyfinTheme.colorScheme.rating,
+				style = JellyfinTheme.typography.bodyLarge,
 			)
 			Spacer(modifier = Modifier.width(4.dp))
 		} else {
@@ -526,8 +542,8 @@ private fun SingleRating(source: String, rating: Float, baseUrl: String?) {
 
 		Text(
 			text = displayText,
-			fontSize = 16.sp,
-			color = Color.White
+			style = JellyfinTheme.typography.bodyLarge,
+			color = JellyfinTheme.colorScheme.onSurface,
 		)
 	}
 }

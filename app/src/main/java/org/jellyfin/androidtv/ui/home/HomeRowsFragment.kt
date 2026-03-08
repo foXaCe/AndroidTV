@@ -105,6 +105,7 @@ class HomeRowsFragment : RowsSupportFragment(), AudioEventListener, View.OnKeyLi
 	private var currentItem: BaseRowItem? = null
 	private var currentRow: ListRow? = null
 	private var justLoaded = true
+	private var focusRunnable: Runnable? = null
 
 	// Special rows
 	private val notificationsRow by lazy { NotificationsHomeFragmentRow(lifecycleScope, notificationsRepository) }
@@ -129,8 +130,8 @@ class HomeRowsFragment : RowsSupportFragment(), AudioEventListener, View.OnKeyLi
 		else
 			androidx.leanback.widget.FocusHighlight.ZOOM_FACTOR_NONE
 		val rowPresenter = PositionableListRowPresenter(requireContext(), focusZoomFactor = zoomFactor).apply {
-			// Enable select effect for rows
-			setSelectEffectEnabled(true)
+			// Disable select effect to prevent dimming split between rows
+			setSelectEffectEnabled(false)
 		}
 
 		// Create presenter selector to handle different row types
@@ -318,6 +319,26 @@ class HomeRowsFragment : RowsSupportFragment(), AudioEventListener, View.OnKeyLi
 
 	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 		super.onViewCreated(view, savedInstanceState)
+
+		// Make all Leanback containers transparent so the media bar backdrop shows through
+		view.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+		view.background = null
+		verticalGridView?.background = null
+		verticalGridView?.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+		// Recursively clear backgrounds on all existing and future child views
+		fun clearAllBackgrounds(v: android.view.View) {
+			v.background = null
+			if (v is android.view.ViewGroup) {
+				for (i in 0 until v.childCount) clearAllBackgrounds(v.getChildAt(i))
+				v.setOnHierarchyChangeListener(object : android.view.ViewGroup.OnHierarchyChangeListener {
+					override fun onChildViewAdded(parent: android.view.View?, child: android.view.View?) {
+						child?.let { clearAllBackgrounds(it) }
+					}
+					override fun onChildViewRemoved(parent: android.view.View?, child: android.view.View?) {}
+				})
+			}
+		}
+		clearAllBackgrounds(view)
 		
 		verticalGridView?.apply {
 			// Reduce item prefetch distance for faster initial load
@@ -360,6 +381,27 @@ class HomeRowsFragment : RowsSupportFragment(), AudioEventListener, View.OnKeyLi
 				}
 				false
 			}
+		}
+	}
+
+	override fun onDestroyView() {
+		// Cancel pending focus runnable to prevent execution on destroyed view
+		focusRunnable?.let { view?.removeCallbacks(it) }
+		focusRunnable = null
+
+		// Clear all OnHierarchyChangeListeners set in onViewCreated to prevent memory leaks
+		view?.let { clearAllHierarchyListeners(it) }
+
+		super.onDestroyView()
+	}
+
+	/**
+	 * Recursively remove OnHierarchyChangeListeners from all ViewGroups.
+	 */
+	private fun clearAllHierarchyListeners(v: android.view.View) {
+		if (v is android.view.ViewGroup) {
+			v.setOnHierarchyChangeListener(null)
+			for (i in 0 until v.childCount) clearAllHierarchyListeners(v.getChildAt(i))
 		}
 	}
 
@@ -409,11 +451,12 @@ class HomeRowsFragment : RowsSupportFragment(), AudioEventListener, View.OnKeyLi
 		
 		// Ensure focus is restored to the grid when returning from other screens (like search)
 		// This prevents the issue where users can't control the media bar after backing out
-		view?.postDelayed({
+		focusRunnable = Runnable {
 			if (isResumed && verticalGridView != null && !verticalGridView!!.hasFocus()) {
 				verticalGridView?.requestFocus()
 			}
-		}, 100) // Small delay to let the fragment fully resume
+		}
+		view?.postDelayed(focusRunnable!!, 100) // Small delay to let the fragment fully resume
 	}
 
 	override fun onPause() {

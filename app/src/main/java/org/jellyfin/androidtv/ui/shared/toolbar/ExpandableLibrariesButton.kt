@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -85,7 +86,7 @@ fun ExpandableLibrariesButton(
 			) {
 				Icon(
 					imageVector = ImageVector.vectorResource(R.drawable.ic_clapperboard),
-					contentDescription = "Libraries",
+					contentDescription = stringResource(R.string.cd_libraries),
 				)
 			}
 			

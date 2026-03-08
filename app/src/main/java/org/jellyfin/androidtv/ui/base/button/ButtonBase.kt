@@ -1,5 +1,6 @@
 package org.jellyfin.androidtv.ui.base.button
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -14,8 +15,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.unit.sp
+import org.jellyfin.androidtv.ui.base.AnimationDefaults
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.ProvideTextStyle
 
@@ -36,6 +38,16 @@ fun ButtonBase(
 	val focused by interactionSource.collectIsFocusedAsState()
 	val pressed by interactionSource.collectIsPressedAsState()
 
+	val scale by animateFloatAsState(
+		targetValue = when {
+			pressed -> AnimationDefaults.PRESS_SCALE
+			focused -> AnimationDefaults.FOCUS_SCALE
+			else -> 1f
+		},
+		animationSpec = AnimationDefaults.focusSpec(),
+		label = "ButtonScale",
+	)
+
 	val colors = when {
 		!enabled -> colors.disabledContainerColor to colors.disabledContentColor
 		pressed -> colors.focusedContainerColor to colors.focusedContentColor
@@ -43,9 +55,13 @@ fun ButtonBase(
 		else -> colors.containerColor to colors.contentColor
 	}
 
-	ProvideTextStyle(value = JellyfinTheme.typography.default.copy(fontSize = 14.sp, color = colors.second)) {
+	ProvideTextStyle(value = JellyfinTheme.typography.bodyMedium.copy(color = colors.second)) {
 		Box(
 			modifier = modifier
+				.graphicsLayer {
+					scaleX = scale
+					scaleY = scale
+				}
 				.combinedClickable(
 					interactionSource = interactionSource,
 					indication = null,

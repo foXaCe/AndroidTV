@@ -64,8 +64,7 @@ fun SettingsDeveloperScreen() {
 		if (isDeveloperBuild) item {
 			var playbackRewriteVideoEnabled by rememberPreference(userPreferences, UserPreferences.playbackRewriteVideoEnabled)
 			ListButton(
-				// String is hardcoded because it's for development only
-				headingContent = { Text("Enable new playback module for video") },
+				headingContent = { Text(stringResource(R.string.settings_enable_new_playback)) },
 				trailingContent = { Checkbox(checked = playbackRewriteVideoEnabled) },
 				captionContent = { Text(stringResource(R.string.enable_playback_module_description)) },
 				onClick = { playbackRewriteVideoEnabled = !playbackRewriteVideoEnabled }

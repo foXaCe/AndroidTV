@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -16,12 +15,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.leanback.widget.Presenter
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.GridButton
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.itemhandling.GridButtonBaseRowItem
 
@@ -51,7 +49,7 @@ class GridButtonPresenter @JvmOverloads constructor(
 			Box(
 				modifier = Modifier
 					.width(width.dp)
-					.clip(RoundedCornerShape(4.dp))
+					.clip(JellyfinTheme.shapes.extraSmall)
 					.background(colorResource(R.color.button_default_normal_background))
 			) {
 				if (value.imageRes != null) {
@@ -65,9 +63,8 @@ class GridButtonPresenter @JvmOverloads constructor(
 
 				Text(
 					text = value.text,
-					style = TextStyle(
+					style = JellyfinTheme.typography.bodySmall.copy(
 						color = colorResource(R.color.button_default_normal_text),
-						fontSize = 12.sp
 					),
 					modifier = Modifier
 						.padding(15.dp, 10.dp)

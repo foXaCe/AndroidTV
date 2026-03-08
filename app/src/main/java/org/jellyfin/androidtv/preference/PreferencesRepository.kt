@@ -1,5 +1,6 @@
 package org.jellyfin.androidtv.preference
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.jellyfin.androidtv.data.service.pluginsync.PluginSyncService
 import org.jellyfin.sdk.api.client.ApiClient
@@ -26,7 +27,7 @@ class PreferencesRepository(
 		libraryPreferences[key] = store
 
 		// FIXME: Make [getLibraryPreferences] suspended when usages are converted to Kotlin
-		if (store.shouldUpdate) runBlocking { store.update() }
+		if (store.shouldUpdate) runBlocking(Dispatchers.IO) { store.update() }
 
 		return store
 	}

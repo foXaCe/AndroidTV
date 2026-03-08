@@ -170,8 +170,8 @@ fun BaseItemDto.getSubName(context: Context): String? = when (type) {
 	BaseItemKind.MOVIE, BaseItemKind.SERIES -> {
 		// For movies and series, show type and year (e.g., "Movie • 2023")
 		val typeStr = when (type) {
-			BaseItemKind.MOVIE -> "Movie"
-			BaseItemKind.SERIES -> "TV Series"
+			BaseItemKind.MOVIE -> context.getString(R.string.lbl_movie_type)
+			BaseItemKind.SERIES -> context.getString(R.string.lbl_tv_series)
 			else -> null
 		}
 		val yearStr = productionYear?.toString()

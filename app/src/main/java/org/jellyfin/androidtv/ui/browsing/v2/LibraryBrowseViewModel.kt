@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.Immutable
 import kotlinx.coroutines.withContext
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.constant.GridDirection
@@ -30,6 +31,8 @@ import org.jellyfin.sdk.model.api.ItemSortBy
 import org.jellyfin.sdk.model.api.SeriesStatus
 import org.jellyfin.sdk.model.api.SortOrder
 import timber.log.Timber
+import org.jellyfin.androidtv.ui.base.state.UiError
+import org.jellyfin.androidtv.ui.base.state.toUiError
 import java.util.UUID
 
 enum class SeriesStatusFilter(@StringRes val labelRes: Int) {
@@ -43,6 +46,7 @@ enum class PlayedStatusFilter(@StringRes val labelRes: Int) {
 	UNWATCHED(R.string.lbl_unwatched)
 }
 
+@Immutable
 data class SortOption(
 	@StringRes val nameRes: Int,
 	val sortBy: ItemSortBy,
@@ -51,6 +55,7 @@ data class SortOption(
 
 data class LibraryBrowseUiState(
 	val isLoading: Boolean = true,
+	val error: UiError? = null,
 	val libraryName: String = "",
 	val collectionType: CollectionType? = null,
 	val items: List<BaseItemDto> = emptyList(),
@@ -321,7 +326,7 @@ class LibraryBrowseViewModel(
 		viewModelScope.launch {
 			if (reset) {
 				currentPage = 0
-				_uiState.value = _uiState.value.copy(isLoading = true, items = emptyList(), focusedItem = null)
+				_uiState.value = _uiState.value.copy(isLoading = true, error = null, items = emptyList(), focusedItem = null)
 			}
 			isLoadingMore = true
 
@@ -436,10 +441,14 @@ class LibraryBrowseViewModel(
 				)
 			} catch (err: ApiClientException) {
 				Timber.e(err, "Failed to load library items")
-				_uiState.value = _uiState.value.copy(isLoading = false)
+				_uiState.value = _uiState.value.copy(isLoading = false, error = err.toUiError())
 			} finally {
 				isLoadingMore = false
 			}
 		}
+	}
+
+	fun retry() {
+		loadItems(reset = true)
 	}
 }

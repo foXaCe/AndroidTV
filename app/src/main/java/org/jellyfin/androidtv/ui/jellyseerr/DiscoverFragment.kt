@@ -42,7 +42,8 @@ class DiscoverFragment : Fragment() {
 	private var ratingTextView: TextView? = null
 	private var mediaTypeTextView: TextView? = null
 	private var rowsFragment: JellyseerrDiscoverRowsFragment? = null
-	
+	private var focusRunnable: Runnable? = null
+
 	// Debouncers for smooth navigation - only update after user stops moving
 	private val infoDebouncer by lazy { Debouncer(150.milliseconds, lifecycleScope) }
 	private val backdropDebouncer by lazy { Debouncer(200.milliseconds, lifecycleScope) }
@@ -116,15 +117,20 @@ class DiscoverFragment : Fragment() {
 		
 		// Request focus on rows fragment when this fragment becomes visible
 		// This is crucial for when returning from details screen
-		view?.postDelayed({
+		focusRunnable = Runnable {
 			if (isResumed) {
 				rowsFragment?.view?.requestFocus()
 				Timber.d("DiscoverFragment: Requesting focus on rows fragment")
 			}
-		}, 100)
+		}
+		view?.postDelayed(focusRunnable!!, 100)
 	}
 
 	override fun onDestroyView() {
+		// Cancel pending focus runnable to prevent execution on destroyed view
+		focusRunnable?.let { view?.removeCallbacks(it) }
+		focusRunnable = null
+
 		super.onDestroyView()
 		// Cancel any pending debounced actions
 		infoDebouncer.cancel()
@@ -140,7 +146,7 @@ class DiscoverFragment : Fragment() {
 
 	private fun updateItemInfo(item: JellyseerrDiscoverItemDto) {
 		// Update title
-		titleTextView?.text = item.title ?: item.name ?: "Unknown"
+		titleTextView?.text = item.title ?: item.name ?: getString(R.string.lbl_unknown)
 		titleTextView?.isVisible = true
 
 		if (!item.overview.isNullOrEmpty()) {
@@ -168,8 +174,8 @@ class DiscoverFragment : Fragment() {
 		}
 
 		val mediaType = when (item.mediaType) {
-			"movie" -> "Movie"
-			"tv" -> "TV Series"
+			"movie" -> getString(R.string.lbl_movie_type)
+			"tv" -> getString(R.string.lbl_tv_series)
 			else -> null
 		}
 		if (!mediaType.isNullOrEmpty()) {
@@ -213,7 +219,7 @@ class DiscoverFragment : Fragment() {
 						val tvDetails = result.getOrNull()
 						val seasons = tvDetails?.numberOfSeasons
 						if (seasons != null && seasons > 0) {
-							val seasonText = if (seasons == 1) "1 Season" else "$seasons Seasons"
+							val seasonText = resources.getQuantityString(R.plurals.jellyseerr_discover_season_count, seasons, seasons)
 							mediaTypeTextView?.text = "$mediaType • $seasonText"
 						}
 					}

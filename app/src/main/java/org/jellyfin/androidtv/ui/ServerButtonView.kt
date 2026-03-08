@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,11 +29,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.CircularProgressIndicator
 import org.jellyfin.androidtv.ui.base.Icon
-import org.jellyfin.androidtv.ui.base.LocalTextStyle
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.ProvideTextStyle
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.button.ButtonBase
@@ -75,17 +73,17 @@ fun ServerButton(
 					.fillMaxHeight(),
 				verticalArrangement = Arrangement.SpaceBetween,
 			) {
-				ProvideTextStyle(LocalTextStyle.current.copy(fontSize = 14.sp)) {
+				ProvideTextStyle(JellyfinTheme.typography.bodyMedium) {
 					name()
 				}
 
-				ProvideTextStyle(LocalTextStyle.current.copy(fontSize = 12.sp)) {
+				ProvideTextStyle(JellyfinTheme.typography.bodySmall) {
 					address()
 				}
 			}
 
 			Box(modifier = Modifier.align(Alignment.Bottom)) {
-				ProvideTextStyle(LocalTextStyle.current.copy(fontSize = 12.sp)) {
+				ProvideTextStyle(JellyfinTheme.typography.bodySmall) {
 					version()
 				}
 			}
@@ -170,7 +168,7 @@ class ServerButtonView @JvmOverloads constructor(
 			version = { Text(version.orEmpty()) },
 			interactionSource = interactionSource,
 			// Use the old shape as the Android View implementation is only used in legacy UI
-			shape = RoundedCornerShape(3.dp),
+			shape = JellyfinTheme.shapes.extraSmall,
 			// New implementation doesn't end up at 51.dp by default so force the old size
 			modifier = Modifier.height(51.dp),
 			// We use our own click handler for the view

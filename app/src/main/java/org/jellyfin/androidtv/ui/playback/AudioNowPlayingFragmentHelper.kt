@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -22,8 +21,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.R
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.composable.AsyncImage
 import org.jellyfin.androidtv.ui.composable.LyricsDtoBox
@@ -86,7 +85,7 @@ fun initializePreviewView(
 				Box(
 					modifier = Modifier
 						.wrapContentSize()
-						.clip(RoundedCornerShape(4.dp))
+						.clip(JellyfinTheme.shapes.extraSmall)
 						.background(Color.Black)
 				) {
 					AsyncImage(
@@ -117,7 +116,7 @@ fun initializePreviewView(
 				currentTimestamp = playbackManager.state.positionInfo.active,
 				duration = playbackManager.state.positionInfo.duration,
 				paused = playState != PlayState.PLAYING,
-				fontSize = 12.sp,
+				fontSize = JellyfinTheme.typography.bodySmall.fontSize,
 				color = Color.White,
 				modifier = Modifier
 					.fillMaxSize()

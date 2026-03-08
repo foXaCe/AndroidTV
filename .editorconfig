@@ -13,6 +13,7 @@ tab_width = 4
 ij_kotlin_name_count_to_use_star_import = 1000
 ij_kotlin_name_count_to_use_star_import_for_members = 1000
 ij_kotlin_packages_to_use_import_on_demand = unset
+ktlint_standard_no-wildcard-imports = enabled
 
 [*.md]
 trim_trailing_whitespace = false

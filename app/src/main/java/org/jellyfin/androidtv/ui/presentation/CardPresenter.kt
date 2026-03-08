@@ -411,6 +411,7 @@ private fun CardViewHolderContent(
 							resolvedApi,
 							maxWidth = with(localDensity) { size.width.roundToPx() },
 							maxHeight = with(localDensity) { size.height.roundToPx() },
+							quality = 80,
 						),
 						blurHash = image.blurHash,
 						aspectRatio = aspectRatio,
@@ -505,6 +506,10 @@ private fun CardViewHolderContent(
 		)
 	}
 
+	// Hide title/subtitle for items that already display their name in the card image
+	val hidePreviewText = item.baseItem?.type == BaseItemKind.USER_VIEW ||
+		item.baseItem?.type == BaseItemKind.COLLECTION_FOLDER
+
 	if (usePreview) {
 		val focusModifier = if (focused) Modifier.basicMarquee(
 			iterations = Int.MAX_VALUE,
@@ -513,7 +518,7 @@ private fun CardViewHolderContent(
 
 		ItemPreview(
 			card = { card() },
-			title = title?.let { text ->
+			title = if (hidePreviewText) null else title?.let { text ->
 				{
 					Text(
 						text = text,
@@ -524,7 +529,7 @@ private fun CardViewHolderContent(
 					)
 				}
 			},
-			subtitle = subtitle?.let { text ->
+			subtitle = if (hidePreviewText) null else subtitle?.let { text ->
 				{
 					Text(
 						text = text,

@@ -9,6 +9,7 @@ import coil3.gif.AnimatedImageDecoder
 import coil3.gif.GifDecoder
 import coil3.network.NetworkFetcher
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import coil3.request.crossfade
 import coil3.serviceLoaderEnabled
 import coil3.svg.SvgDecoder
 import coil3.util.Logger
@@ -129,6 +130,7 @@ val appModule = module {
 		val context = androidContext()
 		ImageLoader.Builder(context).apply {
 			serviceLoaderEnabled(false)
+			crossfade(200)
 			logger(CoilTimberLogger(if (BuildConfig.DEBUG) Logger.Level.Warn else Logger.Level.Error))
 
 			// Configure memory cache - use 25% of available memory for images

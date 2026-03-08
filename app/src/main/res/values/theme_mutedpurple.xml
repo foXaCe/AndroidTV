@@ -12,7 +12,7 @@
         <item name="android:colorButtonNormal">@color/light_grey_transparent</item>
         <item name="buttonDefaultNormalBackground">@color/light_grey_transparent</item>
         <item name="buttonDefaultHighlightBackground">@color/theme_muted_purple_accent</item>
-        <item name="popupMenuBackground">#384873</item>
+        <item name="popupMenuBackground">@color/ds_surface_bright</item>
 
         <!-- Control icons -->
         <item name="controlIconForegroundActive">@color/theme_muted_purple_accent</item>
@@ -20,13 +20,13 @@
         <!-- QR drawables -->
         <item name="qrForeground">@color/theme_muted_purple_accent</item>
 
-        <!-- Rounding Values -->
-        <item name="cardRounding">5dp</item>
-        <item name="buttonRounding">7dp</item>
-        <item name="inputRounding">7dp</item>
-        <item name="popupMenuRounding">7dp</item>
+        <!-- Rounding Values — aligned with design system -->
+        <item name="cardRounding">4dp</item>
+        <item name="buttonRounding">10dp</item>
+        <item name="inputRounding">10dp</item>
+        <item name="popupMenuRounding">10dp</item>
 
         <!-- Tile colors -->
-        <item name="tile_port_person_bg">#212121</item>
+        <item name="tile_port_person_bg">@color/ds_surface_bright</item>
     </style>
 </resources>

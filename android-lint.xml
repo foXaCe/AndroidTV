@@ -1,25 +1,46 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <lint>
-    <issue id="BinaryOperationInTimber" severity="error" />
-    <issue id="ConvertToWebp" severity="warning" />
+    <!-- Strings & text -->
+    <issue id="HardcodedText" severity="error" />
     <issue id="DuplicateStrings" severity="ignore" />
-    <issue id="EasterEgg" severity="fatal" />
+    <issue id="Typos" severity="ignore" />
     <issue id="ExtraTranslation" severity="warning" />
+
+    <!-- Colors & design system -->
+    <issue id="HardcodedColor" severity="warning" />
+
+    <!-- API level -->
+    <issue id="NewApi" severity="error" />
+    <issue id="ObsoleteSdkInt" severity="warning" />
+
+    <!-- Performance -->
+    <issue id="UnusedResources" severity="warning" />
+
+    <!-- Accessibility TV -->
+    <issue id="ContentDescription" severity="warning" />
+
+    <!-- Timber logging -->
+    <issue id="BinaryOperationInTimber" severity="error" />
+    <issue id="LogNotTimber" severity="error" />
+
+    <!-- Code quality -->
+    <issue id="ConvertToWebp" severity="warning" />
+    <issue id="EasterEgg" severity="fatal" />
     <issue id="FragmentTagUsage" severity="error" />
-    <issue id="GradleDependency" severity="ignore" />
     <issue id="KotlinPropertyAccess" severity="warning" />
     <issue id="LambdaLast" severity="warning" />
-    <issue id="LogNotTimber" severity="error" />
     <issue id="MangledCRLF" severity="warning" />
     <issue id="NegativeMargin" severity="warning" />
     <issue id="NoHardKeywords" severity="warning" />
     <issue id="Registered" severity="warning" />
     <issue id="RequiredSize" severity="error" />
-    <issue id="Typos" severity="ignore" />
     <issue id="UnknownNullness" severity="informational" />
     <issue id="UnusedIds" severity="ignore" />
     <issue id="UnusedAttribute">
         <ignore regexp="usesCleartextTraffic" />
         <ignore regexp="networkSecurityConfig" />
     </issue>
+
+    <!-- Known & accepted -->
+    <issue id="GradleDependency" severity="ignore" />
 </lint>

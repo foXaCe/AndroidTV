@@ -30,7 +30,7 @@ fun SettingsLicenseScreen(artifactId: String) {
 
 	if (library == null) {
 		ListMessage {
-			Text("Unknown library $artifactId")
+			Text(stringResource(R.string.item_unknown_library, artifactId))
 		}
 
 		return

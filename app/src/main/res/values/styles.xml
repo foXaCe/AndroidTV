@@ -1,6 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- ══════════════════════════════════════════════════════════════════
+         DESIGN SYSTEM — Component Styles
+         ══════════════════════════════════════════════════════════════════ -->
+
+    <!-- Base style roots -->
+    <style name="Style" />
+    <style name="Style.DS" />
+
+    <!-- ── Screen Background ── -->
+    <style name="Style.DS.Screen">
+        <item name="android:background">@color/ds_background</item>
+    </style>
+
+    <!-- ── Card styles ── -->
+    <style name="Style.DS.Card">
+        <item name="android:background">@color/ds_surface</item>
+    </style>
+
+    <style name="Style.DS.Card.Large">
+        <item name="android:layout_width">@dimen/ds_card_width_xl</item>
+    </style>
+
+    <style name="Style.DS.Card.Medium">
+        <item name="android:layout_width">@dimen/ds_card_width_md</item>
+    </style>
+
+    <style name="Style.DS.Card.Small">
+        <item name="android:layout_width">@dimen/ds_card_width_sm</item>
+    </style>
+
+    <!-- ── Button styles ── -->
+    <style name="Style.DS.Button.Primary" parent="android:Widget.Button">
+        <item name="android:background">@drawable/button_default_back</item>
+        <item name="android:foreground">@drawable/button_default_ripple</item>
+        <item name="android:textColor">@drawable/button_default_text</item>
+        <item name="drawableTint">@drawable/button_icon_tint</item>
+        <item name="android:paddingTop">@dimen/ds_button_padding_v</item>
+        <item name="android:paddingBottom">@dimen/ds_button_padding_v</item>
+        <item name="android:paddingStart">@dimen/ds_button_padding_h</item>
+        <item name="android:paddingEnd">@dimen/ds_button_padding_h</item>
+        <item name="android:drawablePadding">@dimen/ds_space_sm</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:stateListAnimator">@null</item>
+        <item name="android:textAppearance">@style/TextAppearance.DS.LabelLarge</item>
+    </style>
+
+    <style name="Style.DS.Button.Secondary" parent="Style.DS.Button.Primary">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:textColor">@color/ds_primary</item>
+    </style>
+
+    <style name="Style.DS.Button.Icon" parent="android:Widget.Button">
+        <item name="android:background">@drawable/button_icon_back</item>
+        <item name="android:foreground">@drawable/button_icon_ripple</item>
+        <item name="android:tint">@drawable/button_icon_tint</item>
+        <item name="android:padding">@dimen/ds_button_icon_padding</item>
+        <item name="android:minHeight">@dimen/ds_button_icon_padding</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+
+    <style name="Style.DS.Button.Icon.Animated" parent="Style.DS.Button.Icon">
+        <item name="android:tint">@drawable/button_icon_tint_animated</item>
+    </style>
+
+    <!-- ── Text styles (for XML layouts) ── -->
+    <style name="Style.DS.Text" parent="android:Widget.TextView" />
+
+    <style name="Style.DS.Text.Title">
+        <item name="android:textAppearance">@style/TextAppearance.DS.TitleLarge</item>
+    </style>
+
+    <style name="Style.DS.Text.Body">
+        <item name="android:textAppearance">@style/TextAppearance.DS.BodyMedium</item>
+    </style>
+
+    <style name="Style.DS.Text.Label">
+        <item name="android:textAppearance">@style/TextAppearance.DS.LabelMedium</item>
+    </style>
+
+    <style name="Style.DS.Text.Meta">
+        <item name="android:textAppearance">@style/TextAppearance.DS.LabelSmall</item>
+        <item name="android:textColor">@color/ds_text_secondary</item>
+    </style>
+
+    <!-- ── Input ── -->
+    <style name="Style.DS.Input" parent="android:Widget.EditText">
+        <item name="android:background">@drawable/input_default_back</item>
+        <item name="android:foreground">@drawable/input_default_ripple</item>
+        <item name="android:textColor">@drawable/input_default_text</item>
+        <item name="android:textColorHint">@drawable/input_default_text</item>
+        <item name="android:paddingTop">@dimen/ds_space_12</item>
+        <item name="android:paddingBottom">@dimen/ds_space_12</item>
+        <item name="android:paddingStart">@dimen/ds_space_md</item>
+        <item name="android:paddingEnd">@dimen/ds_space_md</item>
+    </style>
+
+    <!-- ── Popup Menu ── -->
+    <style name="Style.DS.PopupMenu" parent="android:Widget.Material.PopupMenu">
+        <item name="android:popupBackground">@drawable/popup_menu_back</item>
+        <item name="android:textColor">@color/ds_text_primary</item>
+    </style>
+
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         LEGACY STYLES — Backward compatibility
+         ══════════════════════════════════════════════════════════════════ -->
+
     <style name="DatePickerCustom">
         <item name="android:datePickerMode">spinner</item>
     </style>
@@ -15,13 +122,7 @@
         <item name="android:maxHeight">5sp</item>
     </style>
 
-    <style name="overlay_progress" parent="android:Widget.ProgressBar.Horizontal">
-        <item name="android:progressDrawable">@drawable/progress_bar</item>
-        <item name="android:minHeight">5sp</item>
-        <item name="android:maxHeight">5sp</item>
-    </style>
-
-    <style name="WindowAnimation"></style>
+    <style name="WindowAnimation" />
 
     <style name="WindowAnimation.SlideTop">
         <item name="android:windowEnterAnimation">@anim/abc_slide_in_top</item>
@@ -38,54 +139,21 @@
         <item name="android:windowExitAnimation">@anim/fade_out</item>
     </style>
 
-    <style name="Button.Default" parent="android:Widget.Button">
-        <item name="android:background">@drawable/button_default_back</item>
-        <item name="android:foreground">@drawable/button_default_ripple</item>
-        <item name="android:textColor">@drawable/button_default_text</item>
-        <item name="drawableTint">@drawable/button_icon_tint</item>
-        <item name="android:paddingTop">10dp</item>
-        <item name="android:paddingBottom">10dp</item>
-        <item name="android:paddingStart">24dp</item>
-        <item name="android:drawablePadding">8dp</item>
-        <item name="android:paddingEnd">24dp</item>
-        <item name="android:minHeight">0dp</item>
-        <item name="android:stateListAnimator">@null</item>
+    <style name="Button.Default" parent="Style.DS.Button.Primary" />
+
+    <style name="Button.Icon" parent="Style.DS.Button.Icon" />
+
+    <style name="Button.Icon.Animated" parent="Style.DS.Button.Icon.Animated" />
+
+    <style name="Input.Default" parent="Style.DS.Input" />
+
+    <style name="PopupMenu" parent="Style.DS.PopupMenu" />
+
+    <style name="PopupWindow" parent="Style.DS.PopupMenu" />
+
+    <!-- Overlay progress bar (channel cards) -->
+    <style name="overlay_progress" parent="android:Widget.ProgressBar.Horizontal">
+        <item name="android:progressDrawable">@android:drawable/progress_horizontal</item>
     </style>
 
-    <style name="Button.Icon" parent="android:Widget.Button">
-        <item name="android:background">@drawable/button_icon_back</item>
-        <item name="android:foreground">@drawable/button_icon_ripple</item>
-        <item name="android:tint">@drawable/button_icon_tint</item>
-        <item name="android:paddingTop">4dp</item>
-        <item name="android:paddingBottom">4dp</item>
-        <item name="android:paddingStart">4dp</item>
-        <item name="android:paddingEnd">4dp</item>
-        <item name="android:minHeight">4dp</item>
-        <item name="android:stateListAnimator">@null</item>
-    </style>
-
-    <style name="Button.Icon.Animated" parent="Button.Icon">
-        <item name="android:tint">@drawable/button_icon_tint_animated</item>
-    </style>
-
-    <style name="Input.Default" parent="android:Widget.EditText">
-        <item name="android:background">@drawable/input_default_back</item>
-        <item name="android:foreground">@drawable/input_default_ripple</item>
-        <item name="android:textColor">@drawable/input_default_text</item>
-        <item name="android:textColorHint">@drawable/input_default_text</item>
-        <item name="android:paddingTop">12dp</item>
-        <item name="android:paddingBottom">12dp</item>
-        <item name="android:paddingStart">16dp</item>
-        <item name="android:paddingEnd">16dp</item>
-    </style>
-
-    <style name="PopupMenu" parent="android:Widget.Material.PopupMenu">
-        <item name="android:popupBackground">@drawable/popup_menu_back</item>
-        <item name="android:textColor">@color/indigo_dye</item>
-    </style>
-
-    <style name="PopupWindow" parent="android:Widget.Material.PopupWindow">
-        <item name="android:popupBackground">@drawable/popup_menu_back</item>
-        <item name="android:textColor">@color/indigo_dye</item>
-    </style>
 </resources>

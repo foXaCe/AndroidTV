@@ -1,6 +1,8 @@
 package org.jellyfin.androidtv.ui.player.video
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onVisibilityChanged
@@ -32,8 +35,9 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.jellyfin.androidtv.R
+import org.jellyfin.androidtv.ui.base.AnimationDefaults
 import org.jellyfin.androidtv.ui.base.Icon
-import org.jellyfin.androidtv.ui.base.LocalTextStyle
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.button.IconButton
 import org.jellyfin.androidtv.ui.base.popover.Popover
@@ -54,8 +58,9 @@ fun VideoPlayerControls(
 	val playState by playbackManager.state.playState.collectAsState()
 
 	Column(
-		verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.Bottom),
+		verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
 	) {
+		// Row 1: Control buttons
 		Row(
 			horizontalArrangement = Arrangement.spacedBy(12.dp),
 			modifier = Modifier
@@ -74,21 +79,29 @@ fun VideoPlayerControls(
 			}
 		}
 
+		// Row 2: Seekbar with animated height
+		var seekbarFocused by remember { mutableStateOf(false) }
+		val seekbarHeight by animateDpAsState(
+			targetValue = if (seekbarFocused) 8.dp else 3.dp,
+			animationSpec = tween(AnimationDefaults.DURATION_FAST),
+			label = "seekbarHeight",
+		)
+
 		PlayerSeekbar(
 			playbackManager = playbackManager,
 			modifier = Modifier
 				.fillMaxWidth()
-				.height(4.dp)
+				.height(seekbarHeight)
+				.onFocusChanged { seekbarFocused = it.hasFocus || it.isFocused }
 		)
 
+		// Row 3: Position (left) and remaining time (right)
 		Row(
-			horizontalArrangement = Arrangement.spacedBy(12.dp),
-			modifier = Modifier
-				.focusRestorer()
-				.focusGroup()
+			modifier = Modifier.fillMaxWidth(),
+			horizontalArrangement = Arrangement.SpaceBetween,
 		) {
-			Spacer(Modifier.weight(1f))
 			PositionText(playbackManager)
+			RemainingText(playbackManager)
 		}
 	}
 }
@@ -225,16 +238,38 @@ private fun PositionText(
 	val text by remember {
 		derivedStateOf {
 			val includeHours = positionInfo.duration.inWholeMinutes >= 60
-			val activeFormatted = positionInfo.active.formatted(includeHours)
-			val durationFormatted = positionInfo.duration.formatted(includeHours)
-
-			"$activeFormatted / $durationFormatted"
+			positionInfo.active.formatted(includeHours)
 		}
 	}
 
 	Text(
 		text = text,
-		style = LocalTextStyle.current.copy(color = Color.White)
+		style = JellyfinTheme.typography.labelMedium.copy(
+			color = JellyfinTheme.colorScheme.onSurface,
+		),
+	)
+}
+
+@Composable
+private fun RemainingText(
+	playbackManager: PlaybackManager,
+) {
+	val positionInfo by rememberPlayerPositionInfo(playbackManager, precision = 1.seconds)
+	if (positionInfo.duration == Duration.ZERO) return
+
+	val text by remember {
+		derivedStateOf {
+			val remaining = positionInfo.duration - positionInfo.active
+			val includeHours = positionInfo.duration.inWholeMinutes >= 60
+			"-${remaining.formatted(includeHours)}"
+		}
+	}
+
+	Text(
+		text = text,
+		style = JellyfinTheme.typography.labelMedium.copy(
+			color = JellyfinTheme.colorScheme.onSurfaceVariant,
+		),
 	)
 }
 

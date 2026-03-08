@@ -32,7 +32,6 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
@@ -68,7 +67,7 @@ fun SearchTextInput(
 	ProvideTextStyle(
 		LocalTextStyle.current.copy(
 			color = color.second,
-			fontSize = 16.sp,
+			fontSize = JellyfinTheme.typography.bodyLarge.fontSize,
 		)
 	) {
 		BasicTextField(

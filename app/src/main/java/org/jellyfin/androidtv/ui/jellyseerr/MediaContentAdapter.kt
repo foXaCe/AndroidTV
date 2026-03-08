@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil3.load
+import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.databinding.ItemJellyseerrContentBinding
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrDiscoverItemDto
 import org.jellyfin.androidtv.util.toHtmlSpanned
@@ -35,7 +36,7 @@ class MediaContentAdapter(
 		fun bind(item: JellyseerrDiscoverItemDto) {
 			binding.apply {
 
-				titleText.text = item.title ?: item.name ?: "Unknown"
+				titleText.text = item.title ?: item.name ?: itemView.context.getString(R.string.lbl_unknown)
 
 				if (item.voteAverage != null) {
 					ratingText.text = String.format("%.1f", item.voteAverage)

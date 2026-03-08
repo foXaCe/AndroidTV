@@ -57,6 +57,8 @@
 			android:padding="12dp"
 			android:focusable="true"
 			android:focusableInTouchMode="false"
+			android:nextFocusUp="@id/playlist_name_input"
+			android:nextFocusDown="@id/button_cancel"
 			android:layout_marginBottom="28dp">
 
 			<TextView
@@ -99,6 +101,8 @@
 				android:minWidth="80dp"
 				android:stateListAnimator="@null"
 				android:nextFocusUp="@id/public_playlist_container"
+				android:nextFocusDown="@id/button_cancel"
+				android:nextFocusLeft="@id/button_cancel"
 				android:nextFocusRight="@id/button_back" />
 
 			<Button
@@ -131,7 +135,10 @@
 				android:minWidth="100dp"
 				android:layout_marginStart="8dp"
 				android:stateListAnimator="@null"
-				android:nextFocusUp="@id/public_playlist_container" />
+				android:nextFocusUp="@id/public_playlist_container"
+				android:nextFocusDown="@id/button_create"
+				android:nextFocusLeft="@id/button_back"
+				android:nextFocusRight="@id/button_create" />
 
 		</LinearLayout>
 

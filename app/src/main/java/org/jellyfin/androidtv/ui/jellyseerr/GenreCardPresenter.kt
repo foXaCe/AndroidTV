@@ -1,7 +1,7 @@
 package org.jellyfin.androidtv.ui.jellyseerr
 
-import android.graphics.Color
 import android.graphics.drawable.Drawable
+import androidx.core.content.ContextCompat
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -64,7 +64,7 @@ class GenreCardPresenter : Presenter(), KoinComponent {
 				crossfade(true)
 			}
 		} else {
-			imageView.setBackgroundColor(Color.parseColor("#1a1a1a"))
+			imageView.setBackgroundColor(ContextCompat.getColor(context, R.color.ds_surface))
 		}
 	}
 

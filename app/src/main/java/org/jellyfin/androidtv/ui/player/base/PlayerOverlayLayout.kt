@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,9 +24,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalWindowInfo
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -39,6 +42,9 @@ import kotlin.time.Duration.Companion.seconds
 fun PlayerOverlayLayout(
 	modifier: Modifier = Modifier,
 	visibilityState: PlayerOverlayVisibilityState = rememberPlayerOverlayVisibility(),
+	onPlayPause: (() -> Unit)? = null,
+	onSeekForward: (() -> Unit)? = null,
+	onSeekBackward: (() -> Unit)? = null,
 	header: (@Composable () -> Unit)? = null,
 	controls: (@Composable () -> Unit)? = null,
 ) = Box(
@@ -53,8 +59,28 @@ fun PlayerOverlayLayout(
 			if (it.key == Key.Back && visibilityState.visible) {
 				visibilityState.hide()
 				true
-			} else if (!it.nativeKeyEvent.isSystem && !visibilityState.visible) {
-				visibilityState.show()
+			} else if (!visibilityState.visible && it.type == KeyEventType.KeyDown) {
+				when (it.key) {
+					Key.DirectionCenter, Key.Enter -> {
+						onPlayPause?.invoke()
+						true
+					}
+					Key.DirectionRight -> {
+						onSeekForward?.invoke()
+						true
+					}
+					Key.DirectionLeft -> {
+						onSeekBackward?.invoke()
+						true
+					}
+					else -> {
+						if (!it.nativeKeyEvent.isSystem) {
+							visibilityState.show()
+							true
+						} else false
+					}
+				}
+			} else if (!visibilityState.visible && !it.nativeKeyEvent.isSystem) {
 				true
 			} else {
 				false
@@ -76,7 +102,8 @@ fun PlayerOverlayLayout(
 					.background(
 						brush = Brush.verticalGradient(
 							colors = listOf(
-								Color.Black.copy(alpha = 0.8f),
+								JellyfinTheme.colorScheme.background.copy(alpha = 0.85f),
+								JellyfinTheme.colorScheme.background.copy(alpha = 0.4f),
 								Color.Transparent,
 							)
 						)
@@ -105,7 +132,8 @@ fun PlayerOverlayLayout(
 						brush = Brush.verticalGradient(
 							colors = listOf(
 								Color.Transparent,
-								Color.Black.copy(alpha = 0.8f),
+								JellyfinTheme.colorScheme.background.copy(alpha = 0.4f),
+								JellyfinTheme.colorScheme.background.copy(alpha = 0.85f),
 							)
 						)
 					)
@@ -123,6 +151,7 @@ fun PlayerOverlayLayout(
 	}
 }
 
+@Stable
 data class PlayerOverlayVisibilityState(
 	val visible: Boolean,
 
@@ -133,7 +162,7 @@ data class PlayerOverlayVisibilityState(
 
 @Composable
 fun rememberPlayerOverlayVisibility(
-	timeout: Duration = 5.seconds
+	timeout: Duration = 3.seconds
 ): PlayerOverlayVisibilityState {
 	val scope = rememberCoroutineScope()
 	var timerVisible by remember { mutableStateOf(false) }

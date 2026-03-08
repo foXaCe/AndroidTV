@@ -33,7 +33,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
 import androidx.fragment.compose.content
 import kotlinx.coroutines.launch
@@ -42,7 +41,6 @@ import org.jellyfin.androidtv.data.service.BackgroundService
 import org.jellyfin.androidtv.data.service.BlurContext
 import org.jellyfin.androidtv.ui.background.AppBackground
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
-import org.jellyfin.androidtv.ui.base.LocalTextStyle
 import org.jellyfin.androidtv.ui.base.ProvideTextStyle
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.button.Button
@@ -164,13 +162,13 @@ fun StillWatchingOverlay(
 		) {
 			Text(
 				text = stringResource(R.string.lbl_next_up),
-				style = LocalTextStyle.current.copy(fontSize = 34.sp),
+				style = JellyfinTheme.typography.headlineLarge,
 			)
 			Spacer(Modifier.height(4.dp))
 
 			Text(
 				text = item.title,
-				style = LocalTextStyle.current.copy(fontSize = 16.sp),
+				style = JellyfinTheme.typography.bodyLarge,
 				overflow = TextOverflow.Ellipsis,
 				maxLines = 1,
 			)
@@ -202,7 +200,7 @@ fun StillWatchingOverlay(
 		) {
 			Text(
 				text = stringResource(R.string.still_watching_label),
-				style = LocalTextStyle.current.copy(fontSize = 34.sp),
+				style = JellyfinTheme.typography.headlineLarge,
 			)
 
 			Spacer(Modifier.height(16.dp))

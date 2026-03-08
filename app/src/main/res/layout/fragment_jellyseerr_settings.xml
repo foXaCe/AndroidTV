@@ -9,25 +9,25 @@
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:orientation="vertical"
-		android:padding="20dp">
+		android:padding="@dimen/ds_space_md">
 
 		<!-- Header -->
 		<TextView
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:text="Jellyseerr Settings"
-			android:textSize="24sp"
+			android:text="@string/jellyseerr_settings"
+			android:textSize="@dimen/ds_text_headline_md"
 			android:textStyle="bold"
-			android:textColor="@color/white"
-			android:layout_marginBottom="10dp" />
+			android:textColor="@color/ds_text_primary"
+			android:layout_marginBottom="@dimen/ds_space_sm" />
 
 		<TextView
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:text="Configure your Jellyseerr server connection"
-			android:textSize="14sp"
-			android:textColor="@color/grey_light"
-			android:layout_marginBottom="20dp" />
+			android:text="@string/jellyseerr_settings_description"
+			android:textSize="@dimen/ds_text_body_md"
+			android:textColor="@color/ds_text_secondary"
+			android:layout_marginBottom="@dimen/ds_space_md" />
 
 		<!-- Enable/Disable Toggle -->
 		<LinearLayout
@@ -35,15 +35,15 @@
 			android:layout_height="wrap_content"
 			android:orientation="horizontal"
 			android:gravity="center_vertical"
-			android:layout_marginBottom="20dp">
+			android:layout_marginBottom="@dimen/ds_space_md">
 
 			<TextView
 				android:layout_width="0dp"
 				android:layout_height="wrap_content"
 				android:layout_weight="1"
-				android:text="Enable Jellyseerr Integration"
-				android:textSize="16sp"
-				android:textColor="@color/white" />
+				android:text="@string/jellyseerr_enabled"
+				android:textSize="@dimen/ds_text_body_lg"
+				android:textColor="@color/ds_text_primary" />
 
 			<androidx.appcompat.widget.SwitchCompat
 				android:id="@+id/enabled_switch"
@@ -64,33 +64,33 @@
 			<TextView
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:text="Server URL"
-				android:textSize="14sp"
+				android:text="@string/jellyseerr_server_url"
+				android:textSize="@dimen/ds_text_body_md"
 				android:textStyle="bold"
-				android:textColor="@color/white"
+				android:textColor="@color/ds_text_primary"
 				android:layout_marginBottom="6dp" />
 
 			<EditText
 				android:id="@+id/server_url_input"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:hint="https://jellyseerr.example.com"
+				android:hint="@string/jellyseerr_server_url_description"
 				android:inputType="textUri"
-				android:textColorHint="@color/grey_light"
-				android:textColor="@color/white"
+				android:textColorHint="@color/ds_text_secondary"
+				android:textColor="@color/ds_text_primary"
 				android:backgroundTint="@color/jellyfin_blue"
 				android:padding="12dp"
-				android:layout_marginBottom="20dp" />
+				android:layout_marginBottom="@dimen/ds_space_md" />
 
 			<!-- Connect with Jellyfin Button -->
 			<Button
 				android:id="@+id/connect_jellyfin_button"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:text="Connect with Current Jellyfin Account"
+				android:text="@string/jellyseerr_connect_jellyfin"
 				android:textAllCaps="false"
 				android:backgroundTint="@color/jellyfin_blue"
-				android:layout_marginBottom="20dp" />
+				android:layout_marginBottom="@dimen/ds_space_md" />
 
 			<!-- Connection Status -->
 			<LinearLayout
@@ -98,8 +98,8 @@
 				android:layout_height="wrap_content"
 				android:orientation="horizontal"
 				android:gravity="center_vertical"
-				android:layout_marginBottom="20dp"
-				android:padding="10dp"
+				android:layout_marginBottom="@dimen/ds_space_md"
+				android:padding="@dimen/ds_space_sm"
 				android:background="@color/grey">
 
 				<ImageView
@@ -107,16 +107,16 @@
 					android:layout_width="24dp"
 					android:layout_height="24dp"
 					android:layout_marginEnd="12dp"
-					android:contentDescription="Connection status icon" />
+					android:contentDescription="@string/cd_connection_status" />
 
 				<TextView
 					android:id="@+id/status_text"
 					android:layout_width="0dp"
 					android:layout_height="wrap_content"
 					android:layout_weight="1"
-					android:text="Not tested"
-					android:textSize="14sp"
-					android:textColor="@color/white" />
+					android:text="@string/jellyseerr_not_tested"
+					android:textSize="@dimen/ds_text_body_md"
+					android:textColor="@color/ds_text_primary" />
 
 			</LinearLayout>
 
@@ -132,7 +132,7 @@
 					android:layout_width="0dp"
 					android:layout_height="wrap_content"
 					android:layout_weight="1"
-					android:text="Test Connection"
+					android:text="@string/jellyseerr_test_connection"
 					android:textAllCaps="false"
 					android:layout_marginEnd="6dp" />
 
@@ -141,7 +141,7 @@
 					android:layout_width="0dp"
 					android:layout_height="wrap_content"
 					android:layout_weight="1"
-					android:text="Save Settings"
+					android:text="@string/btn_save"
 					android:textAllCaps="false"
 					android:layout_marginStart="6dp" />
 
@@ -154,24 +154,24 @@
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:orientation="vertical"
-			android:layout_marginBottom="20dp">
+			android:layout_marginBottom="@dimen/ds_space_md">
 
 			<TextView
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:text="@string/jellyseerr_fetch_limit_title"
-				android:textSize="16sp"
+				android:textSize="@dimen/ds_text_body_lg"
 				android:textStyle="bold"
-				android:textColor="@color/white"
+				android:textColor="@color/ds_text_primary"
 				android:layout_marginBottom="6dp" />
 
 			<TextView
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:text="@string/jellyseerr_fetch_limit_description"
-				android:textSize="12sp"
-				android:textColor="@color/grey_light"
-				android:layout_marginBottom="8dp" />
+				android:textSize="@dimen/ds_text_body_sm"
+				android:textColor="@color/ds_text_secondary"
+				android:layout_marginBottom="@dimen/ds_space_sm" />
 
 			<Spinner
 				android:id="@+id/fetch_limit_spinner"
@@ -187,26 +187,26 @@
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:orientation="vertical"
-			android:layout_marginTop="30dp"
-			android:padding="10dp"
+			android:layout_marginTop="@dimen/ds_space_xl"
+			android:padding="@dimen/ds_space_sm"
 			android:background="@color/grey">
 
 			<TextView
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:text="How to Connect:"
-				android:textSize="14sp"
+				android:text="@string/jellyseerr_setup_title"
+				android:textSize="@dimen/ds_text_body_md"
 				android:textStyle="bold"
-				android:textColor="@color/white"
-				android:layout_marginBottom="8dp" />
+				android:textColor="@color/ds_text_primary"
+				android:layout_marginBottom="@dimen/ds_space_sm" />
 
 			<TextView
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:text="1. Enter your Jellyseerr server URL above\n2. Click 'Connect with Current Jellyfin Account'\n3. Connection will be established automatically using your Jellyfin credentials"
-				android:textSize="12sp"
-				android:textColor="@color/grey_light"
-				android:lineSpacingExtra="4dp" />
+				android:text="@string/jellyseerr_setup_info"
+				android:textSize="@dimen/ds_text_body_sm"
+				android:textColor="@color/ds_text_secondary"
+				android:lineSpacingExtra="@dimen/ds_space_xs" />
 
 		</LinearLayout>
 

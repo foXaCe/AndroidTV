@@ -85,6 +85,7 @@
     <string name="lbl_runtime">Runtime</string>
     <string name="lbl_other_options">Other options</string>
     <string name="lbl_people">People</string>
+    <string name="lbl_performers">Performers</string>
     <string name="lbl_videos">Videos</string>
     <string name="lbl_recordings">Recordings</string>
     <string name="lbl_none">None</string>
@@ -287,6 +288,7 @@
     <string name="lbl_image_size">Image size</string>
     <string name="lbl_my_media">My media</string>
     <string name="pref_focus_color_white">White (Default)</string>
+    <string name="pref_focus_color_orange">Orange (Plex)</string>
     <string name="pref_focus_color">Focus color</string>
     <string name="pref_poster_size">Home Rows Image Size</string>
     <string name="pref_poster_size_small">Small</string>
@@ -337,7 +339,6 @@
     <string name="just_one">Just this one</string>
     <string name="lbl_sign_in">Please sign in</string>
     <string name="lbl_playback_control_ends">Ends at %1$s</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="lbl_stars">Stars</string>
     <string name="lbl_tomatoes">Tomatoes</string>
     <string name="pref_default_rating">Default rating type</string>
@@ -528,7 +529,6 @@
     <string name="pref_customization">Customization</string>
     <string name="sort_accounts_by">Sort accounts by</string>
     <string name="pref_accounts">Accounts</string>
-    <string name="pref_behavior">Behavior</string>
     <string name="pref_browsing">Browsing</string>
     <string name="pref_theme">Theme</string>
     <string name="pref_home_description">Configure shown sections</string>
@@ -595,7 +595,6 @@
     <string name="pref_screensaver_inapp_enabled_description">Show the Moonfin screensaver while the app is open</string>
     <string name="pref_screensaver_inapp_timeout">Start screensaver after</string>
     <string name="enable_reactive_homepage">Enable reactive homepage</string>
-    <string name="not_set">Not set</string>
     <string name="lbl_album_artists">Album artists</string>
     <string name="disable_ui_mode_warning">Disable device type warning</string>
     <string name="channels">Channels</string>
@@ -729,18 +728,6 @@
     <plurals name="items">
         <item quantity="one">%1$s item</item>
         <item quantity="other">%1$s items</item>
-    </plurals>
-    <plurals name="ratings_enabled">
-        <item quantity="one">%1$s rating enabled</item>
-        <item quantity="other">%1$s ratings enabled</item>
-    </plurals>
-    <plurals name="movies">
-        <item quantity="one">%1$s movie</item>
-        <item quantity="other">%1$s movies</item>
-    </plurals>
-    <plurals name="tv_series">
-        <item quantity="one">%1$s TV series</item>
-        <item quantity="other">%1$s TV series</item>
     </plurals>
     <plurals name="songs">
         <item quantity="one">%1$s song</item>
@@ -1051,6 +1038,7 @@
     <!-- Seasonal Surprise -->
     <string name="pref_seasonal_surprise">Seasonal Surprise</string>
     <string name="pref_seasonal_surprise_description">Decorative seasonal animations on home screen. Disable if experiencing lag.</string>
+    <string name="pref_seasonal_auto">Auto</string>
     <string name="pref_seasonal_none">None</string>
     <string name="pref_seasonal_winter">Winter ❄️</string>
     <string name="pref_seasonal_spring">Spring 🌸</string>
@@ -1130,4 +1118,398 @@
     </plurals>
     <string name="lbl_sort_and_filter">Sort and Filter</string>
     <string name="lbl_status_title">Status</string>
+    <string name="lbl_resume">Resume</string>
+    <string name="lbl_restart">Restart</string>
+    <string name="lbl_library">Library</string>
+    <string name="lbl_genre">Genre</string>
+    <string name="lbl_favorited">Favorited</string>
+    <string name="lbl_playlist">Playlist</string>
+    <string name="lbl_shuffle_by">Shuffle By</string>
+    <string name="lbl_select_library">Select Library</string>
+    <string name="lbl_select_genre">Select Genre</string>
+    <string name="lbl_items_in_collection">Items in Collection</string>
+
+    <!-- Hardcoded strings - General UI -->
+    <string name="btn_close">Close</string>
+    <string name="btn_save">Save</string>
+    <string name="btn_connect">Connect</string>
+    <string name="btn_login">Login</string>
+    <string name="btn_log_out">Log Out</string>
+    <string name="btn_disconnect">Disconnect</string>
+    <string name="btn_request">Request</string>
+    <string name="btn_request_selected">Request Selected</string>
+    <string name="btn_show_more">Show More</string>
+    <string name="btn_show_less">Show Less</string>
+    <string name="lbl_overview">Overview</string>
+    <string name="lbl_cast_section">Cast</string>
+    <string name="lbl_keywords">Keywords</string>
+    <string name="lbl_recommendations">Recommendations</string>
+    <string name="lbl_biography">Biography</string>
+    <string name="lbl_appearances">Appearances</string>
+    <string name="lbl_tracks">Tracks</string>
+    <string name="lbl_unknown">Unknown</string>
+    <string name="lbl_season_episode">S%1$d E%2$d</string>
+    <string name="lbl_episode_number_str">E%1$s</string>
+    <string name="lbl_episode_label">Episode %1$s</string>
+    <string name="lbl_born_date">Born %1$s (age %2$d)</string>
+    <string name="lbl_no_playlists_found">No playlists found. Create a new one!</string>
+    <string name="lbl_reorder_hint">To reorder items, press left and right on the D-pad</string>
+    <string name="lbl_genres_count">%1$d Genres</string>
+    <string name="lbl_sort_genres">Sort Genres</string>
+    <string name="lbl_filter_by_library">Filter by Library</string>
+    <string name="lbl_episodes_count">%1$d Episodes</string>
+    <string name="lbl_episode_count_singular">%1$d Episode</string>
+
+    <!-- Hardcoded strings - Jellyseerr -->
+    <string name="jellyseerr_select_quality">Select Quality</string>
+    <string name="jellyseerr_select_seasons">Select Seasons</string>
+    <string name="jellyseerr_request_options">Request Options</string>
+    <string name="jellyseerr_no_recommendations">No recommendations found</string>
+    <string name="jellyseerr_no_similar">No similar titles found</string>
+    <string name="jellyseerr_cast_not_available">Cast information not available</string>
+    <string name="jellyseerr_requested_by">Requested by: %s</string>
+    <string name="jellyseerr_request_date">Date: %s</string>
+    <string name="jellyseerr_cancel_request">Cancel Request</string>
+    <string name="jellyseerr_keep_request">Keep Request</string>
+    <string name="jellyseerr_status_pending">Pending</string>
+    <string name="jellyseerr_status_approved">Approved</string>
+    <string name="jellyseerr_status_declined">Declined</string>
+    <string name="jellyseerr_status_available">Available</string>
+    <string name="jellyseerr_status_unavailable">Unavailable</string>
+    <string name="jellyseerr_status_processing">Processing</string>
+    <string name="jellyseerr_status_downloading">Downloading</string>
+    <string name="jellyseerr_status_unknown">Unknown</string>
+
+    <!-- Hardcoded strings - Jellyseerr Settings -->
+    <string name="jellyseerr_testing_connection">Testing connection\u2026</string>
+    <string name="jellyseerr_connected_successfully">Connected successfully!</string>
+    <string name="jellyseerr_connection_failed">Connection failed: %s</string>
+    <string name="jellyseerr_not_tested">Not tested</string>
+    <string name="jellyseerr_connected">Connected</string>
+    <string name="jellyseerr_connecting">Connecting\u2026</string>
+    <string name="jellyseerr_please_connect_jellyfin">Please connect with Jellyfin first</string>
+    <string name="jellyseerr_enter_server_url">Please enter Jellyseerr server URL first</string>
+    <string name="jellyseerr_cannot_determine_server">Could not determine Jellyfin server URL</string>
+    <string name="jellyseerr_cannot_determine_user">Could not determine current user</string>
+    <string name="jellyseerr_password_required">Password is required</string>
+    <string name="jellyseerr_login_with_jellyfin">Login with Jellyfin</string>
+    <string name="jellyseerr_connecting_as">Connecting as: %1$s\n\nEnter your Jellyfin password to authenticate with Jellyseerr</string>
+    <string name="jellyseerr_connected_session_cookie">Connected successfully using session cookie!</string>
+    <string name="jellyseerr_connection_error_detail">Connection error: %s</string>
+    <string name="jellyseerr_failed_load_config">Failed to load server configuration</string>
+    <string name="jellyseerr_error_generic">Error: %s</string>
+    <string name="jellyseerr_permanent_api_key">Permanent API key active</string>
+    <string name="jellyseerr_please_enable_first">Please enable Jellyseerr first</string>
+    <string name="jellyseerr_server_url_saved">Server URL saved</string>
+    <string name="jellyseerr_set_server_url_first">Please set server URL first</string>
+    <string name="jellyseerr_all_fields_required">All fields are required</string>
+    <string name="jellyseerr_connected_auth_type">Connected successfully using %s!</string>
+    <string name="jellyseerr_login_failed">Login failed: %s</string>
+    <string name="jellyseerr_login_error">Login error: %s</string>
+    <string name="jellyseerr_permanent_key_success">Logged in successfully using permanent API key!</string>
+    <string name="jellyseerr_login_local_hint">Login with your Jellyseerr local account to get a permanent API key</string>
+    <string name="jellyseerr_placeholder_email">Email</string>
+    <string name="jellyseerr_placeholder_password">Password</string>
+
+    <!-- Hardcoded strings - Error Handler -->
+    <string name="error_cannot_connect">Cannot connect to server. Check your network connection.</string>
+    <string name="error_connection_timeout">Connection timed out. The server is taking too long to respond.</string>
+    <string name="error_network">Network error occurred. Please check your connection.</string>
+    <string name="error_permission_denied">Permission denied. You may not have access to this resource.</string>
+    <string name="error_authentication_failed">Authentication failed. Please sign in again.</string>
+    <string name="error_not_found">Resource not found. It may have been removed.</string>
+    <string name="error_server">Server error occurred. Please try again later.</string>
+    <string name="error_service_unavailable">Service temporarily unavailable. Please try again later.</string>
+    <string name="error_failed_to_context">Failed to %1$s: %2$s</string>
+    <string name="error_unknown">Unknown error</string>
+
+    <!-- Hardcoded strings - SyncPlay -->
+    <string name="syncplay_group_disbanded">SyncPlay group was disbanded</string>
+    <string name="syncplay_unnamed_group">Unnamed Group</string>
+    <string name="syncplay_default_group_name">SyncPlay Group</string>
+    <string name="syncplay_stats_time_offset">Time Offset</string>
+    <string name="syncplay_stats_rtt">RTT</string>
+    <string name="syncplay_stats_sync_mode">Sync Mode</string>
+    <string name="syncplay_stats_measurements">Measurements</string>
+    <string name="syncplay_stats_group_state">Group State</string>
+    <string name="syncplay_stats_in_group">In Group</string>
+    <string name="syncplay_stats_sync_correction">Sync Correction</string>
+    <string name="syncplay_stats_speed_correcting">Speed Correcting</string>
+    <string name="syncplay_stats_drift">Drift</string>
+    <string name="syncplay_stats_on">ON</string>
+    <string name="syncplay_stats_off">OFF</string>
+    <string name="syncplay_stats_na">N/A</string>
+    <string name="syncplay_stats_greedy">Greedy</string>
+    <string name="syncplay_stats_low_profile">Low-Profile</string>
+
+    <!-- Hardcoded strings - Updates -->
+    <string name="update_dialog_title">Update Available</string>
+    <string name="update_new_version">New version %s is available!</string>
+    <string name="update_size">Size: %s MB</string>
+    <string name="update_release_notes">Release Notes</string>
+    <string name="update_checking">Checking for updates\u2026</string>
+    <string name="update_check_failed">Failed to check for updates</string>
+    <string name="update_none_available">No updates available</string>
+    <string name="update_downloading">Downloading update\u2026</string>
+    <string name="update_downloaded">Update downloaded</string>
+    <string name="update_download_failed">Failed to download update</string>
+    <string name="update_download_error">Error downloading update</string>
+    <string name="update_check_error">Error checking for updates</string>
+    <string name="update_failed_open_url">Failed to open URL</string>
+    <string name="update_failed_open_settings">Failed to open settings</string>
+
+    <!-- Hardcoded strings - Settings Main -->
+    <string name="settings_support_updates">Support &amp; Updates</string>
+    <string name="settings_check_updates">Check for Updates</string>
+    <string name="settings_check_updates_desc">Download latest Moonfin version</string>
+    <string name="settings_update_notifications">Update Notifications</string>
+    <string name="settings_update_notifications_desc">Show notification on app launch when updates are available</string>
+    <string name="settings_support_moonfin">Support Moonfin</string>
+    <string name="settings_support_moonfin_desc">Help us continue development</string>
+    <string name="settings_install_permission_title">Install Permission Required</string>
+    <string name="settings_install_permission_message">This app needs permission to install updates. Please grant it in the settings.</string>
+    <string name="settings_enable_new_playback">Enable new playback module for video</string>
+
+    <!-- Hardcoded strings - Playback -->
+    <string name="playback_no_audio_tracks">No audio tracks available</string>
+    <string name="playback_audio_track">Audio: %s</string>
+    <string name="playback_audio_default">Audio: Default</string>
+    <string name="playback_subtitles_none">Subtitles: None</string>
+    <string name="playback_subtitles_track">Subtitles: %s</string>
+    <string name="playback_subtitles_default">Subtitles: Default</string>
+    <string name="playback_subtitle_info_error">Unable to obtain subtitle info</string>
+    <string name="playback_subtitle_delay_error">Failed to apply subtitle delay</string>
+    <string name="playback_trailer_error">Unable to open trailer</string>
+    <string name="playback_item_not_found">Item not found in your Moonfin library</string>
+    <string name="playback_search_error">Error searching library</string>
+
+    <!-- Hardcoded strings - Item Details -->
+    <string name="item_error_not_found">Error: Item data not found</string>
+    <string name="person_error_not_found">Error: Person ID not found</string>
+    <string name="person_load_failed">Failed to load person details</string>
+    <string name="item_unknown_section">Unknown section %d</string>
+    <string name="item_unknown_library">Unknown library %s</string>
+    <string name="lbl_no_ratings_available">No ratings available</string>
+
+    <!-- Hardcoded strings - Donate -->
+    <string name="donate_qr_description">Donation QR Code</string>
+    <string name="donate_url">buymeacoffee.com/moonfin</string>
+
+    <!-- Hardcoded strings - Content descriptions -->
+    <string name="cd_previous">Previous</string>
+    <string name="cd_next">Next</string>
+    <string name="cd_move_up">Move up</string>
+    <string name="cd_move_down">Move down</string>
+    <string name="cd_libraries">Libraries</string>
+    <string name="cd_connection_status">Connection status icon</string>
+
+    <!-- Hardcoded strings - Media metadata labels -->
+    <string name="lbl_default">Default</string>
+    <string name="lbl_default_checked">✓ Default</string>
+    <string name="lbl_none_checked">✓ None</string>
+    <string name="lbl_director">Director</string>
+    <string name="lbl_writers">Writers</string>
+    <string name="lbl_studio">Studio</string>
+    <string name="lbl_studios">Studios</string>
+    <string name="lbl_release_date">Release Date</string>
+    <string name="lbl_revenue">Revenue</string>
+    <string name="lbl_status_label">Status</string>
+    <string name="lbl_availability">Availability</string>
+    <string name="lbl_movie_type">Movie</string>
+    <string name="lbl_movie_type_upper">MOVIE</string>
+    <string name="lbl_series_type_upper">SERIES</string>
+    <string name="lbl_tv_show_type">TV Show</string>
+    <string name="lbl_series_type">Series</string>
+    <string name="lbl_stereo">Stereo</string>
+    <string name="lbl_season_episodes">Season %1$d Episodes</string>
+    <string name="lbl_version_number">Version %1$d</string>
+    <string name="lbl_select_version">Select Version</string>
+    <string name="lbl_movies_count">Movies (%1$d)</string>
+    <string name="lbl_series_count">Series (%1$d)</string>
+    <string name="lbl_genres_in_library">Genres — %1$s</string>
+    <string name="app_version_display">Moonfin version %1$s %2$s</string>
+
+    <!-- Hardcoded strings - Audio/Subtitle delay -->
+    <string name="audio_delay_none">No Delay</string>
+    <string name="subtitle_delay_none">No Delay</string>
+
+    <!-- Hardcoded strings - Jellyseerr sort/filter -->
+    <string name="jellyseerr_sort_popularity">Popularity</string>
+    <string name="jellyseerr_sort_rating">Rating</string>
+    <string name="jellyseerr_sort_release_date">Release Date</string>
+    <string name="jellyseerr_sort_title">Title</string>
+    <string name="jellyseerr_sort_revenue">Revenue</string>
+    <string name="jellyseerr_filter_show_all">Show All</string>
+    <string name="jellyseerr_filter_available_only">Available Only</string>
+    <string name="jellyseerr_filter_requested_only">Requested Only</string>
+    <string name="jellyseerr_status_partially_available">Partially Available</string>
+    <string name="jellyseerr_filter_network">Network</string>
+    <string name="jellyseerr_filter_studio">Studio</string>
+    <string name="jellyseerr_filter_keyword">Keyword</string>
+
+    <!-- Hardcoded strings - Jellyseerr requests UI -->
+    <string name="jellyseerr_my_requests">My Requests</string>
+    <string name="jellyseerr_not_connected">Jellyseerr Not Connected</string>
+    <string name="jellyseerr_go_to_settings">Go to Settings to configure your server</string>
+    <string name="jellyseerr_loading_requests">Loading requests…</string>
+    <string name="jellyseerr_no_requests">No Requests Yet</string>
+    <string name="jellyseerr_submit_from_discover">Submit requests from the Discover tab</string>
+    <string name="btn_refresh">Refresh</string>
+
+    <!-- Hardcoded strings - Genre sort -->
+    <string name="sort_popularity">Popularity</string>
+    <string name="sort_release_date">Release Date</string>
+
+    <!-- Hardcoded strings - Server -->
+    <string name="server_address_hint">192.168.1.100 or jellyfin.example.com</string>
+
+    <!-- Hardcoded strings - Jellyseerr actions -->
+    <string name="jellyseerr_request">Request</string>
+    <string name="jellyseerr_request_more">Request More</string>
+    <string name="jellyseerr_status_blacklisted">Blacklisted</string>
+    <string name="lbl_budget">Budget</string>
+    <string name="lbl_networks">Networks</string>
+
+    <!-- Hardcoded strings - Quality selection dialog -->
+    <string name="jellyseerr_quality_pending">%1$s (Pending)</string>
+    <string name="jellyseerr_quality_processing">%1$s (Processing)</string>
+    <string name="jellyseerr_quality_request_more">Request More %1$s</string>
+    <string name="jellyseerr_quality_available">%1$s (Available)</string>
+    <string name="jellyseerr_quality_blacklisted">%1$s (Blacklisted)</string>
+    <string name="jellyseerr_quality_request">Request %1$s</string>
+
+    <!-- Hardcoded strings - Season selection dialog -->
+    <string name="jellyseerr_select_all_seasons">Select All Seasons</string>
+    <string name="jellyseerr_select_all_available">Select All Available</string>
+    <string name="jellyseerr_season_number">Season %1$d</string>
+    <string name="jellyseerr_season_already_requested">Season %1$d (Already Requested)</string>
+
+    <!-- Hardcoded strings - Advanced request options -->
+    <string name="jellyseerr_quality_profile">Quality Profile</string>
+    <string name="jellyseerr_server_default">Server Default</string>
+    <string name="jellyseerr_server_default_path">Server Default (%1$s)</string>
+    <string name="jellyseerr_root_folder">Root Folder</string>
+
+    <!-- Hardcoded strings - Media details labels -->
+    <string name="lbl_first_air_date">First Air Date</string>
+    <string name="lbl_last_air_date">Last Air Date</string>
+    <string name="jellyseerr_similar_series">Similar Series</string>
+    <string name="jellyseerr_similar_titles">Similar Titles</string>
+    <string name="jellyseerr_no_server_configured">No Radarr/Sonarr server configured for %1$s in Jellyseerr</string>
+    <string name="lbl_play_trailer">Play Trailer</string>
+
+    <!-- Hardcoded strings - Toolbar -->
+    <string name="lbl_shuffle">Shuffle</string>
+    <string name="lbl_user_fallback">User</string>
+
+    <!-- Hardcoded strings - Request cancel messages -->
+    <string name="jellyseerr_request_cancelled">Request cancelled</string>
+    <string name="jellyseerr_requests_cancelled">%1$d requests cancelled</string>
+    <string name="jellyseerr_cancel_failed">Failed to cancel request</string>
+    <string name="jellyseerr_cancel_failed_plural">Failed to cancel requests</string>
+    <string name="jellyseerr_cancel_partial">%1$d cancelled, %2$d failed</string>
+
+    <!-- Hardcoded strings - Screensaver -->
+    <string name="lbl_off">Off</string>
+
+    <!-- Hardcoded strings - About -->
+    <string name="lbl_app_version_heading">Moonfin app version</string>
+
+    <!-- Hardcoded strings - SyncPlay errors -->
+    <string name="syncplay_access_denied">SyncPlay access denied. Enable SyncPlay permission for this user in Jellyfin server settings.</string>
+    <string name="syncplay_auth_error">Authentication error. Please sign out and sign in again.</string>
+    <string name="syncplay_create_failed">Failed to create group: %1$s</string>
+    <string name="syncplay_create_timeout">Group created but connection timed out. Try refreshing the group list.</string>
+    <string name="syncplay_join_failed">Failed to join group: %1$s</string>
+    <string name="syncplay_join_timeout">Join request sent but connection timed out. The group may no longer exist.</string>
+    <string name="syncplay_leave_failed">Failed to leave group: %1$s</string>
+    <string name="lbl_unknown_error">Unknown error</string>
+
+    <!-- Hardcoded strings - Subtitle delay -->
+    <string name="subtitle_delay_reset">Subtitle delay reset</string>
+    <string name="subtitle_delay_value">Subtitle delay: %1$s</string>
+
+    <!-- Hardcoded strings - Jellyseerr permission error -->
+    <string name="jellyseerr_permission_denied_message">Permission Denied: Your Jellyfin account needs Jellyseerr permissions.\n\nTo fix this:\n1. Open Jellyseerr web UI\n2. Go to Users\n3. Find your account and grant permissions</string>
+
+    <!-- UI States -->
+    <string name="lbl_retry">Retry</string>
+    <string name="state_error_network">Unable to connect. Check your network connection.</string>
+    <string name="state_error_timeout">Connection timed out. The server is not responding.</string>
+    <string name="state_error_server">A server error occurred. Please try again later.</string>
+    <string name="state_error_not_found">This content is no longer available.</string>
+    <string name="state_error_auth">Your session has expired. Please sign in again.</string>
+    <string name="state_error_generic">Something went wrong. Please try again.</string>
+    <string name="state_error_loading_data">Failed to load content</string>
+    <string name="state_empty_library">Your library is empty</string>
+    <string name="state_empty_library_message">Add media to your server to see it here</string>
+    <string name="state_empty_recordings">No recordings</string>
+    <string name="state_empty_recordings_message">Recorded programs will appear here</string>
+    <string name="state_empty_schedule">No scheduled recordings</string>
+    <string name="state_empty_schedule_message">Schedule recordings from the TV guide</string>
+    <string name="state_empty_music">No music found</string>
+    <string name="state_empty_music_message">Add music to your server to browse it here</string>
+    <string name="state_empty_live_tv">No live TV channels</string>
+    <string name="state_empty_live_tv_message">Configure live TV in your server settings</string>
+    <string name="state_empty_genres">No genres found</string>
+    <string name="state_empty_search">No results found</string>
+    <string name="state_empty_search_message">Try a different search term</string>
+
+    <!-- Jellyseerr HD/4K status badge strings -->
+    <string name="jellyseerr_status_hd_4k_declined">HD + 4K DECLINED</string>
+    <string name="jellyseerr_status_4k_declined">4K DECLINED</string>
+    <string name="jellyseerr_status_hd_declined">HD DECLINED</string>
+    <string name="jellyseerr_status_hd_4k_blacklisted">HD + 4K BLACKLISTED</string>
+    <string name="jellyseerr_status_4k_blacklisted">4K BLACKLISTED</string>
+    <string name="jellyseerr_status_hd_blacklisted">HD BLACKLISTED</string>
+    <string name="jellyseerr_status_hd_4k_available">HD + 4K AVAILABLE</string>
+    <string name="jellyseerr_status_4k_available">4K AVAILABLE</string>
+    <string name="jellyseerr_status_hd_available">HD AVAILABLE</string>
+    <string name="jellyseerr_status_hd_4k_partial">HD + 4K PARTIAL</string>
+    <string name="jellyseerr_status_4k_partial">4K PARTIAL</string>
+    <string name="jellyseerr_status_hd_partial">HD PARTIAL</string>
+    <string name="jellyseerr_status_hd_4k_processing">HD + 4K PROCESSING</string>
+    <string name="jellyseerr_status_4k_processing">4K PROCESSING</string>
+    <string name="jellyseerr_status_hd_processing">HD PROCESSING</string>
+    <string name="jellyseerr_status_hd_4k_pending">HD + 4K PENDING</string>
+    <string name="jellyseerr_status_4k_pending">4K PENDING</string>
+    <string name="jellyseerr_status_hd_pending">HD PENDING</string>
+    <string name="jellyseerr_status_hd_4k_unknown">HD + 4K UNKNOWN</string>
+    <string name="jellyseerr_status_4k_unknown">4K UNKNOWN</string>
+    <string name="jellyseerr_status_hd_unknown">HD UNKNOWN</string>
+    <string name="jellyseerr_status_not_requested">NOT REQUESTED</string>
+
+    <!-- Jellyseerr request toast/dialog strings -->
+    <string name="jellyseerr_no_quality_server">No %1$s server configured for %2$s in Jellyseerr. Please contact your administrator.</string>
+    <string name="jellyseerr_quality_hd_full">HD (1080p)</string>
+    <string name="jellyseerr_media_movies">movies</string>
+    <string name="jellyseerr_media_tv_shows">TV shows</string>
+    <string name="jellyseerr_request_submitted">%1$s request%2$s submitted successfully!</string>
+    <string name="jellyseerr_all_seasons_suffix"> (All seasons)</string>
+    <plurals name="jellyseerr_season_count_suffix">
+        <item quantity="one"> (%1$d season)</item>
+        <item quantity="other"> (%1$d seasons)</item>
+    </plurals>
+    <string name="jellyseerr_request_error">Request failed: %1$s</string>
+    <string name="jellyseerr_cancel_and_separator"> and </string>
+    <plurals name="jellyseerr_cancel_confirm">
+        <item quantity="one">Cancel %1$s request for \"%2$s\"?</item>
+        <item quantity="other">Cancel %1$s requests for \"%2$s\"?</item>
+    </plurals>
+
+    <!-- Jellyseerr remaining hardcoded strings (audit 03 cleanup) -->
+    <string name="jellyseerr_overview_unavailable">Overview unavailable.</string>
+    <string name="jellyseerr_tmdb_score">TMDB Score</string>
+    <plurals name="jellyseerr_discover_season_count">
+        <item quantity="one">%1$d Season</item>
+        <item quantity="other">%1$d Seasons</item>
+    </plurals>
+
+    <!-- Jellyseerr login flow strings (audit 16 §5 cleanup) -->
+    <string name="jellyseerr_auth_permanent_key">permanent API key</string>
+    <string name="jellyseerr_auth_cookie_based">cookie-based auth (expires ~30 days)</string>
+    <string name="jellyseerr_error_server_config">Server Configuration Error\n\n%1$s</string>
+    <string name="jellyseerr_error_auth_failed">Authentication Failed\n\n%1$s</string>
+    <string name="jellyseerr_error_connection">Connection failed: %1$s</string>
+    <string name="jellyseerr_login_cookie_success">Logged in successfully using cookie-based auth (expires ~30 days)</string>
 </resources>

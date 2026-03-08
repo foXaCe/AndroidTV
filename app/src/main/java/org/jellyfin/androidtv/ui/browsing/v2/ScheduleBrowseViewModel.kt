@@ -19,6 +19,8 @@ import org.jellyfin.sdk.model.api.BaseItemKind
 import org.jellyfin.sdk.model.api.LocationType
 import org.jellyfin.sdk.model.api.MediaType
 import org.jellyfin.sdk.model.serializer.toUUIDOrNull
+import org.jellyfin.androidtv.ui.base.state.UiError
+import org.jellyfin.androidtv.ui.base.state.toUiError
 import timber.log.Timber
 import java.time.LocalDate
 
@@ -29,6 +31,7 @@ data class ScheduleGroup(
 
 data class ScheduleBrowseUiState(
 	val isLoading: Boolean = true,
+	val error: UiError? = null,
 	val scheduleGroups: List<ScheduleGroup> = emptyList(),
 	val focusedItem: BaseItemDto? = null,
 )
@@ -40,7 +43,10 @@ class ScheduleBrowseViewModel(
 	private val _uiState = MutableStateFlow(ScheduleBrowseUiState())
 	val uiState: StateFlow<ScheduleBrowseUiState> = _uiState.asStateFlow()
 
+	private var lastContext: Context? = null
+
 	fun initialize(context: Context) {
+		lastContext = context
 		_uiState.value = ScheduleBrowseUiState(isLoading = true)
 		loadSchedule(context)
 	}
@@ -90,8 +96,13 @@ class ScheduleBrowseViewModel(
 				) }
 			} catch (err: ApiClientException) {
 				Timber.e(err, "Failed to load schedule")
-				_uiState.update { it.copy(isLoading = false) }
+				_uiState.update { it.copy(isLoading = false, error = err.toUiError()) }
 			}
 		}
+	}
+
+	fun retry() {
+		val context = lastContext ?: return
+		initialize(context)
 	}
 }

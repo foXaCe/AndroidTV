@@ -7,6 +7,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -30,6 +31,7 @@ import org.jellyfin.sdk.model.api.LyricDto
 import org.jellyfin.sdk.model.extensions.ticks
 import kotlin.time.Duration
 
+@Immutable
 data class TimedLine(
 	val timestamp: Duration,
 	val text: String,

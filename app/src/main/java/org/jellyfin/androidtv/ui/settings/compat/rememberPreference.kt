@@ -5,6 +5,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jellyfin.preference.Preference
 import org.jellyfin.preference.store.AsyncPreferenceStore
 import org.jellyfin.preference.store.PreferenceStore
@@ -19,7 +21,9 @@ fun <ME, MV, T : Any> rememberPreference(store: PreferenceStore<ME, MV>, prefere
 	LaunchedEffect(mutableState.value) {
 		if (store[preference] != mutableState.value) {
 			store[preference] = mutableState.value
-			if (store is AsyncPreferenceStore) store.commit()
+			if (store is AsyncPreferenceStore) {
+				withContext(Dispatchers.IO) { store.commit() }
+			}
 		}
 	}
 	return mutableState
@@ -35,7 +39,9 @@ fun <ME, MV, T : Enum<T>> rememberPreference(
 	LaunchedEffect(mutableState.value) {
 		if (store[preference] != mutableState.value) {
 			store[preference] = mutableState.value
-			if (store is AsyncPreferenceStore) store.commit()
+			if (store is AsyncPreferenceStore) {
+				withContext(Dispatchers.IO) { store.commit() }
+			}
 		}
 	}
 	return mutableState

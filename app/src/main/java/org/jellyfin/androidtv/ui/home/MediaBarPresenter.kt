@@ -17,7 +17,11 @@ class MediaBarPresenter(
 	private val viewModel: MediaBarSlideshowViewModel,
 	private val navigationRepository: NavigationRepository
 ) : RowPresenter() {
-	
+
+	init {
+		selectEffectEnabled = false
+	}
+
 	override fun createRowViewHolder(parent: ViewGroup): RowPresenter.ViewHolder {
 		parent.clipChildren = false
 		parent.clipToPadding = false

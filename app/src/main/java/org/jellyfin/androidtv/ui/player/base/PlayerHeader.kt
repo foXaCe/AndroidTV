@@ -17,7 +17,7 @@ fun PlayerHeader(
 	content: @Composable ColumnScope.() -> Unit,
 ) {
 	Row(
-		horizontalArrangement = Arrangement.spacedBy(12.dp),
+		horizontalArrangement = Arrangement.spacedBy(16.dp),
 		verticalAlignment = Alignment.Top,
 	) {
 		Column {

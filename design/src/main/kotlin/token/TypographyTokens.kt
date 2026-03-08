@@ -1,19 +1,17 @@
-
-
-
 package org.jellyfin.design.token
 
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 object TypographyTokens {
-  val typographyFontSize2xl = 24.00.dp
-  val typographyFontSize2xs = 10.00.dp
-  val typographyFontSize3xl = 32.00.dp
-  val typographyFontSizeLg = 18.00.dp
-  val typographyFontSizeMd = 16.00.dp
-  val typographyFontSizeSm = 14.00.dp
-  val typographyFontSizeXl = 20.00.dp
-  val typographyFontSizeXs = 12.00.dp
+  val typographyFontSize2xl = 24.sp
+  val typographyFontSize2xs = 10.sp
+  val typographyFontSize3xl = 32.sp
+  val typographyFontSize4xl = 48.sp
+  val typographyFontSizeLg = 18.sp
+  val typographyFontSizeMd = 16.sp
+  val typographyFontSizeSm = 14.sp
+  val typographyFontSizeXl = 20.sp
+  val typographyFontSizeXs = 12.sp
   val typographyWeight100 = 100
   val typographyWeight200 = 200
   val typographyWeight300 = 300

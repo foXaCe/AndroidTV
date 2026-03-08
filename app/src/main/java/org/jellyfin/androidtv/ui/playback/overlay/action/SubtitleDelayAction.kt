@@ -18,7 +18,7 @@ class SubtitleDelayAction(
 	
 	// Delay options in milliseconds
 	private val delayOptions = listOf(
-		0L to "No Delay",
+		0L to context.getString(R.string.subtitle_delay_none),
 		100L to "+100ms",
 		250L to "+250ms",
 		500L to "+500ms",
@@ -59,9 +59,9 @@ class SubtitleDelayAction(
 			
 			// Show toast feedback
 			val message = if (currentDelayMs == 0L) {
-				"Subtitle delay reset"
+				context.getString(R.string.subtitle_delay_reset)
 			} else {
-				"Subtitle delay: ${selectedDelay.second}"
+				context.getString(R.string.subtitle_delay_value, selectedDelay.second)
 			}
 			Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 			true
@@ -112,7 +112,7 @@ class SubtitleDelayAction(
 			currentDelayMs = delayMs
 		} catch (e: Exception) {
 			timber.log.Timber.e(e, "SubtitleDelayAction: Failed to apply subtitle delay")
-			Toast.makeText(context, "Failed to apply subtitle delay", Toast.LENGTH_SHORT).show()
+			Toast.makeText(context, context.getString(R.string.playback_subtitle_delay_error), Toast.LENGTH_SHORT).show()
 		}
 	}
 	

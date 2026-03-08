@@ -27,12 +27,13 @@ fun JellyfinImage.getUrl(
 	maxHeight: Int? = null,
 	fillWidth: Int? = null,
 	fillHeight: Int? = null,
+	quality: Int? = null,
 ): String {
 	// Check if tag is already a full URL (for external images like TMDB from Jellyseerr)
 	if (tag.startsWith("http")) {
 		return tag
 	}
-	
+
 	return when (source) {
 		JellyfinImageSource.USER -> api.imageApi.getUserImageUrl(
 			userId = item,
@@ -48,6 +49,7 @@ fun JellyfinImage.getUrl(
 			maxHeight = maxHeight,
 			fillWidth = fillWidth,
 			fillHeight = fillHeight,
+			quality = quality,
 		)
 	}
 }

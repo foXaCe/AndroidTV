@@ -33,12 +33,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.auth.repository.SessionRepository
@@ -48,9 +47,13 @@ import org.jellyfin.androidtv.constant.PosterSize
 import org.jellyfin.androidtv.data.service.BackgroundService
 import org.jellyfin.androidtv.data.service.BlurContext
 import org.jellyfin.androidtv.ui.background.AppBackground
-import org.jellyfin.androidtv.ui.base.CircularProgressIndicator
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.skeleton.SkeletonCardGrid
+import org.jellyfin.androidtv.ui.base.state.DisplayState
+import org.jellyfin.androidtv.ui.base.state.EmptyState
+import org.jellyfin.androidtv.ui.base.state.ErrorState
+import org.jellyfin.androidtv.ui.base.state.StateContainer
 import org.jellyfin.androidtv.ui.itemhandling.BaseItemDtoBaseRowItem
 import org.jellyfin.androidtv.ui.itemhandling.ItemLauncher
 import org.jellyfin.androidtv.ui.navigation.Destinations
@@ -158,7 +161,7 @@ class LibraryBrowseFragment : Fragment() {
 			Box(
 				modifier = Modifier
 					.fillMaxSize()
-					.background(NavyBackground.copy(alpha = overlayAlpha)),
+					.background(JellyfinTheme.colorScheme.surfaceDim.copy(alpha = overlayAlpha)),
 			)
 
 			Column(modifier = Modifier.fillMaxSize()) {
@@ -175,33 +178,36 @@ class LibraryBrowseFragment : Fragment() {
 				)
 
 				// ── Grid ──
-				when {
-					uiState.isLoading && uiState.items.isEmpty() -> {
-						Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-							CircularProgressIndicator()
-						}
-					}
-					uiState.items.isEmpty() -> {
-						Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-							Text(
-								text = stringResource(R.string.lbl_no_items),
-								fontSize = 18.sp,
-								color = Color.White.copy(alpha = 0.5f),
-							)
-						}
-					}
-					else -> {
+				val displayState = when {
+					uiState.isLoading && uiState.items.isEmpty() -> DisplayState.LOADING
+					uiState.error != null && uiState.items.isEmpty() -> DisplayState.ERROR
+					uiState.items.isEmpty() -> DisplayState.EMPTY
+					else -> DisplayState.CONTENT
+				}
+				StateContainer(
+					state = displayState,
+					modifier = Modifier.weight(1f),
+					loadingContent = {
+						SkeletonCardGrid()
+					},
+					emptyContent = {
+						EmptyState(
+							title = stringResource(R.string.state_empty_library),
+							message = stringResource(R.string.state_empty_library_message),
+						)
+					},
+					errorContent = {
+						ErrorState(
+							message = stringResource(uiState.error?.messageRes ?: R.string.state_error_generic),
+							onRetry = { viewModel.retry() },
+						)
+					},
+					content = {
 						LibraryGrid(
 							uiState = uiState,
-							modifier = Modifier.weight(1f),
+							modifier = Modifier.fillMaxSize(),
 						)
-					}
-				}
-
-				// ── Status bar ──
-				LibraryStatusBar(
-					statusText = buildStatusText(uiState),
-					counterText = "${uiState.items.size} | ${uiState.totalItems}",
+					},
 				)
 			}
 
@@ -263,28 +269,46 @@ class LibraryBrowseFragment : Fragment() {
 				.fillMaxWidth()
 				.padding(start = 60.dp, end = 60.dp, top = 12.dp, bottom = 4.dp),
 		) {
-			// Row 0: Centered library name + item count
+			// Row 0: Centered library name (pill) + item count (pill, right-aligned)
 			Box(
 				modifier = Modifier.fillMaxWidth(),
-				contentAlignment = Alignment.Center,
 			) {
+				// Centered library name in pill
 				Row(
+					modifier = Modifier
+						.align(Alignment.Center)
+						.background(
+							color = JellyfinTheme.colorScheme.surfaceContainer,
+							shape = JellyfinTheme.shapes.extraLarge,
+						)
+						.padding(horizontal = 20.dp, vertical = 8.dp),
 					verticalAlignment = Alignment.CenterVertically,
 				) {
 					Text(
 						text = uiState.libraryName,
-						fontSize = 26.sp,
+						style = JellyfinTheme.typography.headlineMedium,
 						fontWeight = FontWeight.Light,
-						color = Color.White,
+						color = JellyfinTheme.colorScheme.onSurface,
 					)
+				}
 
-					if (uiState.totalItems > 0) {
-						Spacer(modifier = Modifier.width(12.dp))
+				// Item count pill on the right
+				if (uiState.totalItems > 0) {
+					Row(
+						modifier = Modifier
+							.align(Alignment.CenterEnd)
+							.background(
+								color = JellyfinTheme.colorScheme.surfaceContainer,
+								shape = JellyfinTheme.shapes.extraLarge,
+							)
+							.padding(horizontal = 14.dp, vertical = 6.dp),
+						verticalAlignment = Alignment.CenterVertically,
+					) {
 						Text(
-							text = "${uiState.totalItems} Items",
-							fontSize = 12.sp,
+							text = pluralStringResource(R.plurals.items, uiState.totalItems, uiState.totalItems),
+							style = JellyfinTheme.typography.bodySmall,
 							fontWeight = FontWeight.Normal,
-							color = Color.White.copy(alpha = 0.4f),
+							color = JellyfinTheme.colorScheme.textSecondary,
 						)
 					}
 				}

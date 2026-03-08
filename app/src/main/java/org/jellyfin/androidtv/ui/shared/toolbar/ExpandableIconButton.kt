@@ -1,8 +1,6 @@
 package org.jellyfin.androidtv.ui.shared.toolbar
 
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -27,6 +25,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import org.jellyfin.androidtv.ui.base.AnimationDefaults
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.ProvideTextStyle
@@ -54,9 +53,9 @@ fun ExpandableIconButton(
 	val scope = rememberCoroutineScope()
 	
 	val scale by animateFloatAsState(
-		targetValue = if (isFocused) 1.05f else 1f,
-		animationSpec = tween(durationMillis = 200),
-		label = "ButtonScale"
+		targetValue = if (isFocused) AnimationDefaults.FOCUS_SCALE else 1f,
+		animationSpec = AnimationDefaults.focusSpec(),
+		label = "ButtonScale",
 	)
 	
 	
