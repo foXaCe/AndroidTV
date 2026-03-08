@@ -1,6 +1,6 @@
 # Consolidation des Audits — État final
 
-**Mis à jour le 2026-03-08 (post V2C — optimisations mineures P13-P20)**
+**Mis à jour le 2026-03-08 (post V3C — décomposition JellyseerrViewModel + V3D v2 — scoping Koin)**
 **Projet** : Moonfin for Android TV (fork Jellyfin)
 **Branche** : `main`
 **Build** : BUILD SUCCESSFUL (assembleRelease)
@@ -31,13 +31,17 @@
 | 21 — Corrections majeures | 2 | 2 | 0 | 0 | 0 |
 | 22 — Nettoyage final | 10 | 10 | 0 | 0 | 0 |
 | V2C — Optim. mineures | 8 (P13-P20) | 5⁴ | 0 | 0 | 0 |
+| V3C — Décomposition ViewModel | 1 God object (919L) | 1⁶ | 0 | 0 | 0 |
+| V3D — Scoping Koin | 60 singletons | 14⁵ | 0 | 0 | 0 |
 
 ¹ 2 `RoundedCornerShape` inline restantes dans composants utilitaires (Popover, SearchTextInput) — acceptable.
 ² P01-P10 résolus (audits 04/17), P11+P08 résolus (audit 21), P13+P15+P16+P17+P19 résolus (V2C) = 17 total.
 ³ P14 (RAS — pattern intentionnel), P18 (RAS — non applicable Android TV), P20 (RAS — pattern légitime).
 ⁴ P13 (layouts aplatis), P15 (overdraw supprimé), P16 (postDelayed cleanup), P17 (10 annotations @Stable/@Immutable), P19 (quality=80 CardPresenter). 3 items RAS : P14, P18, P20.
+⁵ 1 singleton→viewModel (MediaBarSlideshowViewModel), 13 singletons→factory (HttpClientOptions, SearchRepo, ExternalAppRepo, PlaybackHelper, PrePlaybackTrackSelector, 4 Preferences, ItemLauncher, KeyProcessor, ReportingHelper, ImageHelper). 45 singletons restants justifiés.
+⁶ JellyseerrViewModel.kt (919L, 8 domaines) → 3 ViewModels spécialisés (AuthVM 62L, DetailsVM 312L, DiscoverVM 510L) + JellyseerrLoadingState.kt (8L). 84 lignes de code mort supprimées. 7 fragments mis à jour, 3 déclarations Koin.
 
-**Totaux** : **277 résolus** ✅ | 19 en attente | 2 partiels | **0 régressions**
+**Totaux** : **292 résolus** ✅ | 19 en attente | 2 partiels | **0 régressions**
 
 ---
 
@@ -87,8 +91,8 @@ Vérification effectuée directement dans le code source pour chaque correction 
 |---|--------|--------|--------|-----|
 | 7 | Migrer Jellyseerr vers Compose (161 `addView()`) | Audit 05 | Grand | Haut |
 | 8 | Décomposer `ItemDetailsFragment.kt` (2047 lignes) | Audit 05 | Moyen | Haut |
-| 9 | Décomposer `JellyseerrViewModel.kt` (919 lignes) | Audit 05 | Moyen | Moyen |
-| 10 | Scoper le DI Koin (43/64 singletons) | Audit 05 | Moyen | Moyen |
+| 9 | ~~Décomposer `JellyseerrViewModel.kt` (919 lignes)~~ ✅ | V3C | Moyen | Moyen |
+| 10 | ~~Scoper le DI Koin (60→45 singletons)~~ ✅ | V3D | Moyen | Moyen |
 | 11 | ~~Ajouter gestion d'erreur unifiée aux UiState~~ ✅ | V2A | Petit | Haut |
 | 12 | Migrer écrans Leanback restants vers Compose | Audit 05 | Grand | Haut (LT) |
 | 13 | Passer arguments navigation à des IDs | Audit 05 | Moyen | Moyen |
@@ -105,7 +109,7 @@ Toutes les modifications ont été vérifiées comme non-régressives. Les fichi
 
 ## État global — Bilan définitif
 
-Le projet Moonfin for Android TV a subi une refonte qualité intensive les 7-8 mars 2026. En deux jours, **22 audits + V2C** ont été menés et **277 corrections** appliquées sans aucune régression, portant le score global de **~45/100 à 92/100**.
+Le projet Moonfin for Android TV a subi une refonte qualité intensive les 7-8 mars 2026. En deux jours, **22 audits + V2C/V2D/V3C/V3D** ont été menés et **292 corrections** appliquées sans aucune régression, portant le score global de **~45/100 à 92/100**.
 
 ### Ce qui est fait (complet)
 
@@ -125,7 +129,9 @@ Le projet Moonfin for Android TV a subi une refonte qualité intensive les 7-8 m
 
 ### Ce qui reste
 
-- Toute la dette architecturale (God objects, DI sur-singletonisée, migration Leanback → Compose) = chantier long terme v2+
+- DI Koin scopée (60→45 singletons, 14 corrections) ✅
+- JellyseerrViewModel décomposé (919L → 3 VMs spécialisés, 892L total) ✅
+- Reste : God objects restants (ItemDetailsFragment, JellyseerrHttpClient), migration Leanback → Compose, scoping Koin par session = chantier long terme v2+
 
 ### Score
 

@@ -4,8 +4,9 @@
 > Audit diagnostique — aucune correction architecturale appliquée (toutes classées P3 long terme).
 > Toutes les violations de séparation des responsabilités, God objects, et problèmes DI
 > restent en l'état. Ce sont des chantiers de refactoring structurel à planifier.
-> - ❌ En attente : V01-V16 (God objects, fragments imperatifs)
-> - ❌ En attente : DI01-DI06 (sur-singletonisation, KoinComponent)
+> - ❌ En attente : V01-V02, V04-V16 (God objects, fragments imperatifs)
+> - ✅ Résolu : V03 — JellyseerrViewModel décomposé (V3C)
+> - ✅ Résolu : DI01-DI02 partiellement — scoping Koin 60→45 singletons (V3D)
 > - ❌ En attente : N01-N06 (navigation custom, JSON serialisation)
 > - ❌ En attente : Gestion d'erreur unifiée dans UiState
 > - Nouveaux fichiers d'infrastructure créés : AnimationDefaults.kt, OverlayColors.kt,
@@ -131,7 +132,7 @@ Il n'y a **pas de pattern MVI** (Intent/Action → Reducer → State) dans le co
 |---|-----------|---------|--------|--------|
 | V01 | UI imperative dans Fragment | `ui/jellyseerr/MediaDetailsFragment.kt` | 2033 lignes | Construit toute l'UI via `addView()`, 31 fonctions privees, 14+ variables d'etat, melange chargement de donnees et construction d'interface |
 | V02 | Fragment God-object | `ui/itemdetail/v2/ItemDetailsFragment.kt` | 2047 lignes | 26 fonctions privees, gere 6 types d'items (film, serie, musique, personne, playlist, collection) dans un seul fichier |
-| V03 | ViewModel surcharge | `ui/jellyseerr/JellyseerrViewModel.kt` | 919 lignes | 29 StateFlows, 12 fonctions publiques, gere 8 domaines (trending, genres, requetes, recherche, auth, details, pagination, settings) |
+| V03 | ~~ViewModel surcharge~~ ✅ V3C | ~~`JellyseerrViewModel.kt`~~ | ~~919 lignes~~ | Décomposé en 3 VMs : AuthVM (62L), DetailsVM (312L), DiscoverVM (510L) — voir `V3C_decomposition_viewmodel.md` |
 | V04 | Client HTTP monolithique | `data/service/jellyseerr/JellyseerrHttpClient.kt` | 1253 lignes | ~30 methodes d'endpoints HTTP dans une seule classe |
 | V05 | Repository monolithique | `data/repository/JellyseerrRepository.kt` | 766 lignes | 24+ fonctions suspend couvrant 6 domaines (auth, discovery, requetes, media, services, utilisateurs) |
 
@@ -198,7 +199,7 @@ Il n'y a **pas de pattern MVI** (Intent/Action → Reducer → State) dans le co
 
 | Fichier | Lignes | Responsabilites |
 |---------|--------|-----------------|
-| `JellyseerrViewModel.kt` | 919 | trending, genres, requetes, recherche, auth, details, pagination, settings |
+| ~~`JellyseerrViewModel.kt`~~ | ~~919~~ | ✅ Décomposé (V3C) : AuthVM 62L, DetailsVM 312L, DiscoverVM 510L |
 | `ItemRowAdapterHelper.kt` | 915 | 20+ fonctions d'extension gerant 6 types de rows |
 | `LeftSidebarNavigation.kt` | 868 | Navigation sidebar complete + animations |
 | `PluginSyncService.kt` | 857 | Synchronisation de plugins multi-serveur |
@@ -368,20 +369,16 @@ NavigationRepository (interface)
 
 ---
 
-### Etape 4 — Decomposer JellyseerrViewModel
+### ~~Etape 4 — Decomposer JellyseerrViewModel~~ ✅ (V3C)
 
-**Quoi** : Eclater le ViewModel de 919 lignes en ViewModels specialises.
+**Realise** : JellyseerrViewModel.kt (919L) decompose en 3 ViewModels specialises :
+- `JellyseerrAuthViewModel` : auth, initialisation, lifecycle (62L)
+- `JellyseerrDetailsViewModel` : details media/personne, requetes CRUD, serveurs (312L)
+- `JellyseerrDiscoverViewModel` : trending, upcoming, genres, pagination, browse-by (510L)
+- `JellyseerrLoadingState` : sealed class partagee (8L)
+- Code mort supprime : search, loginLocal, regenerateApiKey, etc. (-84L)
 
-**Decomposition** :
-- `JellyseerrDiscoveryViewModel` : trending, upcoming, genres (~300 lignes)
-- `JellyseerrRequestsViewModel` : requetes utilisateur, soumission (~200 lignes)
-- `JellyseerrSearchViewModel` : recherche Jellyseerr (~100 lignes)
-- `JellyseerrSettingsViewModel` : configuration, auth, test connexion (~200 lignes)
-- `JellyseerrViewModel` : facade legere coordonnant les sous-ViewModels
-
-**Effort** : Moyen
-**Risque** : Moyen — les fragments Jellyseerr dependent fortement du ViewModel unique actuel
-**ROI** : Moyen — facilite la maintenance et le testing du module Jellyseerr
+Voir `V3C_decomposition_viewmodel.md` pour le rapport complet.
 
 ---
 
