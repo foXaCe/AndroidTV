@@ -5,6 +5,7 @@ plugins {
 	alias(libs.plugins.kotlin.serialization)
 }
 
+import java.util.Base64
 import java.util.Properties
 import java.io.FileInputStream
 import java.util.jar.JarEntry
@@ -18,6 +19,7 @@ android {
 	defaultConfig {
 		minSdk = libs.versions.android.minSdk.get().toInt()
 		targetSdk = libs.versions.android.targetSdk.get().toInt()
+		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
 		// Release version - custom applicationId to avoid conflict with official Jellyfin
 		applicationId = "org.moonfin.androidtv"
@@ -52,16 +54,27 @@ android {
 
 	signingConfigs {
 		create("release") {
-			// Load keystore properties from keystore.properties file
-			val keystorePropertiesFile = rootProject.file("keystore.properties")
-			if (keystorePropertiesFile.exists()) {
-				val keystoreProperties = Properties()
-				keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-				
-				storeFile = file(keystoreProperties["storeFile"] as String)
-				storePassword = keystoreProperties["storePassword"] as String
-				keyAlias = keystoreProperties["keyAlias"] as String
-				keyPassword = keystoreProperties["keyPassword"] as String
+			val keystoreBase64 = System.getenv("KEYSTORE_BASE64")?.takeIf { it.isNotBlank() }
+			if (keystoreBase64 != null) {
+				// CI: decode keystore from base64 environment variable
+				val keystoreFile = rootProject.file("build/ci-release.keystore")
+				keystoreFile.parentFile.mkdirs()
+				keystoreFile.writeBytes(Base64.getDecoder().decode(keystoreBase64))
+				storeFile = keystoreFile
+				storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
+				keyAlias = System.getenv("KEY_ALIAS") ?: ""
+				keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+			} else {
+				// Local: load from keystore.properties file
+				val keystorePropertiesFile = rootProject.file("keystore.properties")
+				if (keystorePropertiesFile.exists()) {
+					val keystoreProperties = Properties()
+					keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+					storeFile = file(keystoreProperties["storeFile"] as String)
+					storePassword = keystoreProperties["storePassword"] as String
+					keyAlias = keystoreProperties["keyAlias"] as String
+					keyPassword = keystoreProperties["keyPassword"] as String
+				}
 			}
 		}
 	}
@@ -94,8 +107,8 @@ android {
 			applicationIdSuffix = ".debug"
 			isMinifyEnabled = true
 			isShrinkResources = true
-			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-			
+			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro", "proguard-debug.pro")
+
 			// Set package names used in various XML files (must match applicationId for provider authorities)
 			val debugAppId = defaultConfig.applicationId + applicationIdSuffix
 			resValue("string", "app_id", debugAppId)
@@ -120,8 +133,11 @@ android {
 		checkDependencies = true
 	}
 
-	testOptions.unitTests.all {
-		it.useJUnitPlatform()
+	testOptions {
+		unitTests.isReturnDefaultValues = true
+		unitTests.all {
+			it.useJUnitPlatform()
+		}
 	}
 }
 
@@ -263,4 +279,10 @@ dependencies {
 	testImplementation(libs.kotest.runner.junit5)
 	testImplementation(libs.kotest.assertions)
 	testImplementation(libs.mockk)
+	testImplementation(libs.kotlinx.coroutines.test)
+	testImplementation(libs.turbine)
+
+	// Compose UI Testing
+	androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+	debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

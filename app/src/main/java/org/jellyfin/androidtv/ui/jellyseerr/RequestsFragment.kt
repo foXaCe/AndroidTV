@@ -12,7 +12,7 @@ import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class RequestsFragment : BaseFragment(R.layout.fragment_jellyseerr_requests) {
-	private val viewModel: JellyseerrViewModel by viewModel()
+	private val viewModel: JellyseerrDetailsViewModel by viewModel()
 
 	private var _binding: FragmentJellyseerrRequestsBinding? = null
 	private val binding get() = _binding!!

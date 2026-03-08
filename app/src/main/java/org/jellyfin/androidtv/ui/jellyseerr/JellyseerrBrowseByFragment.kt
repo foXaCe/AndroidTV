@@ -57,7 +57,7 @@ data class JellyseerrSortOption(
  * Uses same layout as BrowseGridFragment for consistent library-like appearance
  */
 class JellyseerrBrowseByFragment : Fragment() {
-	private val viewModel: JellyseerrViewModel by viewModel()
+	private val viewModel: JellyseerrDiscoverViewModel by viewModel()
 	private val navigationRepository: NavigationRepository by inject()
 	private val backgroundService: BackgroundService by inject()
 	private val userPreferences: UserPreferences by inject()

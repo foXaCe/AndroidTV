@@ -46,7 +46,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
 
 class MediaDetailsFragment : Fragment() {
-	private val viewModel: JellyseerrViewModel by viewModel()
+	private val viewModel: JellyseerrDetailsViewModel by viewModel()
 	private val navigationRepository: NavigationRepository by inject()
 	private val apiClient: ApiClient by inject()
 	private val userPreferences: UserPreferences by inject()

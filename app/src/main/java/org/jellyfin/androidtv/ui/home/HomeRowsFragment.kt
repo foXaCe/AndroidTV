@@ -68,6 +68,7 @@ import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.LibraryChangedMessage
 import org.jellyfin.sdk.model.api.UserDataChangedMessage
 import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import timber.log.Timber
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -88,7 +89,7 @@ class HomeRowsFragment : RowsSupportFragment(), AudioEventListener, View.OnKeyLi
 	private val navigationRepository by inject<NavigationRepository>()
 	private val itemLauncher by inject<ItemLauncher>()
 	private val keyProcessor by inject<KeyProcessor>()
-	private val mediaBarViewModel by inject<MediaBarSlideshowViewModel>()
+	private val mediaBarViewModel by activityViewModel<MediaBarSlideshowViewModel>()
 	private val themeMusicPlayer by inject<ThemeMusicPlayer>()
 
 	private val helper by lazy { HomeFragmentHelper(requireContext(), userRepository) }

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools">
+
+	<application>
+		<!--
+		Remove InitializationProvider for instrumented tests.
+		The debug build is minified (R8), and kotlinx-coroutines-test
+		(transitive dependency of ui-test-junit4) provides a TestMainDispatcherFactory
+		that references Kotlin stdlib classes stripped by R8.
+		SessionInitializer triggers Dispatchers.Main during process startup,
+		which loads TestMainDispatcherFactory and crashes.
+		Compose UI tests use bare ComponentActivity and don't need Koin/Session init.
+		-->
+		<provider
+			android:name="androidx.startup.InitializationProvider"
+			android:authorities="${applicationId}.androidx-startup"
+			tools:node="remove" />
+	</application>
+
+</manifest>

@@ -32,7 +32,7 @@ import timber.log.Timber
 import kotlin.time.Duration.Companion.milliseconds
 
 class DiscoverFragment : Fragment() {
-	private val viewModel: JellyseerrViewModel by viewModel()
+	private val viewModel: JellyseerrDetailsViewModel by viewModel()
 	private val backgroundService: BackgroundService by inject()
 	private val userPreferences: UserPreferences by inject()
 	

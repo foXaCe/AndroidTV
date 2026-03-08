@@ -38,7 +38,8 @@ import timber.log.Timber
 import kotlinx.serialization.json.Json
 
 class JellyseerrDiscoverRowsFragment : RowsSupportFragment() {
-	private val viewModel: JellyseerrViewModel by viewModel()
+	private val viewModel: JellyseerrDiscoverViewModel by viewModel()
+	private val detailsViewModel: JellyseerrDetailsViewModel by viewModel()
 	private val navigationRepository: NavigationRepository by inject()
 	private val userPreferences: UserPreferences by inject()
 	private val jellyseerrPreferences: JellyseerrPreferences by inject(named("global"))
@@ -457,7 +458,7 @@ class JellyseerrDiscoverRowsFragment : RowsSupportFragment() {
 
 		// Recent Requests
 		lifecycleScope.launch {
-			viewModel.userRequests.collect { requests ->
+			detailsViewModel.userRequests.collect { requests ->
 				val requestsAsItems = requests.map { request ->
 					JellyseerrDiscoverItemDto(
 						id = request.media?.tmdbId ?: request.media?.id ?: request.id,
@@ -595,7 +596,7 @@ class JellyseerrDiscoverRowsFragment : RowsSupportFragment() {
 	private fun loadContent() {
 		viewModel.loadTrendingContent()
 		viewModel.loadGenres()
-		viewModel.loadRequests()
+		detailsViewModel.loadRequests()
 	}
 
 	private fun onContentSelected(item: JellyseerrDiscoverItemDto) {

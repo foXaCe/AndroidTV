@@ -74,9 +74,26 @@ Every push to `main`/`develop` and every PR to `main` triggers:
 1. Ktlint check
 2. Detekt
 3. Android Lint
-4. Release build
+4. Release build (signed, internal PRs and pushes only)
+5. Debug build (external PRs from forks)
 
 Reports are uploaded as artifacts if any step fails.
+
+## CI Secrets (GitHub → Settings → Secrets and variables → Actions)
+
+| Secret | Comment l'obtenir |
+|--------|------------------|
+| `KEYSTORE_BASE64` | `base64 -w 0 release.keystore` |
+| `KEYSTORE_PASSWORD` | Mot de passe du keystore |
+| `KEY_ALIAS` | Alias de la clé dans le keystore |
+| `KEY_PASSWORD` | Mot de passe de la clé |
+
+Pour encoder le keystore :
+
+```
+Linux/Mac : base64 -w 0 release.keystore | xclip
+Windows   : certutil -encode release.keystore tmp.b64 && findstr /v /c:- tmp.b64 > encoded.txt
+```
 
 ## Configuration files
 

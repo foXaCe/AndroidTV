@@ -202,7 +202,9 @@ val appModule = module {
 	viewModel { DreamViewModel(get(), get(), get(), get(), get()) }
 	viewModel { SettingsViewModel() }
 	viewModel { SyncPlayViewModel() }
-	viewModel { org.jellyfin.androidtv.ui.jellyseerr.JellyseerrViewModel(get()) }
+	viewModel { org.jellyfin.androidtv.ui.jellyseerr.JellyseerrAuthViewModel(get()) }
+	viewModel { org.jellyfin.androidtv.ui.jellyseerr.JellyseerrDetailsViewModel(get()) }
+	viewModel { org.jellyfin.androidtv.ui.jellyseerr.JellyseerrDiscoverViewModel(get()) }
 	viewModel { org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsViewModel(get(), get()) }
 	viewModel { org.jellyfin.androidtv.ui.browsing.v2.LibraryBrowseViewModel(get(), get(), get(), get(), get()) }
 	viewModel { org.jellyfin.androidtv.ui.browsing.v2.GenresGridViewModel(get(), get(), get(), get()) }
@@ -211,7 +213,7 @@ val appModule = module {
 	viewModel { org.jellyfin.androidtv.ui.browsing.v2.RecordingsBrowseViewModel(get()) }
 	viewModel { org.jellyfin.androidtv.ui.browsing.v2.ScheduleBrowseViewModel(get()) }
 	viewModel { org.jellyfin.androidtv.ui.browsing.v2.SeriesRecordingsBrowseViewModel(get()) }
-	single { MediaBarSlideshowViewModel(get(), get(), get(), get(), androidContext(), get(), get(), get(), get()) }
+	viewModel { MediaBarSlideshowViewModel(get(), get(), get(), get(), androidContext(), get(), get(), get(), get()) }
 
 	// SyncPlay
 	single { SyncPlayManager(androidContext(), get(), get()) }
@@ -220,9 +222,9 @@ val appModule = module {
 	single { UpdateCheckerService(get()) }
 
 	single { MarkdownRenderer(get()) }
-	single { ItemLauncher() }
-	single { KeyProcessor() }
-	single { ReportingHelper(get(), get(), get()) }
+	factory { ItemLauncher() }
+	factory { KeyProcessor() }
+	factory { ReportingHelper(get(), get(), get()) }
 	single<PlaybackHelper> { SdkPlaybackHelper(get(), get(), get(), get(), get()) }
 	single { org.jellyfin.androidtv.ui.playback.ThemeMusicPlayer(androidContext()) }
 

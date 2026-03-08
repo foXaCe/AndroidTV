@@ -21,7 +21,7 @@ import org.koin.core.qualifier.named
 import timber.log.Timber
 
 class SettingsFragment : BaseFragment(R.layout.fragment_jellyseerr_settings) {
-	private val viewModel: JellyseerrViewModel by viewModel()
+	private val viewModel: JellyseerrAuthViewModel by viewModel()
 	private val globalPreferences: JellyseerrPreferences by inject(named("global"))
 	private val apiClient: ApiClient by inject()
 	private val userPreferences: UserPreferences by inject()
