@@ -1,4 +1,4 @@
-# Moonfin Design System
+# VegafoX Design System
 
 Premium dark theme for Android TV, optimized for living room viewing on Android 14+.
 
@@ -389,7 +389,7 @@ AnimationDefaults.FOCUS_SCALE      // 1.06f
 | `HomeFragment.kt` | Colors |
 | `HomeRowsFragment.kt` | Colors |
 | All Jellyseerr files (13) | Hardcoded colors replaced |
-| All settings/moonfin files | Colors, shapes |
+| All settings/vegafox files | Colors, shapes |
 | Playback overlay actions | Colors |
 | Toolbar files (4) | Colors, shapes |
 | CardPresenter.kt | Colors in Compose sections |

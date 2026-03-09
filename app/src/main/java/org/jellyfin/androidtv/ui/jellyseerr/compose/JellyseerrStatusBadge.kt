@@ -7,7 +7,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrMediaInfoDto
@@ -24,7 +23,6 @@ fun JellyseerrStatusBadge(
 	Text(
 		text = statusText,
 		style = JellyfinTheme.typography.labelSmall,
-		fontWeight = FontWeight.Bold,
 		color = JellyfinTheme.colorScheme.textPrimary,
 		modifier = Modifier
 			.clip(JellyfinTheme.shapes.full)

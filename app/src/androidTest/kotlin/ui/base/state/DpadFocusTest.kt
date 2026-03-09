@@ -1,18 +1,27 @@
 package org.jellyfin.androidtv.ui.base.state
 
 import android.view.KeyEvent as NativeKeyEvent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performKeyPress
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
+import org.jellyfin.androidtv.ui.base.Text
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -81,5 +90,41 @@ class DpadFocusTest {
 
 		composeTestRule.waitForIdle()
 		assert(retried) { "Expected onRetry callback to be triggered by click action" }
+	}
+
+	/**
+	 * EmptyState with an action button: the action button is focusable.
+	 */
+	@Test
+	fun empty_state_action_button_is_focusable() {
+		composeTestRule.setContent {
+			JellyfinTheme {
+				EmptyState(
+					title = "No items",
+					message = "Your library is empty",
+					action = {
+						Text(
+							text = "Browse",
+							modifier = Modifier
+								.testTag("action_button")
+								.clickable {}
+								.focusable()
+								.background(JellyfinTheme.colorScheme.surfaceContainer, JellyfinTheme.shapes.button)
+								.padding(horizontal = 24.dp, vertical = 10.dp),
+						)
+					},
+				)
+			}
+		}
+
+		composeTestRule.waitForIdle()
+
+		// Verify the action button exists
+		val actionNode = composeTestRule.onNodeWithTag("action_button")
+		actionNode.assertExists()
+
+		// Verify it has OnClick action (implies focusable + clickable)
+		actionNode.performSemanticsAction(SemanticsActions.OnClick)
+		composeTestRule.waitForIdle()
 	}
 }

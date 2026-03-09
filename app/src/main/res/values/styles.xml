@@ -112,8 +112,10 @@
         <item name="android:datePickerMode">spinner</item>
     </style>
 
-    <style name="Widget.Jellyfin.Row.Header" parent="Widget.Leanback.Row.Header">
+    <style name="Widget.Jellyfin.Row.Header" parent="android:Widget.TextView">
         <item name="android:textColor">?attr/headerTextColor</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="player_progress" parent="android:Widget.ProgressBar.Horizontal">

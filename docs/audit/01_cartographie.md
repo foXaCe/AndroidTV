@@ -1,4 +1,4 @@
-# Cartographie du projet Moonfin Android TV
+# Cartographie du projet VegafoX Android TV
 
 > **Mis à jour le 2026-03-08 — état post-travaux**
 > Audit descriptif. Les problèmes identifiés (couleurs hardcodées, textes, tokens sous-utilisés) ont été traités dans les audits 02-15.
@@ -13,7 +13,7 @@
 
 ## Resume executif
 
-Moonfin est un fork de Jellyfin Android TV (package `org.moonfin.androidtv`) ciblant Android 14+ sur hardware haut de gamme (Ugoos AM9+ Pro). Le projet comprend **7 modules Gradle**, **599 fichiers Kotlin** + 32 Java legacy, **193 fichiers Compose** (458 `@Composable`), et 50 layouts XML. L'architecture repose sur Koin (DI), Leanback + Jetpack Compose (migration en cours), et ExoPlayer/Media3 avec FFmpeg. Le module `design` fournit des tokens (couleurs, typographie, espacement, rayons) mais ils sont **massivement ignores** : le code Jellyseerr utilise ~100+ couleurs hardcodees `Color.parseColor("#...")`, MainToolbar en ajoute 16+, et 37+ fichiers ignorent le systeme typographique. On recense **~150+ textes UI hardcodes** repartis sur 20+ fichiers Kotlin et 7 layouts XML. Le theme Muted Purple est incomplet (1/20 attributs). L'heterogeneite entre ecrans Leanback legacy, ecrans Compose v2, et ecrans Jellyseerr imperatifs (`addView()`) constitue le probleme visuel principal. **4 sources de couleurs** coexistent sans lien entre elles.
+VegafoX est un fork de Jellyfin Android TV (package `com.vegafox.androidtv`) ciblant Android 14+ sur hardware haut de gamme (Ugoos AM9+ Pro). Le projet comprend **7 modules Gradle**, **599 fichiers Kotlin** + 32 Java legacy, **193 fichiers Compose** (458 `@Composable`), et 50 layouts XML. L'architecture repose sur Koin (DI), Leanback + Jetpack Compose (migration en cours), et ExoPlayer/Media3 avec FFmpeg. Le module `design` fournit des tokens (couleurs, typographie, espacement, rayons) mais ils sont **massivement ignores** : le code Jellyseerr utilise ~100+ couleurs hardcodees `Color.parseColor("#...")`, MainToolbar en ajoute 16+, et 37+ fichiers ignorent le systeme typographique. On recense **~150+ textes UI hardcodes** repartis sur 20+ fichiers Kotlin et 7 layouts XML. Le theme Muted Purple est incomplet (1/20 attributs). L'heterogeneite entre ecrans Leanback legacy, ecrans Compose v2, et ecrans Jellyseerr imperatifs (`addView()`) constitue le probleme visuel principal. **4 sources de couleurs** coexistent sans lien entre elles.
 
 ---
 
@@ -433,7 +433,7 @@ ui/
 #### `ui/startup/fragment/SelectServerFragment.kt`
 | Ligne | Texte | Contexte |
 |-------|-------|----------|
-| 194 | `"Moonfin version ${BuildConfig.VERSION_NAME} ${BuildConfig.BUILD_TYPE}"` | Texte version |
+| 194 | `"VegafoX version ${BuildConfig.VERSION_NAME} ${BuildConfig.BUILD_TYPE}"` | Texte version |
 
 #### `ui/startup/fragment/UserLoginFragment.kt`
 | Ligne | Texte | Contexte |
@@ -465,7 +465,7 @@ ui/
 #### `ui/settings/screen/about/SettingsAboutScreen.kt`
 | Ligne | Texte | Contexte |
 |-------|-------|----------|
-| 37 | `"Moonfin app version"` | Label version |
+| 37 | `"VegafoX app version"` | Label version |
 
 #### `ui/settings/screen/screensaver/SettingsScreensaverScreen.kt`
 | Ligne | Texte | Contexte |

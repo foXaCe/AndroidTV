@@ -257,7 +257,6 @@ class ScheduleBrowseFragment : Fragment() {
 			Text(
 				text = title,
 				style = JellyfinTheme.typography.titleMedium,
-				fontWeight = FontWeight.SemiBold,
 				color = JellyfinTheme.colorScheme.onSurface,
 				modifier = Modifier.padding(start = 60.dp, bottom = 8.dp),
 			)
@@ -401,6 +400,6 @@ class ScheduleBrowseFragment : Fragment() {
 
 	private fun launchItem(item: BaseItemDto) {
 		val rowItem = BaseItemDtoBaseRowItem(item)
-		itemLauncher.launch(rowItem, null, requireContext())
+		itemLauncher.launch(rowItem, requireContext())
 	}
 }

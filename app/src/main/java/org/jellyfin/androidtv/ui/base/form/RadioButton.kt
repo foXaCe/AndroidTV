@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
+import org.jellyfin.design.Tokens
 
 @Composable
 fun RadioButton(
@@ -43,7 +44,7 @@ fun RadioButton(
 				tint = contentColor,
 				contentDescription = null,
 				modifier = Modifier
-					.padding(3.dp)
+					.padding(Tokens.Space.spaceXs)
 			)
 		}
 	}

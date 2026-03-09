@@ -118,7 +118,7 @@ class MediaDetailsFragment : Fragment() {
 								showCancelRequestDialog(pendingRequests)
 							},
 							onTrailerClick = { playTrailer() },
-							onPlayClick = { playInMoonfin() },
+							onPlayClick = { playInVegafoX() },
 							onCastClick = { castId ->
 								navigationRepository.navigate(Destinations.jellyseerrPersonDetails(castId))
 							},
@@ -521,7 +521,7 @@ class MediaDetailsFragment : Fragment() {
 		}
 	}
 
-	private fun playInMoonfin() {
+	private fun playInVegafoX() {
 		lifecycleScope.launch {
 			try {
 				val externalIds = movieDetails?.externalIds ?: tvDetails?.externalIds
@@ -539,7 +539,7 @@ class MediaDetailsFragment : Fragment() {
 					Toast.makeText(requireContext(), getString(R.string.playback_item_not_found), Toast.LENGTH_SHORT).show()
 				}
 			} catch (e: Exception) {
-				Timber.e(e, "Failed to search for item in Moonfin")
+				Timber.e(e, "Failed to search for item in VegafoX")
 				Toast.makeText(requireContext(), getString(R.string.playback_search_error), Toast.LENGTH_SHORT).show()
 			}
 		}

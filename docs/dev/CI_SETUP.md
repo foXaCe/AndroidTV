@@ -1,4 +1,4 @@
-# CI Setup — Moonfin for Android TV
+# CI Setup — VegafoX for Android TV
 
 > Date : 2026-03-08
 
@@ -8,7 +8,7 @@ Configurer dans : **GitHub → Settings → Secrets and variables → Actions**
 
 | Secret | Valeur | Commande |
 |--------|--------|----------|
-| `KEYSTORE_BASE64` | Keystore encodé en base64 | `base64 -w 0 moonfin-release.jks` |
+| `KEYSTORE_BASE64` | Keystore encodé en base64 | `base64 -w 0 vegafox-release.jks` |
 | `KEYSTORE_PASSWORD` | Mot de passe du keystore | Dans `keystore.properties` → `storePassword` |
 | `KEY_ALIAS` | Alias de la clé | Dans `keystore.properties` → `keyAlias` |
 | `KEY_PASSWORD` | Mot de passe de la clé | Dans `keystore.properties` → `keyPassword` |
@@ -17,13 +17,13 @@ Configurer dans : **GitHub → Settings → Secrets and variables → Actions**
 
 ```sh
 # Linux/Mac — copier dans le presse-papier
-base64 -w 0 moonfin-release.jks | xclip -selection clipboard
+base64 -w 0 vegafox-release.jks | xclip -selection clipboard
 
 # Linux/Mac — écrire dans un fichier
-base64 -w 0 moonfin-release.jks > keystore_base64.txt
+base64 -w 0 vegafox-release.jks > keystore_base64.txt
 
 # Windows
-certutil -encode moonfin-release.jks tmp.b64 && findstr /v /c:- tmp.b64 > encoded.txt
+certutil -encode vegafox-release.jks tmp.b64 && findstr /v /c:- tmp.b64 > encoded.txt
 ```
 
 ## 2. Workflow CI
@@ -54,9 +54,9 @@ Le `signingConfigs` dans `app/build.gradle.kts` supporte deux modes :
    - Lit le chemin du keystore et les mots de passe depuis le fichier
    - Format du fichier :
      ```properties
-     storeFile=moonfin-release.jks
+     storeFile=vegafox-release.jks
      storePassword=***
-     keyAlias=moonfin
+     keyAlias=vegafox
      keyPassword=***
      ```
 

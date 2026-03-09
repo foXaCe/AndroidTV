@@ -35,7 +35,6 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -209,7 +208,7 @@ fun PersonDetailsContent(
 						Column(modifier = Modifier.weight(1f)) {
 							Text(
 								text = item.name ?: "",
-								style = JellyfinTheme.typography.headlineLarge.copy(fontWeight = FontWeight.W700),
+								style = JellyfinTheme.typography.headlineLargeBold,
 								color = JellyfinTheme.colorScheme.onSurface,
 								lineHeight = 40.sp,
 							)

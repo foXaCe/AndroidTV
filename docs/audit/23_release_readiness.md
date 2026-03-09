@@ -274,4 +274,4 @@ Créer `JellyseerrMediaDetailsScreen.kt` et `JellyseerrPersonDetailsScreen.kt` e
 
 ---
 
-*Rapport généré le 2026-03-08 — Moonfin for Android TV v1.6.2*
+*Rapport généré le 2026-03-08 — VegafoX for Android TV v1.6.2*

@@ -10,7 +10,7 @@
 
 ## Resume
 
-Audit systematique et correction de la navigation D-pad sur l'ensemble de l'application Moonfin Android TV.
+Audit systematique et correction de la navigation D-pad sur l'ensemble de l'application VegafoX Android TV.
 Objectif : garantir une experience premium a la telecommande sur tous les ecrans.
 
 **Date** : 2026-03-07

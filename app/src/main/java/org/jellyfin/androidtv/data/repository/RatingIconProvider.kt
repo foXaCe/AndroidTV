@@ -14,10 +14,10 @@ object RatingIconProvider {
 		val localIcon = getLocalFallbackIcon(source, scorePercent)
 		if (localIcon != null) return localIcon
 
-		// Fall back to server-hosted icon (requires Moonfin plugin)
+		// Fall back to server-hosted icon (requires VegafoX plugin)
 		if (baseUrl != null) {
 			getServerIconFile(source, scorePercent)?.let { file ->
-				return RatingIcon.ServerUrl("$baseUrl/Moonfin/Assets/$file")
+				return RatingIcon.ServerUrl("$baseUrl/VegafoX/Assets/$file")
 			}
 		}
 		return null

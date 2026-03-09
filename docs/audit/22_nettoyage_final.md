@@ -55,7 +55,7 @@
 
 ## Correction 3 — 6 textes Jellyseerr login flow (audit 16 §5)
 
-**Fichier** : `ui/settings/screen/moonfin/SettingsJellyseerrScreen.kt`
+**Fichier** : `ui/settings/screen/vegafox/SettingsJellyseerrScreen.kt`
 
 ### 3.1 "permanent API key" (~ligne 661)
 

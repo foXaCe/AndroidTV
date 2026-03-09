@@ -5,7 +5,7 @@
 > Les scores et métriques ci-dessous ont été mis à jour pour refléter
 > l'état réel post-travaux complets (audits 01-15).
 
-**Projet** : Moonfin for Android TV (fork Jellyfin)
+**Projet** : VegafoX for Android TV (fork Jellyfin)
 **Date** : 2026-03-07 (créé) / 2026-03-08 (mis à jour)
 **Version auditee** : branche `main` (commit 8b15bd57d + modifications locales)
 **Scope** : Validation croisee des audits 01-15 + verification de l'etat actuel

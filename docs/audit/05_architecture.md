@@ -1,4 +1,4 @@
-# Audit d'Architecture - Moonfin Android TV
+# Audit d'Architecture - VegafoX Android TV
 
 > **Mis à jour le 2026-03-08 — état post-travaux**
 > Audit diagnostique — aucune correction architecturale appliquée (toutes classées P3 long terme).

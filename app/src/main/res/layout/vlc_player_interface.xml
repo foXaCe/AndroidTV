@@ -48,13 +48,12 @@
         android:background="@color/black_transparent"
         android:visibility="gone">
 
-        <LinearLayout
-            android:id="@+id/rows_area"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+        <org.jellyfin.androidtv.ui.playback.overlay.PlayerPopupView
+            android:id="@+id/popup_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_gravity="start|bottom"
-            android:layout_marginTop="16dp"
-            android:orientation="horizontal" />
+            android:layout_marginTop="16dp" />
     </FrameLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout

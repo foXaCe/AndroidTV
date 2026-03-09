@@ -22,7 +22,7 @@ android {
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
 		// Release version - custom applicationId to avoid conflict with official Jellyfin
-		applicationId = "org.moonfin.androidtv"
+		applicationId = "com.vegafox.androidtv"
 		versionName = project.getVersionName()
 		versionCode = getVersionCode(versionName!!)
 	}
@@ -97,7 +97,7 @@ android {
 			resValue("string", "app_search_suggest_intent_data", "content://${defaultConfig.applicationId}.content/intent")
 
 			// Set flavored application name
-			resValue("string", "app_name", "Moonfin")
+			resValue("string", "app_name", "VegafoX")
 
 			buildConfigField("boolean", "DEVELOPMENT", "false")
 		}
@@ -116,7 +116,7 @@ android {
 			resValue("string", "app_search_suggest_intent_data", "content://${debugAppId}.content/intent")
 
 			// Set flavored application name
-			resValue("string", "app_name", "Moonfin Debug")
+			resValue("string", "app_name", "VegafoX Debug")
 
 			buildConfigField("boolean", "DEVELOPMENT", (defaultConfig.versionCode!! < 100).toString())
 		}
@@ -141,7 +141,13 @@ android {
 	}
 }
 
-base.archivesName.set("moonfin-androidtv-v${project.getVersionName()}")
+base.archivesName.set("vegafox-androidtv-v${project.getVersionName()}")
+
+tasks.register("printVersionName") {
+	doLast {
+		println(android.defaultConfig.versionName)
+	}
+}
 
 tasks.register("versionTxt") {
 	val path = layout.buildDirectory.asFile.get().resolve("version.txt")
@@ -217,12 +223,11 @@ dependencies {
 
 	// Android(x)
 	implementation(libs.androidx.core)
+	implementation(libs.androidx.splashscreen)
 	implementation(libs.androidx.activity)
 	implementation(libs.androidx.activity.compose)
 	implementation(libs.androidx.fragment)
 	implementation(libs.androidx.fragment.compose)
-	implementation(libs.androidx.leanback.core)
-	implementation(libs.androidx.leanback.preference)
 	implementation(libs.androidx.navigation3.ui)
 	implementation(libs.androidx.preference)
 	implementation(libs.androidx.appcompat)
@@ -284,5 +289,7 @@ dependencies {
 
 	// Compose UI Testing
 	androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+	androidTestImplementation(libs.androidx.test.ext.junit)
+	androidTestImplementation(libs.androidx.test.espresso.core)
 	debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

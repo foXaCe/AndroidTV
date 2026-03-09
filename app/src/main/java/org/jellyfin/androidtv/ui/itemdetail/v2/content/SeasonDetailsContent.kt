@@ -32,7 +32,6 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -134,7 +133,7 @@ fun SeasonDetailsContent(
 							item.seriesName?.let { seriesName ->
 								Text(
 									text = seriesName,
-									style = JellyfinTheme.typography.headlineMedium.copy(fontWeight = FontWeight.W500),
+									style = JellyfinTheme.typography.headlineMedium,
 									color = JellyfinTheme.colorScheme.onSurfaceVariant,
 								)
 								Spacer(modifier = Modifier.height(4.dp))
@@ -142,7 +141,7 @@ fun SeasonDetailsContent(
 
 							Text(
 								text = item.name ?: "",
-								style = JellyfinTheme.typography.display.copy(fontWeight = FontWeight.W700),
+								style = JellyfinTheme.typography.displayBold,
 								color = JellyfinTheme.colorScheme.onSurface,
 								lineHeight = 55.sp,
 							)

@@ -1,6 +1,5 @@
 package org.jellyfin.androidtv.di
 
-import android.content.Context
 import android.os.Build
 import androidx.lifecycle.ProcessLifecycleOwner
 import coil3.ImageLoader
@@ -40,7 +39,7 @@ import org.jellyfin.androidtv.preference.JellyseerrPreferences
 import org.jellyfin.androidtv.data.syncplay.SyncPlayManager
 import org.jellyfin.androidtv.integration.dream.DreamViewModel
 import org.jellyfin.androidtv.ui.InteractionTrackerViewModel
-import org.jellyfin.androidtv.ui.home.mediabar.MediaBarSlideshowViewModel
+
 import org.jellyfin.androidtv.ui.itemhandling.ItemLauncher
 import org.jellyfin.androidtv.ui.navigation.Destinations
 import org.jellyfin.androidtv.ui.navigation.NavigationRepository
@@ -52,7 +51,6 @@ import org.jellyfin.androidtv.ui.playback.segment.MediaSegmentRepository
 import org.jellyfin.androidtv.ui.playback.segment.MediaSegmentRepositoryImpl
 import org.jellyfin.androidtv.ui.playback.stillwatching.StillWatchingViewModel
 import org.jellyfin.androidtv.ui.player.photo.PhotoPlayerViewModel
-import org.jellyfin.androidtv.ui.search.SearchFragmentDelegate
 import org.jellyfin.androidtv.ui.search.SearchRepository
 import org.jellyfin.androidtv.ui.search.SearchRepositoryImpl
 import org.jellyfin.androidtv.ui.search.SearchViewModel
@@ -85,14 +83,14 @@ val appModule = module {
 	// SDK
 	single(defaultDeviceInfo) { androidDevice(get()) }
 	single { OkHttpFactory() }
-	single { HttpClientOptions() }
+	factory { HttpClientOptions() }
 	single {
 		createJellyfin {
 			context = androidContext()
 
 			// Add client info
 			val clientName = buildString {
-				append("Moonfin Android TV")
+				append("VegafoX Android TV")
 				if (BuildConfig.DEBUG) append(" (debug)")
 			}
 			clientInfo = ClientInfo(clientName, BuildConfig.VERSION_NAME)
@@ -172,9 +170,9 @@ val appModule = module {
 	single<CustomMessageRepository> { CustomMessageRepositoryImpl() }
 	single<NavigationRepository> { NavigationRepositoryImpl(Destinations.home) }
 	single { ShuffleManager(get(), get(), get(), get()) }
-	single<SearchRepository> { SearchRepositoryImpl(get(), get()) }
+	factory<SearchRepository> { SearchRepositoryImpl(get(), get()) }
 	single<MediaSegmentRepository> { MediaSegmentRepositoryImpl(get(), get(), get()) }
-	single<ExternalAppRepository> { ExternalAppRepository(get()) }
+	factory<ExternalAppRepository> { ExternalAppRepository(get()) }
 	single { LocalWatchlistRepository(androidContext()) }
 	single<org.jellyfin.androidtv.data.repository.MultiServerRepository> { 
 		org.jellyfin.androidtv.data.repository.MultiServerRepositoryImpl(get(), get(), get(), get(), get(defaultDeviceInfo), get()) 
@@ -209,12 +207,19 @@ val appModule = module {
 	viewModel { org.jellyfin.androidtv.ui.browsing.v2.LibraryBrowseViewModel(get(), get(), get(), get(), get()) }
 	viewModel { org.jellyfin.androidtv.ui.browsing.v2.GenresGridViewModel(get(), get(), get(), get()) }
 	viewModel { org.jellyfin.androidtv.ui.browsing.v2.MusicBrowseViewModel(get(), get()) }
+	viewModel { org.jellyfin.androidtv.ui.browsing.v2.FolderBrowseViewModel(get(), get()) }
 	viewModel { org.jellyfin.androidtv.ui.browsing.v2.LiveTvBrowseViewModel(get()) }
 	viewModel { org.jellyfin.androidtv.ui.browsing.v2.RecordingsBrowseViewModel(get()) }
 	viewModel { org.jellyfin.androidtv.ui.browsing.v2.ScheduleBrowseViewModel(get()) }
 	viewModel { org.jellyfin.androidtv.ui.browsing.v2.SeriesRecordingsBrowseViewModel(get()) }
-	viewModel { MediaBarSlideshowViewModel(get(), get(), get(), get(), androidContext(), get(), get(), get(), get()) }
-
+	viewModel { org.jellyfin.androidtv.ui.browsing.compose.CollectionBrowseViewModel(get()) }
+	viewModel { org.jellyfin.androidtv.ui.browsing.compose.SuggestedMoviesViewModel(get()) }
+	viewModel { org.jellyfin.androidtv.ui.browsing.compose.ByLetterBrowseViewModel(get()) }
+	viewModel { org.jellyfin.androidtv.ui.browsing.compose.FolderViewViewModel(get()) }
+	viewModel { org.jellyfin.androidtv.ui.browsing.compose.AllFavoritesViewModel(get()) }
+	single { org.jellyfin.androidtv.ui.home.compose.HomePrefetchService(get()) }
+	viewModel { org.jellyfin.androidtv.ui.home.compose.HomeViewModel(get(), get(), get(), get(), get(), get()) }
+	viewModel { org.jellyfin.androidtv.ui.playback.audio.AudioNowPlayingViewModel(get(), get(), get(), get()) }
 	// SyncPlay
 	single { SyncPlayManager(androidContext(), get(), get()) }
 
@@ -225,10 +230,6 @@ val appModule = module {
 	factory { ItemLauncher() }
 	factory { KeyProcessor() }
 	factory { ReportingHelper(get(), get(), get()) }
-	single<PlaybackHelper> { SdkPlaybackHelper(get(), get(), get(), get(), get()) }
+	factory<PlaybackHelper> { SdkPlaybackHelper(get(), get(), get(), get(), get()) }
 	single { org.jellyfin.androidtv.ui.playback.ThemeMusicPlayer(androidContext()) }
-
-	factory { (context: Context) -> 
-		SearchFragmentDelegate(context, get(), get(), get()) 
-	}
 }

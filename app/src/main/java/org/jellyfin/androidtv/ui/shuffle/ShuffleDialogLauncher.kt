@@ -21,7 +21,7 @@ import org.koin.compose.koinInject
 import timber.log.Timber
 
 /**
- * Show the shuffle dialog from Java code (e.g., FullDetailsFragment)
+ * Show the shuffle dialog from Java code.
  */
 @Suppress("UNUSED_PARAMETER")
 fun showShuffleDialog(

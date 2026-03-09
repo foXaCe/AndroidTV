@@ -118,6 +118,15 @@ fun SettingsPlaybackScreen() {
 
 		item {
 			ListButton(
+				leadingContent = { Icon(painterResource(R.drawable.ic_syncplay), contentDescription = null) },
+				headingContent = { Text(stringResource(R.string.syncplay)) },
+				captionContent = { Text(stringResource(R.string.syncplay_description)) },
+				onClick = { router.push(Routes.VEGAFOX_SYNCPLAY) }
+			)
+		}
+
+		item {
+			ListButton(
 				leadingContent = { Icon(painterResource(R.drawable.ic_more), contentDescription = null) },
 				headingContent = { Text(stringResource(R.string.pref_playback_advanced)) },
 				onClick = { router.push(Routes.PLAYBACK_ADVANCED) }

@@ -27,14 +27,6 @@ import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
-import androidx.leanback.app.RowsSupportFragment;
-import androidx.leanback.widget.ArrayObjectAdapter;
-import androidx.leanback.widget.HeaderItem;
-import androidx.leanback.widget.ListRow;
-import androidx.leanback.widget.OnItemViewClickedListener;
-import androidx.leanback.widget.Presenter;
-import androidx.leanback.widget.Row;
-import androidx.leanback.widget.RowPresenter;
 import androidx.lifecycle.Lifecycle;
 
 import org.jellyfin.androidtv.R;
@@ -51,9 +43,8 @@ import org.jellyfin.androidtv.ui.ObservableHorizontalScrollView;
 import org.jellyfin.androidtv.ui.ObservableScrollView;
 import org.jellyfin.androidtv.ui.ProgramGridCell;
 import org.jellyfin.androidtv.ui.ScrollViewListener;
-import org.jellyfin.androidtv.ui.itemhandling.BaseItemPersonBaseRowItem;
-import org.jellyfin.androidtv.ui.itemhandling.ChapterItemInfoBaseRowItem;
-import org.jellyfin.androidtv.ui.itemhandling.ItemRowAdapter;
+import org.jellyfin.androidtv.ui.playback.overlay.PlayerPopupContent;
+import org.jellyfin.androidtv.ui.playback.overlay.PlayerPopupView;
 import org.jellyfin.androidtv.ui.livetv.LiveTvGuide;
 import org.jellyfin.androidtv.ui.livetv.LiveTvGuideFragment;
 import org.jellyfin.androidtv.ui.livetv.LiveTvGuideFragmentHelperKt;
@@ -61,10 +52,6 @@ import org.jellyfin.androidtv.ui.livetv.TvManager;
 import org.jellyfin.androidtv.ui.navigation.Destinations;
 import org.jellyfin.androidtv.ui.navigation.NavigationRepository;
 import org.jellyfin.androidtv.ui.playback.overlay.LeanbackOverlayFragment;
-import org.jellyfin.androidtv.ui.presentation.CardPresenter;
-import org.jellyfin.androidtv.ui.presentation.ChannelCardPresenter;
-import org.jellyfin.androidtv.ui.presentation.MutableObjectAdapter;
-import org.jellyfin.androidtv.ui.presentation.PositionableListRowPresenter;
 import org.jellyfin.androidtv.util.CoroutineUtils;
 import org.jellyfin.androidtv.util.DateTimeExtensionsKt;
 import org.jellyfin.androidtv.util.ImageHelper;
@@ -91,10 +78,7 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
     protected VlcPlayerInterfaceBinding binding;
     private OverlayTvGuideBinding tvGuideBinding;
 
-    private RowsSupportFragment mPopupRowsFragment;
-    private ListRow mChapterRow;
-    private ArrayObjectAdapter mPopupRowAdapter;
-    private PositionableListRowPresenter mPopupRowPresenter;
+    private PlayerPopupView popupContentView;
 
     //Live guide items
     private static final int PAGE_SIZE = 75;
@@ -201,20 +185,23 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
         binding = VlcPlayerInterfaceBinding.inflate(inflater, container, false);
         binding.textClock.setVideoPlayer(true);
 
-        // inject the RowsSupportFragment in the popup container
-        if (getChildFragmentManager().findFragmentById(R.id.rows_area) == null) {
-            mPopupRowsFragment = new RowsSupportFragment();
-            getChildFragmentManager().beginTransaction()
-                    .replace(R.id.rows_area, mPopupRowsFragment).commit();
-        } else {
-            mPopupRowsFragment = (RowsSupportFragment) getChildFragmentManager()
-                    .findFragmentById(R.id.rows_area);
-        }
-
-        mPopupRowPresenter = new PositionableListRowPresenter();
-        mPopupRowAdapter = new ArrayObjectAdapter(mPopupRowPresenter);
-        mPopupRowsFragment.setAdapter(mPopupRowAdapter);
-        mPopupRowsFragment.setOnItemViewClickedListener(itemViewClickedListener);
+        // Setup Compose popup content view
+        popupContentView = binding.popupContent;
+        popupContentView.setOnChapterClick(positionMs -> {
+            playbackControllerContainer.getValue().getPlaybackController().seek(positionMs);
+            hidePopupPanel();
+        });
+        popupContentView.setOnChannelClick(channelId -> {
+            hidePopupPanel();
+            switchChannel(channelId);
+        });
+        popupContentView.setOnPersonClick(personId -> {
+            hidePopupPanel();
+            closePlayer();
+            if (personId != null) {
+                navigationRepository.getValue().navigate(Destinations.INSTANCE.itemDetails(personId, null));
+            }
+        });
 
         // And the Live Guide element
         tvGuideBinding = OverlayTvGuideBinding.inflate(inflater, container, false);
@@ -394,28 +381,6 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
         }
     };
 
-    private OnItemViewClickedListener itemViewClickedListener = new OnItemViewClickedListener() {
-        @Override
-        public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item,
-                                  RowPresenter.ViewHolder rowViewHolder, Row row) {
-            if (item instanceof ChapterItemInfoBaseRowItem) {
-                ChapterItemInfoBaseRowItem rowItem = (ChapterItemInfoBaseRowItem) item;
-                Long start = rowItem.getChapterInfo().getStartPositionTicks() / 10000;
-                playbackControllerContainer.getValue().getPlaybackController().seek(start);
-                hidePopupPanel();
-            } else if (item instanceof BaseItemDto) {
-                hidePopupPanel();
-                switchChannel(((BaseItemDto) item).getId());
-            } else if (item instanceof BaseItemPersonBaseRowItem) {
-                BaseItemPersonBaseRowItem rowItem = (BaseItemPersonBaseRowItem) item;
-                hidePopupPanel();
-                closePlayer();
-                if (rowItem.getItemId() != null) {
-                    navigationRepository.getValue().navigate(Destinations.INSTANCE.itemDetails(rowItem.getItemId(), null));
-                }
-            }
-        }
-    };
 
     private OnBackPressedCallback backPressedCallback = new OnBackPressedCallback(true) {
         @Override
@@ -571,9 +536,8 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
                     }
                 }
 
-                if (mPopupPanelVisible && !mGuideVisible && keyCode == KeyEvent.KEYCODE_DPAD_LEFT && mPopupRowPresenter.getPosition() == 0) {
-                    mPopupRowsFragment.requireView().requestFocus();
-                    mPopupRowPresenter.setPosition(0);
+                if (mPopupPanelVisible && !mGuideVisible && keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                    popupContentView.requestFocus();
                     return true;
                 }
                 if (mGuideVisible) {
@@ -633,8 +597,8 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
                         // with auto-confirm after 1.5s; trickplay OFF does immediate skip.
                         if (leanbackOverlayFragment.isControlsOverlayVisible()) {
                             View focusedView = requireActivity().getCurrentFocus();
-                            boolean isProgressBarFocused = focusedView instanceof androidx.leanback.widget.PlaybackTransportRowView
-                                    || (focusedView != null && focusedView.getParent() instanceof androidx.leanback.widget.PlaybackTransportRowView);
+                            View overlayView = leanbackOverlayFragment.getView();
+                            boolean isProgressBarFocused = focusedView != null && overlayView != null && overlayView.findFocus() != null;
                             if (isProgressBarFocused && (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT || keyCode == KeyEvent.KEYCODE_DPAD_LEFT)) {
                                 boolean trickPlayEnabled = userPreferences.getValue().get(org.jellyfin.androidtv.preference.UserPreferences.Companion.getTrickPlayEnabled());
                                 if (trickPlayEnabled) {
@@ -682,12 +646,6 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
                     //and then manage our fade timer
                     if (mFadeEnabled) startFadeTimer();
                 }
-            }
-
-            switch (keyCode) {
-                case KeyEvent.KEYCODE_DPAD_LEFT:
-                case KeyEvent.KEYCODE_DPAD_RIGHT:
-                    leanbackOverlayFragment.getPlayerGlue().setInjectedViewsVisibility();
             }
 
             return false;
@@ -1212,24 +1170,18 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
         showChapterPanel();
         mHandler.postDelayed(() -> {
             if (!getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) return;
-
-            int ndx = TvManager.getAllChannelsIndex(TvManager.getLastLiveTvChannel());
-            if (ndx > 0) {
-                mPopupRowPresenter.setPosition(ndx);
-            }
             mPopupPanelVisible = true;
         }, 500);
     }
 
     public void showChapterSelector() {
+        // Update chapters content with scroll position before showing
+        BaseItemDto item = playbackControllerContainer.getValue().getPlaybackController().getCurrentlyPlayingItem();
+        int ndx = getCurrentChapterIndex(item, playbackControllerContainer.getValue().getPlaybackController().getCurrentPosition() * 10000);
+        prepareChapterAdapter(Math.max(0, ndx));
         showChapterPanel();
         mHandler.postDelayed(() -> {
             if (!getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) return;
-
-            int ndx = getCurrentChapterIndex(playbackControllerContainer.getValue().getPlaybackController().getCurrentlyPlayingItem(), playbackControllerContainer.getValue().getPlaybackController().getCurrentPosition() * 10000);
-            if (ndx > 0) {
-                mPopupRowPresenter.setPosition(ndx);
-            }
             mPopupPanelVisible = true;
         }, 500);
     }
@@ -1380,46 +1332,38 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
     }
 
     private void prepareChapterAdapter() {
+        prepareChapterAdapter(0);
+    }
+
+    private void prepareChapterAdapter(int scrollToIndex) {
         BaseItemDto item = playbackControllerContainer.getValue().getPlaybackController().getCurrentlyPlayingItem();
         List<ChapterInfo> chapters = item.getChapters();
 
         if (chapters != null && !chapters.isEmpty()) {
-            // create chapter row for later use
-            ItemRowAdapter chapterAdapter = new ItemRowAdapter(requireContext(), BaseItemExtensionsKt.buildChapterItems(item), new CardPresenter(true, 110), new MutableObjectAdapter<Row>());
-            chapterAdapter.Retrieve();
-            if (mChapterRow != null) mPopupRowAdapter.remove(mChapterRow);
-            mChapterRow = new ListRow(new HeaderItem(requireContext().getString(R.string.chapters)), chapterAdapter);
-            mPopupRowAdapter.add(mChapterRow);
+            List<org.jellyfin.androidtv.util.apiclient.JellyfinImage> images =
+                    org.jellyfin.androidtv.util.apiclient.JellyfinImageKt.getChapterImages(item);
+            popupContentView.setContent(new PlayerPopupContent.Chapters(
+                    item.getId(), chapters, images, scrollToIndex));
         }
-
     }
 
     private void prepareChannelAdapter() {
-        // create quick channel change row
         TvManager.loadAllChannels(this, response -> {
             List<BaseItemDto> channels = TvManager.getAllChannels();
             if (channels == null) return null;
-            ArrayObjectAdapter channelAdapter = new ArrayObjectAdapter(new ChannelCardPresenter());
-            channelAdapter.addAll(0, channels);
-            if (mChapterRow != null) mPopupRowAdapter.remove(mChapterRow);
-            mChapterRow = new ListRow(new HeaderItem(requireContext().getString(R.string.channels)), channelAdapter);
-            mPopupRowAdapter.add(mChapterRow);
+            int ndx = TvManager.getAllChannelsIndex(TvManager.getLastLiveTvChannel());
+            popupContentView.setContent(new PlayerPopupContent.Channels(
+                    channels, Math.max(0, ndx)));
             return null;
         });
     }
 
     private void prepareCastAdapter() {
         BaseItemDto item = playbackControllerContainer.getValue().getPlaybackController().getCurrentlyPlayingItem();
-        
+
         CustomPlaybackOverlayFragmentHelperKt.loadCastForItem(this, item, people -> {
             if (people != null && !people.isEmpty()) {
-                ArrayObjectAdapter castAdapter = new ArrayObjectAdapter(new CardPresenter(true, 120));
-                for (org.jellyfin.sdk.model.api.BaseItemPerson person : people) {
-                    castAdapter.add(new BaseItemPersonBaseRowItem(person));
-                }
-                if (mChapterRow != null) mPopupRowAdapter.remove(mChapterRow);
-                mChapterRow = new ListRow(new HeaderItem(requireContext().getString(R.string.lbl_cast)), castAdapter);
-                mPopupRowAdapter.add(mChapterRow);
+                popupContentView.setContent(new PlayerPopupContent.Cast(people));
             }
             return null;
         });

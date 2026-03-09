@@ -1,4 +1,4 @@
-# Audit de Performance - Moonfin Android TV
+# Audit de Performance - VegafoX Android TV
 
 > **Mis à jour le 2026-03-08 — état post-travaux**
 > - ✅ Résolu : P04 (SyncPlayManager scope) — lifecycle management ajouté

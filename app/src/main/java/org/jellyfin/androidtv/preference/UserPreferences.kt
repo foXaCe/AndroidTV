@@ -50,7 +50,7 @@ class UserPreferences(context: Context) : SharedPreferenceStore(
 
 		/* Plugin Sync */
 		/**
-		 * Enable syncing settings with the Moonfin server plugin
+		 * Enable syncing settings with the VegafoX server plugin
 		 */
 		var pluginSyncEnabled = booleanPreference("pref_plugin_sync_enabled", false)
 

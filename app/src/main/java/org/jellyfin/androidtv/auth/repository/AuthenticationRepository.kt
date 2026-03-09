@@ -227,8 +227,8 @@ class AuthenticationRepositoryImpl(
 	 * to prevent excessive login attempts that can trigger rate limiting/lockouts on Jellyseerr.
 	 */
 	private fun tryJellyseerrAutoLogin(server: Server, username: String, password: String) {
-		if (jellyseerrRepository.isMoonfinMode.value) {
-			Timber.d("Jellyseerr auto-login skipped: using Moonfin proxy mode")
+		if (jellyseerrRepository.isVegafoXMode.value) {
+			Timber.d("Jellyseerr auto-login skipped: using VegafoX proxy mode")
 			return
 		}
 

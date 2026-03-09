@@ -85,6 +85,11 @@ object TypographyDefaults {
 		letterSpacing = 0.5.sp,
 	)
 
+	// Bold variants — for screen titles and hero text
+	val DisplayBold: TextStyle = Display.copy(fontWeight = FontWeight.W700)
+	val HeadlineLargeBold: TextStyle = HeadlineLarge.copy(fontWeight = FontWeight.W700)
+	val HeadlineMediumBold: TextStyle = HeadlineMedium.copy(fontWeight = FontWeight.W700)
+
 	// Legacy list styles (still used by base components)
 
 	val ListHeader: TextStyle = Default.copy(
@@ -134,6 +139,11 @@ data class Typography(
 	val labelLarge: TextStyle = TypographyDefaults.LabelLarge,
 	val labelMedium: TextStyle = TypographyDefaults.LabelMedium,
 	val labelSmall: TextStyle = TypographyDefaults.LabelSmall,
+
+	// Bold variants
+	val displayBold: TextStyle = TypographyDefaults.DisplayBold,
+	val headlineLargeBold: TextStyle = TypographyDefaults.HeadlineLargeBold,
+	val headlineMediumBold: TextStyle = TypographyDefaults.HeadlineMediumBold,
 
 	// Legacy
 	val listHeader: TextStyle = TypographyDefaults.ListHeader,

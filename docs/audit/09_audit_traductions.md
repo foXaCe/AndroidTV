@@ -11,7 +11,7 @@
 
 ## Resume
 
-Audit ultra-rigoureux du fichier de traduction francais de Moonfin Android TV.
+Audit ultra-rigoureux du fichier de traduction francais de VegafoX Android TV.
 Couvre 5 axes : doublons, qualite, coherence, cles manquantes/mortes, et corrections appliquees.
 
 **Date** : 2026-03-07
@@ -109,7 +109,7 @@ Chaque attribut `name="..."` est unique dans les deux fichiers. Aucune erreur XM
 | 1216 | `jellyseerr_set_server_url_first` | Definissez d'abord | Definis d'abord |
 | 1233 | `error_server` | Veuillez reessayer | Reessaie |
 | 1234 | `error_service_unavailable` | Veuillez reessayer | Reessaie |
-| 1280 | `settings_support_moonfin_desc` | Aidez-nous a | Aide-nous a |
+| 1280 | `settings_support_vegafox_desc` | Aidez-nous a | Aide-nous a |
 | 1282 | `settings_install_permission_message` | Veuillez accorder | Accorde |
 
 ### 2.2 Typographie francaise

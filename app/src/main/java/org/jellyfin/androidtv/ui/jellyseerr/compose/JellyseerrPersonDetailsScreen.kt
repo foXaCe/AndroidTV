@@ -1,7 +1,5 @@
 package org.jellyfin.androidtv.ui.jellyseerr.compose
 
-import android.view.ViewGroup
-import android.widget.LinearLayout
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,10 +33,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import org.jellyfin.androidtv.R
@@ -46,8 +42,6 @@ import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrDiscoverItemDto
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrPersonDetailsDto
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
-import org.jellyfin.androidtv.ui.itemhandling.JellyseerrMediaBaseRowItem
-import org.jellyfin.androidtv.ui.presentation.CardPresenter
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -117,7 +111,6 @@ private fun PersonHeader(
 			Text(
 				text = personDetails?.name ?: personName,
 				style = JellyfinTheme.typography.headlineMedium,
-				fontWeight = FontWeight.Bold,
 				color = JellyfinTheme.colorScheme.textPrimary,
 				modifier = Modifier.padding(bottom = 8.dp),
 			)
@@ -149,7 +142,6 @@ private fun BiographySection(biography: String) {
 	Text(
 		text = stringResource(R.string.lbl_biography),
 		style = JellyfinTheme.typography.titleLarge,
-		fontWeight = FontWeight.Bold,
 		color = JellyfinTheme.colorScheme.textPrimary,
 		modifier = Modifier.padding(bottom = 12.dp),
 	)
@@ -173,7 +165,6 @@ private fun BiographySection(biography: String) {
 	Text(
 		text = stringResource(if (isExpanded) R.string.btn_show_less else R.string.btn_show_more),
 		style = JellyfinTheme.typography.bodyMedium,
-		fontWeight = FontWeight.Bold,
 		color = JellyfinTheme.colorScheme.info,
 		modifier = Modifier
 			.background(if (isFocused) JellyfinTheme.colorScheme.surfaceBright else Color.Transparent)
@@ -194,7 +185,6 @@ private fun AppearancesSection(
 	Text(
 		text = stringResource(R.string.lbl_appearances),
 		style = JellyfinTheme.typography.titleLarge,
-		fontWeight = FontWeight.Bold,
 		color = JellyfinTheme.colorScheme.textPrimary,
 		modifier = Modifier.padding(bottom = 16.dp),
 	)
@@ -215,23 +205,9 @@ private fun AppearanceCard(
 	item: JellyseerrDiscoverItemDto,
 	onClick: () -> Unit,
 ) {
-	val rowItem = remember(item) { JellyseerrMediaBaseRowItem(item) }
-
-	AndroidView(
-		factory = { ctx ->
-			val presenter = CardPresenter()
-			val parent = LinearLayout(ctx).apply {
-				layoutParams = ViewGroup.LayoutParams(
-					ViewGroup.LayoutParams.WRAP_CONTENT,
-					ViewGroup.LayoutParams.WRAP_CONTENT,
-				)
-			}
-			val vh = presenter.onCreateViewHolder(parent)
-			presenter.onBindViewHolder(vh, rowItem)
-			vh.view.apply {
-				setOnClickListener { onClick() }
-			}
-		},
+	JellyseerrPosterCard(
+		item = item,
+		onClick = onClick,
 	)
 }
 

@@ -50,7 +50,7 @@
 			android:layout_gravity="bottom|end"
 			android:orientation="horizontal"
 			android:gravity="center"
-			android:background="@color/not_quite_black"
+			android:background="@color/ds_background"
 			android:layout_margin="@dimen/ds_space_sm"
 			android:paddingStart="6dp"
 			android:paddingEnd="6dp"

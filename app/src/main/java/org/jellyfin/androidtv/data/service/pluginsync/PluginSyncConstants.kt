@@ -9,19 +9,19 @@ import org.jellyfin.preference.Preference
  * Central registry of all preference keys that participate in plugin sync.
  *
  * Each [SyncablePreference] maps an Android [Preference] (with its local SharedPreferences key)
- * to a [serverKey] (the camelCase key used by the Moonfin server plugin and web client).
+ * to a [serverKey] (the camelCase key used by the VegafoX server plugin and web client).
  *
- * Only settings managed by the Moonfin server plugin are listed here.
+ * Only settings managed by the VegafoX server plugin are listed here.
  * Sensitive keys (passwords, auth tokens) are excluded.
  * [UserPreferences.pluginSyncEnabled] itself is never synced (device-local control).
  */
 object PluginSyncConstants {
 
 	/** SharedPreferences file name for the last-synced snapshot (three-way merge baseline). */
-	const val SNAPSHOT_PREFS_NAME = "moonfin_sync_snapshot"
+	const val SNAPSHOT_PREFS_NAME = "vegafox_sync_snapshot"
 
 	/** Client identifier sent with POST requests to the server. */
-	const val CLIENT_ID = "moonfin-androidtv"
+	const val CLIENT_ID = "vegafox-androidtv"
 
 	/**
 	 * Snapshot schema version. Increment when server key mappings change to
@@ -112,7 +112,7 @@ enum class SyncType {
  *
  * @property preference The Android preference (carries the local SharedPreferences key).
  * @property type The value type for serialization/deserialization.
- * @property serverKey The camelCase key used by the Moonfin server plugin and web client.
+ * @property serverKey The camelCase key used by the VegafoX server plugin and web client.
  */
 data class SyncablePreference<T : Any>(
 	val preference: Preference<T>,

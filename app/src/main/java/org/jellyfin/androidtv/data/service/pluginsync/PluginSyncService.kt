@@ -38,7 +38,7 @@ import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 /**
- * Bidirectional settings sync service for the Moonfin server plugin.
+ * Bidirectional settings sync service for the VegafoX server plugin.
  *
  * Direction: three-way merge with local-wins conflict resolution.
  *
@@ -57,8 +57,8 @@ import java.util.concurrent.TimeUnit
  * settings configured on the server dashboard are applied to new clients.
  *
  * **On Startup** (called from [syncOnStartup]):
- * 1. Pings `GET /Moonfin/Ping` to check plugin availability
- * 2. Fetches server settings via `GET /Moonfin/Settings`
+ * 1. Pings `GET /VegafoX/Ping` to check plugin availability
+ * 2. Fetches server settings via `GET /VegafoX/Settings`
  * 3. Loads the last-synced snapshot
  * 4. Three-way merges local, server, and snapshot
  * 5. Applies merged values locally and pushes to server
@@ -89,9 +89,9 @@ class PluginSyncService(
 ) {
 	companion object {
 		private const val TAG = "PluginSync"
-		private const val PING_PATH = "/Moonfin/Ping"
-		private const val SETTINGS_PATH = "/Moonfin/Settings"
-		private const val JELLYSEERR_CONFIG_PATH = "/Moonfin/Jellyseerr/Config"
+		private const val PING_PATH = "/VegafoX/Ping"
+		private const val SETTINGS_PATH = "/VegafoX/Settings"
+		private const val JELLYSEERR_CONFIG_PATH = "/VegafoX/Jellyseerr/Config"
 		private const val DEBOUNCE_MS = 500L
 		private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
 	}
@@ -188,7 +188,7 @@ class PluginSyncService(
 	}
 
 	/**
-	 * Configure Jellyseerr proxy mode via Moonfin plugin.
+	 * Configure Jellyseerr proxy mode via VegafoX plugin.
 	 * Must be called AFTER user is set (requires active Jellyfin user for cookie storage).
 	 * Separated from [syncOnStartup] because settings sync must run before the user is published
 	 * to prevent stale preference reads, while Jellyseerr needs the user ID.
@@ -202,11 +202,11 @@ class PluginSyncService(
 		if (!serverAvailable) return@withContext
 
 		fetchJellyseerrConfig(baseUrl, token)
-		autoConfigureMoonfinProxy(baseUrl, token)
+		autoConfigureVegafoXProxy(baseUrl, token)
 	}
 
 	/**
-	 * Silently checks for app updates via `/Moonfin/ClientUpdate` and caches the result
+	 * Silently checks for app updates via `/VegafoX/ClientUpdate` and caches the result
 	 * in [UpdateCheckerService.latestPluginUpdateInfo].
 	 */
 	private suspend fun checkForPluginUpdate(baseUrl: String, token: String) {
@@ -251,8 +251,8 @@ class PluginSyncService(
 	}
 
 	/**
-	 * Ping the Moonfin server plugin to check availability.
-	 * `GET {baseUrl}/Moonfin/Ping`
+	 * Ping the VegafoX server plugin to check availability.
+	 * `GET {baseUrl}/VegafoX/Ping`
 	 */
 	private fun ping(baseUrl: String, token: String): Boolean {
 		return try {
@@ -274,7 +274,7 @@ class PluginSyncService(
 
 	/**
 	 * Fetch settings from the server.
-	 * `GET {baseUrl}/Moonfin/Settings`
+	 * `GET {baseUrl}/VegafoX/Settings`
 	 *
 	 * Supports both v1 (flat key-value) and v2 (profiled envelope with
 	 * `global`, `desktop`, `mobile`, `tv` profiles) response formats.
@@ -366,7 +366,7 @@ class PluginSyncService(
 
 	/**
 	 * Fetch Jellyseerr configuration from the server and write the admin-configured URL locally.
-	 * `GET {baseUrl}/Moonfin/Jellyseerr/Config`
+	 * `GET {baseUrl}/VegafoX/Jellyseerr/Config`
 	 *
 	 * This is pull-only — the URL is admin-configured on the server and never pushed by clients.
 	 */
@@ -397,9 +397,9 @@ class PluginSyncService(
 
 			val jellyseerrPrefs = getJellyseerrPrefs() ?: return
 
-			jellyseerrPrefs.putRawString(JellyseerrPreferences.moonfinVariant.key, variant)
+			jellyseerrPrefs.putRawString(JellyseerrPreferences.vegafoxVariant.key, variant)
 			if (!displayName.isNullOrBlank()) {
-				jellyseerrPrefs.putRawString(JellyseerrPreferences.moonfinDisplayName.key, displayName)
+				jellyseerrPrefs.putRawString(JellyseerrPreferences.vegafoxDisplayName.key, displayName)
 			}
 			Timber.i("$TAG: Jellyseerr variant: $variant, displayName: $displayName")
 
@@ -415,33 +415,33 @@ class PluginSyncService(
 	}
 
 	/**
-	 * Auto-configure Jellyseerr proxy mode when the Moonfin plugin is available.
+	 * Auto-configure Jellyseerr proxy mode when the VegafoX plugin is available.
 	 * Checks if Jellyseerr is enabled on the server and sets up proxy routing.
 	 */
-	private suspend fun autoConfigureMoonfinProxy(baseUrl: String, token: String) {
+	private suspend fun autoConfigureVegafoXProxy(baseUrl: String, token: String) {
 		try {
-			val result = jellyseerrRepository.configureWithMoonfin(baseUrl, token)
+			val result = jellyseerrRepository.configureWithVegafoX(baseUrl, token)
 			result.onSuccess { status ->
 				if (status.authenticated) {
-					Timber.i("$TAG: Moonfin Jellyseerr proxy configured (authenticated)")
+					Timber.i("$TAG: VegafoX Jellyseerr proxy configured (authenticated)")
 				} else if (status.enabled) {
-					Timber.i("$TAG: Moonfin Jellyseerr proxy configured (not yet authenticated)")
+					Timber.i("$TAG: VegafoX Jellyseerr proxy configured (not yet authenticated)")
 				} else {
 					Timber.d("$TAG: Jellyseerr not enabled on server plugin")
 				}
 			}.onFailure { error ->
-				Timber.w(error, "$TAG: Failed to configure Moonfin Jellyseerr proxy")
+				Timber.w(error, "$TAG: Failed to configure VegafoX Jellyseerr proxy")
 			}
 		} catch (e: Exception) {
-			Timber.w(e, "$TAG: Error during Moonfin proxy auto-configure")
+			Timber.w(e, "$TAG: Error during VegafoX proxy auto-configure")
 		}
 	}
 
 	/**
 	 * Push settings to the server.
 	 *
-	 * For v1 servers: `POST {baseUrl}/Moonfin/Settings` with flat settings.
-	 * For v2 servers: `POST {baseUrl}/Moonfin/Settings/Profile/global` to
+	 * For v1 servers: `POST {baseUrl}/VegafoX/Settings` with flat settings.
+	 * For v2 servers: `POST {baseUrl}/VegafoX/Settings/Profile/global` to
 	 * save into the global profile so settings are visible on all devices.
 	 */
 	private fun pushSettings(baseUrl: String, token: String, settings: Map<String, Any?>) {

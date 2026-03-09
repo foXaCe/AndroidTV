@@ -84,7 +84,7 @@ Fragment migre — la data class est re-importee depuis `compose/AdvancedRequest
 ## 2. Dependencies de JellyseerrViewModel (NE PAS TOUCHER)
 
 - **Constructeur** : JellyseerrRepository (seule dependance)
-- **StateFlows exposes** : 14 (loadingState, trending*, upcoming*, genres, networks, studios, requests, searchResults, isAvailable, isMoonfinMode)
+- **StateFlows exposes** : 14 (loadingState, trending*, upcoming*, genres, networks, studios, requests, searchResults, isAvailable, isVegafoXMode)
 - **Fonctions publiques** : ~30 (content loading, search, details, request/cancel, settings/auth, discover, pagination)
 - **Consommateurs** : 7 fragments (Discover, Requests, MediaDetails, PersonDetails, Settings, DiscoverRows, BrowseBy)
 

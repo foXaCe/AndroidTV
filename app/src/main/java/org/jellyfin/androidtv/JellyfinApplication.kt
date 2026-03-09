@@ -2,6 +2,8 @@ package org.jellyfin.androidtv
 
 import android.app.Application
 import android.content.Context
+import android.os.StrictMode
+import android.util.Log
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.work.BackoffPolicy
@@ -12,11 +14,8 @@ import androidx.work.await
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.acra.ACRA
-import org.jellyfin.androidtv.util.apiclient.ioCall
 import org.jellyfin.androidtv.auth.repository.ServerRepository
 import org.jellyfin.androidtv.auth.repository.UserRepository
 import org.jellyfin.androidtv.data.eventhandling.SocketHandler
@@ -25,6 +24,7 @@ import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrHttpClient
 import org.jellyfin.androidtv.integration.LeanbackChannelWorker
 import org.jellyfin.androidtv.preference.JellyseerrPreferences
 import org.jellyfin.androidtv.ui.background.UpdateCheckWorker
+import org.jellyfin.androidtv.ui.home.compose.HomePrefetchService
 import org.jellyfin.androidtv.telemetry.TelemetryService
 import org.koin.android.ext.android.inject
 import org.koin.core.qualifier.named
@@ -38,6 +38,17 @@ class JellyfinApplication : Application(), SingletonImageLoader.Factory {
 
 		// Don't run in ACRA service
 		if (ACRA.isACRASenderServiceProcess()) return
+
+		if (BuildConfig.DEBUG) {
+			StrictMode.setThreadPolicy(
+				StrictMode.ThreadPolicy.Builder()
+					.detectDiskReads()
+					.detectDiskWrites()
+					.detectNetwork()
+					.penaltyLog()
+					.build()
+			)
+		}
 
 		val notificationsRepository by inject<NotificationsRepository>()
 		notificationsRepository.addDefaultNotifications()
@@ -80,15 +91,24 @@ class JellyfinApplication : Application(), SingletonImageLoader.Factory {
 
 	/**
 	 * Called from the StartupActivity when the user session is started.
+	 * All tasks are fire-and-forget — navigation to MainActivity is not blocked.
 	 */
-	suspend fun onSessionStart() = withContext(Dispatchers.IO) {
+	fun onSessionStart() {
+		Log.d("STARTUP", "onSessionStart: ${System.currentTimeMillis()}")
+
+		val scope = ProcessLifecycleOwner.get().lifecycleScope
 		val workManager by inject<WorkManager>()
 		val socketListener by inject<SocketHandler>()
 		val serverRepository by inject<ServerRepository>()
+		val homePrefetchService by inject<HomePrefetchService>()
 
-		launch { serverRepository.loadStoredServers() }
+		// Prefetch home data (highest priority — start first)
+		homePrefetchService.prefetch()
 
-		launch {
+		// Background tasks (fire-and-forget, don't block navigation)
+		scope.launch(Dispatchers.IO) { serverRepository.loadStoredServers() }
+
+		scope.launch(Dispatchers.IO) {
 			workManager.cancelAllWork().await()
 
 			workManager.enqueueUniquePeriodicWork(
@@ -111,7 +131,7 @@ class JellyfinApplication : Application(), SingletonImageLoader.Factory {
 			}
 		}
 
-		launch { socketListener.updateSession() }
+		scope.launch(Dispatchers.IO) { socketListener.updateSession() }
 	}
 
 	override fun attachBaseContext(base: Context?) {

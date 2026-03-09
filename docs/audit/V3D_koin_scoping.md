@@ -1,71 +1,72 @@
 # V3D — Audit et corrections du scoping Koin
 
-> **Date** : 2026-03-08
-> **Statut** : Terminé — BUILD SUCCESSFUL
-> **Changements** : 1 singleton → viewModel, 4 singletons → factory
+> **Date** : 2026-03-08 (mise à jour v2)
+> **Statut** : Terminé — BUILD SUCCESSFUL (checkAll)
+> **Changements totaux** : 1 singleton → viewModel, 13 singletons → factory
 
 ---
 
 ## 1. Résumé
 
-Le projet comptait **60 singletons** répartis sur 6 modules Koin. Après analyse individuelle de chaque singleton (état mutable, utilisation multi-écrans, coût de création), **5 corrections** ont été appliquées :
+Le projet comptait **60 singletons** répartis sur 6 modules Koin. Après analyse individuelle de chaque déclaration (état mutable, pattern d'injection, coût de création), **14 corrections** ont été appliquées en deux passes :
 
-| Transition | Nombre | Classes |
-|------------|--------|---------|
-| `single → viewModel` | 1 | MediaBarSlideshowViewModel |
-| `single → factory` | 4 | ItemLauncher, KeyProcessor, ReportingHelper, ImageHelper |
-| **Total corrigés** | **5** | |
-| **Singletons restants** | **55** | Justifiés individuellement ci-dessous |
+| Passe | Transition | Nombre | Classes |
+|-------|-----------|--------|---------|
+| v1 | `single → viewModel` | 1 | MediaBarSlideshowViewModel |
+| v1 | `single → factory` | 4 | ItemLauncher, KeyProcessor, ReportingHelper, ImageHelper |
+| **v2** | **`single → factory`** | **9** | **HttpClientOptions, SearchRepository, ExternalAppRepository, PlaybackHelper, PrePlaybackTrackSelector, UserSettingPreferences, UserPreferences, SystemPreferences, TelemetryPreferences** |
+| **Total corrigés** | | **14** | |
+| **Singletons restants** | | **46** | Justifiés individuellement ci-dessous |
 
 ---
 
-## 2. Tableau complet des 60 singletons — avant/après
+## 2. Tableau complet — avant/après (toutes les déclarations)
 
-### AppModule (39 singletons → 34 singletons + 1 viewModel + 3 factory)
+### AppModule (39 → 30 singletons, 22 viewModels, 9 factories)
 
 | # | Classe | Scope AVANT | Scope APRÈS | Raison |
 |---|--------|-------------|-------------|--------|
 | 1 | DeviceInfo (defaultDeviceInfo) | single | **single** | Identité immuable du device |
 | 2 | OkHttpFactory | single | **single** | Factory HTTP partagée, coûteuse à créer |
-| 3 | HttpClientOptions | single | **single** | Config partagée immuable |
+| 3 | HttpClientOptions | single | **factory** | **v2 — Config immuable, utilisé uniquement à l'init des singletons parents** |
 | 4 | JellyfinSdk | single | **single** | Instance SDK lourde, app-wide |
 | 5 | ApiClient | single | **single** | Instance API session-bound, partagée partout |
 | 6 | SocketHandler | single | **single** | Connexion WebSocket persistante |
 | 7 | OkHttpNetworkFetcherFactory | single | **single** | Couche réseau Coil, coûteuse |
 | 8 | ImageLoader (Coil) | single | **single** | Cache mémoire 25% + disque 250MB |
-| 9 | DataRefreshService | single | **single** | État partagé (lastPlayback, lastDeletedItemId, etc.) |
+| 9 | DataRefreshService | single | **single** | 7 champs mutables (lastPlayback, lastDeletedItemId, etc.) |
 | 10 | PlaybackControllerContainer | single | **single** | Référence partagée au contrôleur de lecture actif |
-| 11 | InteractionTrackerViewModel | single | **single** | État global screensaver/interaction, commentaire explicite dans le code |
+| 11 | InteractionTrackerViewModel | single | **single** | État global screensaver/interaction — voir §4 exception documentée |
 | 12 | UserRepository | single | **single** | Repository — cache + état utilisateur |
 | 13 | UserViewsRepository | single | **single** | Repository — vues utilisateur cachées |
 | 14 | NotificationsRepository | single | **single** | Repository — état notifications |
 | 15 | ItemMutationRepository | single | **single** | Repository — mutations partagées |
 | 16 | CustomMessageRepository | single | **single** | Event bus MutableStateFlow — tous les écrans observent |
 | 17 | NavigationRepository | single | **single** | État navigation app-wide + backstack |
-| 18 | ShuffleManager | single | **single** | MutableStateFlow isShuffling + mutex |
-| 19 | SearchRepository | single | **single** | Repository — historique/cache recherche |
-| 20 | MediaSegmentRepository | single | **single** | Repository — tracking segments |
-| 21 | ExternalAppRepository | single | **single** | Repository — config apps externes |
-| 22 | LocalWatchlistRepository | single | **single** | Repository — watchlist persistante |
+| 18 | ShuffleManager | single | **single** | MutableStateFlow isShuffling + mutex de debouncing |
+| 19 | SearchRepository | single | **factory** | **v2 — Stateless : aucun cache, aucun champ mutable, fonctions pures API** |
+| 20 | MediaSegmentRepository | single | **single** | Cache mutableMapOf (mediaTypeActions) |
+| 21 | ExternalAppRepository | single | **factory** | **v2 — Stateless : wrapper de requêtes UserPreferences + PackageManager** |
+| 22 | LocalWatchlistRepository | single | **single** | MutableStateFlow watchlistFlow |
 | 23 | MultiServerRepository | single | **single** | Repository — état multi-serveur |
 | 24 | ApiClientFactory | single | **single** | Factory d'API clients, maintient cache interne |
 | 25 | ParentalControlsRepository | single | **single** | Repository — contrôle parental session |
 | 26 | JellyseerrPreferences (global) | single | **single** | Préférences partagées serveur URL |
 | 27 | JellyseerrRepository | single | **single** | Repository — état + cache Jellyseerr |
-| 28 | MdbListRepository | single | **single** | Repository — cache service externe |
-| 29 | TmdbRepository | single | **single** | Repository — cache TMDB |
-| 30 | **MediaBarSlideshowViewModel** | single | **viewModel** | **ViewModel mal enregistré — doit utiliser le lifecycle ViewModel** |
+| 28 | MdbListRepository | single | **single** | Cache mutableMapOf (ratingsCache, pendingRequests) |
+| 29 | TmdbRepository | single | **single** | Cache 6 mutableMapOf (episodeRatings, seasonCache, etc.) |
+| 30 | MediaBarSlideshowViewModel | single | **viewModel** | **v1 — ViewModel mal enregistré, doit utiliser le lifecycle ViewModel** |
 | 31 | SyncPlayManager | single | **single** | État complexe (MutableStateFlow, timers, callbacks, sync group) |
-| 32 | BackgroundService | single | **single** | État slideshow background + blur, partagé app-wide |
-| 33 | UpdateCheckerService | single | **single** | Cache latestPluginUpdateInfo + OkHttpClient coûteux |
-| 34 | MarkdownRenderer | single | **single** | Markwon.builder() modérément coûteux |
-| 35 | **ItemLauncher** | single | **factory** | **Stateless — n'injecte que des dépendances Lazy, aucun état mutable** |
-| 36 | **KeyProcessor** | single | **factory** | **Stateless — handler clavier sans état mutable** |
-| 37 | **ReportingHelper** | single | **factory** | **Stateless — orchestrateur qui délègue à DataRefreshService** |
-| 38 | PlaybackHelper (SdkPlaybackHelper) | single | **single** | Helper lecture avec dépendances lourdes |
-| 39 | ThemeMusicPlayer | single | **single** | Gère MediaPlayer — doit être unique pour éviter audio simultané |
+| 32 | BackgroundService | single | **single** | 9+ champs mutables (backgrounds, blur, jobs, coroutines) |
+| 33 | UpdateCheckerService | single | **single** | @Volatile cache latestPluginUpdateInfo |
+| 34 | MarkdownRenderer | single | **single** | Markwon.builder() modérément coûteux, thread-safe |
+| 35 | ItemLauncher | single | **factory** | **v1 — Stateless, dépendances Lazy uniquement** |
+| 36 | KeyProcessor | single | **factory** | **v1 — Stateless, handler clavier sans état** |
+| 37 | ReportingHelper | single | **factory** | **v1 — Stateless, délègue à DataRefreshService** |
+| 38 | PlaybackHelper (SdkPlaybackHelper) | single | **factory** | **v2 — Stateless : aucun champ mutable, fonctions pures (vérifié par audit)** |
+| 39 | ThemeMusicPlayer | single | **single** | Gère MediaPlayer unique — évite audio simultané |
 
-### AuthModule (6 singletons → 6 singletons, aucun changement)
+### AuthModule (6 → 6 singletons, 1 factory — aucun changement)
 
 | # | Classe | Scope | Raison |
 |---|--------|-------|--------|
@@ -76,125 +77,152 @@ Le projet comptait **60 singletons** répartis sur 6 modules Koin. Après analys
 | 44 | ServerUserRepository | single | Repository — mappings user-server |
 | 45 | SessionRepository | single | Repository — lifecycle session |
 
-### PlaybackModule (7 singletons → 7 singletons, aucun changement)
-
-| # | Classe | Scope | Raison |
-|---|--------|-------|--------|
-| 46 | LegacyPlaybackManager | single | État lecture partagé entre écrans |
-| 47 | VideoQueueManager | single | File lecture (état partagé) |
-| 48 | MediaManager (RewriteMediaManager) | single | Gestionnaire média global |
-| 49 | PlaybackLauncher | single | Doit survivre aux changements d'écran |
-| 50 | PrePlaybackTrackSelector | single | Sélection pistes via SharedPreferences |
-| 51 | HttpDataSource.Factory | single | Client HTTP lourd pour streaming |
-| 52 | PlaybackManager (rewrite) | single | État playback global |
-
-### PreferenceModule (7 singletons → 7 singletons, aucun changement)
-
-| # | Classe | Scope | Raison |
-|---|--------|-------|--------|
-| 53 | PluginSyncService | single | Service sync plugins multi-serveur |
-| 54 | PreferencesRepository | single | Coordinateur préférences |
-| 55 | LiveTvPreferences | single | Préférences Live TV |
-| 56 | UserSettingPreferences | single | Préférences utilisateur |
-| 57 | UserPreferences | single | Préférences utilisateur |
-| 58 | SystemPreferences | single | Préférences système |
-| 59 | TelemetryPreferences | single | Préférences télémétrie |
-
-### UtilsModule (1 singleton → 0 singletons + 1 factory)
+### PlaybackModule (7 → 6 singletons, 1 factory)
 
 | # | Classe | Scope AVANT | Scope APRÈS | Raison |
 |---|--------|-------------|-------------|--------|
-| 60 | **ImageHelper** | single | **factory** | **Stateless — wrapper URLs images sans état** |
+| 46 | LegacyPlaybackManager | single | **single** | État lecture partagé entre écrans |
+| 47 | VideoQueueManager | single | **single** | File lecture (état partagé) |
+| 48 | MediaManager (RewriteMediaManager) | single | **single** | Gestionnaire média global |
+| 49 | PlaybackLauncher | single | **single** | CoroutineScope + dépendances lourdes |
+| 50 | PrePlaybackTrackSelector | single | **factory** | **v2 — État dans SharedPreferences, pas en mémoire. Chaque instance est identique.** |
+| 51 | HttpDataSource.Factory | single | **single** | Client HTTP lourd pour streaming |
+| 52 | PlaybackManager (rewrite) | single | **single** | État playback global |
+
+### PreferenceModule (7 → 3 singletons, 4 factories)
+
+| # | Classe | Scope AVANT | Scope APRÈS | Raison |
+|---|--------|-------------|-------------|--------|
+| 53 | PluginSyncService | single | **single** | 6+ champs mutables (@Volatile, Jobs, MutableStateFlow, listeners) |
+| 54 | PreferencesRepository | single | **single** | Cache mutableMapOf (libraryPreferences) |
+| 55 | LiveTvPreferences | single | **single** | DisplayPreferencesStore — cache in-memory (cachedPreferences map) |
+| 56 | UserSettingPreferences | single | **factory** | **v2 — SharedPreferenceStore stateless, pas de listener en constructeur** |
+| 57 | UserPreferences | single | **factory** | **v2 — SharedPreferenceStore stateless, pas de listener en constructeur** |
+| 58 | SystemPreferences | single | **factory** | **v2 — SharedPreferenceStore stateless, pas de listener en constructeur** |
+| 59 | TelemetryPreferences | single | **factory** | **v2 — SharedPreferenceStore stateless, pas de listener en constructeur** |
+
+### UtilsModule (1 → 0 singletons, 1 factory — changé en v1)
+
+| # | Classe | Scope AVANT | Scope APRÈS | Raison |
+|---|--------|-------------|-------------|--------|
+| 60 | ImageHelper | single | **factory** | **v1 — Wrapper URLs images, fonctions pures** |
 
 ---
 
-## 3. Détail des corrections
+## 3. Détail des corrections v2
 
-### 3.1 MediaBarSlideshowViewModel : `single` → `viewModel`
+### 3.1 HttpClientOptions : `single` → `factory` (AppModule)
 
-**Fichiers modifiés :**
-- `di/AppModule.kt:216` — `single { ... }` → `viewModel { ... }`
-- `ui/home/HomeFragment.kt:39` — `by inject<>()` → `by activityViewModel<>()`
-- `ui/home/HomeRowsFragment.kt:91` — `by inject<>()` → `by activityViewModel<>()`
+**Justification :** Data class immuable du SDK Jellyfin. Utilisé uniquement comme paramètre d'initialisation de singletons parents (createApi, OkHttpDataSource). Chaque `get()` crée un nouvel objet default identique — consommé une seule fois à l'init.
 
-**Justification :** C'est un `ViewModel` Android qui doit bénéficier du lifecycle ViewModel (survie aux rotations, nettoyage à la destruction de l'Activity). Utilisation de `activityViewModel` car HomeFragment et HomeRowsFragment (fragment enfant) doivent partager la même instance via le ViewModelStore de l'Activity.
+### 3.2 SearchRepository : `single` → `factory` (AppModule)
 
-### 3.2 ItemLauncher : `single` → `factory`
+**Justification :** Vérifié stateless — aucun champ mutable, aucun cache, aucun `var`. Toutes les méthodes sont des appels API purs via `apiClient` et `multiServerRepository` (injectés singletons). Injecté uniquement dans SearchViewModel.
 
-**Fichier modifié :** `di/AppModule.kt:225`
+### 3.3 ExternalAppRepository : `single` → `factory` (AppModule)
 
-**Justification :** Classe Java stateless qui utilise uniquement des dépendances `Lazy<T>` via KoinComponent. Aucune variable mutable, aucun cache. Utilisé dans 6+ fragments mais chaque instance est identique fonctionnellement.
+**Justification :** Vérifié stateless — wrapper de requêtes `userPreferences` et `PackageManager`. Aucun champ mutable, fonctions de query pures.
 
-### 3.3 KeyProcessor : `single` → `factory`
+### 3.4 PlaybackHelper / SdkPlaybackHelper : `single` → `factory` (AppModule)
 
-**Fichier modifié :** `di/AppModule.kt:226`
+**Justification :** Vérifié stateless — tous les champs sont des dépendances injectées (api, apiClientFactory, userPreferences, playbackLauncher, playbackControllerContainer). Aucun `var`, aucun cache, aucun MutableStateFlow. Fonctions de transformation et d'appels API.
 
-**Justification :** Handler d'événements clavier stateless. N'injecte que des dépendances Lazy, crée des menus à la demande sans conserver d'état.
+### 3.5 PrePlaybackTrackSelector : `single` → `factory` (PlaybackModule)
 
-### 3.4 ReportingHelper : `single` → `factory`
+**Justification :** L'état est persisté dans SharedPreferences, pas en mémoire. Chaque instance accède au même backing store. Pas de listener enregistré dans le constructeur.
 
-**Fichier modifié :** `di/AppModule.kt:227`
+### 3.6 Preferences SharedPreferenceStore : `single` → `factory` (PreferenceModule)
 
-**Justification :** Orchestrateur de reporting stateless. Appelle l'API et met à jour `DataRefreshService` (qui lui reste singleton). Aucun état propre.
+**Classes :** UserSettingPreferences, UserPreferences, SystemPreferences, TelemetryPreferences
 
-### 3.5 ImageHelper : `single` → `factory`
+**Justification :** Ces 4 classes héritent de `SharedPreferenceStore` qui est un wrapper stateless autour d'Android SharedPreferences :
+- Pas de listener enregistré dans le constructeur
+- Pas d'état mutable in-memory
+- Les preference descriptors sont des `companion object` statiques
+- Android SharedPreferences est déjà un singleton interne (même backing file)
+- `PluginSyncService` gère ses propres listeners via `registerChangeListeners()` / `unregisterChangeListeners()` — fonctionne avec factory car l'enregistrement se fait sur l'instance SharedPreferences native
 
-**Fichier modifié :** `di/UtilsModule.kt:7`
-
-**Justification :** Wrapper léger autour d'`ApiClient` pour générer des URLs d'images. Fonctions pures, aucun état mutable.
+**LiveTvPreferences conservé en singleton** car il hérite de `DisplayPreferencesStore` qui maintient un cache in-memory (`cachedPreferences: MutableMap`, `displayPreferencesDto`).
 
 ---
 
 ## 4. Singletons conservés — justifications par catégorie
 
-### SDK & Infrastructure réseau (8 singletons)
-DeviceInfo, OkHttpFactory, HttpClientOptions, JellyfinSdk, ApiClient, SocketHandler, OkHttpNetworkFetcherFactory, ImageLoader — **Tous justifiés** : connexions persistantes, caches lourds, identité immuable.
+### SDK & Infrastructure réseau (7 singletons)
+DeviceInfo, OkHttpFactory, JellyfinSdk, ApiClient, SocketHandler, OkHttpNetworkFetcherFactory, ImageLoader — **Connexions persistantes, caches lourds, identité immuable.**
 
-### Repositories (16 singletons)
-UserRepository, UserViewsRepository, NotificationsRepository, ItemMutationRepository, CustomMessageRepository, NavigationRepository, SearchRepository, MediaSegmentRepository, ExternalAppRepository, LocalWatchlistRepository, MultiServerRepository, ParentalControlsRepository, JellyseerrRepository, MdbListRepository, TmdbRepository, ApiClientFactory — **Tous justifiés** : cache + état partagé entre écrans.
+### Repositories avec cache/état (14 singletons)
+UserRepository, UserViewsRepository, NotificationsRepository, ItemMutationRepository, CustomMessageRepository, NavigationRepository, MediaSegmentRepository, LocalWatchlistRepository, MultiServerRepository, ApiClientFactory, ParentalControlsRepository, JellyseerrRepository, MdbListRepository, TmdbRepository — **Cache in-memory (MutableMap, MutableStateFlow) ou état partagé entre écrans.**
 
 ### Auth (6 singletons)
-AuthenticationStore, AuthenticationPreferences, AuthenticationRepository, ServerRepository, ServerUserRepository, SessionRepository — **Tous justifiés** : état d'authentification partagé app-wide.
+AuthenticationStore, AuthenticationPreferences, AuthenticationRepository, ServerRepository, ServerUserRepository, SessionRepository — **État d'authentification partagé app-wide.**
 
-### Playback (7 singletons)
-LegacyPlaybackManager, VideoQueueManager, MediaManager, PlaybackLauncher, PrePlaybackTrackSelector, HttpDataSource.Factory, PlaybackManager — **Tous justifiés** : état lecture partagé, file audio, clients HTTP streaming.
+### Playback (6 singletons)
+LegacyPlaybackManager, VideoQueueManager, MediaManager, PlaybackLauncher, HttpDataSource.Factory, PlaybackManager — **État lecture partagé, file audio, clients HTTP streaming.**
 
-### Préférences (7 singletons)
-PluginSyncService, PreferencesRepository, LiveTvPreferences, UserSettingPreferences, UserPreferences, SystemPreferences, TelemetryPreferences — **Tous justifiés** : préférences partagées SharedPreferences.
+### Préférences avec état (3 singletons)
+PluginSyncService, PreferencesRepository, LiveTvPreferences — **Cache in-memory ou état mutable (MutableMap, @Volatile, MutableStateFlow).**
 
 ### Services & Managers (7 singletons)
-DataRefreshService, PlaybackControllerContainer, InteractionTrackerViewModel, ShuffleManager, SyncPlayManager, BackgroundService, UpdateCheckerService — **Tous justifiés** : état mutable partagé (MutableStateFlow, timers, mutex, caches).
+DataRefreshService (7 champs mutables), PlaybackControllerContainer (var PlaybackController), InteractionTrackerViewModel (voir exception), ShuffleManager (MutableStateFlow + Mutex), SyncPlayManager (état lourd), BackgroundService (9+ champs mutables), UpdateCheckerService (@Volatile cache) — **État mutable partagé.**
 
-### Utilitaires (2 singletons)
-MarkdownRenderer, PlaybackHelper — **Justifiés** : initialisation Markwon coûteuse ; SdkPlaybackHelper avec dépendances lourdes.
+### Utilitaires (3 singletons)
+MarkdownRenderer (Markwon builder coûteux), JellyseerrPreferences-global (prefs serveur), ThemeMusicPlayer (MediaPlayer unique)
 
-### Conservé en singleton malgré le nom "ViewModel" (1)
-InteractionTrackerViewModel — Commentaire explicite dans le code : *"Use single scope to ensure the same instance is used across all playback sessions"*. Gère le screensaver et le tracking d'interaction globalement.
+### Exception documentée : InteractionTrackerViewModel en singleton
 
-### ThemeMusicPlayer conservé en singleton (1)
-Gère un MediaPlayer unique — le passer en factory créerait des instances multiples avec risque d'audio simultané.
+Ce ViewModel étend `androidx.lifecycle.ViewModel` mais est déclaré `single` avec un commentaire explicite :
+> *"Use single scope to ensure the same instance is used across all playback sessions"*
+
+**Pourquoi il ne peut pas devenir `viewModel { }` :**
+- Injecté dans 6+ classes via `by inject()` et `get()` (pas seulement des Fragments)
+- StillWatchingViewModel le reçoit en paramètre constructeur via Koin
+- Les classes non-Fragment (PlaybackOverlayFragmentHelper, InAppScreensaver, ScreensaverLock) ne peuvent pas utiliser `by viewModel()`
+- Convertir nécessiterait un refactoring de toutes les injections vers `activityViewModel()` / `sharedViewModel()` + changement d'architecture pour les helpers non-Fragment
+
+**Recommandation future :** Renommer en `InteractionTracker` (sans suffixe ViewModel) car c'est fonctionnellement un service global, pas un ViewModel lié à une UI.
 
 ---
 
 ## 5. Résultat final
 
-| Module | Singletons avant | Singletons après | viewModels ajoutés | Factories ajoutées |
-|--------|-----------------|------------------|-------------------|-------------------|
-| AppModule | 39 | 34 | +1 | +3 |
-| AuthModule | 6 | 6 | 0 | 0 |
-| PlaybackModule | 7 | 7 | 0 | 0 |
-| PreferenceModule | 7 | 7 | 0 | 0 |
-| UtilsModule | 1 | 0 | 0 | +1 |
-| **Total** | **60** | **54** | **+1** | **+4** |
+| Module | Singletons avant | Singletons après | viewModels | Factories |
+|--------|-----------------|------------------|-----------|-----------|
+| AppModule | 39 | **30** | 22 | 9 |
+| AuthModule | 6 | **6** | 0 | 1 |
+| PlaybackModule | 7 | **6** | 0 | 1 |
+| PreferenceModule | 7 | **3** | 0 | 4 |
+| UtilsModule | 1 | **0** | 0 | 1 |
+| AndroidModule | 0 | **0** | 0 | 3 |
+| **Total** | **60** | **45** | **22** | **19** |
 
-**Compilation : BUILD SUCCESSFUL** (0 erreur, warnings pré-existants uniquement)
+**Réduction : 60 → 45 singletons (-25%)**
+
+**Compilation : BUILD SUCCESSFUL** (`./gradlew checkAll` — 0 erreur, 0 régression)
 
 ---
 
-## 6. Recommandations futures (hors scope)
+## 6. Pourquoi pas < 25 singletons ?
 
-| Priorité | Action | Effort |
-|----------|--------|--------|
-| Moyenne | Supprimer les 19 héritages `KoinComponent` (anti-pattern service locator) | Moyen |
-| Basse | Explorer le scoping Koin par session (SyncPlayManager, BackgroundService) | Grand |
-| Basse | Convertir `InteractionTrackerViewModel` en vrai `viewModel` scoped à Activity | Petit |
+Les 45 singletons restants sont **tous justifiés individuellement** — ils contiennent :
+- Des caches in-memory (`MutableMap`, `MutableStateFlow`)
+- Des ressources système (MediaPlayer, CoroutineScope, WebSocket)
+- Des états partagés entre écrans (navigation, playback, auth)
+
+Pour descendre en dessous de 45, il faudrait :
+1. **Scopes Koin par session** — scoper SyncPlayManager, BackgroundService à une session utilisateur (effort moyen, risque moyen)
+2. **Décomposer les God objects** — éclater les repositories monolithiques (JellyseerrRepository, PluginSyncService) en sous-composants factory (effort grand)
+3. **Activity-scoped viewModels** — convertir InteractionTrackerViewModel + refactorer les helpers (effort petit, risque moyen)
+
+Ces chantiers sont classés en dette technique long terme (v2+).
+
+---
+
+## 7. Recommandations futures (hors scope)
+
+| Priorité | Action | Effort | Risque |
+|----------|--------|--------|--------|
+| Moyenne | Supprimer les 19 héritages `KoinComponent` (anti-pattern service locator) | Moyen | Faible |
+| Moyenne | Explorer le scoping Koin par session (SyncPlayManager, BackgroundService) | Grand | Moyen |
+| Basse | Renommer `InteractionTrackerViewModel` → `InteractionTracker` | Petit | Faible |
+| Basse | Évaluer scoped viewModel pour InteractionTracker | Petit | Moyen |

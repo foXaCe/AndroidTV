@@ -1,4 +1,4 @@
-<h1 align="center">Moonfin for Android TV</h1>
+<h1 align="center">VegafoX for Android TV</h1>
 <h3 align="center">Enhanced Jellyfin client for Android TV, Nvidia Shield, and Amazon Fire TV devices</h3>
 
 ---
@@ -7,18 +7,18 @@
    <img width="4305" height="2659" alt="splash-background" src="https://github.com/user-attachments/assets/8618363e-d982-4828-8274-a2c3c7623ddb" />
 </p>
 
-[![License](https://img.shields.io/github/license/Moonfin-Client/AndroidTV-FireTV.svg)](https://github.com/Moonfin-Client/AndroidTV-FireTV)
-[![Release](https://img.shields.io/github/release/Moonfin-Client/AndroidTV-FireTV.svg)](https://github.com/Moonfin-Client/AndroidTV-FireTV/releases)
+[![License](https://img.shields.io/github/license/foXaCe/AndroidTV.svg)](https://github.com/foXaCe/AndroidTV)
+[![Release](https://img.shields.io/github/release/foXaCe/AndroidTV.svg)](https://github.com/foXaCe/AndroidTV/releases)
 
-<a href="https://www.buymeacoffee.com/moonfin" target="_blank"><img src="https://github.com/user-attachments/assets/fe26eaec-147f-496f-8e95-4ebe19f57131" alt="Buy Me A Coffee" ></a>
+<a href="https://www.buymeacoffee.com/vegafox" target="_blank"><img src="https://github.com/user-attachments/assets/fe26eaec-147f-496f-8e95-4ebe19f57131" alt="Buy Me A Coffee" ></a>
 
-> **[← Back to main Moonfin project](https://github.com/Moonfin-Client)**
+> **[← Back to main VegafoX project](https://github.com/foXaCe)**
 
-Moonfin for Android TV is an enhanced fork of the official Jellyfin Android TV client, optimized for the viewing experience on Android TV, Nvidia Shield, and Amazon Fire TV devices.
+VegafoX for Android TV is an enhanced fork of the official Jellyfin Android TV client, optimized for the viewing experience on Android TV, Nvidia Shield, and Amazon Fire TV devices.
 
 ## Features & Enhancements
 
-Moonfin for Android TV builds on the solid foundation of Jellyfin with targeted improvements for TV viewing:
+VegafoX for Android TV builds on the solid foundation of Jellyfin with targeted improvements for TV viewing:
 
 ### Cross-Server Content Playback
 - **Unified Library Support** - Seamless playback from multiple Jellyfin servers
@@ -41,11 +41,11 @@ Moonfin for Android TV builds on the solid foundation of Jellyfin with targeted 
 
 ### Jellyseerr & Seerr Integration
 
-Moonfin is the first Android TV client with native Jellyseerr and Seerr support.
+VegafoX is the first Android TV client with native Jellyseerr and Seerr support.
 
 - Browse trending, popular, and recommended movies/shows and filter content by Series/Movie Genres, Studio, Network, and keywords
 - Request content in HD or 4K directly from your TV  
-- **Moonfin Proxy Mode** — route all Jellyseerr/Seerr requests through the Moonfin server plugin (no direct connection needed)  
+- **VegafoX Proxy Mode** — route all Jellyseerr/Seerr requests through the VegafoX server plugin (no direct connection needed)  
 - **NSFW Content Filtering** (optional) using Jellyseerr/TMDB metadata  
 - Smart season selection when requesting TV shows  
 - View all your pending, approved, and available requests with distinct status icons  
@@ -55,10 +55,10 @@ Moonfin is the first Android TV client with native Jellyseerr and Seerr support.
 - Global search includes Jellyseerr results  
 - Rich backdrop images for a more cinematic discovery experience  
 
-> **Deprecation Notice:** In future versions, the legacy authentication methods (Jellyfin auth and local account login from within the app) will be removed. All Jellyseerr/Seerr connections will be managed exclusively through the Moonfin server plugin.
+> **Deprecation Notice:** In future versions, the legacy authentication methods (Jellyfin auth and local account login from within the app) will be removed. All Jellyseerr/Seerr connections will be managed exclusively through the VegafoX server plugin.
 
 ### Plugin Sync
-- **Bidirectional Settings Sync** — sync preferences between the app and the Moonfin server plugin
+- **Bidirectional Settings Sync** — sync preferences between the app and the VegafoX server plugin
 - Three-way merge strategy ensures no settings are lost during sync
 - Settings push automatically on change with debounced uploads
 - Consolidated **Plugin Settings** screen for all synced preferences
@@ -67,7 +67,7 @@ Moonfin is the first Android TV client with native Jellyseerr and Seerr support.
 - **Multiple Rating Sources** — display ratings from various platforms:
   - AniList, IMDB, Letterboxd, Metacritic, Metacritic User
   - MyAnimeList, Roger Ebert, Rotten Tomatoes, RT Audience, TMDB, Trakt
-- **Server-hosted rating icons** — icons served from the Moonfin plugin (no bundled assets needed)
+- **Server-hosted rating icons** — icons served from the VegafoX plugin (no bundled assets needed)
 - No client-side API keys required — all requests routed through the server plugin
 - TMDB episode ratings with series community rating fallback
 - Episode ratings displayed in library views
@@ -127,7 +127,7 @@ Moonfin is the first Android TV client with native Jellyseerr and Seerr support.
 - **Trickplay Scrub** - Auto-confirm seeking with improved caching
 - **Automatic Screensaver Dimming** - Reduces brightness after 90 seconds of playback inactivity to prevent screen burn-in with dynamic logo/clock movement
 - **Exit Confirmation Dialog** - Optional confirmation prompt when exiting the app (configurable in settings)
-- **OTA Update System** - Automatic check for new Moonfin versions with in-app update notifications
+- **OTA Update System** - Automatic check for new VegafoX versions with in-app update notifications
 
 ### Centralized Shuffle System
 - Hybrid approach: server-side random sort first, client-side fallback if needed
@@ -169,14 +169,14 @@ https://github.com/user-attachments/assets/113fa9d8-039c-4f14-8c95-785ca6d47c9b
 
 ---
 
-**Disclaimer:** Screenshots shown in this documentation feature media content, artwork, and actor likenesses for demonstration purposes only. None of the media, studios, actors, or other content depicted are affiliated with, sponsored by, or endorsing the Moonfin client or the Jellyfin project. All rights to the portrayed content belong to their respective copyright holders. These screenshots are used solely to demonstrate the functionality and interface of the application.
+**Disclaimer:** Screenshots shown in this documentation feature media content, artwork, and actor likenesses for demonstration purposes only. None of the media, studios, actors, or other content depicted are affiliated with, sponsored by, or endorsing the VegafoX client or the Jellyfin project. All rights to the portrayed content belong to their respective copyright holders. These screenshots are used solely to demonstrate the functionality and interface of the application.
 
 ---
 
 ## Installation
 
 ### Pre-built Releases
-Download the latest APK from the [Releases page](https://github.com/Moonfin-Client/AndroidTV-FireTV/releases).
+Download the latest APK from the [Releases page](https://github.com/foXaCe/AndroidTV/releases).
 
 **Supported Devices:**
 - Android TV devices (Android 6.0+)
@@ -187,13 +187,13 @@ Download the latest APK from the [Releases page](https://github.com/Moonfin-Clie
 ### Jellyseerr / Seerr Setup (Optional)
 To enable media discovery and requesting:
 
-1. Install the **Moonfin server plugin** on your Jellyfin server and configure Jellyseerr/Seerr in the plugin settings
-2. In Moonfin, go to **Settings → Plugin** and enable **Plugin Sync**
+1. Install the **VegafoX server plugin** on your Jellyfin server and configure Jellyseerr/Seerr in the plugin settings
+2. In VegafoX, go to **Settings → Plugin** and enable **Plugin Sync**
 3. Jellyseerr/Seerr will be configured automatically via the server plugin proxy
 
 **Legacy (Direct Connection) — will be removed in next update:**
 1. Install and configure Jellyseerr on your network ([jellyseerr.dev](https://jellyseerr.dev))
-2. In Moonfin, go to **Settings → Plugin → Jellyseerr**
+2. In VegafoX, go to **Settings → Plugin → Jellyseerr**
 3. Enter your Jellyseerr server URL (e.g., `http://192.168.1.100:5055`)
 4. Click **Connect with Jellyfin** and enter your Jellyfin password
 
@@ -215,7 +215,7 @@ Your session is saved securely and will reconnect automatically.
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/Moonfin-Client/AndroidTV-FireTV.git
+git clone https://github.com/foXaCe/AndroidTV.git
 cd AndroidTV-FireTV
 ```
 
@@ -257,7 +257,7 @@ The APK will be in `app/build/outputs/apk/release/`
 
 ## Contributing
 
-We welcome contributions to Moonfin for Android TV!
+We welcome contributions to VegafoX for Android TV!
 
 ### Guidelines
 1. **Check existing issues** - See if your idea/bug is already reported
@@ -278,22 +278,22 @@ We welcome contributions to Moonfin for Android TV!
 Translations are maintained through the Jellyfin Weblate instance:
 - [Jellyfin Android TV on Weblate](https://translate.jellyfin.org/projects/jellyfin-android/jellyfin-androidtv)
 
-Translations contributed to Moonfin that are universally applicable will be submitted upstream to benefit the entire community.
+Translations contributed to VegafoX that are universally applicable will be submitted upstream to benefit the entire community.
 
 ## Support & Community
 
-- **Issues** - [GitHub Issues](https://github.com/Moonfin-Client/AndroidTV-FireTV/issues) for bugs and feature requests
-- **Discussions** - [GitHub Discussions](https://github.com/Moonfin-Client/AndroidTV-FireTV/discussions) for questions and ideas
+- **Issues** - [GitHub Issues](https://github.com/foXaCe/AndroidTV/issues) for bugs and feature requests
+- **Discussions** - [GitHub Discussions](https://github.com/foXaCe/AndroidTV/discussions) for questions and ideas
 - **Upstream Jellyfin** - [jellyfin.org](https://jellyfin.org) for server-related questions
 
 ## Credits
 
-Moonfin for Android TV is built upon the excellent work of:
+VegafoX for Android TV is built upon the excellent work of:
 
 - **[Jellyfin Project](https://jellyfin.org)** - The foundation and upstream codebase
 - **[MakD](https://github.com/MakD)** - Original Jellyfin-Media-Bar concept that inspired our featured media bar
 - **Jellyfin Android TV Contributors** - All the developers who built the original client
-- **Moonfin Contributors** - Everyone who has contributed to this fork
+- **VegafoX Contributors** - Everyone who has contributed to this fork
 
 ## License
 
@@ -302,6 +302,6 @@ This project inherits the GPL v2 license from the upstream Jellyfin Android TV p
 ---
 
 <p align="center">
-   <strong>Moonfin for Android TV</strong> is an independent fork and is not affiliated with the Jellyfin project.<br>
-   <a href="https://github.com/Moonfin-Client">← Back to main Moonfin project</a>
+   <strong>VegafoX for Android TV</strong> is an independent fork and is not affiliated with the Jellyfin project.<br>
+   <a href="https://github.com/foXaCe">← Back to main VegafoX project</a>
 </p>

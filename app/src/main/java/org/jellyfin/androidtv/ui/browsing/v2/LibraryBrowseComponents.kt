@@ -277,7 +277,6 @@ fun LibraryPosterCard(
 				Text(
 					text = meta,
 					style = JellyfinTheme.typography.bodySmall,
-					fontWeight = FontWeight.Normal,
 					color = JellyfinTheme.colorScheme.textSecondary,
 					maxLines = 1,
 					overflow = TextOverflow.Ellipsis,
@@ -435,7 +434,6 @@ fun FocusedItemHud(
 				Text(
 					text = item.name ?: "",
 					style = JellyfinTheme.typography.titleMedium,
-					fontWeight = FontWeight.SemiBold,
 					color = JellyfinTheme.colorScheme.onSurface,
 					maxLines = 1,
 					overflow = TextOverflow.Clip,
@@ -560,7 +558,6 @@ fun FilterSortDialog(
 				Text(
 					text = title,
 					style = JellyfinTheme.typography.titleMedium,
-					fontWeight = FontWeight.W600,
 					color = JellyfinTheme.colorScheme.onSurface,
 					modifier = Modifier
 						.padding(horizontal = 24.dp)

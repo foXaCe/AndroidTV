@@ -22,11 +22,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.integration.dream.model.DreamContent
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.SeekbarDefaults
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.composable.AsyncImage
@@ -88,7 +87,7 @@ fun DreamContentNowPlaying(
 			currentTimestamp = playbackManager.state.positionInfo.active,
 			duration = playbackManager.state.positionInfo.duration,
 			paused = playState != PlayState.PLAYING,
-			fontSize = 22.sp,
+			fontSize = JellyfinTheme.typography.headlineMedium.fontSize,
 			color = Color.White,
 			modifier = Modifier
 				.fillMaxSize()
@@ -122,10 +121,8 @@ fun DreamContentNowPlaying(
 		) {
 			Text(
 				text = content.item.name.orEmpty(),
-				style = TextStyle(
-					color = Color.White,
-					fontSize = 26.sp,
-				),
+				style = JellyfinTheme.typography.headlineMedium,
+				color = Color.White,
 			)
 
 			Text(
@@ -139,10 +136,8 @@ fun DreamContentNowPlaying(
 						else -> listOfNotNull(albumArtist)
 					}.joinToString(", ")
 				},
-				style = TextStyle(
-					color = Color(0.8f, 0.8f, 0.8f),
-					fontSize = 18.sp,
-				),
+				style = JellyfinTheme.typography.titleLarge,
+				color = Color(0.8f, 0.8f, 0.8f),
 			)
 
 			Spacer(modifier = Modifier.height(10.dp))

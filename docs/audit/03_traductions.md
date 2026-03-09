@@ -13,7 +13,7 @@
 > - strings.xml EN : 1315 entrées | strings.xml FR : 1313 entrées
 
 **Date** : 2026-03-07
-**Projet** : Moonfin Android TV (fork Jellyfin)
+**Projet** : VegafoX Android TV (fork Jellyfin)
 **Scope** : Tous les fichiers Kotlin, Java et XML du module `app`
 
 ---
@@ -145,7 +145,7 @@
 
 | Ligne | Texte hardcode | Cle R.string proposee | Traduction FR |
 |-------|---------------|----------------------|---------------|
-| 194 | `"Moonfin version ${VERSION_NAME} ${BUILD_TYPE}"` | `app_version_display` | "Moonfin version %1$s %2$s" |
+| 194 | `"VegafoX version ${VERSION_NAME} ${BUILD_TYPE}"` | `app_version_display` | "VegafoX version %1$s %2$s" |
 | 254 | `"${displayText} ⚠"` | (format dynamique avec icone) | — |
 
 ### 2.11 AudioDelayController.kt — 1 occurrence
@@ -379,7 +379,7 @@ Labels techniques pour `animateFloatAsState` et transitions Compose — ne neces
 | 43 | `btn_refresh` | Refresh | Actualiser | fragment_jellyseerr_requests.xml |
 | 44 | `cd_connection_status` | Connection status icon | Icone de statut de connexion | fragment_jellyseerr_settings.xml |
 | 45 | `server_address_hint` | 192.168.1.100 or jellyfin.example.com | 192.168.1.100 ou jellyfin.example.com | fragment_server_add.xml |
-| 46 | `app_version_display` | Moonfin version %1$s %2$s | Moonfin version %1$s %2$s | SelectServerFragment |
+| 46 | `app_version_display` | VegafoX version %1$s %2$s | VegafoX version %1$s %2$s | SelectServerFragment |
 | 47 | `sort_popularity` | Popularity | Popularite | GenreBrowseFragment |
 | 48 | `sort_release_date` | Release Date | Date de sortie | GenreBrowseFragment |
 | 49 | `jellyseerr_permission_denied_message` | Permission Denied: Your Jellyfin account needs Jellyseerr permissions... | Acces refuse : ton compte Jellyfin n'a pas les permissions Jellyseerr necessaires... | JellyseerrViewModel |

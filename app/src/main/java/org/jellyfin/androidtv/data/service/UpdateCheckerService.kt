@@ -32,10 +32,10 @@ class UpdateCheckerService(private val context: Context) {
 	}
 
 	companion object {
-		private const val GITHUB_OWNER = "Moonfin-Client"
-		private const val GITHUB_REPO = "AndroidTV-FireTV"
+		private const val GITHUB_OWNER = "foXaCe"
+		private const val GITHUB_REPO = "AndroidTV"
 		private const val GITHUB_API_URL = "https://api.github.com/repos/$GITHUB_OWNER/$GITHUB_REPO/releases/latest"
-		private const val PLUGIN_UPDATE_PATH = "/Moonfin/ClientUpdate"
+		private const val PLUGIN_UPDATE_PATH = "/VegafoX/ClientUpdate"
 	}
 
 	/** Cached result from the last plugin update check (populated on startup sync). */
@@ -61,7 +61,7 @@ class UpdateCheckerService(private val context: Context) {
 	)
 
 	/**
-	 * Response from the Moonfin plugin's `/Moonfin/ClientUpdate` endpoint.
+	 * Response from the VegafoX plugin's `/VegafoX/ClientUpdate` endpoint.
 	 */
 	@Serializable
 	data class PluginUpdateResponse(
@@ -82,7 +82,7 @@ class UpdateCheckerService(private val context: Context) {
 	)
 
 	/**
-	 * Check if an update is available via the Moonfin server plugin.
+	 * Check if an update is available via the VegafoX server plugin.
 	 * Returns `null` if the plugin endpoint is unavailable.
 	 */
 	suspend fun checkForUpdateViaPlugin(
@@ -144,11 +144,14 @@ class UpdateCheckerService(private val context: Context) {
 				val body = response.body?.string() ?: return@runCatching null
 				val release = json.decodeFromString<GitHubRelease>(body)
 
-				// Find the APK asset
+				// Find the release APK asset (prefer github flavor, fallback to any release APK)
 				val apkAsset = release.assets.firstOrNull { asset ->
 					asset.name.endsWith(".apk", ignoreCase = true) &&
-						(asset.name.contains("debug", ignoreCase = true) ||
-							asset.name.contains("release", ignoreCase = true))
+						asset.name.contains("github", ignoreCase = true) &&
+						asset.name.contains("release", ignoreCase = true)
+				} ?: release.assets.firstOrNull { asset ->
+					asset.name.endsWith(".apk", ignoreCase = true) &&
+						asset.name.contains("release", ignoreCase = true)
 				}
 
 				if (apkAsset == null) {

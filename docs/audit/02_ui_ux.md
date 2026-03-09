@@ -19,7 +19,7 @@
 > - ❌ En attente : 3 paradigmes UI coexistent (Compose themed, Leanback, Jellyseerr imperatif)
 > - **Score de cohérence visuelle mis à jour : 8.5/10** (était 3.5/10)
 
-**Projet** : Moonfin for Android TV (fork Jellyfin)
+**Projet** : VegafoX for Android TV (fork Jellyfin)
 **Date** : 2026-03-07
 **Version auditee** : branche `main` (commit 8b15bd57d)
 

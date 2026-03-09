@@ -12,10 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.integration.dream.model.DreamContent
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.composable.ZoomBox
 import org.jellyfin.androidtv.ui.composable.modifier.overscan
@@ -65,10 +64,8 @@ fun DreamContentLibraryShowcase(
 		} else {
 			Text(
 				text = content.item.name.orEmpty(),
-				style = TextStyle(
-					color = Color.White,
-					fontSize = 32.sp
-				),
+				style = JellyfinTheme.typography.headlineLarge,
+				color = Color.White,
 			)
 		}
 	}

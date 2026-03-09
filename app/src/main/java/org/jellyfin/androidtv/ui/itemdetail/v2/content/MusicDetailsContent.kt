@@ -270,7 +270,7 @@ fun MusicDetailsContent(
 							} else {
 								Text(
 									text = item.name ?: "",
-									style = JellyfinTheme.typography.headlineLarge.copy(fontWeight = FontWeight.W700),
+									style = JellyfinTheme.typography.headlineLargeBold,
 									color = JellyfinTheme.colorScheme.onSurface,
 									maxLines = 2,
 									overflow = TextOverflow.Ellipsis,

@@ -210,7 +210,6 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 					Text(
 						text = timer.name ?: "",
 						style = JellyfinTheme.typography.titleMedium,
-						fontWeight = FontWeight.SemiBold,
 						color = JellyfinTheme.colorScheme.onSurface,
 						maxLines = 1,
 						overflow = TextOverflow.Ellipsis,
@@ -220,7 +219,6 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 						Text(
 							text = subtitle,
 							style = JellyfinTheme.typography.bodySmall,
-							fontWeight = FontWeight.Normal,
 							color = JellyfinTheme.colorScheme.textSecondary,
 							maxLines = 1,
 							overflow = TextOverflow.Ellipsis,
@@ -266,7 +264,6 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 					Text(
 						text = stringResource(R.string.lbl_series_recordings),
 						style = JellyfinTheme.typography.titleMedium,
-						fontWeight = FontWeight.SemiBold,
 						color = JellyfinTheme.colorScheme.onSurface,
 						modifier = Modifier.padding(start = 60.dp, bottom = 8.dp),
 					)

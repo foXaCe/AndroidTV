@@ -26,7 +26,7 @@ import org.jellyfin.androidtv.ui.base.JellyfinTheme
 @Composable
 fun SplashScreen() {
 	Box(
-		modifier = Modifier.background(colorResource(id = R.color.not_quite_black)),
+		modifier = Modifier.background(colorResource(id = R.color.ds_background)),
 	) {
 		Column(
 			horizontalAlignment = Alignment.CenterHorizontally,

@@ -26,9 +26,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
+import org.jellyfin.design.Tokens
 
 object PopoverDefaults {
-	val Shape: Shape = RoundedCornerShape(4.dp)
+	val Shape: Shape = RoundedCornerShape(Tokens.Radius.radiusXs)
 }
 
 @Composable

@@ -24,7 +24,7 @@ Ces textes etaient visibles par l'utilisateur et cassaient la coherence francais
 | `res/values/strings.xml` | +23 strings, +2 plurals, +1 string (lbl_series_type_upper) |
 | `res/values-fr/strings.xml` | +23 strings, +2 plurals, +1 string (lbl_series_type_upper) |
 | `ui/jellyseerr/MediaDetailsFragment.kt` | 22 statuts + 3 toasts + 1 dialogue + 1 erreur externalises |
-| `ui/settings/screen/moonfin/SettingsJellyseerrScreen.kt` | 1 texte remplace par string existante |
+| `ui/settings/screen/vegafox/SettingsJellyseerrScreen.kt` | 1 texte remplace par string existante |
 | `ui/composable/item/ItemCardJellyseerrOverlay.kt` | 2 badges remplaces par stringResource |
 
 ---

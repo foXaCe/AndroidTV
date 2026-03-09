@@ -4,34 +4,44 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
+import org.jellyfin.androidtv.ui.playback.PlaybackController
+import org.jellyfin.sdk.model.api.MediaSourceInfo
 
-class CustomSeekProviderTests : FunSpec({
-	test("CustomSeekProvider.seekPositions with simple duration") {
-		val videoPlayerAdapter = mockk<VideoPlayerAdapter> {
-			every { canSeek() } returns true
-			every { duration } returns 30000L
+class SeekProviderTests : FunSpec({
+	test("SeekProvider.seekPositions with simple duration") {
+		val mediaSource = mockk<MediaSourceInfo> {
+			every { runTimeTicks } returns 300_000_000L // 30000ms
 		}
-		val customSeekProvider = CustomSeekProvider(videoPlayerAdapter, mockk(), mockk(), mockk(), false, 10_000)
+		val playbackController = mockk<PlaybackController> {
+			every { canSeek() } returns true
+			every { currentMediaSource } returns mediaSource
+			every { currentlyPlayingItem } returns null
+		}
+		val seekProvider = SeekProvider(playbackController, mockk(), mockk(), mockk(), false, 10_000)
 
-		customSeekProvider.seekPositions shouldBe arrayOf(0L, 10000L, 20000L, 30000L)
+		seekProvider.getSeekPositions() shouldBe longArrayOf(0L, 10000L, 20000L, 30000L)
 	}
 
-	test("CustomSeekProvider.seekPositions with odd duration") {
-		val videoPlayerAdapter = mockk<VideoPlayerAdapter> {
-			every { canSeek() } returns true
-			every { duration } returns 45000L
+	test("SeekProvider.seekPositions with odd duration") {
+		val mediaSource = mockk<MediaSourceInfo> {
+			every { runTimeTicks } returns 450_000_000L // 45000ms
 		}
-		val customSeekProvider = CustomSeekProvider(videoPlayerAdapter, mockk(), mockk(), mockk(), false, 10_000)
+		val playbackController = mockk<PlaybackController> {
+			every { canSeek() } returns true
+			every { currentMediaSource } returns mediaSource
+			every { currentlyPlayingItem } returns null
+		}
+		val seekProvider = SeekProvider(playbackController, mockk(), mockk(), mockk(), false, 10_000)
 
-		customSeekProvider.seekPositions shouldBe arrayOf(0L, 10000, 20000, 30000, 40000, 45000)
+		seekProvider.getSeekPositions() shouldBe longArrayOf(0L, 10000L, 20000L, 30000L, 40000L, 45000L)
 	}
 
-	test("CustomSeekProvider.seekPositions with seek disabled") {
-		val videoPlayerAdapter = mockk<VideoPlayerAdapter> {
+	test("SeekProvider.seekPositions with seek disabled") {
+		val playbackController = mockk<PlaybackController> {
 			every { canSeek() } returns false
 		}
-		val customSeekProvider = CustomSeekProvider(videoPlayerAdapter, mockk(), mockk(), mockk(), false, 10_000)
+		val seekProvider = SeekProvider(playbackController, mockk(), mockk(), mockk(), false, 10_000)
 
-		customSeekProvider.seekPositions.size shouldBe 0
+		seekProvider.getSeekPositions().size shouldBe 0
 	}
 })

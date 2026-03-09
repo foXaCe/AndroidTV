@@ -22,6 +22,7 @@ import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.util.sdk.ApiClientFactory
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.exception.ApiClientException
+import org.jellyfin.sdk.api.client.extensions.artistsApi
 import org.jellyfin.sdk.api.client.extensions.itemsApi
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.BaseItemKind
@@ -103,6 +104,9 @@ class LibraryBrowseViewModel(
 	private var genreFilter: String? = null
 	private var includeType: String? = null
 	private var genreParentId: UUID? = null
+
+	// Explicit type mode (e.g., Albums, Artists, AlbumArtists)
+	private var explicitIncludeType: String? = null
 
 	val sortOptions: List<SortOption> by lazy {
 		buildList {
@@ -233,6 +237,70 @@ class LibraryBrowseViewModel(
 		}
 	}
 
+	/**
+	 * Initialize in explicit type mode — browse items of a specific type (e.g. Albums,
+	 * Artists, AlbumArtists) within a library folder.
+	 */
+	fun initializeWithType(folderJson: String, includeType: String, serverId: UUID?, userId: UUID?) {
+		val folder = kotlinx.serialization.json.Json.decodeFromString(
+			BaseItemDto.serializer(), folderJson
+		)
+		this.folder = folder
+		this.explicitIncludeType = includeType
+		this.serverId = serverId
+
+		resolveApiClient(serverId, userId)
+
+		// Artists use square images by default
+		val defaultImageType = when (includeType) {
+			"AlbumArtist", "Artist" -> ImageType.POSTER
+			else -> ImageType.POSTER
+		}
+
+		_uiState.value = LibraryBrowseUiState(
+			isLoading = true,
+			libraryName = folder.name ?: "",
+			collectionType = folder.collectionType,
+			imageType = defaultImageType,
+		)
+
+		viewModelScope.launch {
+			// Load library display preferences on IO thread
+			val dispPrefId = folder.displayPreferencesId
+			if (dispPrefId != null) {
+				libraryPreferences = withContext(Dispatchers.IO) {
+					preferencesRepository.getLibraryPreferences(dispPrefId, effectiveApi)
+				}
+			}
+
+			// Apply saved preferences
+			val savedSort = libraryPreferences?.get(LibraryPreferences.sortBy)
+			val savedOrder = libraryPreferences?.get(LibraryPreferences.sortOrder)
+			val savedFavorites = libraryPreferences?.get(LibraryPreferences.filterFavoritesOnly) ?: false
+
+			val initialSort = if (savedSort != null && savedOrder != null) {
+				sortOptions.find { it.sortBy == savedSort }?.copy(sortOrder = savedOrder)
+					?: SortOption(R.string.lbl_name, ItemSortBy.SORT_NAME, SortOrder.ASCENDING)
+			} else {
+				SortOption(R.string.lbl_name, ItemSortBy.SORT_NAME, SortOrder.ASCENDING)
+			}
+
+			val savedPosterSize = libraryPreferences?.get(LibraryPreferences.posterSize) ?: PosterSize.MED
+			val savedImageType = libraryPreferences?.get(LibraryPreferences.imageType) ?: defaultImageType
+			val savedGridDirection = libraryPreferences?.get(LibraryPreferences.gridDirection) ?: GridDirection.VERTICAL
+
+			_uiState.value = _uiState.value.copy(
+				currentSortOption = initialSort,
+				filterFavorites = savedFavorites,
+				posterSize = savedPosterSize,
+				imageType = savedImageType,
+				gridDirection = savedGridDirection,
+			)
+
+			loadItems(reset = true)
+		}
+	}
+
 	private fun resolveApiClient(serverId: UUID?, userId: UUID?) {
 		if (serverId != null) {
 			val serverApi = if (userId != null) {
@@ -319,8 +387,9 @@ class LibraryBrowseViewModel(
 
 	private fun loadItems(reset: Boolean) {
 		val isGenre = _uiState.value.isGenreMode
+		val isExplicitType = explicitIncludeType != null
 		val folder = this.folder
-		if (!isGenre && folder == null) return
+		if (!isGenre && !isExplicitType && folder == null) return
 		if (isLoadingMore && !reset) return
 
 		viewModelScope.launch {
@@ -333,88 +402,159 @@ class LibraryBrowseViewModel(
 			try {
 				val state = _uiState.value
 
-				// Build filters
-				val filters = buildSet {
-					if (state.filterFavorites) add(ItemFilter.IS_FAVORITE)
-					when (state.filterPlayed) {
-						PlayedStatusFilter.WATCHED -> add(ItemFilter.IS_PLAYED)
-						PlayedStatusFilter.UNWATCHED -> add(ItemFilter.IS_UNPLAYED)
-						PlayedStatusFilter.ALL -> {} // no filter
+				val response = if (isExplicitType) {
+					// Explicit type mode: Artists use dedicated API endpoints,
+					// other types use getItems with the parsed BaseItemKind
+					val type = explicitIncludeType!!
+
+					// For artists, only favorites filter applies (played status is not relevant)
+					val artistFilters = buildSet {
+						if (state.filterFavorites) add(ItemFilter.IS_FAVORITE)
 					}
-				}
 
-				val includeTypes: Set<BaseItemKind>?
-				val excludeTypes: Set<BaseItemKind>?
-				val recursive: Boolean
-				val parentId: UUID?
-				val genres: Set<String>?
+					when (type) {
+						"AlbumArtist" -> withContext(Dispatchers.IO) {
+							effectiveApi.artistsApi.getAlbumArtists(
+								parentId = folder?.id,
+								fields = ItemRepository.itemFields,
+								sortBy = setOf(state.currentSortOption.sortBy),
+								sortOrder = setOf(state.currentSortOption.sortOrder),
+								startIndex = currentPage * pageSize,
+								limit = pageSize,
+								enableTotalRecordCount = true,
+								nameStartsWith = state.startLetter,
+								filters = artistFilters,
+							).content
+						}
 
-				if (isGenre) {
-					// Genre mode: filter by genre name
-					parentId = genreParentId
-					genres = genreFilter?.let { setOf(it) }
-					recursive = true
-					includeTypes = when (includeType) {
-						"Movie" -> setOf(BaseItemKind.MOVIE)
-						"Series" -> setOf(BaseItemKind.SERIES)
-						else -> setOf(BaseItemKind.MOVIE, BaseItemKind.SERIES)
-					}
-					excludeTypes = null
-				} else {
-					// Library mode
-					parentId = folder!!.id
-					genres = null
+						"Artist" -> withContext(Dispatchers.IO) {
+							effectiveApi.artistsApi.getArtists(
+								parentId = folder?.id,
+								fields = ItemRepository.itemFields,
+								sortBy = setOf(state.currentSortOption.sortBy),
+								sortOrder = setOf(state.currentSortOption.sortOrder),
+								startIndex = currentPage * pageSize,
+								limit = pageSize,
+								enableTotalRecordCount = true,
+								nameStartsWith = state.startLetter,
+								filters = artistFilters,
+							).content
+						}
 
-					val isLibraryRoot = folder.type == BaseItemKind.USER_VIEW ||
-						folder.type == BaseItemKind.COLLECTION_FOLDER
+						else -> {
+							// Standard type name (e.g. "MusicAlbum") — parse to BaseItemKind
+							// and use getItems with recursive search
+							val parsedKind = BaseItemKind.fromNameOrNull(type)
+							val itemFilters = buildSet {
+								if (state.filterFavorites) add(ItemFilter.IS_FAVORITE)
+								when (state.filterPlayed) {
+									PlayedStatusFilter.WATCHED -> add(ItemFilter.IS_PLAYED)
+									PlayedStatusFilter.UNWATCHED -> add(ItemFilter.IS_UNPLAYED)
+									PlayedStatusFilter.ALL -> {} // no filter
+								}
+							}
 
-					includeTypes = when {
-						isLibraryRoot -> {
-							when (folder.collectionType) {
-								CollectionType.MOVIES -> setOf(BaseItemKind.MOVIE)
-								CollectionType.TVSHOWS -> setOf(BaseItemKind.SERIES)
-								CollectionType.MUSIC -> setOf(BaseItemKind.MUSIC_ALBUM)
-								else -> null
+							withContext(Dispatchers.IO) {
+								effectiveApi.itemsApi.getItems(
+									parentId = folder?.id,
+									includeItemTypes = parsedKind?.let { setOf(it) },
+									recursive = true,
+									fields = ItemRepository.itemFields,
+									sortBy = setOf(state.currentSortOption.sortBy),
+									sortOrder = setOf(state.currentSortOption.sortOrder),
+									filters = itemFilters,
+									startIndex = currentPage * pageSize,
+									limit = pageSize,
+									enableTotalRecordCount = true,
+									nameStartsWith = state.startLetter,
+								).content
 							}
 						}
+					}
+				} else {
+					// Build filters for genre/library modes
+					val filters = buildSet {
+						if (state.filterFavorites) add(ItemFilter.IS_FAVORITE)
+						when (state.filterPlayed) {
+							PlayedStatusFilter.WATCHED -> add(ItemFilter.IS_PLAYED)
+							PlayedStatusFilter.UNWATCHED -> add(ItemFilter.IS_UNPLAYED)
+							PlayedStatusFilter.ALL -> {} // no filter
+						}
+					}
+
+					val includeTypes: Set<BaseItemKind>?
+					val excludeTypes: Set<BaseItemKind>?
+					val recursive: Boolean
+					val parentId: UUID?
+					val genres: Set<String>?
+
+					if (isGenre) {
+						// Genre mode: filter by genre name
+						parentId = genreParentId
+						genres = genreFilter?.let { setOf(it) }
+						recursive = true
+						includeTypes = when (includeType) {
+							"Movie" -> setOf(BaseItemKind.MOVIE)
+							"Series" -> setOf(BaseItemKind.SERIES)
+							else -> setOf(BaseItemKind.MOVIE, BaseItemKind.SERIES)
+						}
+						excludeTypes = null
+					} else {
+						// Library mode
+						parentId = folder!!.id
+						genres = null
+
+						val isLibraryRoot = folder.type == BaseItemKind.USER_VIEW ||
+							folder.type == BaseItemKind.COLLECTION_FOLDER
+
+						includeTypes = when {
+							isLibraryRoot -> {
+								when (folder.collectionType) {
+									CollectionType.MOVIES -> setOf(BaseItemKind.MOVIE)
+									CollectionType.TVSHOWS -> setOf(BaseItemKind.SERIES)
+									CollectionType.MUSIC -> setOf(BaseItemKind.MUSIC_ALBUM)
+									else -> null
+								}
+							}
+							else -> null
+						}
+
+						// Only recurse when we have an includeItemTypes filter to
+						// avoid returning every nested item in mixed collections
+						recursive = isLibraryRoot && includeTypes != null
+
+						excludeTypes = when {
+							(folder.type == BaseItemKind.USER_VIEW || folder.type == BaseItemKind.COLLECTION_FOLDER) &&
+								folder.collectionType == CollectionType.MOVIES -> setOf(BaseItemKind.BOX_SET)
+							else -> null
+						}
+					}
+
+					val seriesStatus = when (state.filterSeriesStatus) {
+						SeriesStatusFilter.CONTINUING -> setOf(SeriesStatus.CONTINUING)
+						SeriesStatusFilter.ENDED -> setOf(SeriesStatus.ENDED)
 						else -> null
 					}
 
-					// Only recurse when we have an includeItemTypes filter to
-					// avoid returning every nested item in mixed collections
-					recursive = isLibraryRoot && includeTypes != null
-
-					excludeTypes = when {
-						(folder.type == BaseItemKind.USER_VIEW || folder.type == BaseItemKind.COLLECTION_FOLDER) &&
-							folder.collectionType == CollectionType.MOVIES -> setOf(BaseItemKind.BOX_SET)
-						else -> null
+					withContext(Dispatchers.IO) {
+						effectiveApi.itemsApi.getItems(
+							parentId = parentId,
+							genres = genres,
+							includeItemTypes = includeTypes,
+							excludeItemTypes = excludeTypes,
+							collapseBoxSetItems = false,
+							recursive = recursive,
+							fields = ItemRepository.itemFields,
+							sortBy = setOf(state.currentSortOption.sortBy),
+							sortOrder = setOf(state.currentSortOption.sortOrder),
+							filters = filters,
+							seriesStatus = seriesStatus,
+							startIndex = currentPage * pageSize,
+							limit = pageSize,
+							enableTotalRecordCount = true,
+							nameStartsWith = state.startLetter,
+						).content
 					}
-				}
-
-				val seriesStatus = when (state.filterSeriesStatus) {
-					SeriesStatusFilter.CONTINUING -> setOf(SeriesStatus.CONTINUING)
-					SeriesStatusFilter.ENDED -> setOf(SeriesStatus.ENDED)
-					else -> null
-				}
-
-				val response = withContext(Dispatchers.IO) {
-					effectiveApi.itemsApi.getItems(
-						parentId = parentId,
-						genres = genres,
-						includeItemTypes = includeTypes,
-						excludeItemTypes = excludeTypes,
-						collapseBoxSetItems = false,
-						recursive = recursive,
-						fields = ItemRepository.itemFields,
-						sortBy = setOf(state.currentSortOption.sortBy),
-						sortOrder = setOf(state.currentSortOption.sortOrder),
-						filters = filters,
-						seriesStatus = seriesStatus,
-						startIndex = currentPage * pageSize,
-						limit = pageSize,
-						enableTotalRecordCount = true,
-						nameStartsWith = state.startLetter,
-					).content
 				}
 
 				val totalItems = response.totalRecordCount ?: 0

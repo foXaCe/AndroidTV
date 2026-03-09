@@ -43,7 +43,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:contentDescription="@string/app_name"
-                android:src="@drawable/ic_moonfin" />
+                android:src="@drawable/ic_vegafox" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -83,7 +83,7 @@
                 android:textSize="32sp"
                 android:textStyle="bold" />
 
-            <androidx.leanback.widget.HorizontalGridView
+            <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/users"
                 android:layout_width="match_parent"
                 android:layout_height="153dp"
@@ -91,9 +91,8 @@
                 android:clipChildren="false"
                 android:clipToPadding="false"
                 android:scrollbars="none"
-                app:rowHeight="153dp"
-                tools:itemCount="4"
-                tools:listitem="@layout/view_card_default" />
+                android:orientation="horizontal"
+                tools:itemCount="4" />
 
             <TextView
                 android:id="@+id/no_users_warning"

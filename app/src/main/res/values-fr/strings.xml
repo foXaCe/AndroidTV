@@ -283,10 +283,10 @@
     <string name="pref_poster_size_large">Grand</string>
     <string name="pref_poster_size_extra_large">Très grand</string>
     <string name="pref_about_title">À propos</string>
-    <string name="pref_donate_title">Soutenir Moonfin</string>
+    <string name="pref_donate_title">Soutenir VegafoX</string>
     <string name="pref_donate_description">Aide à maintenir ce projet en vie</string>
-    <string name="donate_dialog_title">Soutenir le développement de Moonfin</string>
-    <string name="donate_dialog_message">Merci d\'envisager un don ! Ton soutien permet de maintenir Moonfin en vie et de continuer le développement de nouvelles fonctionnalités et améliorations.\n\nScanne le QR code ci-dessous pour faire un don :</string>
+    <string name="donate_dialog_title">Soutenir le développement de VegafoX</string>
+    <string name="donate_dialog_message">Merci d\'envisager un don ! Ton soutien permet de maintenir VegafoX en vie et de continuer le développement de nouvelles fonctionnalités et améliorations.\n\nScanne le QR code ci-dessous pour faire un don :</string>
     <string name="donate_dialog_thanks">Chaque contribution fait la différence. Merci !</string>
     <string name="pref_external_player">Utiliser un lecteur externe</string>
     <string name="pref_next_up_timeout_summary">Combien de temps attendre avant de lire l\'élément suivant</string>
@@ -387,10 +387,10 @@
     <string name="user_picker_last_user_title">Plus récent</string>
     <string name="user_picker_last_user_summary">Utiliser le dernier compte actif</string>
     <string name="lbl_switch_user">Changer de compte</string>
-    <string name="no_network_permissions">Moonfin a besoin des permissions réseau pour fonctionner</string>
+    <string name="no_network_permissions">VegafoX a besoin des permissions réseau pour fonctionner</string>
     <string name="press_to_close">Appuyer pour fermer</string>
     <string name="saved_servers">Serveurs sauvegardés</string>
-    <string name="welcome_title">Bienvenue sur Moonfin !</string>
+    <string name="welcome_title">Bienvenue sur VegafoX !</string>
     <string name="welcome_content">Connecte-toi à ton serveur pour commencer.</string>
     <string name="no_user_warning">Nous n\'avons trouvé aucun compte !\nAjoute un nouveau compte en appuyant sur le bouton \"Ajouter un compte\".</string>
     <string name="who_is_watching">Qui regarde \?</string>
@@ -448,7 +448,7 @@
     <string name="lbl_forgot_pin">Code PIN oublié \?</string>
     <string name="select_version">Version</string>
     <string name="licenses_link">Licences</string>
-    <string name="licenses_link_description">Voir les licences des bibliothèques utilisées par Moonfin</string>
+    <string name="licenses_link_description">Voir les licences des bibliothèques utilisées par VegafoX</string>
     <string name="license_description">Description</string>
     <string name="license_version">Version</string>
     <string name="license_artifact">Artefact</string>
@@ -490,7 +490,7 @@
     <string name="pref_home_favorites_button_summary">Activer/désactiver le bouton favoris dans la barre d\'outils</string>
     <string name="pref_show_libraries_in_toolbar">Afficher les bibliothèques dans la barre d\'outils</string>
     <string name="pref_show_libraries_in_toolbar_description">Activer/désactiver les boutons de bibliothèques dans la barre d\'outils</string>
-    <string name="searchable_hint">Rechercher dans Moonfin</string>
+    <string name="searchable_hint">Rechercher dans VegafoX</string>
     <string name="searchable_settings_description">Média</string>
     <string name="pref_subtitles_background_title">Activer le fond pour les sous-titres</string>
     <string name="pref_subtitles_background_summary">Affiche un fond noir derrière les sous-titres</string>
@@ -570,7 +570,7 @@
     <string name="crash_report_toast">Oups ! Il y a eu un problème. Un rapport de plantage a été envoyé à ton serveur Jellyfin.</string>
     <string name="server_setup_incomplete">La configuration de ce serveur est incomplète. Ouvre Jellyfin dans un navigateur Web pour terminer la configuration avant de te connecter.</string>
     <string name="episode_name_special">spécial</string>
-    <string name="app_notification_beta">Application mise à jour en %1$s\nMerci de participer au programme bêta de Moonfin.</string>
+    <string name="app_notification_beta">Application mise à jour en %1$s\nMerci de participer au programme bêta de VegafoX.</string>
     <string name="item_deleted">%1$s supprimé</string>
     <string name="item_deletion_failed">Impossible de supprimer %1$s</string>
     <string name="pref_enable_media_management">Activer la gestion des médias</string>
@@ -580,7 +580,7 @@
     <string name="lbl_latest_in">Récemment ajouté dans %1$s</string>
     <string name="pref_screensaver">Économiseur d\'écran</string>
     <string name="pref_screensaver_inapp_enabled">Utiliser l\'économiseur d\'écran intégré</string>
-    <string name="pref_screensaver_inapp_enabled_description">Afficher l\'économiseur d\'écran Moonfin lorsque l\'application est ouverte</string>
+    <string name="pref_screensaver_inapp_enabled_description">Afficher l\'économiseur d\'écran VegafoX lorsque l\'application est ouverte</string>
     <string name="pref_screensaver_inapp_timeout">Lancer l\'économiseur d\'écran après</string>
     <string name="enable_reactive_homepage">Activer la page d\'accueil réactive</string>
     <string name="lbl_album_artists">Artistes d\'albums</string>
@@ -612,7 +612,7 @@
     <string name="pref_screensaver_ageratingrequired_disabled">Afficher tous les éléments</string>
     <string name="pref_screensaver_mode">Mode de l\'économiseur d\'écran</string>
     <string name="pref_screensaver_mode_library">Images de la bibliothèque</string>
-    <string name="pref_screensaver_mode_logo">Logo Moonfin</string>
+    <string name="pref_screensaver_mode_logo">Logo VegafoX</string>
     <string name="pref_screensaver_dimming">Niveau d\'assombrissement</string>
     <string name="pref_screensaver_dimming_level_description">Ajuster l\'assombrissement de l\'économiseur d\'écran. Le logo et l\'horloge se déplacent toutes les 60 secondes pour éviter les marques.</string>
     <string name="pref_screensaver_dimming_description">Assombrir l\'économiseur d\'écran</string>
@@ -700,7 +700,7 @@
     <string name="lbl_status">%1$s / %2$s</string>
     <string name="lbl_pause">Pause</string>
     <string name="lbl_exit">Quitter</string>
-    <string name="exit_confirmation_title">Quitter Moonfin \?</string>
+    <string name="exit_confirmation_title">Quitter VegafoX \?</string>
     <string name="exit_confirmation_message">Es-tu sûr de vouloir quitter l\'application \?</string>
     <string name="loading">Chargement…</string>
     <string name="state_disabled">Désactivé</string>
@@ -835,14 +835,14 @@
 
     <!-- Plugin -->
     <string name="pref_plugin_settings">Plugin</string>
-    <string name="pref_plugin_description">Paramètres synchronisés via le plugin serveur Moonfin</string>
+    <string name="pref_plugin_description">Paramètres synchronisés via le plugin serveur VegafoX</string>
     <string name="pref_plugin_sync_enable">Activer la synchronisation du plugin</string>
-    <string name="pref_plugin_sync_description">Synchroniser les paramètres avec le plugin serveur Moonfin</string>
+    <string name="pref_plugin_sync_description">Synchroniser les paramètres avec le plugin serveur VegafoX</string>
 
-    <!-- Paramètres Moonfin -->
-    <string name="moonfin_settings">Paramètres Moonfin</string>
-    <string name="moonfin_settings_description">Personnaliser les fonctionnalités de Moonfin</string>
-    <string name="moonfin_general_settings">Général</string>
+    <!-- Paramètres VegafoX -->
+    <string name="vegafox_settings">Paramètres VegafoX</string>
+    <string name="vegafox_settings_description">Personnaliser les fonctionnalités de VegafoX</string>
+    <string name="vegafox_general_settings">Général</string>
     <string name="settings_available_after_login">Paramètres disponibles après la connexion</string>
 
     <!-- Authentification Jellyseerr -->
@@ -876,18 +876,18 @@
     <string name="jellyseerr_logout_confirm_title">Se déconnecter de Jellyseerr \?</string>
     <string name="jellyseerr_logout_confirm_message">Cela supprimera toutes les données d\'authentification et les cookies. Tu devras te reconnecter pour utiliser Jellyseerr.</string>
 
-    <!-- Jellyseerr Proxy Moonfin -->
-    <string name="jellyseerr_moonfin_proxy">Proxy Moonfin</string>
-    <string name="jellyseerr_moonfin_proxy_status">Connexion gérée par le plugin serveur Moonfin</string>
-    <string name="jellyseerr_moonfin_connected">Connecté en tant que %s</string>
-    <string name="jellyseerr_moonfin_not_authenticated">Non authentifié — connexion requise sur le serveur</string>
-    <string name="jellyseerr_moonfin_disconnect">Déconnecter le proxy Moonfin</string>
-    <string name="jellyseerr_moonfin_disconnect_description">Arrêter d\'utiliser le proxy du plugin serveur et revenir au mode de connexion directe</string>
-    <string name="jellyseerr_moonfin_reconnect">Se connecter via le plugin Moonfin</string>
-    <string name="jellyseerr_moonfin_reconnect_description">Reconnecter Jellyseerr via le proxy du plugin serveur Moonfin</string>
-    <string name="jellyseerr_moonfin_reconnect_success">Connecté via le plugin Moonfin</string>
-    <string name="jellyseerr_moonfin_reconnect_failed">Échec de la connexion via le plugin Moonfin</string>
-    <string name="jellyseerr_moonfin_not_enabled">Jellyseerr n\'est pas activé sur le plugin serveur</string>
+    <!-- Jellyseerr Proxy VegafoX -->
+    <string name="jellyseerr_vegafox_proxy">Proxy VegafoX</string>
+    <string name="jellyseerr_vegafox_proxy_status">Connexion gérée par le plugin serveur VegafoX</string>
+    <string name="jellyseerr_vegafox_connected">Connecté en tant que %s</string>
+    <string name="jellyseerr_vegafox_not_authenticated">Non authentifié — connexion requise sur le serveur</string>
+    <string name="jellyseerr_vegafox_disconnect">Déconnecter le proxy VegafoX</string>
+    <string name="jellyseerr_vegafox_disconnect_description">Arrêter d\'utiliser le proxy du plugin serveur et revenir au mode de connexion directe</string>
+    <string name="jellyseerr_vegafox_reconnect">Se connecter via le plugin VegafoX</string>
+    <string name="jellyseerr_vegafox_reconnect_description">Reconnecter Jellyseerr via le proxy du plugin serveur VegafoX</string>
+    <string name="jellyseerr_vegafox_reconnect_success">Connecté via le plugin VegafoX</string>
+    <string name="jellyseerr_vegafox_reconnect_failed">Échec de la connexion via le plugin VegafoX</string>
+    <string name="jellyseerr_vegafox_not_enabled">Jellyseerr n\'est pas activé sur le plugin serveur</string>
 
     <!-- Paramètres avancés Jellyseerr -->
     <string name="jellyseerr_advanced_settings">Paramètres avancés de requête</string>
@@ -943,7 +943,7 @@
     <string name="pref_enable_additional_ratings_description">Récupérer les notes depuis l\'API MDBList (IMDB, TMDB, Metacritic, Trakt, Letterboxd, etc.)</string>
     <string name="pref_mdblist_api_key">Clé API MDBList</string>
     <string name="pref_mdblist_api_key_description">Obtiens une clé API gratuite sur mdblist.com/preferences</string>
-    <string name="pref_additional_ratings_no_api_key">Ajoute ta clé API MDBList dans les paramètres Moonfin</string>
+    <string name="pref_additional_ratings_no_api_key">Ajoute ta clé API MDBList dans les paramètres VegafoX</string>
     <string name="pref_rating_source_imdb">IMDB</string>
     <string name="pref_rating_source_rt_audience">Rotten Tomatoes Audience</string>
     <string name="pref_rating_source_tmdb">The Movie Database</string>
@@ -1259,11 +1259,11 @@
     <!-- Chaînes hardcodées - Paramètres principaux -->
     <string name="settings_support_updates">Assistance et mises à jour</string>
     <string name="settings_check_updates">Rechercher les mises à jour</string>
-    <string name="settings_check_updates_desc">Télécharger la dernière version de Moonfin</string>
+    <string name="settings_check_updates_desc">Télécharger la dernière version de VegafoX</string>
     <string name="settings_update_notifications">Notifications de mise à jour</string>
     <string name="settings_update_notifications_desc">Afficher une notification au lancement lorsqu\'une mise à jour est disponible</string>
-    <string name="settings_support_moonfin">Soutenir Moonfin</string>
-    <string name="settings_support_moonfin_desc">Aide-nous à poursuivre le développement</string>
+    <string name="settings_support_vegafox">Soutenir VegafoX</string>
+    <string name="settings_support_vegafox_desc">Aide-nous à poursuivre le développement</string>
     <string name="settings_install_permission_title">Autorisation d\'installation requise</string>
     <string name="settings_install_permission_message">Cette application a besoin d\'installer des mises à jour. Accorde la permission dans les paramètres.</string>
     <string name="settings_enable_new_playback">Activer le nouveau module de lecture vidéo</string>
@@ -1278,7 +1278,7 @@
     <string name="playback_subtitle_info_error">Impossible d\'obtenir les infos des sous-titres</string>
     <string name="playback_subtitle_delay_error">Impossible d\'appliquer le décalage des sous-titres</string>
     <string name="playback_trailer_error">Impossible d\'ouvrir la bande-annonce</string>
-    <string name="playback_item_not_found">Élément introuvable dans ta bibliothèque Moonfin</string>
+    <string name="playback_item_not_found">Élément introuvable dans ta bibliothèque VegafoX</string>
     <string name="playback_search_error">Erreur lors de la recherche dans la bibliothèque</string>
 
     <!-- Chaînes hardcodées - Détails des éléments -->
@@ -1291,7 +1291,7 @@
 
     <!-- Chaînes hardcodées - Don -->
     <string name="donate_qr_description">QR code de don</string>
-    <string name="donate_url">buymeacoffee.com/moonfin</string>
+    <string name="donate_url">buymeacoffee.com/vegafox</string>
 
     <!-- Chaînes hardcodées - Descriptions d\'accessibilité -->
     <string name="cd_previous">Précédent</string>
@@ -1325,7 +1325,7 @@
     <string name="lbl_movies_count">Films (%1$d)</string>
     <string name="lbl_series_count">Séries (%1$d)</string>
     <string name="lbl_genres_in_library">Genres — %1$s</string>
-    <string name="app_version_display">Moonfin version %1$s %2$s</string>
+    <string name="app_version_display">VegafoX version %1$s %2$s</string>
 
     <!-- Chaînes hardcodées - Décalage audio/sous-titres -->
     <string name="audio_delay_none">Pas de décalage</string>
@@ -1411,7 +1411,7 @@
     <string name="lbl_off">Désactivé</string>
 
     <!-- Chaînes hardcodées - À propos -->
-    <string name="lbl_app_version_heading">Version de l\'application Moonfin</string>
+    <string name="lbl_app_version_heading">Version de l\'application VegafoX</string>
 
     <!-- Chaînes hardcodées - Erreurs SyncPlay -->
     <string name="syncplay_access_denied">Accès SyncPlay refusé. Active la permission SyncPlay pour cet utilisateur dans les paramètres du serveur Jellyfin.</string>

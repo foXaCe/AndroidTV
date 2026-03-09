@@ -306,7 +306,6 @@ class LiveTvBrowseFragment : Fragment() {
 			Text(
 				text = title,
 				style = JellyfinTheme.typography.titleMedium,
-				fontWeight = FontWeight.SemiBold,
 				color = JellyfinTheme.colorScheme.onSurface,
 				modifier = Modifier.padding(start = 60.dp, bottom = 8.dp),
 			)
@@ -435,7 +434,6 @@ class LiveTvBrowseFragment : Fragment() {
 			Text(
 				text = stringResource(R.string.lbl_views),
 				style = JellyfinTheme.typography.titleMedium,
-				fontWeight = FontWeight.SemiBold,
 				color = JellyfinTheme.colorScheme.onSurface,
 				modifier = Modifier.padding(start = 60.dp, bottom = 8.dp),
 			)
@@ -561,6 +559,6 @@ class LiveTvBrowseFragment : Fragment() {
 
 	private fun launchItem(item: BaseItemDto) {
 		val rowItem = BaseItemDtoBaseRowItem(item)
-		itemLauncher.launch(rowItem, null, requireContext())
+		itemLauncher.launch(rowItem, requireContext())
 	}
 }

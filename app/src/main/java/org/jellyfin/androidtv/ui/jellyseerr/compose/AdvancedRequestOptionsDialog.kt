@@ -35,7 +35,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -121,7 +120,6 @@ fun AdvancedRequestOptionsDialog(
 				Text(
 					text = stringResource(R.string.jellyseerr_request_options),
 					style = JellyfinTheme.typography.titleLarge,
-					fontWeight = FontWeight.Bold,
 					color = JellyfinTheme.colorScheme.textPrimary,
 					modifier = Modifier.padding(bottom = 6.dp),
 				)
@@ -277,7 +275,6 @@ private fun SectionHeader(text: String) {
 	Text(
 		text = text,
 		style = JellyfinTheme.typography.titleMedium,
-		fontWeight = FontWeight.Bold,
 		color = JellyfinTheme.colorScheme.textPrimary,
 		modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
 	)

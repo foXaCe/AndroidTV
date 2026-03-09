@@ -35,7 +35,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -94,7 +93,6 @@ fun SeasonSelectionDialog(
 				Text(
 					text = stringResource(R.string.jellyseerr_select_seasons),
 					style = JellyfinTheme.typography.titleLarge,
-					fontWeight = FontWeight.Bold,
 					color = JellyfinTheme.colorScheme.textPrimary,
 					modifier = Modifier.padding(bottom = 6.dp),
 				)
@@ -289,7 +287,6 @@ internal fun DialogActionButton(
 		Text(
 			text = text,
 			style = JellyfinTheme.typography.labelLarge,
-			fontWeight = FontWeight.Bold,
 			color = JellyfinTheme.colorScheme.textPrimary,
 		)
 	}

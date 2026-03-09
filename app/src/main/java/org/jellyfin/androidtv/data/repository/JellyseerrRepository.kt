@@ -23,9 +23,9 @@ import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrServiceServerDto
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrSonarrSettingsDto
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrTvDetailsDto
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrUserDto
-import org.jellyfin.androidtv.data.service.jellyseerr.MoonfinLoginResponse
-import org.jellyfin.androidtv.data.service.jellyseerr.MoonfinProxyConfig
-import org.jellyfin.androidtv.data.service.jellyseerr.MoonfinStatusResponse
+import org.jellyfin.androidtv.data.service.jellyseerr.VegafoXLoginResponse
+import org.jellyfin.androidtv.data.service.jellyseerr.VegafoXProxyConfig
+import org.jellyfin.androidtv.data.service.jellyseerr.VegafoXStatusResponse
 import org.jellyfin.androidtv.data.service.jellyseerr.Seasons
 import org.jellyfin.androidtv.preference.JellyseerrPreferences
 import org.jellyfin.sdk.api.client.ApiClient
@@ -35,7 +35,7 @@ import timber.log.Timber
 
 interface JellyseerrRepository {
 	val isAvailable: StateFlow<Boolean>
-	val isMoonfinMode: StateFlow<Boolean>
+	val isVegafoXMode: StateFlow<Boolean>
 
 	suspend fun ensureInitialized()
 	suspend fun initialize(serverUrl: String, apiKey: String): Result<Unit>
@@ -117,10 +117,10 @@ interface JellyseerrRepository {
 	suspend fun logout()
 	fun close()
 
-	suspend fun configureWithMoonfin(jellyfinBaseUrl: String, jellyfinToken: String): Result<MoonfinStatusResponse>
-	suspend fun checkMoonfinStatus(): Result<MoonfinStatusResponse>
-	suspend fun loginWithMoonfin(username: String, password: String, authType: String): Result<MoonfinLoginResponse>
-	suspend fun logoutMoonfin(): Result<Unit>
+	suspend fun configureWithVegafoX(jellyfinBaseUrl: String, jellyfinToken: String): Result<VegafoXStatusResponse>
+	suspend fun checkVegafoXStatus(): Result<VegafoXStatusResponse>
+	suspend fun loginWithVegafoX(username: String, password: String, authType: String): Result<VegafoXLoginResponse>
+	suspend fun logoutVegafoX(): Result<Unit>
 }
 
 class JellyseerrRepositoryImpl(
@@ -132,8 +132,8 @@ class JellyseerrRepositoryImpl(
 	private var httpClient: JellyseerrHttpClient? = null
 	private val _isAvailable = MutableStateFlow(false)
 	override val isAvailable: StateFlow<Boolean> = _isAvailable.asStateFlow()
-	private val _isMoonfinMode = MutableStateFlow(false)
-	override val isMoonfinMode: StateFlow<Boolean> = _isMoonfinMode.asStateFlow()
+	private val _isVegafoXMode = MutableStateFlow(false)
+	override val isVegafoXMode: StateFlow<Boolean> = _isVegafoXMode.asStateFlow()
 	private var initialized = false
 	private var lastUserId: String? = null // Track which user we're initialized for
 	
@@ -207,22 +207,22 @@ class JellyseerrRepositoryImpl(
 				
 				val storedApiKey = userPrefs?.get(JellyseerrPreferences.apiKey) ?: ""
 				val authMethod = userPrefs?.get(JellyseerrPreferences.authMethod) ?: ""
-				val moonfinMode = userPrefs?.get(JellyseerrPreferences.moonfinMode) ?: false
+				val vegafoxMode = userPrefs?.get(JellyseerrPreferences.vegafoxMode) ?: false
 
-				if (moonfinMode) {
+				if (vegafoxMode) {
 					val baseUrl = api.baseUrl
 					val token = api.accessToken
 					if (!baseUrl.isNullOrBlank() && !token.isNullOrBlank()) {
-						Timber.d("Jellyseerr: Auto-initializing in Moonfin proxy mode for user $lastUserId")
-						val proxyConfig = MoonfinProxyConfig(
+						Timber.d("Jellyseerr: Auto-initializing in VegafoX proxy mode for user $lastUserId")
+						val proxyConfig = VegafoXProxyConfig(
 							jellyfinBaseUrl = baseUrl,
 							jellyfinToken = token
 						)
 						val result = initialize(baseUrl, "")
 						if (result.isSuccess) {
 							httpClient?.proxyConfig = proxyConfig
-							_isMoonfinMode.emit(true)
-							val statusResult = httpClient?.getMoonfinStatus()
+							_isVegafoXMode.emit(true)
+							val statusResult = httpClient?.getVegafoXStatus()
 							if (statusResult != null && statusResult.isSuccess) {
 								val status = statusResult.getOrNull()
 								if (status?.authenticated == true) {
@@ -230,23 +230,23 @@ class JellyseerrRepositoryImpl(
 									// Do NOT call getCurrentUser() through the proxy here - it can
 									// cause Express.js cookie rotation which the plugin doesn't save,
 									// invalidating the session for subsequent API calls.
-									Timber.d("Jellyseerr: Moonfin session authenticated (via Status)")
+									Timber.d("Jellyseerr: VegafoX session authenticated (via Status)")
 									_isAvailable.emit(true)
 								} else {
-									Timber.d("Jellyseerr: Moonfin session not authenticated, user needs to login")
+									Timber.d("Jellyseerr: VegafoX session not authenticated, user needs to login")
 									_isAvailable.emit(false)
 								}
 							} else {
 								_isAvailable.emit(false)
-								Timber.w("Jellyseerr: Failed to check Moonfin status")
+								Timber.w("Jellyseerr: Failed to check VegafoX status")
 							}
 						} else {
 							_isAvailable.emit(false)
-							Timber.w("Jellyseerr: Failed to initialize for Moonfin proxy")
+							Timber.w("Jellyseerr: Failed to initialize for VegafoX proxy")
 						}
 					} else {
 						_isAvailable.emit(false)
-						Timber.w("Jellyseerr: Moonfin mode enabled but no Jellyfin API credentials")
+						Timber.w("Jellyseerr: VegafoX mode enabled but no Jellyfin API credentials")
 					}
 					initialized = true
 					return@withContext
@@ -621,10 +621,10 @@ class JellyseerrRepositoryImpl(
 		result
 	}
 
-	override suspend fun configureWithMoonfin(
+	override suspend fun configureWithVegafoX(
 		jellyfinBaseUrl: String,
 		jellyfinToken: String,
-	): Result<MoonfinStatusResponse> = withContext(Dispatchers.IO) {
+	): Result<VegafoXStatusResponse> = withContext(Dispatchers.IO) {
 		val currentUserId = userRepository.currentUser.value?.id?.toString()
 		if (currentUserId.isNullOrEmpty()) {
 			return@withContext Result.failure(IllegalStateException("No active Jellyfin user"))
@@ -633,7 +633,7 @@ class JellyseerrRepositoryImpl(
 		JellyseerrHttpClient.switchCookieStorage(currentUserId)
 		lastUserId = currentUserId
 
-		val proxyConfig = MoonfinProxyConfig(
+		val proxyConfig = VegafoXProxyConfig(
 			jellyfinBaseUrl = jellyfinBaseUrl,
 			jellyfinToken = jellyfinToken
 		)
@@ -646,28 +646,28 @@ class JellyseerrRepositoryImpl(
 
 		client.proxyConfig = proxyConfig
 
-		val statusResult = client.getMoonfinStatus()
+		val statusResult = client.getVegafoXStatus()
 		statusResult.onSuccess { status ->
 			val userPrefs = getPreferences()
 			userPrefs?.apply {
-				set(JellyseerrPreferences.moonfinMode, true)
+				set(JellyseerrPreferences.vegafoxMode, true)
 				set(JellyseerrPreferences.enabled, true)
-				set(JellyseerrPreferences.authMethod, "moonfin")
+				set(JellyseerrPreferences.authMethod, "vegafox")
 			}
-			_isMoonfinMode.emit(true)
+			_isVegafoXMode.emit(true)
 			if (status.authenticated) {
 				// Trust the Status check like Tizen does.
 				// Do NOT call getCurrentUser() through the proxy here - it can
 				// cause Express.js cookie rotation which the plugin doesn't save,
 				// invalidating the session for subsequent API calls and destroying
 				// sessions on other devices.
-				Timber.d("Jellyseerr: Moonfin session authenticated in configureWithMoonfin")
+				Timber.d("Jellyseerr: VegafoX session authenticated in configureWithVegafoX")
 				userPrefs?.apply {
-					set(JellyseerrPreferences.moonfinJellyseerrUserId, status.jellyseerrUserId?.toString() ?: "")
+					set(JellyseerrPreferences.vegafoxJellyseerrUserId, status.jellyseerrUserId?.toString() ?: "")
 				}
 				_isAvailable.emit(true)
 			} else {
-				Timber.d("Jellyseerr: Moonfin session not authenticated, user needs to login")
+				Timber.d("Jellyseerr: VegafoX session not authenticated, user needs to login")
 				_isAvailable.emit(false)
 			}
 		}.onFailure {
@@ -677,15 +677,15 @@ class JellyseerrRepositoryImpl(
 		statusResult
 	}
 
-	override suspend fun checkMoonfinStatus(): Result<MoonfinStatusResponse> = withClient { client ->
-		client.getMoonfinStatus()
+	override suspend fun checkVegafoXStatus(): Result<VegafoXStatusResponse> = withClient { client ->
+		client.getVegafoXStatus()
 	}
 
-	override suspend fun loginWithMoonfin(
+	override suspend fun loginWithVegafoX(
 		username: String,
 		password: String,
 		authType: String,
-	): Result<MoonfinLoginResponse> = withContext(Dispatchers.IO) {
+	): Result<VegafoXLoginResponse> = withContext(Dispatchers.IO) {
 		ensureInitialized()
 
 		val client = httpClient ?: return@withContext Result.failure(
@@ -693,42 +693,42 @@ class JellyseerrRepositoryImpl(
 		)
 
 		if (!client.isProxyMode) {
-			return@withContext Result.failure(IllegalStateException("Not in Moonfin proxy mode"))
+			return@withContext Result.failure(IllegalStateException("Not in VegafoX proxy mode"))
 		}
 
-		val result = client.moonfinLogin(username, password, authType)
+		val result = client.vegafoxLogin(username, password, authType)
 		result.onSuccess { response ->
 			if (response.success) {
 				val userPrefs = getPreferences()
 				userPrefs?.apply {
-					set(JellyseerrPreferences.moonfinDisplayName, response.displayName ?: "")
-					set(JellyseerrPreferences.moonfinJellyseerrUserId, response.jellyseerrUserId?.toString() ?: "")
+					set(JellyseerrPreferences.vegafoxDisplayName, response.displayName ?: "")
+					set(JellyseerrPreferences.vegafoxJellyseerrUserId, response.jellyseerrUserId?.toString() ?: "")
 				}
 				_isAvailable.emit(true)
-				Timber.i("Jellyseerr: Moonfin login successful")
+				Timber.i("Jellyseerr: VegafoX login successful")
 			}
 		}
 
 		result
 	}
 
-	override suspend fun logoutMoonfin(): Result<Unit> = withContext(Dispatchers.IO) {
+	override suspend fun logoutVegafoX(): Result<Unit> = withContext(Dispatchers.IO) {
 		val client = httpClient
 		if (client != null && client.isProxyMode) {
-			client.moonfinLogout()
+			client.vegafoxLogout()
 		}
 
 		val userPrefs = getPreferences()
 		userPrefs?.apply {
-			set(JellyseerrPreferences.moonfinMode, false)
-			set(JellyseerrPreferences.moonfinDisplayName, "")
-			set(JellyseerrPreferences.moonfinJellyseerrUserId, "")
+			set(JellyseerrPreferences.vegafoxMode, false)
+			set(JellyseerrPreferences.vegafoxDisplayName, "")
+			set(JellyseerrPreferences.vegafoxJellyseerrUserId, "")
 			set(JellyseerrPreferences.enabled, false)
 			set(JellyseerrPreferences.authMethod, "")
 		}
 
 		httpClient?.proxyConfig = null
-		_isMoonfinMode.emit(false)
+		_isVegafoXMode.emit(false)
 		_isAvailable.emit(false)
 		initialized = false
 
@@ -737,7 +737,7 @@ class JellyseerrRepositoryImpl(
 
 	override suspend fun logout() {
 		if (httpClient?.isProxyMode == true) {
-			logoutMoonfin()
+			logoutVegafoX()
 			return
 		}
 

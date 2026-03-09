@@ -29,6 +29,9 @@ fun FragmentActivity.applyTheme() {
 	val viewModel by viewModels<ThemeViewModel>()
 	val userRepository by inject<UserRepository>()
 	val userId = userRepository.currentUser.value?.id
+	// PERF: SharedPreferences read on main thread —
+	// nécessaire avant l'inflation du layout (setTheme doit précéder setContentView).
+	// StrictMode détecte ~120ms en debug (first load), <5ms ensuite (cache SP).
 	val userSettingPreferences = UserSettingPreferences(this, userId)
 	val theme = userSettingPreferences[UserSettingPreferences.focusColor]
 

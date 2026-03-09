@@ -24,7 +24,7 @@
 | `userRequests` | Details | DiscoverRowsFragment, RequestsFragment |
 | `searchResults` | **CODE MORT** | Aucun consommateur |
 | `isAvailable` | Auth | SettingsFragment, RequestsFragment, DiscoverRowsFragment |
-| `isMoonfinMode` | **CODE MORT** | Aucun (SettingsJellyseerrScreen lit directement repository) |
+| `isVegafoXMode` | **CODE MORT** | Aucun (SettingsJellyseerrScreen lit directement repository) |
 
 ### 1.2 Fonctions publiques (30) — par domaine
 
@@ -90,7 +90,7 @@
 4. `createRequest()` (lignes 683-701) — `requestMedia()` est utilise a la place
 5. `getRadarrSettings()` (ligne 891)
 6. `getSonarrSettings()` (ligne 893)
-7. `isMoonfinMode` (ligne 189) — `SettingsJellyseerrScreen` lit directement depuis le repository
+7. `isVegafoXMode` (ligne 189) — `SettingsJellyseerrScreen` lit directement depuis le repository
 
 ### 1.4 Dependances entre domaines
 
@@ -243,7 +243,7 @@ BUILD SUCCESSFUL requis a chaque etape.
 - `createRequest()` (19 lignes)
 - `getRadarrSettings()` (1 ligne)
 - `getSonarrSettings()` (1 ligne)
-- `isMoonfinMode` (1 ligne)
+- `isVegafoXMode` (1 ligne)
 
 **Impact** : 919 → 835 lignes (-84 lignes de code mort)
 

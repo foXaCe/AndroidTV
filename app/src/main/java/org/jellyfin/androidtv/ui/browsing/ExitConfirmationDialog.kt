@@ -27,7 +27,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -64,7 +63,6 @@ fun ExitConfirmationDialog(
 				Text(
 					text = stringResource(R.string.exit_confirmation_title),
 					style = JellyfinTheme.typography.titleLarge,
-					fontWeight = FontWeight.W600,
 					color = JellyfinTheme.colorScheme.onSurface,
 					modifier = Modifier
 						.padding(horizontal = 24.dp)
@@ -117,7 +115,6 @@ fun ExitConfirmationDialog(
 					Text(
 						text = stringResource(R.string.lbl_exit),
 						style = JellyfinTheme.typography.titleMedium,
-						fontWeight = FontWeight.W600,
 						color = if (exitFocused) accentColor else JellyfinTheme.colorScheme.textSecondary,
 					)
 				}

@@ -21,6 +21,9 @@ import org.jellyfin.androidtv.ui.navigation.LocalRouter
 import org.jellyfin.androidtv.ui.settings.Routes
 import org.jellyfin.androidtv.ui.settings.compat.rememberPreference
 import org.jellyfin.androidtv.ui.settings.composable.SettingsColumn
+import org.jellyfin.androidtv.ui.settings.screen.vegafox.getBlurLabel
+import org.jellyfin.androidtv.ui.settings.screen.vegafox.getSeasonalLabel
+import org.jellyfin.androidtv.ui.settings.screen.vegafox.getShuffleContentTypeLabel
 import org.koin.compose.koinInject
 
 @Composable
@@ -35,10 +38,12 @@ fun SettingsCustomizationScreen() {
 	SettingsColumn {
 		item {
 			ListSection(
-				overlineContent = { Text(stringResource(R.string.settings).uppercase()) },
+				overlineContent = { Text(stringResource(R.string.app_name).uppercase()) },
 				headingContent = { Text(stringResource(R.string.pref_customization)) },
 			)
 		}
+
+		// ── Browsing ──
 
 		item { ListSection(headingContent = { Text(stringResource(R.string.pref_browsing)) }) }
 
@@ -121,59 +126,145 @@ fun SettingsCustomizationScreen() {
 			)
 		}
 
+		// ── Toolbar ──
+
+		item { ListSection(headingContent = { Text(stringResource(R.string.pref_toolbar_customization)) }) }
+
+		item {
+			val navbarPosition by rememberPreference(userPreferences, UserPreferences.navbarPosition)
+			val navbarLabel = when (navbarPosition) {
+				org.jellyfin.androidtv.preference.constant.NavbarPosition.TOP -> stringResource(R.string.pref_navbar_position_top)
+				org.jellyfin.androidtv.preference.constant.NavbarPosition.LEFT -> stringResource(R.string.pref_navbar_position_left)
+			}
+			ListButton(
+				headingContent = { Text(stringResource(R.string.pref_navbar_position)) },
+				captionContent = { Text(navbarLabel) },
+				onClick = { router.push(Routes.VEGAFOX_NAVBAR_POSITION) }
+			)
+		}
+
+		item {
+			var showShuffleButton by rememberPreference(userPreferences, UserPreferences.showShuffleButton)
+			ListButton(
+				headingContent = { Text(stringResource(R.string.pref_show_shuffle_button)) },
+				captionContent = { Text(stringResource(R.string.pref_show_shuffle_button_description)) },
+				trailingContent = { Checkbox(checked = showShuffleButton) },
+				onClick = { showShuffleButton = !showShuffleButton }
+			)
+		}
+
+		item {
+			var showGenresButton by rememberPreference(userPreferences, UserPreferences.showGenresButton)
+			ListButton(
+				headingContent = { Text(stringResource(R.string.pref_show_genres_button)) },
+				captionContent = { Text(stringResource(R.string.pref_show_genres_button_description)) },
+				trailingContent = { Checkbox(checked = showGenresButton) },
+				onClick = { showGenresButton = !showGenresButton }
+			)
+		}
+
+		item {
+			var showFavoritesButton by rememberPreference(userPreferences, UserPreferences.showFavoritesButton)
+			ListButton(
+				headingContent = { Text(stringResource(R.string.pref_show_favorites_button)) },
+				captionContent = { Text(stringResource(R.string.pref_show_favorites_button_description)) },
+				trailingContent = { Checkbox(checked = showFavoritesButton) },
+				onClick = { showFavoritesButton = !showFavoritesButton }
+			)
+		}
+
+		item {
+			var showLibrariesInToolbar by rememberPreference(userPreferences, UserPreferences.showLibrariesInToolbar)
+			ListButton(
+				headingContent = { Text(stringResource(R.string.pref_show_libraries_in_toolbar)) },
+				captionContent = { Text(stringResource(R.string.pref_show_libraries_in_toolbar_description)) },
+				trailingContent = { Checkbox(checked = showLibrariesInToolbar) },
+				onClick = { showLibrariesInToolbar = !showLibrariesInToolbar }
+			)
+		}
+
+		item {
+			val shuffleContentType by rememberPreference(userPreferences, UserPreferences.shuffleContentType)
+			ListButton(
+				headingContent = { Text(stringResource(R.string.pref_shuffle_content_type)) },
+				captionContent = { Text(getShuffleContentTypeLabel(shuffleContentType)) },
+				onClick = { router.push(Routes.VEGAFOX_SHUFFLE_CONTENT_TYPE) }
+			)
+		}
+
+		// ── Home Behavior ──
+
+		item { ListSection(headingContent = { Text(stringResource(R.string.home_section_settings)) }) }
+
+		item {
+			var mergeContinueWatchingNextUp by rememberPreference(userPreferences, UserPreferences.mergeContinueWatchingNextUp)
+			ListButton(
+				headingContent = { Text(stringResource(R.string.lbl_merge_continue_watching_next_up)) },
+				captionContent = { Text(stringResource(R.string.lbl_merge_continue_watching_next_up_description)) },
+				trailingContent = { Checkbox(checked = mergeContinueWatchingNextUp) },
+				onClick = { mergeContinueWatchingNextUp = !mergeContinueWatchingNextUp }
+			)
+		}
+
+		item {
+			var enableMultiServerLibraries by rememberPreference(userPreferences, UserPreferences.enableMultiServerLibraries)
+			ListButton(
+				headingContent = { Text(stringResource(R.string.pref_multi_server_libraries)) },
+				captionContent = { Text(stringResource(R.string.pref_multi_server_libraries_description)) },
+				trailingContent = { Checkbox(checked = enableMultiServerLibraries) },
+				onClick = { enableMultiServerLibraries = !enableMultiServerLibraries }
+			)
+		}
+
+		item {
+			var enableFolderView by rememberPreference(userPreferences, UserPreferences.enableFolderView)
+			ListButton(
+				headingContent = { Text(stringResource(R.string.pref_enable_folder_view)) },
+				captionContent = { Text(stringResource(R.string.pref_enable_folder_view_description)) },
+				trailingContent = { Checkbox(checked = enableFolderView) },
+				onClick = { enableFolderView = !enableFolderView }
+			)
+		}
+
+		item {
+			var confirmExit by rememberPreference(userPreferences, UserPreferences.confirmExit)
+			ListButton(
+				headingContent = { Text(stringResource(R.string.pref_confirm_exit)) },
+				captionContent = { Text(stringResource(R.string.pref_confirm_exit_description)) },
+				trailingContent = { Checkbox(checked = confirmExit) },
+				onClick = { confirmExit = !confirmExit }
+			)
+		}
+
+		// ── Appearance ──
+
+		item { ListSection(headingContent = { Text(stringResource(R.string.pref_appearance)) }) }
+
+		item {
+			val seasonalSurprise by rememberPreference(userPreferences, UserPreferences.seasonalSurprise)
+			ListButton(
+				headingContent = { Text(stringResource(R.string.pref_seasonal_surprise)) },
+				captionContent = { Text(getSeasonalLabel(seasonalSurprise)) },
+				onClick = { router.push(Routes.VEGAFOX_SEASONAL_SURPRISE) }
+			)
+		}
+
+		item {
+			val detailsBlur by rememberPreference(userSettingPreferences, UserSettingPreferences.detailsBackgroundBlurAmount)
+			ListButton(
+				headingContent = { Text(stringResource(R.string.pref_details_background_blur_amount)) },
+				captionContent = { Text(getBlurLabel(detailsBlur)) },
+				onClick = { router.push(Routes.VEGAFOX_DETAILS_BLUR) }
+			)
+		}
+
+		item {
+			val browsingBlur by rememberPreference(userSettingPreferences, UserSettingPreferences.browsingBackgroundBlurAmount)
+			ListButton(
+				headingContent = { Text(stringResource(R.string.pref_browsing_background_blur_amount)) },
+				captionContent = { Text(getBlurLabel(browsingBlur)) },
+				onClick = { router.push(Routes.VEGAFOX_BROWSING_BLUR) }
+			)
+		}
 	}
-}
-
-@Composable
-fun getShuffleContentTypeLabel(type: String): String = when (type) {
-	"movies" -> stringResource(R.string.pref_shuffle_movies)
-	"tv" -> stringResource(R.string.pref_shuffle_tv)
-	"both" -> stringResource(R.string.pref_shuffle_both)
-	else -> type
-}
-
-@Composable
-fun getMediaBarItemCountLabel(count: String): String = when (count) {
-	"5" -> stringResource(R.string.pref_media_bar_5_items)
-	"10" -> stringResource(R.string.pref_media_bar_10_items)
-	"15" -> stringResource(R.string.pref_media_bar_15_items)
-	else -> count
-}
-
-@Composable
-fun getOverlayColorLabel(color: String): String = when (color) {
-	"black" -> stringResource(R.string.pref_media_bar_color_black)
-	"gray" -> stringResource(R.string.pref_media_bar_color_gray)
-	"dark_blue" -> stringResource(R.string.pref_media_bar_color_dark_blue)
-	"purple" -> stringResource(R.string.pref_media_bar_color_purple)
-	"teal" -> stringResource(R.string.pref_media_bar_color_teal)
-	"navy" -> stringResource(R.string.pref_media_bar_color_navy)
-	"charcoal" -> stringResource(R.string.pref_media_bar_color_charcoal)
-	"brown" -> stringResource(R.string.pref_media_bar_color_brown)
-	"dark_red" -> stringResource(R.string.pref_media_bar_color_dark_red)
-	"dark_green" -> stringResource(R.string.pref_media_bar_color_dark_green)
-	"slate" -> stringResource(R.string.pref_media_bar_color_slate)
-	"indigo" -> stringResource(R.string.pref_media_bar_color_indigo)
-	else -> color
-}
-
-@Composable
-fun getSeasonalLabel(season: String): String = when (season) {
-	"none" -> stringResource(R.string.pref_seasonal_none)
-	"winter" -> stringResource(R.string.pref_seasonal_winter)
-	"spring" -> stringResource(R.string.pref_seasonal_spring)
-	"summer" -> stringResource(R.string.pref_seasonal_summer)
-	"halloween" -> stringResource(R.string.pref_seasonal_halloween)
-	"fall" -> stringResource(R.string.pref_seasonal_fall)
-	else -> season
-}
-
-@Composable
-fun getBlurLabel(value: Int): String = when (value) {
-	0 -> stringResource(R.string.pref_blur_none)
-	5 -> stringResource(R.string.pref_blur_light)
-	10 -> stringResource(R.string.pref_blur_medium)
-	15 -> stringResource(R.string.pref_blur_strong)
-	20 -> stringResource(R.string.pref_blur_extra_strong)
-	else -> "${value}dp"
 }

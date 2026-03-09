@@ -153,7 +153,7 @@ class SessionRepositoryImpl(
 				userRepository.setCurrentUser(user)
 				serverRepository.setCurrentServer(server)
 
-				// Configure Jellyseerr proxy AFTER publishing user — configureWithMoonfin
+				// Configure Jellyseerr proxy AFTER publishing user — configureWithVegafoX
 				// needs the active user for cookie storage isolation.
 				preferencesRepository.configureJellyseerr()
 			} catch (err: ApiClientException) {

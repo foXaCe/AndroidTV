@@ -149,8 +149,8 @@ fun LeftSidebarNavigation(
 		if (currentUser != null) {
 			val userJellyseerrPrefs = JellyseerrPreferences.migrateToUserPreferences(context, currentUser!!.id.toString())
 			jellyseerrEnabled = userJellyseerrPrefs[JellyseerrPreferences.enabled]
-			jellyseerrVariant = userJellyseerrPrefs[JellyseerrPreferences.moonfinVariant]
-			val dn = userJellyseerrPrefs[JellyseerrPreferences.moonfinDisplayName]
+			jellyseerrVariant = userJellyseerrPrefs[JellyseerrPreferences.vegafoxVariant]
+			val dn = userJellyseerrPrefs[JellyseerrPreferences.vegafoxDisplayName]
 			jellyseerrDisplayName = if (dn.isNotBlank()) dn else if (jellyseerrVariant == "seerr") "Seerr" else "Jellyseerr"
 		} else {
 			jellyseerrEnabled = false
@@ -289,9 +289,8 @@ private fun CollapsibleSidebarContent(
 		}
 	}
 
-	// Get root view to check for rowsFragment (HomeFragment)
 	val rootView = LocalView.current.rootView
-	val isHomeFragment = rootView.findViewById<android.view.View?>(R.id.rowsFragment) != null
+	val isHomeFragment = activeButton == MainToolbarActiveButton.Home
 	val isSearchFragment = activeButton == MainToolbarActiveButton.Search
 
 	// Show clock in top right based on clockBehavior preference
@@ -324,40 +323,20 @@ private fun CollapsibleSidebarContent(
 							keyEvent.key == Key.DirectionRight) {
 							when {
 								isHomeFragment -> {
-									// Navigate back to rowsFragment
-									val rowsFragment = rootView.findViewById<android.view.View?>(R.id.rowsFragment)
-									if (rowsFragment != null) {
-										rowsFragment.requestFocus()
+									// Navigate to Home content
+									val contentView = rootView.findViewById<android.view.ViewGroup?>(android.R.id.content)
+									val target = contentView?.focusSearch(android.view.View.FOCUS_RIGHT)
+									if (target != null) {
+										target.requestFocus()
 										true
 									} else {
 										false
 									}
 								}
 								isSearchFragment -> {
-									// For SearchFragment, find any VerticalGridView (search results) or focusable view
+									// Find any focusable view to the right of the sidebar
 									val contentView = rootView.findViewById<android.view.ViewGroup?>(android.R.id.content)
-									var focusTarget: android.view.View? = null
-									
-									// Try to find a VerticalGridView (search results)
-									contentView?.let { parent ->
-										fun findVerticalGridView(view: android.view.View): android.view.View? {
-											if (view is androidx.leanback.widget.VerticalGridView) return view
-											if (view is android.view.ViewGroup) {
-												for (i in 0 until view.childCount) {
-													val result = findVerticalGridView(view.getChildAt(i))
-													if (result != null) return result
-												}
-											}
-											return null
-										}
-										focusTarget = findVerticalGridView(parent)
-									}
-									
-									// If no VerticalGridView found, try any focusable view to the right
-									if (focusTarget == null) {
-										focusTarget = contentView?.focusSearch(android.view.View.FOCUS_RIGHT)
-									}
-									
+									val focusTarget = contentView?.focusSearch(android.view.View.FOCUS_RIGHT)
 									if (focusTarget != null) {
 										focusTarget.requestFocus()
 										true

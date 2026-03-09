@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Jellyfin" parent="@style/Theme.AppCompat.Leanback">
+    <style name="Theme.Jellyfin" parent="@style/Theme.AppCompat.NoActionBar">
         <!-- Colors -->
         <item name="android:colorPrimary">@color/grey</item>
         <item name="android:colorPrimaryDark">@color/grey</item>
         <item name="android:colorAccent">@color/jellyfin_blue</item>
         <!-- Background resource or color -->
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="defaultBackground">@color/not_quite_black</item>
+        <item name="android:windowBackground">@color/ds_background</item>
+        <item name="defaultBackground">@color/ds_background</item>
         <!-- Background color for CardViews -->
         <item name="cardImageBackground">@color/grey</item>
         <item name="cardViewBackground">@android:color/transparent</item>
@@ -35,7 +35,6 @@
         <!-- Custom Styles for Elements -->
         <item name="android:datePickerStyle">@style/DatePickerCustom</item>
         <item name="rowHeaderStyle">@style/Widget.Jellyfin.Row.Header</item>
-        <item name="browseTitleViewLayout">@layout/view_lb_browse_title</item>
 
         <item name="android:popupMenuStyle">@style/PopupMenu</item>
         <item name="android:popupWindowStyle">@style/PopupWindow</item>
@@ -84,6 +83,12 @@
         <item name="tile_port_time_bg">@color/spanish_blue</item>
 
         <item name="android:dialogTheme">@style/Theme.Jellyfin.Dialog</item>
+    </style>
+
+    <style name="Theme.Jellyfin.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/ds_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/vegafox_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.Jellyfin</item>
     </style>
 
     <style name="Theme.Jellyfin.Dialog" parent="Theme.AppCompat.Dialog">

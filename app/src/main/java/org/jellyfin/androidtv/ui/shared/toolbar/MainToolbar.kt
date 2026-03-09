@@ -143,8 +143,8 @@ fun MainToolbar(
 		if (currentUser != null) {
 			val userJellyseerrPrefs = JellyseerrPreferences.migrateToUserPreferences(context, currentUser!!.id.toString())
 			jellyseerrEnabled = userJellyseerrPrefs[JellyseerrPreferences.enabled]
-			jellyseerrVariant = userJellyseerrPrefs[JellyseerrPreferences.moonfinVariant]
-			val dn = userJellyseerrPrefs[JellyseerrPreferences.moonfinDisplayName]
+			jellyseerrVariant = userJellyseerrPrefs[JellyseerrPreferences.vegafoxVariant]
+			val dn = userJellyseerrPrefs[JellyseerrPreferences.vegafoxDisplayName]
 			jellyseerrDisplayName = if (dn.isNotBlank()) dn else if (jellyseerrVariant == "seerr") "Seerr" else "Jellyseerr"
 		} else {
 			jellyseerrEnabled = false

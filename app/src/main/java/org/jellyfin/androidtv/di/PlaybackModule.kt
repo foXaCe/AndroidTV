@@ -40,7 +40,7 @@ val playbackModule = module {
 	single<MediaManager> { RewriteMediaManager(get(), get()) }
 
 	single { PlaybackLauncher(get(), get(), get(), get(), get()) }
-	single { PrePlaybackTrackSelector(androidContext()) }
+	factory { PrePlaybackTrackSelector(androidContext()) }
 
 	single<HttpDataSource.Factory> {
 		val okHttpFactory = get<OkHttpFactory>()

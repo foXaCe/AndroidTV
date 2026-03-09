@@ -6,14 +6,12 @@ import androidx.annotation.Nullable;
 
 import org.jellyfin.androidtv.auth.repository.SessionRepository;
 import org.jellyfin.androidtv.constant.LiveTvOption;
-import org.jellyfin.androidtv.constant.QueryType;
 import org.jellyfin.androidtv.data.model.ChapterItemInfo;
 import org.jellyfin.androidtv.ui.navigation.Destination;
 import org.jellyfin.androidtv.ui.navigation.Destinations;
 import org.jellyfin.androidtv.ui.navigation.NavigationRepository;
 import org.jellyfin.androidtv.ui.playback.MediaManager;
 import org.jellyfin.androidtv.ui.playback.PlaybackLauncher;
-import org.jellyfin.androidtv.ui.presentation.MutableObjectAdapter;
 import org.jellyfin.androidtv.util.PlaybackHelper;
 import org.jellyfin.androidtv.util.UUIDUtils;
 import org.jellyfin.androidtv.util.Utils;
@@ -31,8 +29,6 @@ import java.util.List;
 import java.util.UUID;
 
 import kotlin.Lazy;
-import kotlin.coroutines.EmptyCoroutineContext;
-import kotlinx.coroutines.BuildersKt;
 import timber.log.Timber;
 
 public class ItemLauncher {
@@ -68,7 +64,7 @@ public class ItemLauncher {
         }
     }
 
-    public void launch(final BaseRowItem rowItem, MutableObjectAdapter<Object> adapter, final Context context) {
+    public void launch(final BaseRowItem rowItem, final Context context) {
         UUID serverId = null;
         UUID userId = null;
         if (rowItem instanceof AggregatedItemBaseRowItem) {
@@ -80,7 +76,7 @@ public class ItemLauncher {
                 serverId = UUIDUtils.parseUUID(item.getServerId());
             }
         }
-        
+
         switch (rowItem.getBaseRowType()) {
             case BaseItem:
                 BaseItemDto baseItem = rowItem.getBaseItem();
@@ -117,24 +113,15 @@ public class ItemLauncher {
                         if (rowItem.getBaseItem() == null)
                             return;
 
-                        // if the song currently playing is selected (and is the exact item - this only happens in the nowPlayingRow), open AudioNowPlayingActivity
+                        // Queue item: if same song currently playing, open now playing screen
                         if (mediaManager.getValue().hasAudioQueueItems() && rowItem instanceof AudioQueueBaseRowItem && rowItem.getBaseItem().getId().equals(mediaManager.getValue().getCurrentAudioItem().getId())) {
                             navigationRepository.getValue().navigate(Destinations.INSTANCE.getNowPlaying());
-                        } else if (mediaManager.getValue().hasAudioQueueItems() && rowItem instanceof AudioQueueBaseRowItem && adapter.indexOf(rowItem) < mediaManager.getValue().getCurrentAudioQueueSize()) {
+                        } else if (mediaManager.getValue().hasAudioQueueItems() && rowItem instanceof AudioQueueBaseRowItem) {
                             Timber.d("playing audio queue item");
                             mediaManager.getValue().playFrom(((AudioQueueBaseRowItem) rowItem).getQueueEntry());
-                        } else if (adapter instanceof ItemRowAdapter && ((ItemRowAdapter)adapter).getQueryType() == QueryType.Search) {
-                            playbackLauncher.getValue().launch(context, Arrays.asList(rowItem.getBaseItem()));
                         } else {
-                            Timber.d("playing audio item");
-                            List<BaseItemDto> audioItemsAsList = new ArrayList<>();
-
-                            for (Object item : adapter) {
-                                if (item instanceof BaseRowItem && ((BaseRowItem) item).getBaseItem() != null)
-                                    audioItemsAsList.add(((BaseRowItem) item).getBaseItem());
-                            }
-
-                            playbackLauncher.getValue().launch(context, audioItemsAsList, 0, false, adapter.indexOf(rowItem));
+                            // Play single audio item
+                            playbackLauncher.getValue().launch(context, Arrays.asList(rowItem.getBaseItem()));
                         }
 
                         return;
@@ -147,42 +134,13 @@ public class ItemLauncher {
                         return;
 
                     case PHOTO:
-                        if (adapter instanceof ItemRowAdapter) {
-                            navigationRepository.getValue().navigate(Destinations.INSTANCE.photoPlayer(
-                                    baseItem.getId(),
-                                    false,
-                                    ((ItemRowAdapter) adapter).getSortBy(),
-                                    ((ItemRowAdapter) adapter).getSortOrder()
-                            ));
-                        }
+                        navigationRepository.getValue().navigate(Destinations.INSTANCE.photoPlayer(
+                                baseItem.getId(),
+                                false,
+                                null,
+                                null
+                        ));
                         return;
-
-                    case VIDEO:
-                        // Check if this video is in a photos/home videos context (same folder as photos)
-                        if (adapter instanceof ItemRowAdapter) {
-                            ItemRowAdapter itemRowAdapter = (ItemRowAdapter) adapter;
-                            boolean hasPhotosInAdapter = false;
-                            for (int i = 0; i < adapter.size(); i++) {
-                                Object obj = adapter.get(i);
-                                if (obj instanceof BaseRowItem) {
-                                    BaseItemDto item = ((BaseRowItem) obj).getBaseItem();
-                                    if (item != null && item.getType() == BaseItemKind.PHOTO) {
-                                        hasPhotosInAdapter = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (hasPhotosInAdapter) {
-                                navigationRepository.getValue().navigate(Destinations.INSTANCE.photoPlayer(
-                                        baseItem.getId(),
-                                        false,
-                                        itemRowAdapter.getSortBy(),
-                                        itemRowAdapter.getSortOrder()
-                                ));
-                                return;
-                            }
-                        }
-                        break;
 
                 }
 

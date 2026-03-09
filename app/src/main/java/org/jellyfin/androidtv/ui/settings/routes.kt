@@ -35,22 +35,22 @@ import org.jellyfin.androidtv.ui.settings.screen.license.SettingsLicensesScreen
 import org.jellyfin.androidtv.ui.settings.screen.livetv.SettingsLiveTvGuideChannelOrderScreen
 import org.jellyfin.androidtv.ui.settings.screen.livetv.SettingsLiveTvGuideFiltersScreen
 import org.jellyfin.androidtv.ui.settings.screen.livetv.SettingsLiveTvGuideOptionsScreen
-import org.jellyfin.androidtv.ui.settings.screen.moonfin.SettingsJellyseerrRowsScreen
-import org.jellyfin.androidtv.ui.settings.screen.moonfin.SettingsJellyseerrScreen
-import org.jellyfin.androidtv.ui.settings.screen.moonfin.SettingsMoonfinBrowsingBlurScreen
-import org.jellyfin.androidtv.ui.settings.screen.moonfin.SettingsMoonfinDetailsBlurScreen
-import org.jellyfin.androidtv.ui.settings.screen.moonfin.SettingsMoonfinHomeRowsImageScreen
-import org.jellyfin.androidtv.ui.settings.screen.moonfin.SettingsMoonfinMediaBarColorScreen
-import org.jellyfin.androidtv.ui.settings.screen.moonfin.SettingsMoonfinMediaBarContentTypeScreen
-import org.jellyfin.androidtv.ui.settings.screen.moonfin.SettingsMoonfinMediaBarItemCountScreen
-import org.jellyfin.androidtv.ui.settings.screen.moonfin.SettingsMoonfinMediaBarOpacityScreen
-import org.jellyfin.androidtv.ui.settings.screen.moonfin.SettingsMoonfinNavbarPositionScreen
-import org.jellyfin.androidtv.ui.settings.screen.moonfin.SettingsMoonfinParentalControlsScreen
-import org.jellyfin.androidtv.ui.settings.screen.moonfin.SettingsPluginScreen
-import org.jellyfin.androidtv.ui.settings.screen.moonfin.SettingsMoonfinSeasonalSurpriseScreen
-import org.jellyfin.androidtv.ui.settings.screen.moonfin.SettingsMoonfinShuffleContentTypeScreen
-import org.jellyfin.androidtv.ui.settings.screen.moonfin.SettingsMoonfinSyncPlayScreen
-import org.jellyfin.androidtv.ui.settings.screen.moonfin.SettingsMoonfinThemeMusicVolumeScreen
+import org.jellyfin.androidtv.ui.settings.screen.vegafox.SettingsJellyseerrRowsScreen
+import org.jellyfin.androidtv.ui.settings.screen.vegafox.SettingsJellyseerrScreen
+import org.jellyfin.androidtv.ui.settings.screen.vegafox.SettingsVegafoXBrowsingBlurScreen
+import org.jellyfin.androidtv.ui.settings.screen.vegafox.SettingsVegafoXDetailsBlurScreen
+import org.jellyfin.androidtv.ui.settings.screen.vegafox.SettingsVegafoXHomeRowsImageScreen
+import org.jellyfin.androidtv.ui.settings.screen.vegafox.SettingsVegafoXMediaBarColorScreen
+import org.jellyfin.androidtv.ui.settings.screen.vegafox.SettingsVegafoXMediaBarContentTypeScreen
+import org.jellyfin.androidtv.ui.settings.screen.vegafox.SettingsVegafoXMediaBarItemCountScreen
+import org.jellyfin.androidtv.ui.settings.screen.vegafox.SettingsVegafoXMediaBarOpacityScreen
+import org.jellyfin.androidtv.ui.settings.screen.vegafox.SettingsVegafoXNavbarPositionScreen
+import org.jellyfin.androidtv.ui.settings.screen.vegafox.SettingsVegafoXParentalControlsScreen
+import org.jellyfin.androidtv.ui.settings.screen.vegafox.SettingsPluginScreen
+import org.jellyfin.androidtv.ui.settings.screen.vegafox.SettingsVegafoXSeasonalSurpriseScreen
+import org.jellyfin.androidtv.ui.settings.screen.vegafox.SettingsVegafoXShuffleContentTypeScreen
+import org.jellyfin.androidtv.ui.settings.screen.vegafox.SettingsVegafoXSyncPlayScreen
+import org.jellyfin.androidtv.ui.settings.screen.vegafox.SettingsVegafoXThemeMusicVolumeScreen
 import org.jellyfin.androidtv.ui.settings.screen.playback.SettingsPlaybackAdvancedScreen
 import org.jellyfin.androidtv.ui.settings.screen.playback.SettingsPlaybackAudioBehaviorScreen
 import org.jellyfin.androidtv.ui.settings.screen.playback.SettingsPlaybackInactivityPromptScreen
@@ -126,25 +126,25 @@ object Routes {
 	const val JELLYSEERR = "/jellyseerr"
 	const val JELLYSEERR_ROWS = "/jellyseerr/rows"
 	const val PLUGIN = "/plugin"
-	const val MOONFIN_NAVBAR_POSITION = "/moonfin/navbar-position"
-	const val MOONFIN_SHUFFLE_CONTENT_TYPE = "/moonfin/shuffle-content-type"
-	const val MOONFIN_MEDIA_BAR_CONTENT_TYPE = "/moonfin/media-bar-content-type"
-	const val MOONFIN_MEDIA_BAR_ITEM_COUNT = "/moonfin/media-bar-item-count"
-	const val MOONFIN_MEDIA_BAR_OPACITY = "/moonfin/media-bar-opacity"
-	const val MOONFIN_MEDIA_BAR_COLOR = "/moonfin/media-bar-color"
-	const val MOONFIN_THEME_MUSIC_VOLUME = "/moonfin/theme-music-volume"
-	const val MOONFIN_SEASONAL_SURPRISE = "/moonfin/seasonal-surprise"
+	const val VEGAFOX_NAVBAR_POSITION = "/vegafox/navbar-position"
+	const val VEGAFOX_SHUFFLE_CONTENT_TYPE = "/vegafox/shuffle-content-type"
+	const val VEGAFOX_MEDIA_BAR_CONTENT_TYPE = "/vegafox/media-bar-content-type"
+	const val VEGAFOX_MEDIA_BAR_ITEM_COUNT = "/vegafox/media-bar-item-count"
+	const val VEGAFOX_MEDIA_BAR_OPACITY = "/vegafox/media-bar-opacity"
+	const val VEGAFOX_MEDIA_BAR_COLOR = "/vegafox/media-bar-color"
+	const val VEGAFOX_THEME_MUSIC_VOLUME = "/vegafox/theme-music-volume"
+	const val VEGAFOX_SEASONAL_SURPRISE = "/vegafox/seasonal-surprise"
 	@Deprecated("Moved to HOME_ROWS_IMAGE_TYPE", replaceWith = ReplaceWith("HOME_ROWS_IMAGE_TYPE"))
-	const val MOONFIN_HOME_ROWS_IMAGE = "/moonfin/home-rows-image"
-	const val MOONFIN_DETAILS_BLUR = "/moonfin/details-blur"
-	const val MOONFIN_BROWSING_BLUR = "/moonfin/browsing-blur"
-	const val MOONFIN_PARENTAL_CONTROLS = "/moonfin/parental-controls"
-	const val MOONFIN_SYNCPLAY = "/moonfin/syncplay"
-	const val MOONFIN_SYNCPLAY_MIN_DELAY = "/moonfin/syncplay/min-delay-speed-to-sync"
-	const val MOONFIN_SYNCPLAY_MAX_DELAY = "/moonfin/syncplay/max-delay-speed-to-sync"
-	const val MOONFIN_SYNCPLAY_DURATION = "/moonfin/syncplay/speed-to-sync-duration"
-	const val MOONFIN_SYNCPLAY_MIN_DELAY_SKIP = "/moonfin/syncplay/min-delay-skip-to-sync"
-	const val MOONFIN_SYNCPLAY_EXTRA_OFFSET = "/moonfin/syncplay/extra-time-offset"
+	const val VEGAFOX_HOME_ROWS_IMAGE = "/vegafox/home-rows-image"
+	const val VEGAFOX_DETAILS_BLUR = "/vegafox/details-blur"
+	const val VEGAFOX_BROWSING_BLUR = "/vegafox/browsing-blur"
+	const val VEGAFOX_PARENTAL_CONTROLS = "/vegafox/parental-controls"
+	const val VEGAFOX_SYNCPLAY = "/vegafox/syncplay"
+	const val VEGAFOX_SYNCPLAY_MIN_DELAY = "/vegafox/syncplay/min-delay-speed-to-sync"
+	const val VEGAFOX_SYNCPLAY_MAX_DELAY = "/vegafox/syncplay/max-delay-speed-to-sync"
+	const val VEGAFOX_SYNCPLAY_DURATION = "/vegafox/syncplay/speed-to-sync-duration"
+	const val VEGAFOX_SYNCPLAY_MIN_DELAY_SKIP = "/vegafox/syncplay/min-delay-skip-to-sync"
+	const val VEGAFOX_SYNCPLAY_EXTRA_OFFSET = "/vegafox/syncplay/extra-time-offset"
 	const val SYNCPLAY = "/syncplay"
 	const val TELEMETRY = "/telemetry"
 	const val DEVELOPER = "/developer"
@@ -303,7 +303,7 @@ val routes = mapOf<String, RouteComposable>(
 		SettingsHomePosterSizeScreen()
 	},
 	Routes.HOME_ROWS_IMAGE_TYPE to {
-		SettingsMoonfinHomeRowsImageScreen()
+		SettingsVegafoXHomeRowsImageScreen()
 	},
 	Routes.LIVETV_GUIDE_FILTERS to {
 		SettingsLiveTvGuideFiltersScreen()
@@ -371,48 +371,45 @@ val routes = mapOf<String, RouteComposable>(
 	Routes.PLUGIN to {
 		SettingsPluginScreen()
 	},
-	Routes.MOONFIN_NAVBAR_POSITION to {
-		SettingsMoonfinNavbarPositionScreen()
+	Routes.VEGAFOX_NAVBAR_POSITION to {
+		SettingsVegafoXNavbarPositionScreen()
 	},
-	Routes.MOONFIN_SHUFFLE_CONTENT_TYPE to {
-		SettingsMoonfinShuffleContentTypeScreen()
+	Routes.VEGAFOX_SHUFFLE_CONTENT_TYPE to {
+		SettingsVegafoXShuffleContentTypeScreen()
 	},
-	Routes.MOONFIN_MEDIA_BAR_CONTENT_TYPE to {
-		SettingsMoonfinMediaBarContentTypeScreen()
+	Routes.VEGAFOX_MEDIA_BAR_CONTENT_TYPE to {
+		SettingsVegafoXMediaBarContentTypeScreen()
 	},
-	Routes.MOONFIN_MEDIA_BAR_ITEM_COUNT to {
-		SettingsMoonfinMediaBarItemCountScreen()
+	Routes.VEGAFOX_MEDIA_BAR_ITEM_COUNT to {
+		SettingsVegafoXMediaBarItemCountScreen()
 	},
-	Routes.MOONFIN_MEDIA_BAR_OPACITY to {
-		SettingsMoonfinMediaBarOpacityScreen()
+	Routes.VEGAFOX_MEDIA_BAR_OPACITY to {
+		SettingsVegafoXMediaBarOpacityScreen()
 	},
-	Routes.MOONFIN_MEDIA_BAR_COLOR to {
-		SettingsMoonfinMediaBarColorScreen()
+	Routes.VEGAFOX_MEDIA_BAR_COLOR to {
+		SettingsVegafoXMediaBarColorScreen()
 	},
-	Routes.MOONFIN_THEME_MUSIC_VOLUME to {
-		SettingsMoonfinThemeMusicVolumeScreen()
+	Routes.VEGAFOX_THEME_MUSIC_VOLUME to {
+		SettingsVegafoXThemeMusicVolumeScreen()
 	},
-	Routes.MOONFIN_SEASONAL_SURPRISE to {
-		SettingsMoonfinSeasonalSurpriseScreen()
+	Routes.VEGAFOX_SEASONAL_SURPRISE to {
+		SettingsVegafoXSeasonalSurpriseScreen()
 	},
-	Routes.MOONFIN_HOME_ROWS_IMAGE to {
-		SettingsMoonfinHomeRowsImageScreen()
+	Routes.VEGAFOX_DETAILS_BLUR to {
+		SettingsVegafoXDetailsBlurScreen()
 	},
-	Routes.MOONFIN_DETAILS_BLUR to {
-		SettingsMoonfinDetailsBlurScreen()
+	Routes.VEGAFOX_BROWSING_BLUR to {
+		SettingsVegafoXBrowsingBlurScreen()
 	},
-	Routes.MOONFIN_BROWSING_BLUR to {
-		SettingsMoonfinBrowsingBlurScreen()
+	Routes.VEGAFOX_PARENTAL_CONTROLS to {
+		SettingsVegafoXParentalControlsScreen()
 	},
-	Routes.MOONFIN_PARENTAL_CONTROLS to {
-		SettingsMoonfinParentalControlsScreen()
+	Routes.VEGAFOX_SYNCPLAY to {
+		SettingsVegafoXSyncPlayScreen()
 	},
-	Routes.MOONFIN_SYNCPLAY to {
-		SettingsMoonfinSyncPlayScreen()
-	},
-	Routes.MOONFIN_SYNCPLAY_MIN_DELAY to {
+	Routes.VEGAFOX_SYNCPLAY_MIN_DELAY to {
 		SettingsNumericScreen(
-			route = Routes.MOONFIN_SYNCPLAY_MIN_DELAY,
+			route = Routes.VEGAFOX_SYNCPLAY_MIN_DELAY,
 			preference = UserPreferences.syncPlayMinDelaySpeedToSync,
 			titleRes = R.string.pref_syncplay_min_delay_speed_to_sync,
 			valueTemplate = R.string.pref_syncplay_min_delay_speed_to_sync_description,
@@ -421,9 +418,9 @@ val routes = mapOf<String, RouteComposable>(
 			stepSize = 10.0,
 		)
 	},
-	Routes.MOONFIN_SYNCPLAY_MAX_DELAY to {
+	Routes.VEGAFOX_SYNCPLAY_MAX_DELAY to {
 		SettingsNumericScreen(
-			route = Routes.MOONFIN_SYNCPLAY_MAX_DELAY,
+			route = Routes.VEGAFOX_SYNCPLAY_MAX_DELAY,
 			preference = UserPreferences.syncPlayMaxDelaySpeedToSync,
 			titleRes = R.string.pref_syncplay_max_delay_speed_to_sync,
 			valueTemplate = R.string.pref_syncplay_max_delay_speed_to_sync_description,
@@ -432,9 +429,9 @@ val routes = mapOf<String, RouteComposable>(
 			stepSize = 10.0,
 		)
 	},
-	Routes.MOONFIN_SYNCPLAY_DURATION to {
+	Routes.VEGAFOX_SYNCPLAY_DURATION to {
 		SettingsNumericScreen(
-			route = Routes.MOONFIN_SYNCPLAY_DURATION,
+			route = Routes.VEGAFOX_SYNCPLAY_DURATION,
 			preference = UserPreferences.syncPlaySpeedToSyncDuration,
 			titleRes = R.string.pref_syncplay_speed_to_sync_duration,
 			valueTemplate = R.string.pref_syncplay_speed_to_sync_duration_description,
@@ -443,9 +440,9 @@ val routes = mapOf<String, RouteComposable>(
 			stepSize = 100.0,
 		)
 	},
-	Routes.MOONFIN_SYNCPLAY_MIN_DELAY_SKIP to {
+	Routes.VEGAFOX_SYNCPLAY_MIN_DELAY_SKIP to {
 		SettingsNumericScreen(
-			route = Routes.MOONFIN_SYNCPLAY_MIN_DELAY_SKIP,
+			route = Routes.VEGAFOX_SYNCPLAY_MIN_DELAY_SKIP,
 			preference = UserPreferences.syncPlayMinDelaySkipToSync,
 			titleRes = R.string.pref_syncplay_min_delay_skip_to_sync,
 			valueTemplate = R.string.pref_syncplay_min_delay_skip_to_sync_description,
@@ -454,9 +451,9 @@ val routes = mapOf<String, RouteComposable>(
 			stepSize = 10.0,
 		)
 	},
-	Routes.MOONFIN_SYNCPLAY_EXTRA_OFFSET to {
+	Routes.VEGAFOX_SYNCPLAY_EXTRA_OFFSET to {
 		SettingsNumericScreen(
-			route = Routes.MOONFIN_SYNCPLAY_EXTRA_OFFSET,
+			route = Routes.VEGAFOX_SYNCPLAY_EXTRA_OFFSET,
 			preference = UserPreferences.syncPlayExtraTimeOffset,
 			titleRes = R.string.pref_syncplay_extra_time_offset,
 			valueTemplate = R.string.pref_syncplay_extra_time_offset_description,
@@ -464,9 +461,6 @@ val routes = mapOf<String, RouteComposable>(
 			maxValue = 1000.0,
 			stepSize = 10.0,
 		)
-	},
-	Routes.SYNCPLAY to {
-		SettingsMoonfinSyncPlayScreen()
 	},
 	Routes.TELEMETRY to {
 		SettingsTelemetryScreen()

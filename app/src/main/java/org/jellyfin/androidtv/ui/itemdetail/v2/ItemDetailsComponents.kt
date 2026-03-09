@@ -327,7 +327,7 @@ fun CastCard(
 
 		Text(
 			text = name,
-			style = JellyfinTheme.typography.bodySmall.copy(fontWeight = FontWeight.W500),
+			style = JellyfinTheme.typography.labelMedium,
 			color = JellyfinTheme.colorScheme.onSurface,
 			textAlign = TextAlign.Center,
 			maxLines = 1,
@@ -889,7 +889,7 @@ fun SimilarItemCard(
 
 		Text(
 			text = title,
-			style = JellyfinTheme.typography.bodySmall.copy(fontWeight = FontWeight.W500),
+			style = JellyfinTheme.typography.labelMedium,
 			color = JellyfinTheme.colorScheme.onSurface,
 			maxLines = 1,
 			overflow = TextOverflow.Ellipsis,
@@ -964,7 +964,7 @@ fun LandscapeItemCard(
 
 		Text(
 			text = title,
-			style = JellyfinTheme.typography.bodySmall.copy(fontWeight = FontWeight.W500),
+			style = JellyfinTheme.typography.labelMedium,
 			color = JellyfinTheme.colorScheme.onSurface,
 			maxLines = 1,
 			overflow = TextOverflow.Ellipsis,

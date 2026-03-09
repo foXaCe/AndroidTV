@@ -26,7 +26,6 @@ import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -94,7 +93,6 @@ fun SkipOverlayComposable(
 					text = text,
 					color = Color.Black,
 					style = JellyfinTheme.typography.titleMedium,
-					fontWeight = FontWeight.SemiBold,
 				)
 				
 				Icon(

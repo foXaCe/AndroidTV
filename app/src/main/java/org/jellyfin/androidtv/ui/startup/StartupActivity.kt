@@ -4,9 +4,11 @@ import android.Manifest
 import android.app.SearchManager
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.commit
@@ -80,6 +82,7 @@ class StartupActivity : FragmentActivity() {
 	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
+		installSplashScreen()
 		applyTheme()
 
 		super.onCreate(savedInstanceState)
@@ -108,6 +111,7 @@ class StartupActivity : FragmentActivity() {
 		.distinctUntilChanged()
 		.onEach { session ->
 			if (session != null) {
+				Log.d("STARTUP", "Session detected: ${System.currentTimeMillis()}")
 				Timber.i("Found a session in the session repository, waiting for the currentUser in the application class.")
 
 				showSplash()
@@ -129,6 +133,7 @@ class StartupActivity : FragmentActivity() {
 		}.launchIn(lifecycleScope)
 
 	private suspend fun openNextActivity() {
+		Log.d("STARTUP", "openNextActivity: ${System.currentTimeMillis()}")
 		val itemId = when {
 			intent.action == Intent.ACTION_VIEW && intent.data != null -> intent.data.toString()
 			else -> intent.getStringExtra(EXTRA_ITEM_ID)
@@ -137,7 +142,7 @@ class StartupActivity : FragmentActivity() {
 
 		Timber.i("Determining next activity (action=${intent.action}, itemId=$itemId, itemIsUserView=$itemIsUserView)")
 
-		// Start session
+		// Start session (fire-and-forget — does not block navigation)
 		(application as? JellyfinApplication)?.onSessionStart()
 
 		// Create destination
@@ -166,6 +171,7 @@ class StartupActivity : FragmentActivity() {
 		val intent = Intent(this, MainActivity::class.java)
 		// Clear navigation history
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_TASK_ON_HOME)
+		Log.d("STARTUP", "startActivity(MainActivity): ${System.currentTimeMillis()}")
 		Timber.i("Opening next activity $intent")
 		startActivity(intent)
 		finishAfterTransition()

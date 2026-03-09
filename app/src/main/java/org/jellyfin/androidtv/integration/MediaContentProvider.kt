@@ -9,9 +9,10 @@ import android.database.Cursor
 import android.database.MatrixCursor
 import android.net.Uri
 import android.provider.BaseColumns
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import org.jellyfin.androidtv.BuildConfig
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.repository.ItemRepository
@@ -29,6 +30,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import timber.log.Timber
 import java.time.ZoneId
+import java.util.concurrent.ConcurrentHashMap
 
 class MediaContentProvider : ContentProvider(), KoinComponent {
 	companion object {
@@ -37,14 +39,31 @@ class MediaContentProvider : ContentProvider(), KoinComponent {
 		private const val SEARCH_SUGGEST = 1
 		private const val TICKS_IN_MILLISECOND = 10000
 		private const val DEFAULT_LIMIT = 10
+		private const val MAX_CACHE_SIZE = 20
 		private val uriMatcher = UriMatcher(UriMatcher.NO_MATCH).apply {
 			addURI(AUTHORITY, "$SUGGEST_PATH/${SearchManager.SUGGEST_URI_PATH_QUERY}", SEARCH_SUGGEST)
 			addURI(AUTHORITY, "$SUGGEST_PATH/${SearchManager.SUGGEST_URI_PATH_QUERY}/*", SEARCH_SUGGEST)
 		}
+
+		private val SUGGESTION_COLUMNS = arrayOf(
+			BaseColumns._ID,
+			SearchManager.SUGGEST_COLUMN_DURATION,
+			SearchManager.SUGGEST_COLUMN_IS_LIVE,
+			SearchManager.SUGGEST_COLUMN_LAST_ACCESS_HINT,
+			SearchManager.SUGGEST_COLUMN_PRODUCTION_YEAR,
+			SearchManager.SUGGEST_COLUMN_QUERY,
+			SearchManager.SUGGEST_COLUMN_RESULT_CARD_IMAGE,
+			SearchManager.SUGGEST_COLUMN_TEXT_1,
+			SearchManager.SUGGEST_COLUMN_TEXT_2,
+			SearchManager.SUGGEST_COLUMN_INTENT_ACTION,
+			SearchManager.SUGGEST_COLUMN_INTENT_DATA,
+		)
 	}
 
 	private val api by inject<ApiClient>()
 	private val imageHelper by inject<ImageHelper>()
+	private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+	private val cache = ConcurrentHashMap<String, MatrixCursor>()
 
 	override fun onCreate(): Boolean = api.isUsable
 
@@ -64,16 +83,33 @@ class MediaContentProvider : ContentProvider(), KoinComponent {
 
 				val limit = uri.getQueryParameter(SearchManager.SUGGEST_PARAMETER_LIMIT)?.toIntOrNull()
 					?: DEFAULT_LIMIT
-				return runBlocking { getSuggestions(query, limit) }
+
+				val cacheKey = "$query:$limit"
+
+				// Return cached results if available
+				cache[cacheKey]?.let { cached ->
+					Timber.d("Returning cached suggestions for: %s (%d rows)", query, cached.count)
+					return cached
+				}
+
+				// Fetch in background, notify when ready
+				scope.launch {
+					val cursor = buildSuggestionsCursor(query, limit)
+					if (cache.size >= MAX_CACHE_SIZE) cache.clear()
+					cache[cacheKey] = cursor
+					context?.contentResolver?.notifyChange(uri, null)
+				}
+
+				// Return empty cursor with notification URI immediately
+				return MatrixCursor(SUGGESTION_COLUMNS).apply {
+					setNotificationUri(context?.contentResolver, uri)
+				}
 			}
 
 			else -> throw IllegalArgumentException("Unknown Uri: $uri")
 		}
 	}
 
-	/**
-	 * Gets the resumable items or returns null
-	 */
 	private suspend fun searchItems(query: String, limit: Int): BaseItemDtoQueryResult? = try {
 		val items by api.itemsApi.getItems(
 			searchTerm = query,
@@ -88,25 +124,11 @@ class MediaContentProvider : ContentProvider(), KoinComponent {
 		null
 	}
 
-	private suspend fun getSuggestions(query: String, limit: Int) = withContext(Dispatchers.IO) {
+	private suspend fun buildSuggestionsCursor(query: String, limit: Int): MatrixCursor {
 		val searchResult = searchItems(query, limit)
 		if (searchResult != null) Timber.d("Query resulted in %d items", searchResult.totalRecordCount)
 
-		val columns = arrayOf(
-			BaseColumns._ID,
-			SearchManager.SUGGEST_COLUMN_DURATION,
-			SearchManager.SUGGEST_COLUMN_IS_LIVE,
-			SearchManager.SUGGEST_COLUMN_LAST_ACCESS_HINT,
-			SearchManager.SUGGEST_COLUMN_PRODUCTION_YEAR,
-			SearchManager.SUGGEST_COLUMN_QUERY,
-			SearchManager.SUGGEST_COLUMN_RESULT_CARD_IMAGE,
-			SearchManager.SUGGEST_COLUMN_TEXT_1,
-			SearchManager.SUGGEST_COLUMN_TEXT_2,
-			SearchManager.SUGGEST_COLUMN_INTENT_ACTION,
-			SearchManager.SUGGEST_COLUMN_INTENT_DATA,
-		)
-
-		MatrixCursor(columns).also { cursor ->
+		return MatrixCursor(SUGGESTION_COLUMNS).also { cursor ->
 			searchResult?.items?.forEach { item ->
 				val imageUri = ImageProvider.getImageUri(
 					item.itemImages[ImageType.PRIMARY]?.getUrl(api)

@@ -22,7 +22,7 @@ import timber.log.Timber
 import java.util.UUID
 
 /**
- * Show the add to playlist dialog from Java code (e.g., FullDetailsFragment)
+ * Show the add to playlist dialog from Java code.
  */
 fun showAddToPlaylistDialog(
 	context: android.content.Context,

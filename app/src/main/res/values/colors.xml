@@ -1,7 +1,7 @@
 <resources>
 
     <!-- ══════════════════════════════════════════════════════════════════
-         DESIGN SYSTEM — Moonfin Dark Theme for Android TV
+         DESIGN SYSTEM — VegafoX Dark Theme for Android TV
          Premium dark palette optimized for TV viewing (no pure white/black)
          ══════════════════════════════════════════════════════════════════ -->
 
@@ -172,7 +172,7 @@
 
     <color name="background_filter">#940A0A0F</color>
 
-    <!-- Login / Startup Screen Colors (Moonfin-inspired) -->
+    <!-- Login / Startup Screen Colors (VegafoX-inspired) -->
     <color name="login_bg_start">#0A0A0F</color>
     <color name="login_bg_mid">#1a1a2e</color>
     <color name="login_bg_end">#16213e</color>
@@ -187,4 +187,7 @@
     <color name="login_error_text">#ef4444</color>
     <color name="login_qc_border">#00a4dc</color>
     <color name="login_qc_bg">#0D00a4dc</color>
+
+    <!-- Launcher / Adaptive Icon -->
+    <color name="vegafox_launcher_background">#0A0A0F</color>
 </resources>

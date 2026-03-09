@@ -1,4 +1,4 @@
-# Contributing — Moonfin for Android TV
+# Contributing — VegafoX for Android TV
 
 Repository: https://github.com/foXaCe/AndroidTV
 

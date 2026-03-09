@@ -43,9 +43,9 @@ class PreferencesRepository(
 	}
 
 	/**
-	 * Configure Jellyseerr proxy via Moonfin plugin.
+	 * Configure Jellyseerr proxy via VegafoX plugin.
 	 * Must be called AFTER [onSessionChanged] and after the current user is published,
-	 * because [configureWithMoonfin] needs the active user for cookie storage isolation.
+	 * because [configureWithVegafoX] needs the active user for cookie storage isolation.
 	 */
 	suspend fun configureJellyseerr() {
 		pluginSyncService.configureJellyseerrProxy()

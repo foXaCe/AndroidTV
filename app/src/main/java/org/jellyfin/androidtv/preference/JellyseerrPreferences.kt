@@ -41,11 +41,11 @@ class JellyseerrPreferences(context: Context, userId: String? = null) : SharedPr
 		val lastVerifiedTime = stringPreference("jellyseerr_last_verified", "")
 		val lastConnectionSuccess = booleanPreference("jellyseerr_last_connection_success", false)
 
-		// Moonfin plugin proxy mode
-		val moonfinMode = booleanPreference("jellyseerr_moonfin_mode", false)
-		val moonfinDisplayName = stringPreference("jellyseerr_moonfin_display_name", "")
-		val moonfinVariant = stringPreference("jellyseerr_moonfin_variant", "jellyseerr")
-		val moonfinJellyseerrUserId = stringPreference("jellyseerr_moonfin_user_id", "")
+		// VegafoX plugin proxy mode
+		val vegafoxMode = booleanPreference("jellyseerr_vegafox_mode", false)
+		val vegafoxDisplayName = stringPreference("jellyseerr_vegafox_display_name", "")
+		val vegafoxVariant = stringPreference("jellyseerr_vegafox_variant", "jellyseerr")
+		val vegafoxJellyseerrUserId = stringPreference("jellyseerr_vegafox_user_id", "")
 
 		val showInNavigation = booleanPreference("jellyseerr_show_in_navigation", true)
 		val showInToolbar = booleanPreference("jellyseerr_show_in_toolbar", true)

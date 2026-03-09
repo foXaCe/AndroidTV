@@ -40,7 +40,7 @@ class JellyseerrHttpClient(
 	private val baseUrl: String,
 	private val apiKey: String,
 ) {
-	var proxyConfig: MoonfinProxyConfig? = null
+	var proxyConfig: VegafoXProxyConfig? = null
 
 	val isProxyMode: Boolean get() = proxyConfig != null
 
@@ -61,15 +61,15 @@ class JellyseerrHttpClient(
 	private fun apiUrl(path: String): String {
 		val proxy = proxyConfig
 		return if (proxy != null) {
-			"${proxy.jellyfinBaseUrl}/Moonfin/Jellyseerr/Api/${path.trimStart('/')}"
+			"${proxy.jellyfinBaseUrl}/VegafoX/Jellyseerr/Api/${path.trimStart('/')}"
 		} else {
 			"$baseUrl/api/v1/${path.trimStart('/')}"
 		}
 	}
 
-	private fun moonfinUrl(path: String): String {
-		val proxy = proxyConfig ?: throw IllegalStateException("Moonfin proxy not configured")
-		return "${proxy.jellyfinBaseUrl}/Moonfin/Jellyseerr/${path.trimStart('/')}"
+	private fun vegafoxUrl(path: String): String {
+		val proxy = proxyConfig ?: throw IllegalStateException("VegafoX proxy not configured")
+		return "${proxy.jellyfinBaseUrl}/VegafoX/Jellyseerr/${path.trimStart('/')}"
 	}
 	companion object {
 		private const val REQUEST_TIMEOUT_SECONDS = 30L
@@ -202,7 +202,7 @@ class JellyseerrHttpClient(
 		}
 
 		engine {
-			// Intercept Moonfin proxy responses to unwrap FileContents envelope.
+			// Intercept VegafoX proxy responses to unwrap FileContents envelope.
 			// The proxy's ProxyApiRequest() wraps responses in
 			// {"FileContents":"base64...","ContentType":"..."} which breaks
 			// Ktor's ContentNegotiation deserialization for some endpoints.
@@ -210,8 +210,8 @@ class JellyseerrHttpClient(
 				val request = chain.request()
 				val response = chain.proceed(request)
 
-				// Only process Moonfin proxy API responses
-				if (!request.url.encodedPath.contains("/Moonfin/Jellyseerr/Api/")) {
+				// Only process VegafoX proxy API responses
+				if (!request.url.encodedPath.contains("/VegafoX/Jellyseerr/Api/")) {
 					return@addInterceptor response
 				}
 
@@ -1192,59 +1192,59 @@ class JellyseerrHttpClient(
 		Timber.e(error, "Jellyseerr: Failed to get Sonarr settings")
 	}
 
-	// ==================== Moonfin Plugin SSO ====================
+	// ==================== VegafoX Plugin SSO ====================
 
-	suspend fun getMoonfinStatus(): Result<MoonfinStatusResponse> = runCatching {
-		val url = moonfinUrl("Status")
+	suspend fun getVegafoXStatus(): Result<VegafoXStatusResponse> = runCatching {
+		val url = vegafoxUrl("Status")
 		val response = httpClient.get(url) {
 			addAuthHeader()
 		}
-		Timber.d("Jellyseerr: Moonfin status - Status: ${response.status}")
-		response.body<MoonfinStatusResponse>()
+		Timber.d("Jellyseerr: VegafoX status - Status: ${response.status}")
+		response.body<VegafoXStatusResponse>()
 	}.onFailure { error ->
-		Timber.e(error, "Jellyseerr: Failed to get Moonfin status")
+		Timber.e(error, "Jellyseerr: Failed to get VegafoX status")
 	}
 
-	suspend fun moonfinLogin(
+	suspend fun vegafoxLogin(
 		username: String,
 		password: String,
 		authType: String = "jellyfin",
-	): Result<MoonfinLoginResponse> = runCatching {
-		val url = moonfinUrl("Login")
+	): Result<VegafoXLoginResponse> = runCatching {
+		val url = vegafoxUrl("Login")
 		val response = httpClient.post(url) {
 			addAuthHeader()
 			contentType(ContentType.Application.Json)
-			setBody(MoonfinLoginRequest(username = username, password = password, authType = authType))
+			setBody(VegafoXLoginRequest(username = username, password = password, authType = authType))
 		}
-		Timber.d("Jellyseerr: Moonfin login - Status: ${response.status}")
-		val result = response.body<MoonfinLoginResponse>()
+		Timber.d("Jellyseerr: VegafoX login - Status: ${response.status}")
+		val result = response.body<VegafoXLoginResponse>()
 		if (!result.success) {
-			throw Exception(result.error ?: "Moonfin login failed")
+			throw Exception(result.error ?: "VegafoX login failed")
 		}
 		result
 	}.onFailure { error ->
-		Timber.e(error, "Jellyseerr: Moonfin login failed")
+		Timber.e(error, "Jellyseerr: VegafoX login failed")
 	}
 
-	suspend fun moonfinLogout(): Result<Unit> = runCatching {
-		val url = moonfinUrl("Logout")
+	suspend fun vegafoxLogout(): Result<Unit> = runCatching {
+		val url = vegafoxUrl("Logout")
 		val response = httpClient.delete(url) {
 			addAuthHeader()
 		}
-		Timber.d("Jellyseerr: Moonfin logout - Status: ${response.status}")
+		Timber.d("Jellyseerr: VegafoX logout - Status: ${response.status}")
 	}.onFailure { error ->
-		Timber.e(error, "Jellyseerr: Moonfin logout failed")
+		Timber.e(error, "Jellyseerr: VegafoX logout failed")
 	}
 
-	suspend fun moonfinValidate(): Result<MoonfinValidateResponse> = runCatching {
-		val url = moonfinUrl("Validate")
+	suspend fun vegafoxValidate(): Result<VegafoXValidateResponse> = runCatching {
+		val url = vegafoxUrl("Validate")
 		val response = httpClient.get(url) {
 			addAuthHeader()
 		}
-		Timber.d("Jellyseerr: Moonfin validate - Status: ${response.status}")
-		response.body<MoonfinValidateResponse>()
+		Timber.d("Jellyseerr: VegafoX validate - Status: ${response.status}")
+		response.body<VegafoXValidateResponse>()
 	}.onFailure { error ->
-		Timber.e(error, "Jellyseerr: Moonfin validate failed")
+		Timber.e(error, "Jellyseerr: VegafoX validate failed")
 	}
 
 	fun close() {

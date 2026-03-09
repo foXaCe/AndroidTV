@@ -16,17 +16,23 @@ import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.exception.ApiClientException
 import org.jellyfin.sdk.api.client.extensions.libraryApi
 import org.jellyfin.sdk.api.client.extensions.itemsApi
+import org.jellyfin.sdk.api.client.extensions.liveTvApi
 import org.jellyfin.sdk.api.client.extensions.playStateApi
 import org.jellyfin.sdk.api.client.extensions.playlistsApi
 import org.jellyfin.sdk.api.client.extensions.tvShowsApi
 import org.jellyfin.sdk.api.client.extensions.userLibraryApi
+import org.jellyfin.androidtv.ui.asTimerInfoDto
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.BaseItemKind
 import org.jellyfin.sdk.model.api.ItemSortBy
 import org.jellyfin.sdk.model.api.BaseItemPerson
 import org.jellyfin.sdk.model.api.MediaStreamType
+import org.jellyfin.sdk.model.api.MediaType
 import org.jellyfin.sdk.model.api.PersonKind
+import org.jellyfin.sdk.model.api.SeriesTimerInfoDto
 import org.jellyfin.sdk.model.api.VideoRangeType
+import org.jellyfin.sdk.model.serializer.toUUID
+import org.jellyfin.sdk.model.serializer.toUUIDOrNull
 import org.jellyfin.androidtv.ui.base.state.UiError
 import org.jellyfin.androidtv.ui.base.state.toUiError
 import timber.log.Timber
@@ -53,6 +59,11 @@ data class ItemDetailsUiState(
 	val directors: List<BaseItemPerson> = emptyList(),
 	val writers: List<BaseItemPerson> = emptyList(),
 	val badges: List<MediaBadge> = emptyList(),
+	val programInfo: BaseItemDto? = null,
+	val seriesTimerInfo: SeriesTimerInfoDto? = null,
+	val scheduleItems: List<BaseItemDto> = emptyList(),
+	val isRecording: Boolean = false,
+	val isRecordingSeries: Boolean = false,
 )
 
 class ItemDetailsViewModel(
@@ -428,6 +439,162 @@ class ItemDetailsViewModel(
 			}
 		}
 	}
+
+	// region Live TV
+
+	fun loadChannelProgram(channelId: UUID, programInfo: BaseItemDto) {
+		viewModelScope.launch {
+			_uiState.value = ItemDetailsUiState(isLoading = true)
+			try {
+				val item = withContext(Dispatchers.IO) {
+					effectiveApi.userLibraryApi.getItem(itemId = programInfo.id).content
+				}
+				val enrichedItem = item.copy(
+					parentId = channelId,
+					startDate = programInfo.startDate,
+					endDate = programInfo.endDate,
+					runTimeTicks = programInfo.runTimeTicks,
+				)
+				lastItemId = enrichedItem.id
+				_uiState.value = ItemDetailsUiState(
+					isLoading = false,
+					item = enrichedItem,
+					programInfo = programInfo,
+					isRecording = programInfo.timerId != null,
+					isRecordingSeries = programInfo.seriesTimerId != null,
+				)
+			} catch (err: ApiClientException) {
+				Timber.e(err, "Failed to load channel program")
+				_uiState.value = ItemDetailsUiState(isLoading = false, error = err.toUiError())
+			}
+		}
+	}
+
+	fun loadSeriesTimer(seriesTimerInfo: SeriesTimerInfoDto) {
+		viewModelScope.launch {
+			_uiState.value = ItemDetailsUiState(isLoading = true)
+			val timerId = requireNotNull(seriesTimerInfo.id)
+			val fakeItem = BaseItemDto(
+				id = timerId.toUUID(),
+				type = BaseItemKind.FOLDER,
+				mediaType = MediaType.UNKNOWN,
+				seriesTimerId = seriesTimerInfo.id,
+				name = seriesTimerInfo.name,
+				overview = null,
+			)
+			lastItemId = fakeItem.id
+			_uiState.value = ItemDetailsUiState(
+				isLoading = false,
+				item = fakeItem,
+				seriesTimerInfo = seriesTimerInfo,
+			)
+			loadScheduleItems(timerId)
+		}
+	}
+
+	private suspend fun loadScheduleItems(seriesTimerId: String) {
+		try {
+			val timers = withContext(Dispatchers.IO) {
+				effectiveApi.liveTvApi.getTimers(seriesTimerId = seriesTimerId).content
+			}
+			val programs = timers.items.mapNotNull { timer ->
+				timer.programInfo ?: timer.id?.toUUIDOrNull()?.let { id ->
+					BaseItemDto(
+						id = id,
+						channelName = timer.channelName,
+						name = timer.name.orEmpty(),
+						type = BaseItemKind.PROGRAM,
+						mediaType = MediaType.UNKNOWN,
+						timerId = timer.id,
+						seriesTimerId = timer.seriesTimerId,
+						startDate = timer.startDate,
+						endDate = timer.endDate,
+					)
+				}
+			}
+			_uiState.value = _uiState.value.copy(scheduleItems = programs)
+		} catch (err: Exception) {
+			Timber.w(err, "Failed to load schedule items")
+		}
+	}
+
+	fun toggleRecord() {
+		val programInfo = _uiState.value.programInfo ?: return
+		viewModelScope.launch {
+			try {
+				if (programInfo.timerId == null) {
+					val updatedProgram = withContext(Dispatchers.IO) {
+						val defaultTimer by effectiveApi.liveTvApi.getDefaultTimer(programInfo.id.toString())
+						val timer = defaultTimer.asTimerInfoDto()
+						effectiveApi.liveTvApi.createTimer(timer.copy(programId = programInfo.id.toString()))
+						effectiveApi.liveTvApi.getProgram(programInfo.id.toString()).content
+					}
+					_uiState.value = _uiState.value.copy(
+						programInfo = updatedProgram,
+						isRecording = updatedProgram.timerId != null,
+						isRecordingSeries = updatedProgram.seriesTimerId != null,
+					)
+				} else {
+					withContext(Dispatchers.IO) {
+						effectiveApi.liveTvApi.cancelTimer(programInfo.timerId!!)
+					}
+					_uiState.value = _uiState.value.copy(
+						programInfo = programInfo.copy(timerId = null),
+						isRecording = false,
+					)
+				}
+			} catch (err: Exception) {
+				Timber.e(err, "Failed to toggle recording")
+			}
+		}
+	}
+
+	fun toggleRecordSeries() {
+		val programInfo = _uiState.value.programInfo ?: return
+		viewModelScope.launch {
+			try {
+				if (programInfo.seriesTimerId == null) {
+					val updatedProgram = withContext(Dispatchers.IO) {
+						val defaultTimer by effectiveApi.liveTvApi.getDefaultTimer(programInfo.id.toString())
+						effectiveApi.liveTvApi.createSeriesTimer(defaultTimer)
+						effectiveApi.liveTvApi.getProgram(programInfo.id.toString()).content
+					}
+					_uiState.value = _uiState.value.copy(
+						programInfo = updatedProgram,
+						isRecording = updatedProgram.timerId != null,
+						isRecordingSeries = updatedProgram.seriesTimerId != null,
+					)
+				} else {
+					withContext(Dispatchers.IO) {
+						effectiveApi.liveTvApi.cancelSeriesTimer(programInfo.seriesTimerId!!)
+					}
+					_uiState.value = _uiState.value.copy(
+						programInfo = programInfo.copy(seriesTimerId = null),
+						isRecordingSeries = false,
+						isRecording = false,
+					)
+				}
+			} catch (err: Exception) {
+				Timber.e(err, "Failed to toggle series recording")
+			}
+		}
+	}
+
+	fun cancelSeriesTimer() {
+		val timerInfo = _uiState.value.seriesTimerInfo ?: return
+		val timerId = timerInfo.id ?: return
+		viewModelScope.launch {
+			try {
+				withContext(Dispatchers.IO) {
+					effectiveApi.liveTvApi.cancelSeriesTimer(timerId)
+				}
+			} catch (err: Exception) {
+				Timber.e(err, "Failed to cancel series timer")
+			}
+		}
+	}
+
+	// endregion
 
 	fun retry() {
 		val itemId = lastItemId ?: return

@@ -46,7 +46,7 @@ private fun ConnectHelpAlert(
 	val focusRequester = remember { FocusRequester() }
 
 	Box(
-		modifier = Modifier.background(colorResource(R.color.not_quite_black))
+		modifier = Modifier.background(colorResource(R.color.ds_background))
 	) {
 		ProvideTextStyle(LocalTextStyle.current.copy(color = colorResource(R.color.white))) {
 			Row(
