@@ -5,7 +5,7 @@ import org.jellyfin.playback.core.plugin.playbackPlugin
 
 fun media3SessionPlugin(
 	androidContext: Context,
-	options: MediaSessionOptions
+	options: MediaSessionOptions,
 ) = playbackPlugin {
 	provide(MediaSessionService(androidContext, options))
 }

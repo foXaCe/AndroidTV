@@ -12,21 +12,26 @@ import java.util.concurrent.ConcurrentHashMap
  */
 open class ElementsContainer {
 	private val elements = ConcurrentHashMap<ElementKey<*>, Any?>()
-	private val updateFlow = MutableSharedFlow<ElementKey<*>>(
-		replay = 1,
-		extraBufferCapacity = 1,
-		onBufferOverflow = BufferOverflow.DROP_OLDEST,
-	)
+	private val updateFlow =
+		MutableSharedFlow<ElementKey<*>>(
+			replay = 1,
+			extraBufferCapacity = 1,
+			onBufferOverflow = BufferOverflow.DROP_OLDEST,
+		)
 
-	fun <T : Any> get(key: ElementKey<T>): T = getOrNull(key)
-		?: error("No element found for key $key.")
+	fun <T : Any> get(key: ElementKey<T>): T =
+		getOrNull(key)
+			?: error("No element found for key $key.")
 
 	@Suppress("UNCHECKED_CAST")
 	fun <T : Any> getOrNull(key: ElementKey<T>): T? = elements[key] as T?
 
 	operator fun <T : Any> contains(key: ElementKey<T>): Boolean = elements.containsKey(key)
 
-	fun <T : Any> put(key: ElementKey<T>, value: T) {
+	fun <T : Any> put(
+		key: ElementKey<T>,
+		value: T,
+	) {
 		elements[key] = value
 		updateFlow.tryEmit(key)
 	}
@@ -36,9 +41,8 @@ open class ElementsContainer {
 		updateFlow.tryEmit(key)
 	}
 
-	fun <T : Any> getFlow(key: ElementKey<T>): Flow<T?> {
-		return updateFlow
+	fun <T : Any> getFlow(key: ElementKey<T>): Flow<T?> =
+		updateFlow
 			.map { getOrNull(key) }
 			.distinctUntilChanged()
-	}
 }

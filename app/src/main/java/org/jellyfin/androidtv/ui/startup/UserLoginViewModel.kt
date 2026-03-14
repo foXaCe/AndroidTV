@@ -53,15 +53,23 @@ class UserLoginViewModel(
 	private var quickConnectSecret: String? = null
 	private val _quickConnectState = MutableStateFlow<QuickConnectState>(UnknownQuickConnectState)
 	val quickConnectState = _quickConnectState.asStateFlow()
-	fun authenticate(server: Server, user: User): Flow<LoginState> =
-		authenticationRepository.authenticate(server, AutomaticAuthenticateMethod(user))
 
-	fun login(username: String, password: String) {
+	fun authenticate(
+		server: Server,
+		user: User,
+	): Flow<LoginState> = authenticationRepository.authenticate(server, AutomaticAuthenticateMethod(user))
+
+	fun login(
+		username: String,
+		password: String,
+	) {
 		val server = server.value ?: return
 		_loginState.value = AuthenticatingState
-		authenticationRepository.authenticate(server, CredentialAuthenticateMethod(username, password)).onEach {
-			_loginState.value = it
-		}.launchIn(viewModelScope)
+		authenticationRepository
+			.authenticate(server, CredentialAuthenticateMethod(username, password))
+			.onEach {
+				_loginState.value = it
+			}.launchIn(viewModelScope)
 	}
 
 	fun clearLoginState() {
@@ -81,14 +89,15 @@ class UserLoginViewModel(
 		quickConnectSecret = null
 
 		try {
-			val response = withContext(Dispatchers.IO) {
-				quickConnectApi.update(
-					baseUrl = server.address,
-					deviceInfo = defaultDeviceInfo.forUser(UUID.randomUUID()),
-				)
+			val response =
+				withContext(Dispatchers.IO) {
+					quickConnectApi.update(
+						baseUrl = server.address,
+						deviceInfo = defaultDeviceInfo.forUser(UUID.randomUUID()),
+					)
 
-				quickConnectApi.quickConnectApi.initiateQuickConnect().content
-			}
+					quickConnectApi.quickConnectApi.initiateQuickConnect().content
+				}
 
 			quickConnectSecret = response.secret
 			_quickConnectState.emit(PendingQuickConnectState(response.code))
@@ -116,9 +125,10 @@ class UserLoginViewModel(
 		val secret = quickConnectSecret ?: return false
 
 		try {
-			val state = withContext(Dispatchers.IO) {
-				quickConnectApi.quickConnectApi.getQuickConnectState(secret = secret).content
-			}
+			val state =
+				withContext(Dispatchers.IO) {
+					quickConnectApi.quickConnectApi.getQuickConnectState(secret = secret).content
+				}
 
 			if (state.authenticated) {
 				_quickConnectState.emit(ConnectedQuickConnectState)
@@ -140,7 +150,8 @@ class UserLoginViewModel(
 	}
 
 	fun setServer(id: UUID?) {
-		_server.value = serverRepository.storedServers.value
-			.firstOrNull { it.id == id }
+		_server.value =
+			serverRepository.storedServers.value
+				.firstOrNull { it.id == id }
 	}
 }

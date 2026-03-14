@@ -1,9 +1,12 @@
 package org.jellyfin.androidtv.ui.itemdetail.v2.shared
 
 import android.widget.Toast
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -13,21 +16,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import org.jellyfin.androidtv.R
-import org.jellyfin.androidtv.ui.base.JellyfinTheme
-import org.jellyfin.androidtv.ui.itemdetail.v2.DetailActionButton
+import org.jellyfin.androidtv.ui.base.components.VegafoXButton
+import org.jellyfin.androidtv.ui.base.components.VegafoXButtonVariant
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
+import org.jellyfin.androidtv.ui.itemdetail.v2.CinemaActionChip
 import org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsUiState
 import org.jellyfin.androidtv.ui.itemdetail.v2.TrackSelectorDialog
 import org.jellyfin.androidtv.ui.playback.PrePlaybackTrackSelector
+import org.jellyfin.androidtv.util.sdk.compat.canResume
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.BaseItemKind
 import org.jellyfin.sdk.model.api.MediaStreamType
-import org.jellyfin.androidtv.util.sdk.compat.canResume
 import java.util.UUID
 
 data class DetailActionCallbacks(
@@ -46,6 +50,11 @@ data class DetailActionCallbacks(
 	val onLoadItem: (UUID) -> Unit,
 )
 
+/**
+ * Cinema Immersive action buttons row.
+ * Primary row: VegafoXButton (Play/Resume + Restart).
+ * Secondary row: CinemaActionChip icons.
+ */
 @Composable
 fun DetailActionButtonsRow(
 	item: BaseItemDto,
@@ -53,19 +62,6 @@ fun DetailActionButtonsRow(
 	playButtonFocusRequester: FocusRequester,
 	callbacks: DetailActionCallbacks,
 ) {
-	val trackSelector = callbacks.trackSelector
-	val hasPlayableTrailers = callbacks.hasPlayableTrailers
-	val onPlay = callbacks.onPlay
-	val onResume = callbacks.onResume
-	val onShuffle = callbacks.onShuffle
-	val onPlayTrailers = callbacks.onPlayTrailers
-	val onPlayInstantMix = callbacks.onPlayInstantMix
-	val onToggleWatched = callbacks.onToggleWatched
-	val onToggleFavorite = callbacks.onToggleFavorite
-	val onConfirmDelete = callbacks.onConfirmDelete
-	val onAddToPlaylist = callbacks.onAddToPlaylist
-	val onGoToSeries = callbacks.onGoToSeries
-	val onLoadItem = callbacks.onLoadItem
 	val context = LocalContext.current
 	val hasPlaybackPosition = item.canResume
 	val mediaSources = item.mediaSources
@@ -73,137 +69,178 @@ fun DetailActionButtonsRow(
 	val audioStreams = firstSource?.mediaStreams?.filter { it.type == MediaStreamType.AUDIO } ?: emptyList()
 	val subtitleStreams = firstSource?.mediaStreams?.filter { it.type == MediaStreamType.SUBTITLE } ?: emptyList()
 	val hasMultipleVersions = (mediaSources?.size ?: 0) > 1
-	val canPlay = item.type in listOf(
-		BaseItemKind.MOVIE, BaseItemKind.EPISODE, BaseItemKind.VIDEO,
-		BaseItemKind.RECORDING, BaseItemKind.TRAILER, BaseItemKind.MUSIC_VIDEO,
-		BaseItemKind.SERIES, BaseItemKind.SEASON, BaseItemKind.PROGRAM,
-		BaseItemKind.MUSIC_ALBUM, BaseItemKind.PLAYLIST, BaseItemKind.MUSIC_ARTIST,
-	)
+	val canPlay =
+		item.type in
+			listOf(
+				BaseItemKind.MOVIE,
+				BaseItemKind.EPISODE,
+				BaseItemKind.VIDEO,
+				BaseItemKind.RECORDING,
+				BaseItemKind.TRAILER,
+				BaseItemKind.MUSIC_VIDEO,
+				BaseItemKind.SERIES,
+				BaseItemKind.SEASON,
+				BaseItemKind.PROGRAM,
+				BaseItemKind.MUSIC_ALBUM,
+				BaseItemKind.PLAYLIST,
+				BaseItemKind.MUSIC_ARTIST,
+			)
 
 	// Dialog state
 	var showAudioDialog by remember { mutableStateOf(false) }
 	var showSubtitleDialog by remember { mutableStateOf(false) }
 	var showVersionDialog by remember { mutableStateOf(false) }
 
-	Row(
-		modifier = Modifier.fillMaxWidth(),
-		horizontalArrangement = Arrangement.Center,
-	) {
+	Column {
+		// ─── Primary action buttons ───
 		Row(
-			horizontalArrangement = Arrangement.spacedBy(16.dp),
+			horizontalArrangement = Arrangement.spacedBy(12.dp),
+			modifier = Modifier.focusGroup(),
 		) {
 			if (hasPlaybackPosition && canPlay) {
 				val resumeTime = item.userData?.playbackPositionTicks?.let { formatDuration(it) } ?: ""
-				DetailActionButton(
-					label = stringResource(R.string.lbl_resume),
-					icon = ImageVector.vectorResource(R.drawable.ic_play),
-					onClick = onResume,
-					detail = resumeTime,
+				VegafoXButton(
+					text = "${stringResource(R.string.lbl_resume)} \u2014 $resumeTime",
+					onClick = callbacks.onResume,
+					variant = VegafoXButtonVariant.Primary,
+					icon = VegafoXIcons.Play,
+					iconEnd = false,
+					modifier = Modifier.focusRequester(playButtonFocusRequester),
+				)
+				VegafoXButton(
+					text = stringResource(R.string.lbl_restart),
+					onClick = callbacks.onPlay,
+					variant = VegafoXButtonVariant.Secondary,
+					icon = VegafoXIcons.Refresh,
+					iconEnd = false,
+					compact = true,
+				)
+			} else if (canPlay) {
+				VegafoXButton(
+					text = stringResource(R.string.lbl_play),
+					onClick = callbacks.onPlay,
+					variant = VegafoXButtonVariant.Primary,
+					icon = VegafoXIcons.Play,
+					iconEnd = false,
 					modifier = Modifier.focusRequester(playButtonFocusRequester),
 				)
 			}
 
-			if (canPlay) {
-				DetailActionButton(
-					label = if (hasPlaybackPosition) stringResource(R.string.lbl_restart) else stringResource(R.string.lbl_play),
-					icon = if (hasPlaybackPosition)
-						ImageVector.vectorResource(R.drawable.ic_loop)
-					else
-						ImageVector.vectorResource(R.drawable.ic_play),
-					onClick = onPlay,
-					modifier = if (!hasPlaybackPosition) Modifier.focusRequester(playButtonFocusRequester) else Modifier,
-				)
-			}
-
 			if ((item.isFolder == true || item.type == BaseItemKind.MUSIC_ARTIST) && item.type != BaseItemKind.BOX_SET) {
-				DetailActionButton(
-					label = stringResource(R.string.lbl_shuffle_all),
-					icon = ImageVector.vectorResource(R.drawable.ic_shuffle),
-					onClick = onShuffle,
+				VegafoXButton(
+					text = stringResource(R.string.lbl_shuffle_all),
+					onClick = callbacks.onShuffle,
+					variant = VegafoXButtonVariant.Secondary,
+					icon = VegafoXIcons.Shuffle,
+					iconEnd = false,
+					compact = true,
 				)
 			}
 
 			if (item.type == BaseItemKind.MUSIC_ARTIST) {
-				DetailActionButton(
-					label = stringResource(R.string.lbl_instant_mix),
-					icon = ImageVector.vectorResource(R.drawable.ic_mix),
-					onClick = onPlayInstantMix,
+				VegafoXButton(
+					text = stringResource(R.string.lbl_instant_mix),
+					onClick = callbacks.onPlayInstantMix,
+					variant = VegafoXButtonVariant.Secondary,
+					icon = VegafoXIcons.Mix,
+					iconEnd = false,
+					compact = true,
 				)
 			}
+		}
 
+		Spacer(modifier = Modifier.height(12.dp))
+
+		// ─── Secondary action chips ───
+		Row(
+			horizontalArrangement = Arrangement.spacedBy(10.dp),
+			modifier = Modifier.focusGroup(),
+		) {
 			if (hasMultipleVersions) {
-				DetailActionButton(
+				CinemaActionChip(
+					icon = VegafoXIcons.Guide,
 					label = stringResource(R.string.select_version),
-					icon = ImageVector.vectorResource(R.drawable.ic_guide),
 					onClick = { showVersionDialog = true },
 				)
 			}
 
 			if (audioStreams.size > 1) {
-				DetailActionButton(
+				CinemaActionChip(
+					icon = VegafoXIcons.Audiotrack,
 					label = stringResource(R.string.pref_audio),
-					icon = ImageVector.vectorResource(R.drawable.ic_select_audio),
 					onClick = { showAudioDialog = true },
 				)
 			}
 
 			if (subtitleStreams.isNotEmpty()) {
-				DetailActionButton(
+				CinemaActionChip(
+					icon = VegafoXIcons.Subtitles,
 					label = stringResource(R.string.pref_subtitles),
-					icon = ImageVector.vectorResource(R.drawable.ic_select_subtitle),
 					onClick = { showSubtitleDialog = true },
 				)
 			}
 
-			if (hasPlayableTrailers) {
-				DetailActionButton(
+			if (callbacks.hasPlayableTrailers) {
+				CinemaActionChip(
+					icon = VegafoXIcons.Trailer,
 					label = stringResource(R.string.lbl_trailers),
-					icon = ImageVector.vectorResource(R.drawable.ic_trailer),
-					onClick = onPlayTrailers,
-				)
-			}
-
-			if (item.userData != null && item.type != BaseItemKind.PERSON && item.type != BaseItemKind.MUSIC_ARTIST) {
-				DetailActionButton(
-					label = if (item.userData?.played == true) stringResource(R.string.lbl_watched) else stringResource(R.string.lbl_unwatched),
-					icon = ImageVector.vectorResource(R.drawable.ic_check),
-					onClick = onToggleWatched,
-					isActive = item.userData?.played == true,
-					activeColor = JellyfinTheme.colorScheme.info,
+					onClick = callbacks.onPlayTrailers,
 				)
 			}
 
 			if (item.userData != null) {
-				DetailActionButton(
-					label = if (item.userData?.isFavorite == true) stringResource(R.string.lbl_favorited) else stringResource(R.string.lbl_favorite),
-					icon = ImageVector.vectorResource(R.drawable.ic_heart),
-					onClick = onToggleFavorite,
+				CinemaActionChip(
+					icon = VegafoXIcons.Favorite,
+					label =
+						if (item.userData?.isFavorite == true) {
+							stringResource(R.string.lbl_favorited)
+						} else {
+							stringResource(R.string.lbl_favorite)
+						},
+					onClick = callbacks.onToggleFavorite,
 					isActive = item.userData?.isFavorite == true,
-					activeColor = JellyfinTheme.colorScheme.error,
+					activeColor = VegafoXColors.Error,
+				)
+			}
+
+			if (item.userData != null && item.type != BaseItemKind.PERSON && item.type != BaseItemKind.MUSIC_ARTIST) {
+				CinemaActionChip(
+					icon = VegafoXIcons.Visibility,
+					label =
+						if (item.userData?.played == true) {
+							stringResource(R.string.lbl_watched)
+						} else {
+							stringResource(R.string.lbl_unwatched)
+						},
+					onClick = callbacks.onToggleWatched,
+					isActive = item.userData?.played == true,
+					activeColor = VegafoXColors.Info,
 				)
 			}
 
 			if (item.userData != null && item.type != BaseItemKind.PERSON) {
-				DetailActionButton(
+				CinemaActionChip(
+					icon = VegafoXIcons.Add,
 					label = stringResource(R.string.lbl_playlist),
-					icon = ImageVector.vectorResource(R.drawable.ic_add),
-					onClick = onAddToPlaylist,
+					onClick = callbacks.onAddToPlaylist,
 				)
 			}
 
-			if (item.type == BaseItemKind.EPISODE && item.seriesId != null && onGoToSeries != null) {
-				DetailActionButton(
+			val goToSeries = callbacks.onGoToSeries
+			if (item.type == BaseItemKind.EPISODE && item.seriesId != null && goToSeries != null) {
+				CinemaActionChip(
+					icon = VegafoXIcons.Tv,
 					label = stringResource(R.string.lbl_goto_series),
-					icon = ImageVector.vectorResource(R.drawable.ic_tv),
-					onClick = onGoToSeries,
+					onClick = goToSeries,
 				)
 			}
 
 			if (item.canDelete == true) {
-				DetailActionButton(
+				CinemaActionChip(
+					icon = VegafoXIcons.Delete,
 					label = stringResource(R.string.lbl_delete),
-					icon = ImageVector.vectorResource(R.drawable.ic_delete),
-					onClick = onConfirmDelete,
+					onClick = callbacks.onConfirmDelete,
+					activeColor = VegafoXColors.Error,
 				)
 			}
 		}
@@ -211,6 +248,7 @@ fun DetailActionButtonsRow(
 
 	// Audio track selector dialog
 	if (showAudioDialog) {
+		val trackSelector = callbacks.trackSelector
 		val audioTracks = trackSelector.getAudioTracks(item)
 		if (audioTracks.isEmpty()) {
 			LaunchedEffect(Unit) {
@@ -220,8 +258,10 @@ fun DetailActionButtonsRow(
 		} else {
 			val selectedAudioIndex = trackSelector.getSelectedAudioTrack(item.id.toString())
 			val trackNames = audioTracks.map { trackSelector.getAudioTrackDisplayName(it) } + listOf(stringResource(R.string.lbl_default))
-			val checkedIndex = audioTracks.indexOfFirst { it.index == selectedAudioIndex }
-				.let { if (it == -1) trackNames.size - 1 else it }
+			val checkedIndex =
+				audioTracks
+					.indexOfFirst { it.index == selectedAudioIndex }
+					.let { if (it == -1) trackNames.size - 1 else it }
 
 			TrackSelectorDialog(
 				title = stringResource(R.string.lbl_audio_track),
@@ -231,7 +271,12 @@ fun DetailActionButtonsRow(
 					if (which < audioTracks.size) {
 						val track = audioTracks[which]
 						trackSelector.setSelectedAudioTrack(item.id.toString(), track.index)
-						Toast.makeText(context, context.getString(R.string.playback_audio_track, trackSelector.getAudioTrackDisplayName(track)), Toast.LENGTH_SHORT).show()
+						Toast
+							.makeText(
+								context,
+								context.getString(R.string.playback_audio_track, trackSelector.getAudioTrackDisplayName(track)),
+								Toast.LENGTH_SHORT,
+							).show()
 					} else {
 						trackSelector.setSelectedAudioTrack(item.id.toString(), null)
 						Toast.makeText(context, context.getString(R.string.playback_audio_default), Toast.LENGTH_SHORT).show()
@@ -245,16 +290,18 @@ fun DetailActionButtonsRow(
 
 	// Subtitle track selector dialog
 	if (showSubtitleDialog) {
+		val trackSelector = callbacks.trackSelector
 		val subtitleTracks = trackSelector.getSubtitleTracks(item)
 		val selectedSubIndex = trackSelector.getSelectedSubtitleTrack(item.id.toString())
 		val noneLabel = stringResource(R.string.lbl_none)
 		val defaultLabel = stringResource(R.string.lbl_default)
 		val trackNames = listOf(noneLabel) + subtitleTracks.map { trackSelector.getSubtitleTrackDisplayName(it) } + listOf(defaultLabel)
-		val checkedIndex = when {
-			selectedSubIndex == -1 -> 0
-			selectedSubIndex == null -> trackNames.size - 1
-			else -> subtitleTracks.indexOfFirst { it.index == selectedSubIndex }.let { if (it == -1) trackNames.size - 1 else it + 1 }
-		}
+		val checkedIndex =
+			when {
+				selectedSubIndex == -1 -> 0
+				selectedSubIndex == null -> trackNames.size - 1
+				else -> subtitleTracks.indexOfFirst { it.index == selectedSubIndex }.let { if (it == -1) trackNames.size - 1 else it + 1 }
+			}
 
 		TrackSelectorDialog(
 			title = stringResource(R.string.lbl_subtitle_track),
@@ -273,7 +320,12 @@ fun DetailActionButtonsRow(
 					else -> {
 						val track = subtitleTracks[which - 1]
 						trackSelector.setSelectedSubtitleTrack(item.id.toString(), track.index)
-						Toast.makeText(context, context.getString(R.string.playback_subtitles_track, trackSelector.getSubtitleTrackDisplayName(track)), Toast.LENGTH_SHORT).show()
+						Toast
+							.makeText(
+								context,
+								context.getString(R.string.playback_subtitles_track, trackSelector.getSubtitleTrackDisplayName(track)),
+								Toast.LENGTH_SHORT,
+							).show()
 					}
 				}
 				showSubtitleDialog = false
@@ -296,7 +348,7 @@ fun DetailActionButtonsRow(
 				val sourceId = selectedSource.id
 				if (sourceId != null) {
 					val sourceUUID = UUID.fromString(sourceId)
-					onLoadItem(sourceUUID)
+					callbacks.onLoadItem(sourceUUID)
 				}
 				showVersionDialog = false
 			},

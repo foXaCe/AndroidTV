@@ -22,9 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -38,6 +36,7 @@ import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.button.Button
 import org.jellyfin.androidtv.ui.base.button.ButtonColors
 import org.jellyfin.androidtv.ui.base.button.IconButton
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.itemhandling.ItemLauncher
 import org.jellyfin.androidtv.ui.navigation.Destinations
 import org.jellyfin.androidtv.ui.navigation.NavigationRepository
@@ -70,9 +69,10 @@ fun ExpandableLibrariesButton(
 	val hasActiveLibrary = activeLibraryId != null
 
 	Box(
-		modifier = Modifier.onFocusChanged { focusState ->
-			hasFocusInGroup = focusState.hasFocus
-		}
+		modifier =
+			Modifier.onFocusChanged { focusState ->
+				hasFocusInGroup = focusState.hasFocus
+			},
 	) {
 		Row(
 			modifier = Modifier.focusGroup(),
@@ -85,21 +85,23 @@ fun ExpandableLibrariesButton(
 				interactionSource = interactionSource,
 			) {
 				Icon(
-					imageVector = ImageVector.vectorResource(R.drawable.ic_clapperboard),
+					imageVector = VegafoXIcons.Clapperboard,
 					contentDescription = stringResource(R.string.cd_libraries),
 				)
 			}
 			
 			AnimatedVisibility(
 				visible = hasFocusInGroup,
-				enter = expandHorizontally(
-					expandFrom = Alignment.Start,
-					animationSpec = tween(durationMillis = 250)
-				) + fadeIn(animationSpec = tween(durationMillis = 250)),
-				exit = shrinkHorizontally(
-					shrinkTowards = Alignment.Start,
-					animationSpec = tween(durationMillis = 200)
-				) + fadeOut(animationSpec = tween(durationMillis = 200)),
+				enter =
+					expandHorizontally(
+						expandFrom = Alignment.Start,
+						animationSpec = tween(durationMillis = 250),
+					) + fadeIn(animationSpec = tween(durationMillis = 250)),
+				exit =
+					shrinkHorizontally(
+						shrinkTowards = Alignment.Start,
+						animationSpec = tween(durationMillis = 200),
+					) + fadeOut(animationSpec = tween(durationMillis = 200)),
 			) {
 				Row(
 					horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -108,7 +110,7 @@ fun ExpandableLibrariesButton(
 					Spacer(modifier = Modifier.width(8.dp))
 					
 					ProvideTextStyle(
-						JellyfinTheme.typography.default.copy(fontWeight = FontWeight.Bold)
+						JellyfinTheme.typography.default.copy(fontWeight = FontWeight.Bold),
 					) {
 						if (enableMultiServer && aggregatedLibraries.isNotEmpty()) {
 							aggregatedLibraries.forEach { aggLib ->
@@ -118,14 +120,15 @@ fun ExpandableLibrariesButton(
 									onClick = {
 										if (!isActiveLibrary) {
 											scope.launch {
-												val destination = when (aggLib.library.collectionType) {
-													CollectionType.LIVETV, CollectionType.MUSIC -> {
-														itemLauncher.getUserViewDestination(aggLib.library)
+												val destination =
+													when (aggLib.library.collectionType) {
+														CollectionType.LIVETV, CollectionType.MUSIC -> {
+															itemLauncher.getUserViewDestination(aggLib.library)
+														}
+														else -> {
+															Destinations.libraryBrowser(aggLib.library, aggLib.server.id, aggLib.userId)
+														}
 													}
-													else -> {
-														Destinations.libraryBrowser(aggLib.library, aggLib.server.id, aggLib.userId)
-													}
-												}
 												navigationRepository.navigate(destination)
 											}
 										}

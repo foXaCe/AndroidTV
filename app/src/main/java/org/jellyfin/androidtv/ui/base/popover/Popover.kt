@@ -44,19 +44,21 @@ fun Popover(
 	content: @Composable BoxScope.() -> Unit,
 ) {
 	val density = LocalDensity.current
-	val popupPositionProvider = remember(alignment, density, offset) {
-		PopoverMenuPositionProvider(
-			alignment = alignment,
-			offset = IntOffset(
-				x = with(density) { offset.x.roundToPx() },
-				y = with(density) { offset.y.roundToPx() },
+	val popupPositionProvider =
+		remember(alignment, density, offset) {
+			PopoverMenuPositionProvider(
+				alignment = alignment,
+				offset =
+					IntOffset(
+						x = with(density) { offset.x.roundToPx() },
+						y = with(density) { offset.y.roundToPx() },
+					),
 			)
-		)
-	}
+		}
 
 	val transition = updateTransition(expanded)
 	val alpha by transition.animateFloat(
-		targetValueByState = { expanded -> if (expanded) 1f else 0f }
+		targetValueByState = { expanded -> if (expanded) 1f else 0f },
 	)
 
 	if (alpha != 0f) {
@@ -64,31 +66,31 @@ fun Popover(
 
 		Popup(
 			onDismissRequest = onDismissRequest,
-			properties = PopupProperties(
-				focusable = true,
-				dismissOnBackPress = true,
-				dismissOnClickOutside = true,
-			),
-			popupPositionProvider = popupPositionProvider
+			properties =
+				PopupProperties(
+					focusable = true,
+					dismissOnBackPress = true,
+					dismissOnClickOutside = true,
+				),
+			popupPositionProvider = popupPositionProvider,
 		) {
 			Box(
-				modifier = modifier
-					.graphicsLayer(
-						shape = shape,
-						clip = true,
-						shadowElevation = with(density) { 4.dp.toPx() },
-						ambientShadowColor = Color.Black.copy(alpha = alpha),
-						spotShadowColor = Color.Black.copy(alpha = alpha),
-					)
-					.graphicsLayer(
-						shape = shape,
-						clip = true,
-						alpha = alpha,
-					)
-					.background(backgroundColor, shape)
-					.wrapContentSize()
-					.focusRequester(focusRequester)
-					.focusGroup()
+				modifier =
+					modifier
+						.graphicsLayer(
+							shape = shape,
+							clip = true,
+							shadowElevation = with(density) { 4.dp.toPx() },
+							ambientShadowColor = Color.Black.copy(alpha = alpha),
+							spotShadowColor = Color.Black.copy(alpha = alpha),
+						).graphicsLayer(
+							shape = shape,
+							clip = true,
+							alpha = alpha,
+						).background(backgroundColor, shape)
+						.wrapContentSize()
+						.focusRequester(focusRequester)
+						.focusGroup(),
 			) {
 				content()
 			}

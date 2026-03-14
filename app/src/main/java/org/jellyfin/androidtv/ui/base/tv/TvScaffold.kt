@@ -39,12 +39,13 @@ fun TvScaffold(
 	content: @Composable BoxScope.() -> Unit,
 ) {
 	Box(
-		modifier = modifier
-			.fillMaxSize()
-			.background(JellyfinTheme.colorScheme.background)
-			.padding(horizontal = TvSafeArea.horizontal, vertical = TvSafeArea.vertical)
-			.then(if (focusRestorer) Modifier.focusRestorer() else Modifier)
-			.focusGroup(),
+		modifier =
+			modifier
+				.fillMaxSize()
+				.background(JellyfinTheme.colorScheme.background)
+				.padding(horizontal = TvSafeArea.horizontal, vertical = TvSafeArea.vertical)
+				.then(if (focusRestorer) Modifier.focusRestorer() else Modifier)
+				.focusGroup(),
 		content = content,
 	)
 }

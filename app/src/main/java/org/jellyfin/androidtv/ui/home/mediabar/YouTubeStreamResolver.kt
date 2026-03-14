@@ -21,7 +21,6 @@ import java.util.Locale
  *  3. The best AAC (mp4a) audio stream for the audio track
  */
 object YouTubeStreamResolver {
-
 	private const val TAG = "YouTubeStream"
 
 	@Volatile
@@ -38,51 +37,47 @@ object YouTubeStreamResolver {
 		if (!initialized) {
 			NewPipe.init(NewPipeDownloader.getInstance())
 			initialized = true
-			Timber.d("$TAG: NewPipe Extractor initialized")
 		}
 	}
 
-	suspend fun resolveStream(videoId: String): StreamInfo? = withContext(Dispatchers.IO) {
-		try {
-			ensureInitialized()
-			val result = extractStreams(videoId)
-			if (result != null) {
-				Timber.d("$TAG: Resolved stream for $videoId via NewPipe Extractor")
-			} else {
-				Timber.w("$TAG: NewPipe Extractor returned no usable streams for $videoId")
+	suspend fun resolveStream(videoId: String): StreamInfo? =
+		withContext(Dispatchers.IO) {
+			try {
+				ensureInitialized()
+				val result = extractStreams(videoId)
+				if (result == null) {
+					Timber.w("$TAG: NewPipe Extractor returned no usable streams for $videoId")
+				}
+				result
+			} catch (e: Throwable) {
+				Timber.w(e, "$TAG: NewPipe Extractor failed for $videoId")
+				null
 			}
-			result
-		} catch (e: Throwable) {
-			Timber.w(e, "$TAG: NewPipe Extractor failed for $videoId")
-			null
 		}
-	}
 
 	private fun extractStreams(videoId: String): StreamInfo? {
 		val url = "https://www.youtube.com/watch?v=$videoId"
 		val extractor = ServiceList.YouTube.getStreamExtractor(url)
 		extractor.fetchPage()
 
-		val videoOnlyStreams = extractor.videoOnlyStreams
-			.orEmpty()
-			.filter { it.deliveryMethod == DeliveryMethod.PROGRESSIVE_HTTP && it.content.isNotBlank() }
+		val videoOnlyStreams =
+			extractor.videoOnlyStreams
+				.orEmpty()
+				.filter { it.deliveryMethod == DeliveryMethod.PROGRESSIVE_HTTP && it.content.isNotBlank() }
 
-		val muxedStreams = extractor.videoStreams
-			.orEmpty()
-			.filter { it.deliveryMethod == DeliveryMethod.PROGRESSIVE_HTTP && it.content.isNotBlank() }
+		val muxedStreams =
+			extractor.videoStreams
+				.orEmpty()
+				.filter { it.deliveryMethod == DeliveryMethod.PROGRESSIVE_HTTP && it.content.isNotBlank() }
 
-		val audioStreams = extractor.audioStreams
-			.orEmpty()
-			.filter { it.deliveryMethod == DeliveryMethod.PROGRESSIVE_HTTP && it.content.isNotBlank() }
+		val audioStreams =
+			extractor.audioStreams
+				.orEmpty()
+				.filter { it.deliveryMethod == DeliveryMethod.PROGRESSIVE_HTTP && it.content.isNotBlank() }
 
 		val bestVideo = pickBestVideo(videoOnlyStreams)
 		if (bestVideo != null) {
 			val bestAudio = pickBestAudio(audioStreams)
-			Timber.d(
-				"$TAG: Selected video-only %s@%sp, audio %s@%sbps",
-				bestVideo.codec, bestVideo.height,
-				bestAudio?.codec ?: "none", bestAudio?.averageBitrate ?: 0,
-			)
 			return StreamInfo(
 				videoUrl = bestVideo.content,
 				audioUrl = bestAudio?.content,
@@ -92,7 +87,6 @@ object YouTubeStreamResolver {
 
 		val bestMuxed = pickBestVideo(muxedStreams)
 		if (bestMuxed != null) {
-			Timber.d("$TAG: Using muxed stream %s@%sp", bestMuxed.codec, bestMuxed.height)
 			return StreamInfo(
 				videoUrl = bestMuxed.content,
 				audioUrl = null,
@@ -131,20 +125,16 @@ object YouTubeStreamResolver {
 					}
 				}.thenBy {
 					if (it.codec?.startsWith("mp4a") == true) 0 else 1
-				}.thenByDescending { it.averageBitrate }
-			)
-			.also { sorted ->
-				val picked = sorted.firstOrNull()
-				Timber.d("$TAG: Audio locale picked: ${picked?.audioLocale?.language ?: "default"}")
-			}
-			.firstOrNull()
+				}.thenByDescending { it.averageBitrate },
+			).firstOrNull()
 	}
 
-	private fun codecPriority(codec: String?): Int = when {
-		codec == null -> 4
-		codec.startsWith("avc1") -> 0
-		codec.startsWith("vp09") || codec.startsWith("vp9") -> 1
-		codec.startsWith("av01") -> 2
-		else -> 3
-	}
+	private fun codecPriority(codec: String?): Int =
+		when {
+			codec == null -> 4
+			codec.startsWith("avc1") -> 0
+			codec.startsWith("vp09") || codec.startsWith("vp9") -> 1
+			codec.startsWith("av01") -> 2
+			else -> 3
+		}
 }

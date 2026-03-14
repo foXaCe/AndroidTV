@@ -7,13 +7,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.button.IconButton
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 
 @Composable
 fun StartupToolbar(
@@ -30,14 +29,14 @@ fun StartupToolbar(
 					modifier = Modifier.focusRequester(focusRequester),
 				) {
 					Icon(
-						imageVector = ImageVector.vectorResource(R.drawable.ic_help),
+						imageVector = VegafoXIcons.Help,
 						contentDescription = stringResource(R.string.help),
 					)
 				}
 
 				IconButton(onClick = openSettings) {
 					Icon(
-						imageVector = ImageVector.vectorResource(R.drawable.ic_settings),
+						imageVector = VegafoXIcons.Settings,
 						contentDescription = stringResource(R.string.lbl_settings),
 					)
 				}
@@ -48,6 +47,6 @@ fun StartupToolbar(
 
 				Spacer(Modifier.width(12.dp))
 			}
-		}
+		},
 	)
 }

@@ -10,8 +10,9 @@ import org.koin.dsl.module
 /**
  * Provides DI for Android system components
  */
-val androidModule = module {
-	factory { androidApplication().getSystemService<UiModeManager>()!! }
-	factory { androidApplication().getSystemService<AudioManager>()!! }
-	factory { WorkManager.getInstance(get()) }
-}
+val androidModule =
+	module {
+		factory { androidApplication().getSystemService<UiModeManager>()!! }
+		factory { androidApplication().getSystemService<AudioManager>()!! }
+		factory { WorkManager.getInstance(get()) }
+	}

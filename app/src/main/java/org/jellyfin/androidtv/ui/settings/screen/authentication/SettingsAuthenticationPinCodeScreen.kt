@@ -1,20 +1,25 @@
 package org.jellyfin.androidtv.ui.settings.screen.authentication
 
 import android.widget.Toast
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.auth.repository.UserRepository
 import org.jellyfin.androidtv.preference.UserSettingPreferences
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.form.Checkbox
 import org.jellyfin.androidtv.ui.base.list.ListButton
-import org.jellyfin.androidtv.ui.base.list.ListSection
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.settings.composable.SettingsColumn
 import org.jellyfin.androidtv.ui.startup.PinEntryDialog
 import org.jellyfin.androidtv.util.PinCodeUtil
@@ -27,9 +32,10 @@ fun SettingsAuthenticationPinCodeScreen() {
 	
 	// Get user-specific preferences
 	val userId = userRepository.currentUser.value?.id
-	val userSettingPreferences = remember(userId) {
-		UserSettingPreferences(context, userId)
-	}
+	val userSettingPreferences =
+		remember(userId) {
+			UserSettingPreferences(context, userId)
+		}
 	
 	var pinEnabled by remember { mutableStateOf(userSettingPreferences[UserSettingPreferences.userPinEnabled]) }
 	var hasPinSet by remember { mutableStateOf(userSettingPreferences[UserSettingPreferences.userPinHash].isNotEmpty()) }
@@ -45,9 +51,12 @@ fun SettingsAuthenticationPinCodeScreen() {
 
 	SettingsColumn {
 		item {
-			ListSection(
-				overlineContent = { Text(stringResource(R.string.pref_login).uppercase()) },
-				headingContent = { Text(stringResource(R.string.lbl_pin_code)) },
+			Text(
+				text = stringResource(R.string.lbl_pin_code),
+				fontFamily = BebasNeue,
+				fontSize = 22.sp,
+				color = VegafoXColors.TextPrimary,
+				modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp),
 			)
 		}
 
@@ -60,7 +69,7 @@ fun SettingsAuthenticationPinCodeScreen() {
 				onClick = {
 					pinEnabled = !pinEnabled
 					userSettingPreferences[UserSettingPreferences.userPinEnabled] = pinEnabled
-				}
+				},
 			)
 		}
 
@@ -81,9 +90,9 @@ fun SettingsAuthenticationPinCodeScreen() {
 								Toast.makeText(context, R.string.lbl_pin_code_set, Toast.LENGTH_SHORT).show()
 								refreshTrigger++
 							}
-						}
+						},
 					)
-				}
+				},
 			)
 		}
 
@@ -110,15 +119,15 @@ fun SettingsAuthenticationPinCodeScreen() {
 												Toast.makeText(context, R.string.lbl_pin_code_changed, Toast.LENGTH_SHORT).show()
 												refreshTrigger++
 											}
-										}
+										},
 									)
 								} else {
 									Toast.makeText(context, R.string.lbl_pin_code_incorrect, Toast.LENGTH_SHORT).show()
 								}
 							}
-						}
+						},
 					)
-				}
+				},
 			)
 		}
 
@@ -143,9 +152,9 @@ fun SettingsAuthenticationPinCodeScreen() {
 									Toast.makeText(context, R.string.lbl_pin_code_incorrect, Toast.LENGTH_SHORT).show()
 								}
 							}
-						}
+						},
 					)
-				}
+				},
 			)
 		}
 	}

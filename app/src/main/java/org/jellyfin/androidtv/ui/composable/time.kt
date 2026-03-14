@@ -21,12 +21,13 @@ fun rememberCurrentTime(
 ): State<String> {
 	val context = LocalContext.current
 	val locale = context.locale
-	val format = remember(context, locale) {
-		when (DateFormat.is24HourFormat(context)) {
-			true -> format24
-			false -> format12
+	val format =
+		remember(context, locale) {
+			when (DateFormat.is24HourFormat(context)) {
+				true -> format24
+				false -> format12
+			}
 		}
-	}
 	val currentTime = remember { mutableStateOf(DateFormat.format(format, Date()).toString()) }
 
 	LaunchedEffect(format) {

@@ -19,21 +19,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
+import org.jellyfin.androidtv.ui.base.theme.BrowseDimensions
+import org.jellyfin.androidtv.ui.base.theme.CardDimensions
 
 /**
  * Skeleton for a media card (poster or landscape thumbnail).
  */
 @Composable
 fun SkeletonCard(
-	width: Dp = 150.dp,
-	height: Dp = 225.dp,
+	width: Dp = CardDimensions.portraitWidth,
+	height: Dp = CardDimensions.portraitHeight,
 	modifier: Modifier = Modifier,
 ) {
 	Column(modifier = modifier.width(width)) {
 		SkeletonBox(
-			modifier = Modifier
-				.width(width)
-				.height(height),
+			modifier =
+				Modifier
+					.width(width)
+					.height(height),
 			shape = JellyfinTheme.shapes.small,
 		)
 		Spacer(modifier = Modifier.height(8.dp))
@@ -45,24 +48,30 @@ fun SkeletonCard(
 
 /**
  * Skeleton for a landscape card (e.g., episode, music album).
+ *
+ * @param showTextLines When false, only the image box is shown (matches BrowseMediaCard on home).
  */
 @Composable
 fun SkeletonLandscapeCard(
-	width: Dp = 220.dp,
-	height: Dp = 124.dp,
+	width: Dp = CardDimensions.landscapeWidth,
+	height: Dp = CardDimensions.landscapeHeight,
+	showTextLines: Boolean = true,
 	modifier: Modifier = Modifier,
 ) {
 	Column(modifier = modifier.width(width)) {
 		SkeletonBox(
-			modifier = Modifier
-				.width(width)
-				.height(height),
+			modifier =
+				Modifier
+					.width(width)
+					.height(height),
 			shape = JellyfinTheme.shapes.small,
 		)
-		Spacer(modifier = Modifier.height(8.dp))
-		SkeletonTextLine(width = width * 0.7f, height = 12.dp)
-		Spacer(modifier = Modifier.height(4.dp))
-		SkeletonTextLine(width = width * 0.4f, height = 10.dp)
+		if (showTextLines) {
+			Spacer(modifier = Modifier.height(8.dp))
+			SkeletonTextLine(width = width * 0.7f, height = 12.dp)
+			Spacer(modifier = Modifier.height(4.dp))
+			SkeletonTextLine(width = width * 0.4f, height = 10.dp)
+		}
 	}
 }
 
@@ -72,8 +81,8 @@ fun SkeletonLandscapeCard(
 @Composable
 fun SkeletonCardRow(
 	cardCount: Int = 7,
-	cardWidth: Dp = 150.dp,
-	cardHeight: Dp = 225.dp,
+	cardWidth: Dp = CardDimensions.portraitWidth,
+	cardHeight: Dp = CardDimensions.portraitHeight,
 	modifier: Modifier = Modifier,
 ) {
 	Column(modifier = modifier.fillMaxWidth()) {
@@ -81,10 +90,10 @@ fun SkeletonCardRow(
 		SkeletonTextLine(
 			width = 140.dp,
 			height = 16.dp,
-			modifier = Modifier.padding(start = 60.dp, bottom = 12.dp),
+			modifier = Modifier.padding(start = BrowseDimensions.contentPaddingHorizontal, bottom = 12.dp),
 		)
 		LazyRow(
-			contentPadding = PaddingValues(horizontal = 60.dp),
+			contentPadding = PaddingValues(horizontal = BrowseDimensions.contentPaddingHorizontal),
 			horizontalArrangement = Arrangement.spacedBy(16.dp),
 			userScrollEnabled = false,
 		) {
@@ -97,29 +106,40 @@ fun SkeletonCardRow(
 
 /**
  * Skeleton for a horizontal row of landscape cards.
+ *
+ * @param showCardTextLines When false, cards show only the image box (matches home screen cards).
  */
 @Composable
 fun SkeletonLandscapeCardRow(
 	cardCount: Int = 5,
-	cardWidth: Dp = 220.dp,
-	cardHeight: Dp = 124.dp,
+	cardWidth: Dp = CardDimensions.landscapeWidth,
+	cardHeight: Dp = CardDimensions.landscapeHeight,
+	showCardTextLines: Boolean = true,
 	modifier: Modifier = Modifier,
 ) {
 	Column(modifier = modifier.fillMaxWidth()) {
+		// Matches TvRowList: title with bottom = 8dp (spaceSm)
 		SkeletonTextLine(
 			width = 160.dp,
 			height = 16.dp,
-			modifier = Modifier.padding(start = 60.dp, bottom = 12.dp),
+			modifier = Modifier.padding(bottom = 8.dp),
 		)
 		LazyRow(
-			contentPadding = PaddingValues(horizontal = 60.dp),
+			// Matches TvRowList inner contentPadding: horizontal = spaceSm (8dp)
+			contentPadding = PaddingValues(horizontal = 8.dp),
 			horizontalArrangement = Arrangement.spacedBy(16.dp),
 			userScrollEnabled = false,
 		) {
 			items(cardCount) {
-				SkeletonLandscapeCard(width = cardWidth, height = cardHeight)
+				SkeletonLandscapeCard(
+					width = cardWidth,
+					height = cardHeight,
+					showTextLines = showCardTextLines,
+				)
 			}
 		}
+		// Matches TvRowList: spacer height = 16dp (spaceMd) after each row
+		Spacer(modifier = Modifier.height(16.dp))
 	}
 }
 
@@ -130,14 +150,14 @@ fun SkeletonLandscapeCardRow(
 fun SkeletonCardGrid(
 	columns: Int = 7,
 	rows: Int = 3,
-	cardWidth: Dp = 150.dp,
-	cardHeight: Dp = 225.dp,
+	cardWidth: Dp = CardDimensions.portraitWidth,
+	cardHeight: Dp = CardDimensions.portraitHeight,
 	modifier: Modifier = Modifier,
 ) {
 	LazyVerticalGrid(
 		columns = GridCells.Adaptive(minSize = cardWidth),
 		modifier = modifier.fillMaxSize(),
-		contentPadding = PaddingValues(horizontal = 60.dp, vertical = 16.dp),
+		contentPadding = PaddingValues(horizontal = BrowseDimensions.contentPaddingHorizontal, vertical = 16.dp),
 		horizontalArrangement = Arrangement.spacedBy(16.dp),
 		verticalArrangement = Arrangement.spacedBy(24.dp),
 		userScrollEnabled = false,
@@ -160,16 +180,17 @@ fun SkeletonGenreGrid(
 	LazyVerticalGrid(
 		columns = GridCells.Fixed(columns),
 		modifier = modifier.fillMaxSize(),
-		contentPadding = PaddingValues(horizontal = 60.dp, vertical = 16.dp),
+		contentPadding = PaddingValues(horizontal = BrowseDimensions.contentPaddingHorizontal, vertical = 16.dp),
 		horizontalArrangement = Arrangement.spacedBy(12.dp),
 		verticalArrangement = Arrangement.spacedBy(12.dp),
 		userScrollEnabled = false,
 	) {
 		items(columns * rows) {
 			SkeletonBox(
-				modifier = Modifier
-					.fillMaxWidth()
-					.height(80.dp),
+				modifier =
+					Modifier
+						.fillMaxWidth()
+						.height(80.dp),
 				shape = JellyfinTheme.shapes.medium,
 			)
 		}
@@ -180,21 +201,21 @@ fun SkeletonGenreGrid(
  * Skeleton for item detail page (backdrop + info).
  */
 @Composable
-fun SkeletonItemDetail(
-	modifier: Modifier = Modifier,
-) {
+fun SkeletonItemDetail(modifier: Modifier = Modifier) {
 	Box(modifier = modifier.fillMaxSize()) {
 		Column(
-			modifier = Modifier
-				.fillMaxSize()
-				.padding(start = 60.dp, end = 60.dp, top = 80.dp),
+			modifier =
+				Modifier
+					.fillMaxSize()
+					.padding(start = BrowseDimensions.contentPaddingHorizontal, end = BrowseDimensions.contentPaddingHorizontal, top = 80.dp),
 		) {
 			Row {
 				// Poster
 				SkeletonBox(
-					modifier = Modifier
-						.width(200.dp)
-						.height(300.dp),
+					modifier =
+						Modifier
+							.width(200.dp)
+							.height(300.dp),
 					shape = JellyfinTheme.shapes.medium,
 				)
 				Spacer(modifier = Modifier.width(32.dp))

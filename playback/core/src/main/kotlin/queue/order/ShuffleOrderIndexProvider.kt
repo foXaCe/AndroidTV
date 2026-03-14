@@ -17,9 +17,10 @@ internal class ShuffleOrderIndexProvider : OrderIndexProvider {
 		return if (remainingItemsSize <= 0) {
 			emptyList()
 		} else {
-			val remainingIndices = (0..size).filterNot {
-				it in playedIndices || it in nextIndices
-			}
+			val remainingIndices =
+				(0..size).filterNot {
+					it in playedIndices || it in nextIndices
+				}
 
 			List(min(amount, remainingItemsSize)) { i ->
 				if (i < nextIndices.lastIndex) {

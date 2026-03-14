@@ -16,7 +16,6 @@ import org.jellyfin.preference.Preference
  * [UserPreferences.pluginSyncEnabled] itself is never synced (device-local control).
  */
 object PluginSyncConstants {
-
 	/** SharedPreferences file name for the last-synced snapshot (three-way merge baseline). */
 	const val SNAPSHOT_PREFS_NAME = "vegafox_sync_snapshot"
 
@@ -33,54 +32,57 @@ object PluginSyncConstants {
 	const val SNAPSHOT_VERSION_KEY = "_snapshot_version"
 
 	/** Preference keys from [UserPreferences] that should be synced. */
-	val USER_PREFERENCES: List<SyncablePreference<*>> = listOf(
-		// Toolbar Customization
-		SyncablePreference(UserPreferences.navbarPosition, SyncType.ENUM, "navbarPosition"),
-		SyncablePreference(UserPreferences.showShuffleButton, SyncType.BOOLEAN, "showShuffleButton"),
-		SyncablePreference(UserPreferences.showGenresButton, SyncType.BOOLEAN, "showGenresButton"),
-		SyncablePreference(UserPreferences.showFavoritesButton, SyncType.BOOLEAN, "showFavoritesButton"),
-		SyncablePreference(UserPreferences.showLibrariesInToolbar, SyncType.BOOLEAN, "showLibrariesInToolbar"),
-		SyncablePreference(UserPreferences.shuffleContentType, SyncType.STRING, "shuffleContentType"),
-		// Home Screen
-		SyncablePreference(UserPreferences.mergeContinueWatchingNextUp, SyncType.BOOLEAN, "mergeContinueWatchingNextUp"),
-		SyncablePreference(UserPreferences.enableMultiServerLibraries, SyncType.BOOLEAN, "enableMultiServerLibraries"),
-		SyncablePreference(UserPreferences.enableFolderView, SyncType.BOOLEAN, "enableFolderView"),
-		SyncablePreference(UserPreferences.confirmExit, SyncType.BOOLEAN, "confirmExit"),
-		// Display & Appearance
-		SyncablePreference(UserPreferences.seasonalSurprise, SyncType.STRING, "seasonalSurprise"),
-	)
+	val USER_PREFERENCES: List<SyncablePreference<*>> =
+		listOf(
+			// Toolbar Customization
+			SyncablePreference(UserPreferences.navbarPosition, SyncType.ENUM, "navbarPosition"),
+			SyncablePreference(UserPreferences.showShuffleButton, SyncType.BOOLEAN, "showShuffleButton"),
+			SyncablePreference(UserPreferences.showGenresButton, SyncType.BOOLEAN, "showGenresButton"),
+			SyncablePreference(UserPreferences.showFavoritesButton, SyncType.BOOLEAN, "showFavoritesButton"),
+			SyncablePreference(UserPreferences.showLibrariesInToolbar, SyncType.BOOLEAN, "showLibrariesInToolbar"),
+			SyncablePreference(UserPreferences.shuffleContentType, SyncType.STRING, "shuffleContentType"),
+			// Home Screen
+			SyncablePreference(UserPreferences.mergeContinueWatchingNextUp, SyncType.BOOLEAN, "mergeContinueWatchingNextUp"),
+			SyncablePreference(UserPreferences.enableMultiServerLibraries, SyncType.BOOLEAN, "enableMultiServerLibraries"),
+			SyncablePreference(UserPreferences.enableFolderView, SyncType.BOOLEAN, "enableFolderView"),
+			SyncablePreference(UserPreferences.confirmExit, SyncType.BOOLEAN, "confirmExit"),
+			// Display & Appearance
+			SyncablePreference(UserPreferences.seasonalSurprise, SyncType.STRING, "seasonalSurprise"),
+		)
 
 	/** Preference keys from [UserSettingPreferences] that should be synced. */
-	val USER_SETTING_PREFERENCES: List<SyncablePreference<*>> = listOf(
-		// Media Bar
-		SyncablePreference(UserSettingPreferences.mediaBarEnabled, SyncType.BOOLEAN, "mediaBarEnabled"),
-		SyncablePreference(UserSettingPreferences.mediaBarContentType, SyncType.STRING, "mediaBarContentType"),
-		SyncablePreference(UserSettingPreferences.mediaBarItemCount, SyncType.STRING, "mediaBarItemCount"),
-		SyncablePreference(UserSettingPreferences.mediaBarOverlayOpacity, SyncType.INT, "mediaBarOpacity"),
-		SyncablePreference(UserSettingPreferences.mediaBarOverlayColor, SyncType.STRING, "mediaBarOverlayColor"),
-		// Theme Music
-		SyncablePreference(UserSettingPreferences.themeMusicEnabled, SyncType.BOOLEAN, "themeMusicEnabled"),
-		SyncablePreference(UserSettingPreferences.themeMusicVolume, SyncType.INT, "themeMusicVolume"),
-		SyncablePreference(UserSettingPreferences.themeMusicOnHomeRows, SyncType.BOOLEAN, "themeMusicOnHomeRows"),
-		// Display & Appearance
-		SyncablePreference(UserSettingPreferences.homeRowsUniversalOverride, SyncType.BOOLEAN, "homeRowsImageTypeOverride"),
-		SyncablePreference(UserSettingPreferences.homeRowsUniversalImageType, SyncType.ENUM, "homeRowsImageType"),
-		SyncablePreference(UserSettingPreferences.detailsBackgroundBlurAmount, SyncType.INT, "detailsScreenBlur"),
-		SyncablePreference(UserSettingPreferences.browsingBackgroundBlurAmount, SyncType.INT, "browsingBlur"),
-		// Ratings
-		SyncablePreference(UserSettingPreferences.enableAdditionalRatings, SyncType.BOOLEAN, "mdblistEnabled"),
-		SyncablePreference(UserSettingPreferences.enableEpisodeRatings, SyncType.BOOLEAN, "tmdbEpisodeRatingsEnabled"),
-		// Parental Controls
-		SyncablePreference(UserSettingPreferences.userPinEnabled, SyncType.BOOLEAN, "userPinEnabled"),
-		SyncablePreference(UserSettingPreferences.userPinHash, SyncType.STRING, "userPinHash"),
-	)
+	val USER_SETTING_PREFERENCES: List<SyncablePreference<*>> =
+		listOf(
+			// Media Bar
+			SyncablePreference(UserSettingPreferences.mediaBarEnabled, SyncType.BOOLEAN, "mediaBarEnabled"),
+			SyncablePreference(UserSettingPreferences.mediaBarContentType, SyncType.STRING, "mediaBarContentType"),
+			SyncablePreference(UserSettingPreferences.mediaBarItemCount, SyncType.STRING, "mediaBarItemCount"),
+			SyncablePreference(UserSettingPreferences.mediaBarOverlayOpacity, SyncType.INT, "mediaBarOpacity"),
+			SyncablePreference(UserSettingPreferences.mediaBarOverlayColor, SyncType.STRING, "mediaBarOverlayColor"),
+			// Theme Music
+			SyncablePreference(UserSettingPreferences.themeMusicEnabled, SyncType.BOOLEAN, "themeMusicEnabled"),
+			SyncablePreference(UserSettingPreferences.themeMusicVolume, SyncType.INT, "themeMusicVolume"),
+			SyncablePreference(UserSettingPreferences.themeMusicOnHomeRows, SyncType.BOOLEAN, "themeMusicOnHomeRows"),
+			// Display & Appearance
+			SyncablePreference(UserSettingPreferences.homeRowsUniversalOverride, SyncType.BOOLEAN, "homeRowsImageTypeOverride"),
+			SyncablePreference(UserSettingPreferences.homeRowsUniversalImageType, SyncType.ENUM, "homeRowsImageType"),
+			SyncablePreference(UserSettingPreferences.detailsBackgroundBlurAmount, SyncType.INT, "detailsScreenBlur"),
+			SyncablePreference(UserSettingPreferences.browsingBackgroundBlurAmount, SyncType.INT, "browsingBlur"),
+			// Ratings
+			SyncablePreference(UserSettingPreferences.enableAdditionalRatings, SyncType.BOOLEAN, "mdblistEnabled"),
+			SyncablePreference(UserSettingPreferences.enableEpisodeRatings, SyncType.BOOLEAN, "tmdbEpisodeRatingsEnabled"),
+			// Parental Controls
+			SyncablePreference(UserSettingPreferences.userPinEnabled, SyncType.BOOLEAN, "userPinEnabled"),
+			SyncablePreference(UserSettingPreferences.userPinHash, SyncType.STRING, "userPinHash"),
+		)
 
 	/** Preference keys from [JellyseerrPreferences] that should be synced. */
-	val JELLYSEERR_PREFERENCES: List<SyncablePreference<*>> = listOf(
-		SyncablePreference(JellyseerrPreferences.enabled, SyncType.BOOLEAN, "jellyseerrEnabled"),
-		SyncablePreference(JellyseerrPreferences.apiKey, SyncType.STRING, "jellyseerrApiKey"),
-		SyncablePreference(JellyseerrPreferences.blockNsfw, SyncType.BOOLEAN, "jellyseerrBlockNsfw"),
-	)
+	val JELLYSEERR_PREFERENCES: List<SyncablePreference<*>> =
+		listOf(
+			SyncablePreference(JellyseerrPreferences.enabled, SyncType.BOOLEAN, "jellyseerrEnabled"),
+			SyncablePreference(JellyseerrPreferences.apiKey, SyncType.STRING, "jellyseerrApiKey"),
+			SyncablePreference(JellyseerrPreferences.blockNsfw, SyncType.BOOLEAN, "jellyseerrBlockNsfw"),
+		)
 
 	/**
 	 * Local SharedPreferences keys for change listener detection.
@@ -104,7 +106,12 @@ object PluginSyncConstants {
 
 /** Type metadata for a syncable preference. */
 enum class SyncType {
-	BOOLEAN, INT, LONG, FLOAT, STRING, ENUM
+	BOOLEAN,
+	INT,
+	LONG,
+	FLOAT,
+	STRING,
+	ENUM,
 }
 
 /**

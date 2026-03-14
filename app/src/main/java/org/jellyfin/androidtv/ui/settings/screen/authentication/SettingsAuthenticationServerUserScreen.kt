@@ -5,7 +5,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -17,6 +17,7 @@ import org.jellyfin.androidtv.auth.repository.ServerRepository
 import org.jellyfin.androidtv.auth.repository.ServerUserRepository
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.list.ListButton
 import org.jellyfin.androidtv.ui.base.list.ListSection
 import org.jellyfin.androidtv.ui.navigation.LocalRouter
@@ -25,7 +26,10 @@ import org.koin.compose.koinInject
 import java.util.UUID
 
 @Composable
-fun SettingsAuthenticationServerUserScreen(serverId: UUID, userId: UUID) {
+fun SettingsAuthenticationServerUserScreen(
+	serverId: UUID,
+	userId: UUID,
+) {
 	val router = LocalRouter.current
 	val lifecycleScope = LocalLifecycleOwner.current.lifecycleScope
 	val serverRepository = koinInject<ServerRepository>()
@@ -50,7 +54,7 @@ fun SettingsAuthenticationServerUserScreen(serverId: UUID, userId: UUID) {
 
 		item {
 			ListButton(
-				leadingContent = { Icon(painterResource(R.drawable.ic_logout), contentDescription = null) },
+				leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Logout), contentDescription = null) },
 				headingContent = { Text(stringResource(R.string.lbl_sign_out)) },
 				captionContent = { Text(stringResource(R.string.lbl_sign_out_content)) },
 				onClick = {
@@ -58,13 +62,13 @@ fun SettingsAuthenticationServerUserScreen(serverId: UUID, userId: UUID) {
 						if (user != null) authenticationRepository.logout(user)
 						router.back()
 					}
-				}
+				},
 			)
 		}
 
 		item {
 			ListButton(
-				leadingContent = { Icon(painterResource(R.drawable.ic_delete), contentDescription = null) },
+				leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Delete), contentDescription = null) },
 				headingContent = { Text(stringResource(R.string.lbl_remove)) },
 				captionContent = { Text(stringResource(R.string.lbl_remove_user_content)) },
 				onClick = {
@@ -72,7 +76,7 @@ fun SettingsAuthenticationServerUserScreen(serverId: UUID, userId: UUID) {
 						if (user != null) serverUserRepository.deleteStoredUser(user)
 						router.back()
 					}
-				}
+				},
 			)
 		}
 	}

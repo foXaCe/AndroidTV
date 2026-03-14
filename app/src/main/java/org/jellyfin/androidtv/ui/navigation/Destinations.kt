@@ -1,13 +1,9 @@
 package org.jellyfin.androidtv.ui.navigation
 
 import kotlinx.serialization.json.Json
-import org.jellyfin.androidtv.constant.Extras
-import org.jellyfin.androidtv.ui.browsing.compose.FolderBrowseComposeFragment
 import org.jellyfin.androidtv.ui.browsing.compose.AllFavoritesComposeFragment
-import org.jellyfin.androidtv.ui.browsing.compose.ByLetterBrowseFragment
-import org.jellyfin.androidtv.ui.browsing.compose.CollectionBrowseFragment
+import org.jellyfin.androidtv.ui.browsing.compose.FolderBrowseComposeFragment
 import org.jellyfin.androidtv.ui.browsing.compose.FolderViewComposeFragment
-import org.jellyfin.androidtv.ui.browsing.compose.SuggestedMoviesComposeFragment
 import org.jellyfin.androidtv.ui.browsing.compose.GenresGridComposeFragment
 import org.jellyfin.androidtv.ui.browsing.compose.LibraryBrowseComposeFragment
 import org.jellyfin.androidtv.ui.browsing.v2.LiveTvBrowseFragment
@@ -17,22 +13,15 @@ import org.jellyfin.androidtv.ui.browsing.v2.ScheduleBrowseFragment
 import org.jellyfin.androidtv.ui.browsing.v2.SeriesRecordingsBrowseFragment
 import org.jellyfin.androidtv.ui.home.compose.HomeComposeFragment
 import org.jellyfin.androidtv.ui.itemdetail.ItemListFragment
-import org.jellyfin.androidtv.ui.itemdetail.compose.ItemDetailComposeFragment
 import org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsFragment
 import org.jellyfin.androidtv.ui.itemdetail.v2.TrailerPlayerFragment
-import org.jellyfin.androidtv.ui.itemdetail.MusicFavoritesListFragment
 import org.jellyfin.androidtv.ui.jellyseerr.BrowseFilterType
 import org.jellyfin.androidtv.ui.jellyseerr.DiscoverFragment
 import org.jellyfin.androidtv.ui.jellyseerr.JellyseerrBrowseByFragment
 import org.jellyfin.androidtv.ui.jellyseerr.MediaDetailsFragment
 import org.jellyfin.androidtv.ui.jellyseerr.PersonDetailsFragment
-import org.jellyfin.androidtv.ui.jellyseerr.RequestsFragment
-import org.jellyfin.androidtv.ui.jellyseerr.SettingsFragment as JellyseerrSettingsFragment
 import org.jellyfin.androidtv.ui.livetv.LiveTvGuideFragment
 import org.jellyfin.androidtv.ui.playback.audio.AudioNowPlayingComposeFragment
-import org.jellyfin.androidtv.ui.playback.CustomPlaybackOverlayFragment
-import org.jellyfin.androidtv.ui.playback.nextup.NextUpFragment
-import org.jellyfin.androidtv.ui.playback.stillwatching.StillWatchingFragment
 import org.jellyfin.androidtv.ui.player.photo.PhotoPlayerFragment
 import org.jellyfin.androidtv.ui.player.video.VideoPlayerFragment
 import org.jellyfin.androidtv.ui.search.compose.SearchComposeFragment
@@ -46,52 +35,76 @@ import java.util.UUID
 object Destinations {
 	// General
 	val home = fragmentDestination<HomeComposeFragment>()
-	fun search(query: String? = null) = fragmentDestination<SearchComposeFragment>(
-		SearchComposeFragment.EXTRA_QUERY to query,
-	)
+
+	fun search(query: String? = null) =
+		fragmentDestination<SearchComposeFragment>(
+			SearchComposeFragment.Args(query = query).toBundle(),
+		)
 
 	// Browsing
 	// TODO only pass item id instead of complete JSON to browsing destinations
 	@JvmOverloads
-	fun libraryBrowser(item: BaseItemDto, serverId: UUID? = null, userId: UUID? = null) = fragmentDestination<LibraryBrowseComposeFragment>(
-		Extras.Folder to Json.Default.encodeToString(item),
-		"ServerId" to serverId?.toString(),
-		"UserId" to userId?.toString(),
+	fun libraryBrowser(
+		item: BaseItemDto,
+		serverId: UUID? = null,
+		userId: UUID? = null,
+	) = fragmentDestination<LibraryBrowseComposeFragment>(
+		LibraryBrowseComposeFragment.Args
+			.LibraryArgs(
+				folderJson = Json.Default.encodeToString(item),
+				serverId = serverId,
+				userId = userId,
+			).toBundle(),
 	)
 
 	// TODO only pass item id instead of complete JSON to browsing destinations
 	@JvmName("libraryBrowserWithType")
-	fun libraryBrowser(item: BaseItemDto, includeType: String) =
-		fragmentDestination<LibraryBrowseComposeFragment>(
-			Extras.Folder to Json.Default.encodeToString(item),
-			Extras.IncludeType to includeType,
+	fun libraryBrowser(
+		item: BaseItemDto,
+		includeType: String,
+	) = fragmentDestination<LibraryBrowseComposeFragment>(
+		LibraryBrowseComposeFragment.Args
+			.LibraryArgs(
+				folderJson = Json.Default.encodeToString(item),
+				includeType = includeType,
+			).toBundle(),
+	)
+
+	fun liveTvBrowser(item: BaseItemDto) =
+		fragmentDestination<LiveTvBrowseFragment>(
+			LiveTvBrowseFragment
+				.Args(
+					folderJson = Json.Default.encodeToString(item),
+				).toBundle(),
 		)
 
-	fun liveTvBrowser(item: BaseItemDto) = fragmentDestination<LiveTvBrowseFragment>(
-		Extras.Folder to Json.Default.encodeToString(item),
-	)
-
 	@JvmOverloads
-	fun musicBrowser(item: BaseItemDto, serverId: UUID? = null, userId: UUID? = null) = fragmentDestination<MusicBrowseFragment>(
-		Extras.Folder to Json.Default.encodeToString(item),
-		"ServerId" to serverId?.toString(),
-		"UserId" to userId?.toString(),
-	)
-
-	// TODO only pass item id instead of complete JSON to browsing destinations
-	@JvmOverloads
-	fun collectionBrowser(item: BaseItemDto, serverId: UUID? = null, userId: UUID? = null) = fragmentDestination<CollectionBrowseFragment>(
-		Extras.Folder to Json.Default.encodeToString(item),
-		"ServerId" to serverId?.toString(),
-		"UserId" to userId?.toString(),
+	fun musicBrowser(
+		item: BaseItemDto,
+		serverId: UUID? = null,
+		userId: UUID? = null,
+	) = fragmentDestination<MusicBrowseFragment>(
+		MusicBrowseFragment
+			.Args(
+				folderJson = Json.Default.encodeToString(item),
+				serverId = serverId,
+				userId = userId,
+			).toBundle(),
 	)
 
 	// TODO only pass item id instead of complete JSON to browsing destinations
 	@JvmOverloads
-	fun folderBrowser(item: BaseItemDto, serverId: UUID? = null, userId: UUID? = null) = fragmentDestination<FolderBrowseComposeFragment>(
-		Extras.Folder to Json.Default.encodeToString(item),
-		"ServerId" to serverId?.toString(),
-		"UserId" to userId?.toString(),
+	fun folderBrowser(
+		item: BaseItemDto,
+		serverId: UUID? = null,
+		userId: UUID? = null,
+	) = fragmentDestination<FolderBrowseComposeFragment>(
+		FolderBrowseComposeFragment
+			.Args(
+				folderJson = Json.Default.encodeToString(item),
+				serverId = serverId,
+				userId = userId,
+			).toBundle(),
 	)
 
 	// All genres across all libraries (new grid view)
@@ -112,70 +125,78 @@ object Destinations {
 		displayPreferencesId: String? = null,
 		parentItemId: UUID? = null,
 	) = fragmentDestination<LibraryBrowseComposeFragment>(
-		LibraryBrowseComposeFragment.ARG_GENRE_NAME to genreName,
-		LibraryBrowseComposeFragment.ARG_PARENT_ID to parentId?.toString(),
-		LibraryBrowseComposeFragment.ARG_INCLUDE_TYPE to includeType,
-		LibraryBrowseComposeFragment.ARG_SERVER_ID to serverId?.toString(),
-		LibraryBrowseComposeFragment.ARG_DISPLAY_PREFS_ID to displayPreferencesId,
-		LibraryBrowseComposeFragment.ARG_PARENT_ITEM_ID to parentItemId?.toString(),
+		LibraryBrowseComposeFragment.Args
+			.GenreArgs(
+				genreName = genreName,
+				parentId = parentId,
+				includeType = includeType,
+				serverId = serverId,
+				displayPrefsId = displayPreferencesId,
+				parentItemId = parentItemId,
+			).toBundle(),
 	)
 
 	// TODO only pass item id instead of complete JSON to browsing destinations
-	fun libraryByGenres(item: BaseItemDto, includeType: String) =
-		fragmentDestination<GenresGridComposeFragment>(
-			Extras.Folder to Json.Default.encodeToString(item),
-			Extras.IncludeType to includeType,
-		)
-
-	// TODO only pass item id instead of complete JSON to browsing destinations
-	fun libraryByLetter(item: BaseItemDto, includeType: String) =
-		fragmentDestination<ByLetterBrowseFragment>(
-			Extras.Folder to Json.Default.encodeToString(item),
-			Extras.IncludeType to includeType,
-		)
-
-	// TODO only pass item id instead of complete JSON to browsing destinations
-	fun librarySuggestions(item: BaseItemDto) =
-		fragmentDestination<SuggestedMoviesComposeFragment>(
-			Extras.Folder to Json.Default.encodeToString(item),
-		)
+	fun libraryByGenres(
+		item: BaseItemDto,
+		includeType: String,
+	) = fragmentDestination<GenresGridComposeFragment>(
+		GenresGridComposeFragment
+			.Args(
+				folderJson = Json.Default.encodeToString(item),
+				includeType = includeType,
+			).toBundle(),
+	)
 
 	// Item details
 	@JvmOverloads
-	fun itemDetails(item: UUID, serverId: UUID? = null) = fragmentDestination<ItemDetailComposeFragment>(
-		"ItemId" to item.toString(),
-		"ServerId" to serverId?.toString(),
-	)
-
-	@JvmOverloads
-	fun itemDetailsV2(item: UUID, serverId: UUID? = null) = fragmentDestination<ItemDetailsFragment>(
-		"ItemId" to item.toString(),
-		"ServerId" to serverId?.toString(),
+	fun itemDetails(
+		item: UUID,
+		serverId: UUID? = null,
+	) = fragmentDestination<ItemDetailsFragment>(
+		ItemDetailsFragment
+			.Args(
+				itemId = item,
+				serverId = serverId,
+			).toBundle(),
 	)
 
 	// TODO only pass item id instead of complete JSON to browsing destinations
-	fun channelDetails(item: UUID, channel: UUID, programInfo: BaseItemDto) =
-		fragmentDestination<ItemDetailComposeFragment>(
-			"ItemId" to item.toString(),
-			"ChannelId" to channel.toString(),
-			"ProgramInfo" to Json.Default.encodeToString(programInfo),
-		)
-
-	// TODO only pass item id instead of complete JSON to browsing destinations
-	fun seriesTimerDetails(item: UUID, seriesTimer: SeriesTimerInfoDto) =
-		fragmentDestination<ItemDetailComposeFragment>(
-			"ItemId" to item.toString(),
-			"SeriesTimer" to Json.Default.encodeToString(seriesTimer),
-		)
-
-	@JvmOverloads
-	fun itemList(item: UUID, serverId: UUID? = null) = fragmentDestination<ItemListFragment>(
-		"ItemId" to item.toString(),
-		"ServerId" to serverId?.toString(),
+	fun channelDetails(
+		item: UUID,
+		channel: UUID,
+		programInfo: BaseItemDto,
+	) = fragmentDestination<ItemDetailsFragment>(
+		ItemDetailsFragment
+			.Args(
+				itemId = item,
+				channelId = channel,
+				programInfoJson = Json.Default.encodeToString(programInfo),
+			).toBundle(),
 	)
 
-	fun musicFavorites(parent: UUID) = fragmentDestination<MusicFavoritesListFragment>(
-		"ParentId" to parent.toString(),
+	// TODO only pass item id instead of complete JSON to browsing destinations
+	fun seriesTimerDetails(
+		item: UUID,
+		seriesTimer: SeriesTimerInfoDto,
+	) = fragmentDestination<ItemDetailsFragment>(
+		ItemDetailsFragment
+			.Args(
+				itemId = item,
+				seriesTimerJson = Json.Default.encodeToString(seriesTimer),
+			).toBundle(),
+	)
+
+	@JvmOverloads
+	fun itemList(
+		item: UUID,
+		serverId: UUID? = null,
+	) = fragmentDestination<ItemListFragment>(
+		ItemListFragment
+			.Args(
+				itemId = item,
+				serverId = serverId,
+			).toBundle(),
 	)
 
 	// Trailer player
@@ -184,9 +205,12 @@ object Destinations {
 		startSeconds: Double = 0.0,
 		segmentsJson: String = "[]",
 	) = fragmentDestination<TrailerPlayerFragment>(
-		TrailerPlayerFragment.ARG_VIDEO_ID to videoId,
-		TrailerPlayerFragment.ARG_START_SECONDS to startSeconds,
-		TrailerPlayerFragment.ARG_SEGMENTS_JSON to segmentsJson,
+		TrailerPlayerFragment
+			.Args(
+				videoId = videoId,
+				startSeconds = startSeconds,
+				segmentsJson = segmentsJson,
+			).toBundle(),
 	)
 
 	// Live TV
@@ -204,60 +228,62 @@ object Destinations {
 		albumSortBy: ItemSortBy?,
 		albumSortOrder: SortOrder?,
 	) = fragmentDestination<PhotoPlayerFragment>(
-		PhotoPlayerFragment.ARGUMENT_ITEM_ID to item.toString(),
-		PhotoPlayerFragment.ARGUMENT_ALBUM_SORT_BY to albumSortBy?.serialName,
-		PhotoPlayerFragment.ARGUMENT_ALBUM_SORT_ORDER to albumSortOrder?.serialName,
-		PhotoPlayerFragment.ARGUMENT_AUTO_PLAY to autoPlay,
+		PhotoPlayerFragment
+			.Args(
+				itemId = item,
+				albumSortBy = albumSortBy,
+				albumSortOrder = albumSortOrder,
+				autoPlay = autoPlay,
+			).toBundle(),
 	)
 
-	fun videoPlayer(position: Int?) = fragmentDestination<CustomPlaybackOverlayFragment>(
-		"Position" to (position ?: 0)
-	)
-
-	fun videoPlayerNew(position: Int?) = fragmentDestination<VideoPlayerFragment>(
-		VideoPlayerFragment.EXTRA_POSITION to position
-	)
-
-	fun nextUp(item: UUID) = fragmentDestination<NextUpFragment>(
-		NextUpFragment.ARGUMENT_ITEM_ID to item.toString()
-	)
-
-	fun stillWatching(item: UUID) = fragmentDestination<StillWatchingFragment>(
-		NextUpFragment.ARGUMENT_ITEM_ID to item.toString()
-	)
+	fun videoPlayer(position: Int?) =
+		fragmentDestination<VideoPlayerFragment>(
+			VideoPlayerFragment.Args(position = position).toBundle(),
+		)
 
 	// Jellyseerr
 	val jellyseerrDiscover = fragmentDestination<DiscoverFragment>()
-	val jellyseerrRequests = fragmentDestination<RequestsFragment>()
-	val jellyseerrSettings = fragmentDestination<JellyseerrSettingsFragment>()
-	
+
 	fun jellyseerrBrowseBy(
-		filterId: Int, 
-		filterName: String, 
+		filterId: Int,
+		filterName: String,
 		mediaType: String,
-		filterType: BrowseFilterType = BrowseFilterType.GENRE
+		filterType: BrowseFilterType = BrowseFilterType.GENRE,
 	) = fragmentDestination<JellyseerrBrowseByFragment>(
-		"filter_id" to filterId,
-		"filter_name" to filterName,
-		"media_type" to mediaType,
-		"filter_type" to filterType.name,
+		JellyseerrBrowseByFragment
+			.Args(
+				filterId = filterId,
+				filterName = filterName,
+				mediaType = mediaType,
+				filterType = filterType,
+			).toBundle(),
 	)
-	
+
 	// Convenience methods for specific filter types
-	fun jellyseerrBrowseByGenre(genreId: Int, genreName: String, mediaType: String) = 
-		jellyseerrBrowseBy(genreId, genreName, mediaType, BrowseFilterType.GENRE)
-	
-	fun jellyseerrBrowseByNetwork(networkId: Int, networkName: String) = 
-		jellyseerrBrowseBy(networkId, networkName, "tv", BrowseFilterType.NETWORK)
-	
-	fun jellyseerrBrowseByStudio(studioId: Int, studioName: String) = 
-		jellyseerrBrowseBy(studioId, studioName, "movie", BrowseFilterType.STUDIO)
-	
-	fun jellyseerrMediaDetails(itemJson: String) = fragmentDestination<MediaDetailsFragment>(
-		"item" to itemJson
-	)
-	
-	fun jellyseerrPersonDetails(personId: Int) = fragmentDestination<PersonDetailsFragment>(
-		"personId" to personId.toString()
-	)
+	fun jellyseerrBrowseByGenre(
+		genreId: Int,
+		genreName: String,
+		mediaType: String,
+	) = jellyseerrBrowseBy(genreId, genreName, mediaType, BrowseFilterType.GENRE)
+
+	fun jellyseerrBrowseByNetwork(
+		networkId: Int,
+		networkName: String,
+	) = jellyseerrBrowseBy(networkId, networkName, "tv", BrowseFilterType.NETWORK)
+
+	fun jellyseerrBrowseByStudio(
+		studioId: Int,
+		studioName: String,
+	) = jellyseerrBrowseBy(studioId, studioName, "movie", BrowseFilterType.STUDIO)
+
+	fun jellyseerrMediaDetails(itemJson: String) =
+		fragmentDestination<MediaDetailsFragment>(
+			MediaDetailsFragment.Args(itemJson = itemJson).toBundle(),
+		)
+
+	fun jellyseerrPersonDetails(personId: Int) =
+		fragmentDestination<PersonDetailsFragment>(
+			PersonDetailsFragment.Args(personId = personId).toBundle(),
+		)
 }

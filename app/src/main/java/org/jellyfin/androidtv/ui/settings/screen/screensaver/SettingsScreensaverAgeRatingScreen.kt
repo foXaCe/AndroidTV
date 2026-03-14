@@ -38,7 +38,7 @@ fun SettingsScreensaverAgeRatingScreen() {
 				onClick = {
 					screensaverAgeRatingMax = ageRating
 					router.back()
-				}
+				},
 			)
 		}
 	}

@@ -119,7 +119,7 @@ data class JellyseerrUserDto(
 		const val PERMISSION_REQUEST_MOVIE = 262144
 		const val PERMISSION_REQUEST_TV = 524288
 	}
-	
+
 	/**
 	 * Check if user has specific permission(s)
 	 */
@@ -129,43 +129,34 @@ data class JellyseerrUserDto(
 		if (perms and PERMISSION_ADMIN != 0) return true
 		return perms and permission != 0
 	}
-	
+
 	/**
 	 * Check if user can request 4K content (movies or TV)
 	 */
-	fun canRequest4k(): Boolean {
-		return hasPermission(PERMISSION_REQUEST_4K) || 
-			hasPermission(PERMISSION_REQUEST_4K_MOVIE) || 
+	fun canRequest4k(): Boolean =
+		hasPermission(PERMISSION_REQUEST_4K) ||
+			hasPermission(PERMISSION_REQUEST_4K_MOVIE) ||
 			hasPermission(PERMISSION_REQUEST_4K_TV)
-	}
-	
+
 	/**
 	 * Check if user can request 4K movies specifically
 	 */
-	fun canRequest4kMovies(): Boolean {
-		return hasPermission(PERMISSION_REQUEST_4K) || hasPermission(PERMISSION_REQUEST_4K_MOVIE)
-	}
-	
+	fun canRequest4kMovies(): Boolean = hasPermission(PERMISSION_REQUEST_4K) || hasPermission(PERMISSION_REQUEST_4K_MOVIE)
+
 	/**
 	 * Check if user can request 4K TV specifically
 	 */
-	fun canRequest4kTv(): Boolean {
-		return hasPermission(PERMISSION_REQUEST_4K) || hasPermission(PERMISSION_REQUEST_4K_TV)
-	}
-	
+	fun canRequest4kTv(): Boolean = hasPermission(PERMISSION_REQUEST_4K) || hasPermission(PERMISSION_REQUEST_4K_TV)
+
 	/**
 	 * Check if user has advanced request permission (can modify server/profile/folder)
 	 */
-	fun hasAdvancedRequestPermission(): Boolean {
-		return hasPermission(PERMISSION_REQUEST_ADVANCED) || hasPermission(PERMISSION_MANAGE_REQUESTS)
-	}
-	
+	fun hasAdvancedRequestPermission(): Boolean = hasPermission(PERMISSION_REQUEST_ADVANCED) || hasPermission(PERMISSION_MANAGE_REQUESTS)
+
 	/**
 	 * Check if user is admin (has ADMIN permission)
 	 */
-	fun isAdmin(): Boolean {
-		return hasPermission(PERMISSION_ADMIN)
-	}
+	fun isAdmin(): Boolean = hasPermission(PERMISSION_ADMIN)
 }
 
 // ==================== Discover/Trending Models ====================
@@ -217,10 +208,13 @@ data class JellyseerrDiscoverItemDto(
 		voteCount = if (parcel.readByte() != 0.toByte()) parcel.readInt() else null,
 		popularity = if (parcel.readByte() != 0.toByte()) parcel.readDouble() else null,
 		adult = parcel.readByte() != 0.toByte(),
-		mediaInfo = null // Not parcelable
+		mediaInfo = null, // Not parcelable
 	)
 
-	override fun writeToParcel(parcel: Parcel, flags: Int) {
+	override fun writeToParcel(
+		parcel: Parcel,
+		flags: Int,
+	) {
 		parcel.writeInt(id)
 		parcel.writeString(mediaType)
 		parcel.writeString(title)
@@ -245,12 +239,12 @@ data class JellyseerrDiscoverItemDto(
 	}
 
 	override fun describeContents(): Int = 0
-	
+
 	/**
 	 * Check if this media is already available in the library
 	 */
 	fun isAvailable(): Boolean = mediaInfo?.status == 5 || mediaInfo?.status == 4
-	
+
 	/**
 	 * Check if this media has been blacklisted
 	 * Status 6 = blacklisted
@@ -258,13 +252,9 @@ data class JellyseerrDiscoverItemDto(
 	fun isBlacklisted(): Boolean = mediaInfo?.status == 6
 
 	companion object CREATOR : Parcelable.Creator<JellyseerrDiscoverItemDto> {
-		override fun createFromParcel(parcel: Parcel): JellyseerrDiscoverItemDto {
-			return JellyseerrDiscoverItemDto(parcel)
-		}
+		override fun createFromParcel(parcel: Parcel): JellyseerrDiscoverItemDto = JellyseerrDiscoverItemDto(parcel)
 
-		override fun newArray(size: Int): Array<JellyseerrDiscoverItemDto?> {
-			return arrayOfNulls(size)
-		}
+		override fun newArray(size: Int): Array<JellyseerrDiscoverItemDto?> = arrayOfNulls(size)
 	}
 }
 
@@ -434,8 +424,10 @@ data class JellyseerrCreateRequestDto(
 sealed class Seasons {
 	@Serializable
 	@SerialName("list")
-	data class List(val seasons: kotlin.collections.List<Int>) : Seasons()
-	
+	data class List(
+		val seasons: kotlin.collections.List<Int>,
+	) : Seasons()
+
 	@Serializable
 	@SerialName("all")
 	object All : Seasons()
@@ -444,17 +436,21 @@ sealed class Seasons {
 // Custom serializer to serialize Seasons as either array or string
 class SeasonsSerializer : KSerializer<Seasons> {
 	override val descriptor = buildClassSerialDescriptor("Seasons")
-	
-	override fun serialize(encoder: Encoder, value: Seasons) {
+
+	override fun serialize(
+		encoder: Encoder,
+		value: Seasons,
+	) {
 		when (value) {
-			is Seasons.List -> encoder.encodeSerializableValue(
-				ListSerializer(Int.serializer()),
-				value.seasons
-			)
+			is Seasons.List ->
+				encoder.encodeSerializableValue(
+					ListSerializer(Int.serializer()),
+					value.seasons,
+				)
 			is Seasons.All -> encoder.encodeString("all")
 		}
 	}
-	
+
 	override fun deserialize(decoder: Decoder): Seasons {
 		// Not needed for our use case (we only send, not receive)
 		throw NotImplementedError("Seasons deserialization not implemented")

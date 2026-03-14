@@ -10,6 +10,7 @@ import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.unit.Dp
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.ProvideTextStyle
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.design.Tokens
 
 @Composable
@@ -31,7 +32,7 @@ fun ItemPreview(
 			)
 		},
 		spacing = spacing,
-		modifier = modifier
+		modifier = modifier,
 	)
 }
 
@@ -48,18 +49,20 @@ private fun ItemPreviewMetadata(
 	) {
 		title?.let { content ->
 			ProvideTextStyle(
-				value = JellyfinTheme.typography.bodySmall.copy(
-					color = Tokens.Color.colorGrey100,
-				),
+				value =
+					JellyfinTheme.typography.bodySmall.copy(
+						color = VegafoXColors.TextPrimary,
+					),
 				content = content,
 			)
 		}
 
 		subtitle?.let { content ->
 			ProvideTextStyle(
-				value = JellyfinTheme.typography.labelSmall.copy(
-					color = Tokens.Color.colorGrey300,
-				),
+				value =
+					JellyfinTheme.typography.labelSmall.copy(
+						color = VegafoXColors.TextSecondary,
+					),
 				content = content,
 			)
 		}

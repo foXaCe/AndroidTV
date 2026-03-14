@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit
 class NewPipeDownloader private constructor(
 	private val client: OkHttpClient,
 ) : Downloader() {
-
 	companion object {
 		private const val USER_AGENT =
 			"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) Gecko/20100101 Firefox/140.0"
@@ -21,16 +20,16 @@ class NewPipeDownloader private constructor(
 		@Volatile
 		private var instance: NewPipeDownloader? = null
 
-		fun getInstance(): NewPipeDownloader {
-			return instance ?: synchronized(this) {
+		fun getInstance(): NewPipeDownloader =
+			instance ?: synchronized(this) {
 				instance ?: NewPipeDownloader(
-					OkHttpClient.Builder()
+					OkHttpClient
+						.Builder()
 						.readTimeout(30, TimeUnit.SECONDS)
 						.connectTimeout(15, TimeUnit.SECONDS)
-						.build()
+						.build(),
 				).also { instance = it }
 			}
-		}
 	}
 
 	@Throws(IOException::class, ReCaptchaException::class)
@@ -42,10 +41,12 @@ class NewPipeDownloader private constructor(
 
 		val requestBody = dataToSend?.toRequestBody()
 
-		val requestBuilder = okhttp3.Request.Builder()
-			.method(httpMethod, requestBody)
-			.url(url)
-			.addHeader("User-Agent", USER_AGENT)
+		val requestBuilder =
+			okhttp3.Request
+				.Builder()
+				.method(httpMethod, requestBody)
+				.url(url)
+				.addHeader("User-Agent", USER_AGENT)
 
 		headers.forEach { (headerName, headerValueList) ->
 			requestBuilder.removeHeader(headerName)

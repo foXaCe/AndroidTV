@@ -37,10 +37,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -51,6 +49,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
+import org.jellyfin.androidtv.ui.base.theme.DialogDimensions
 import org.jellyfin.androidtv.ui.shuffle.GlassDialogRow
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.extensions.playlistsApi
@@ -81,33 +81,36 @@ fun CreatePlaylistDialog(
 			contentAlignment = Alignment.Center,
 		) {
 			Column(
-				modifier = Modifier
-					.widthIn(min = 340.dp, max = 440.dp)
-					.clip(JellyfinTheme.shapes.dialog)
-					.background(JellyfinTheme.colorScheme.dialogScrim)
-					.border(1.dp, Color.White.copy(alpha = 0.1f), JellyfinTheme.shapes.dialog)
-					.padding(vertical = 20.dp),
+				modifier =
+					Modifier
+						.widthIn(min = DialogDimensions.standardMinWidth, max = DialogDimensions.standardMaxWidth)
+						.clip(JellyfinTheme.shapes.dialog)
+						.background(JellyfinTheme.colorScheme.dialogScrim)
+						.border(1.dp, Color.White.copy(alpha = 0.1f), JellyfinTheme.shapes.dialog)
+						.padding(vertical = 20.dp),
 			) {
 				// Title row with back button
 				Row(
-					modifier = Modifier
-						.fillMaxWidth()
-						.padding(horizontal = 24.dp)
-						.padding(bottom = 12.dp),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.padding(horizontal = 24.dp)
+							.padding(bottom = 12.dp),
 					verticalAlignment = Alignment.CenterVertically,
 				) {
 					val backInteraction = remember { MutableInteractionSource() }
 					val backFocused by backInteraction.collectIsFocusedAsState()
 					Box(
-						modifier = Modifier
-							.size(32.dp)
-							.clip(JellyfinTheme.shapes.small)
-							.background(if (backFocused) JellyfinTheme.colorScheme.listButtonFocused else Color.Transparent)
-							.clickable(
-								interactionSource = backInteraction,
-								indication = null,
-							) { onBack() }
-							.focusable(interactionSource = backInteraction),
+						modifier =
+							Modifier
+								.size(32.dp)
+								.clip(JellyfinTheme.shapes.small)
+								.background(if (backFocused) JellyfinTheme.colorScheme.listButtonFocused else Color.Transparent)
+								.clickable(
+									interactionSource = backInteraction,
+									indication = null,
+								) { onBack() }
+								.focusable(interactionSource = backInteraction),
 						contentAlignment = Alignment.Center,
 					) {
 						Text(
@@ -127,10 +130,11 @@ fun CreatePlaylistDialog(
 
 				// Divider
 				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.height(1.dp)
-						.background(JellyfinTheme.colorScheme.divider),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.height(1.dp)
+							.background(JellyfinTheme.colorScheme.divider),
 				)
 
 				Spacer(modifier = Modifier.height(16.dp))
@@ -151,25 +155,26 @@ fun CreatePlaylistDialog(
 				BasicTextField(
 					value = playlistName,
 					onValueChange = { playlistName = it },
-					textStyle = JellyfinTheme.typography.titleMedium.copy(
-						color = JellyfinTheme.colorScheme.textPrimary,
-						fontWeight = FontWeight.W400,
-					),
+					textStyle =
+						JellyfinTheme.typography.titleMedium.copy(
+							color = JellyfinTheme.colorScheme.textPrimary,
+							fontWeight = FontWeight.W400,
+						),
 					cursorBrush = SolidColor(JellyfinTheme.colorScheme.primary),
 					singleLine = true,
 					interactionSource = nameInteraction,
-					modifier = Modifier
-						.fillMaxWidth()
-						.padding(horizontal = 24.dp)
-						.clip(JellyfinTheme.shapes.medium)
-						.background(JellyfinTheme.colorScheme.divider)
-						.border(
-							width = 1.dp,
-							color = if (nameFieldFocused) JellyfinTheme.colorScheme.primary else Color.White.copy(alpha = 0.15f),
-							shape = JellyfinTheme.shapes.medium,
-						)
-						.padding(horizontal = 16.dp, vertical = 14.dp)
-						.focusRequester(nameInputFocusRequester),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.padding(horizontal = 24.dp)
+							.clip(JellyfinTheme.shapes.medium)
+							.background(JellyfinTheme.colorScheme.divider)
+							.border(
+								width = 1.dp,
+								color = if (nameFieldFocused) JellyfinTheme.colorScheme.primary else Color.White.copy(alpha = 0.15f),
+								shape = JellyfinTheme.shapes.medium,
+							).padding(horizontal = 16.dp, vertical = 14.dp)
+							.focusRequester(nameInputFocusRequester),
 					decorationBox = { innerTextField ->
 						Box {
 							if (playlistName.isEmpty()) {
@@ -190,17 +195,17 @@ fun CreatePlaylistDialog(
 				val switchInteraction = remember { MutableInteractionSource() }
 				val switchFocused by switchInteraction.collectIsFocusedAsState()
 				Row(
-					modifier = Modifier
-						.fillMaxWidth()
-						.clickable(
-							interactionSource = switchInteraction,
-							indication = null,
-						) { isPublic = !isPublic }
-						.focusable(interactionSource = switchInteraction)
-						.background(
-							if (switchFocused) JellyfinTheme.colorScheme.listButtonFocused else Color.Transparent,
-						)
-						.padding(horizontal = 24.dp, vertical = 14.dp),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.clickable(
+								interactionSource = switchInteraction,
+								indication = null,
+							) { isPublic = !isPublic }
+							.focusable(interactionSource = switchInteraction)
+							.background(
+								if (switchFocused) JellyfinTheme.colorScheme.listButtonFocused else Color.Transparent,
+							).padding(horizontal = 24.dp, vertical = 14.dp),
 					verticalAlignment = Alignment.CenterVertically,
 				) {
 					Text(
@@ -213,13 +218,14 @@ fun CreatePlaylistDialog(
 					Switch(
 						checked = isPublic,
 						onCheckedChange = null,
-						colors = SwitchDefaults.colors(
-							checkedThumbColor = JellyfinTheme.colorScheme.onPrimary,
-							checkedTrackColor = JellyfinTheme.colorScheme.primary,
-							uncheckedThumbColor = JellyfinTheme.colorScheme.textSecondary,
-							uncheckedTrackColor = Color.White.copy(alpha = 0.2f),
-							uncheckedBorderColor = JellyfinTheme.colorScheme.textDisabled,
-						),
+						colors =
+							SwitchDefaults.colors(
+								checkedThumbColor = JellyfinTheme.colorScheme.onPrimary,
+								checkedTrackColor = JellyfinTheme.colorScheme.primary,
+								uncheckedThumbColor = JellyfinTheme.colorScheme.textSecondary,
+								uncheckedTrackColor = Color.White.copy(alpha = 0.2f),
+								uncheckedBorderColor = JellyfinTheme.colorScheme.textDisabled,
+							),
 					)
 				}
 
@@ -227,10 +233,11 @@ fun CreatePlaylistDialog(
 
 				// Divider
 				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.height(1.dp)
-						.background(JellyfinTheme.colorScheme.divider),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.height(1.dp)
+							.background(JellyfinTheme.colorScheme.divider),
 				)
 
 				Spacer(modifier = Modifier.height(4.dp))
@@ -238,9 +245,10 @@ fun CreatePlaylistDialog(
 				// Create & Add button
 				if (isCreating) {
 					Row(
-						modifier = Modifier
-							.fillMaxWidth()
-							.padding(24.dp),
+						modifier =
+							Modifier
+								.fillMaxWidth()
+								.padding(24.dp),
 						horizontalArrangement = Arrangement.Center,
 					) {
 						CircularProgressIndicator(
@@ -250,43 +258,47 @@ fun CreatePlaylistDialog(
 					}
 				} else {
 					GlassDialogRow(
-						icon = ImageVector.vectorResource(R.drawable.ic_add),
+						icon = VegafoXIcons.Add,
 						label = stringResource(R.string.lbl_create_and_add),
 						onClick = {
 							val name = playlistName.trim()
 							if (name.isBlank()) {
-								Toast.makeText(
-									context,
-									context.getString(R.string.msg_enter_playlist_name),
-									Toast.LENGTH_SHORT,
-								).show()
+								Toast
+									.makeText(
+										context,
+										context.getString(R.string.msg_enter_playlist_name),
+										Toast.LENGTH_SHORT,
+									).show()
 								return@GlassDialogRow
 							}
 							isCreating = true
 							CoroutineScope(Dispatchers.Main).launch {
 								try {
 									withContext(Dispatchers.IO) {
-										val createRequest = CreatePlaylistDto(
-											name = name,
-											ids = listOf(itemId),
-											users = emptyList(),
-											isPublic = isPublic,
-										)
+										val createRequest =
+											CreatePlaylistDto(
+												name = name,
+												ids = listOf(itemId),
+												users = emptyList(),
+												isPublic = isPublic,
+											)
 										apiClient.playlistsApi.createPlaylist(createRequest)
 									}
-									Toast.makeText(
-										context,
-										context.getString(R.string.msg_playlist_created),
-										Toast.LENGTH_SHORT,
-									).show()
+									Toast
+										.makeText(
+											context,
+											context.getString(R.string.msg_playlist_created),
+											Toast.LENGTH_SHORT,
+										).show()
 									onPlaylistCreated()
 								} catch (e: Exception) {
 									Timber.e(e, "Failed to create playlist")
-									Toast.makeText(
-										context,
-										context.getString(R.string.msg_failed_to_create_playlist),
-										Toast.LENGTH_SHORT,
-									).show()
+									Toast
+										.makeText(
+											context,
+											context.getString(R.string.msg_failed_to_create_playlist),
+											Toast.LENGTH_SHORT,
+										).show()
 									isCreating = false
 								}
 							}

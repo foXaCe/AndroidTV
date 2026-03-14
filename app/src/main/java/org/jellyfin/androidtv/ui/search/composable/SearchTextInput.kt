@@ -1,5 +1,6 @@
 package org.jellyfin.androidtv.ui.search.composable
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -20,23 +21,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import org.jellyfin.androidtv.R
+import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.ui.base.Icon
-import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.LocalTextStyle
 import org.jellyfin.androidtv.ui.base.ProvideTextStyle
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 
 @Composable
 fun SearchTextInput(
@@ -59,61 +60,68 @@ fun SearchTextInput(
 		}
 	}
 
-	val color = when {
-		focused -> JellyfinTheme.colorScheme.inputFocused to JellyfinTheme.colorScheme.onInputFocused
-		else -> JellyfinTheme.colorScheme.input to JellyfinTheme.colorScheme.onInput
-	}
+	val borderColor = if (focused) VegafoXColors.OrangePrimary else Color.White.copy(alpha = 0.10f)
+	val iconTint = if (focused) VegafoXColors.OrangePrimary else VegafoXColors.TextSecondary
 
 	ProvideTextStyle(
 		LocalTextStyle.current.copy(
-			color = color.second,
-			fontSize = JellyfinTheme.typography.bodyLarge.fontSize,
-		)
+			color = VegafoXColors.TextPrimary,
+			fontSize = 16.sp,
+		),
 	) {
 		BasicTextField(
-			modifier = modifier
-				.onKeyEvent { event ->
-					if (focused && !isEditing && event.type == KeyEventType.KeyDown &&
-						(event.key == Key.Enter || event.key == Key.DirectionCenter)) {
-						isEditing = true
-						true
-					} else false
-				}
-				.onFocusChanged { 
-					if (!it.isFocused) {
-						isEditing = false
-						keyboardController?.hide()
-					}
-				},
+			modifier =
+				modifier
+					.onKeyEvent { event ->
+						if (focused &&
+							!isEditing &&
+							event.type == KeyEventType.KeyDown &&
+							(event.key == Key.Enter || event.key == Key.DirectionCenter)
+						) {
+							isEditing = true
+							true
+						} else {
+							false
+						}
+					}.onFocusChanged {
+						if (!it.isFocused) {
+							isEditing = false
+							keyboardController?.hide()
+						}
+					},
 			value = query,
 			singleLine = true,
 			readOnly = !isEditing,
 			interactionSource = interactionSource,
 			onValueChange = { onQueryChange(it) },
-			keyboardActions = KeyboardActions {
-				isEditing = false
-				keyboardController?.hide()
-				onQuerySubmit()
-			},
-			keyboardOptions = KeyboardOptions.Default.copy(
-				keyboardType = KeyboardType.Text,
-				imeAction = ImeAction.Search,
-				autoCorrectEnabled = true,
-			),
+			keyboardActions =
+				KeyboardActions {
+					isEditing = false
+					keyboardController?.hide()
+					onQuerySubmit()
+				},
+			keyboardOptions =
+				KeyboardOptions.Default.copy(
+					keyboardType = KeyboardType.Text,
+					imeAction = ImeAction.Search,
+					autoCorrectEnabled = true,
+				),
 			textStyle = LocalTextStyle.current,
-			cursorBrush = SolidColor(color.first),
+			cursorBrush = SolidColor(VegafoXColors.OrangePrimary),
 			decorationBox = { innerTextField ->
 				Row(
 					verticalAlignment = Alignment.CenterVertically,
-					modifier = Modifier
-						.border(2.dp, color.first, RoundedCornerShape(percent = 30))
-						.padding(12.dp)
+					modifier =
+						Modifier
+							.background(VegafoXColors.Surface, RoundedCornerShape(12.dp))
+							.border(1.dp, borderColor, RoundedCornerShape(12.dp))
+							.padding(12.dp),
 				) {
-					Icon(ImageVector.vectorResource(R.drawable.ic_search), contentDescription = null)
+					Icon(VegafoXIcons.Search, contentDescription = null, tint = iconTint)
 					Spacer(Modifier.width(12.dp))
 					innerTextField()
 				}
-			}
+			},
 		)
 	}
 }

@@ -1,20 +1,15 @@
 package org.jellyfin.androidtv.ui.base.state
 
-import android.view.KeyEvent as NativeKeyEvent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
-import androidx.compose.ui.test.assertIsFocused
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performKeyPress
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -28,7 +23,6 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class DpadFocusTest {
-
 	@get:Rule
 	val composeTestRule = createComposeRule()
 
@@ -85,7 +79,8 @@ class DpadFocusTest {
 		composeTestRule.waitForIdle()
 
 		// Simulate click via semantic action (equivalent to DPAD_CENTER on focused button)
-		composeTestRule.onNodeWithText(retryLabel)
+		composeTestRule
+			.onNodeWithText(retryLabel)
 			.performSemanticsAction(SemanticsActions.OnClick)
 
 		composeTestRule.waitForIdle()
@@ -105,12 +100,13 @@ class DpadFocusTest {
 					action = {
 						Text(
 							text = "Browse",
-							modifier = Modifier
-								.testTag("action_button")
-								.clickable {}
-								.focusable()
-								.background(JellyfinTheme.colorScheme.surfaceContainer, JellyfinTheme.shapes.button)
-								.padding(horizontal = 24.dp, vertical = 10.dp),
+							modifier =
+								Modifier
+									.testTag("action_button")
+									.clickable {}
+									.focusable()
+									.background(JellyfinTheme.colorScheme.surfaceContainer, JellyfinTheme.shapes.button)
+									.padding(horizontal = 24.dp, vertical = 10.dp),
 						)
 					},
 				)

@@ -21,16 +21,15 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
-fun rememberQueueEntry(
-	playbackManager: PlaybackManager = koinInject(),
-) = remember(playbackManager) {
-	playbackManager.queue.entry
-}.collectAsState()
+fun rememberQueueEntry(playbackManager: PlaybackManager = koinInject()) =
+	remember(playbackManager) {
+		playbackManager.queue.entry
+	}.collectAsState()
 
 @Composable
 fun rememberPlayerPositionInfo(
 	playbackManager: PlaybackManager = koinInject(),
-	precision: Duration = 1.seconds
+	precision: Duration = 1.seconds,
 ): MutableState<PositionInfo> {
 	val playState by playbackManager.state.playState.collectAsState()
 	val playing = playState == PlayState.PLAYING
@@ -51,9 +50,7 @@ fun rememberPlayerPositionInfo(
 }
 
 @Composable
-fun rememberPlayerProgress(
-	playbackManager: PlaybackManager = koinInject(),
-): Float {
+fun rememberPlayerProgress(playbackManager: PlaybackManager = koinInject()): Float {
 	val playState by playbackManager.state.playState.collectAsState()
 	val active = playbackManager.state.positionInfo.active
 	val duration = playbackManager.state.positionInfo.duration
@@ -77,16 +74,20 @@ fun rememberPlayerProgress(
 		val activeMs = active.inWholeMilliseconds.toFloat()
 		val durationMs = duration.inWholeMilliseconds.toFloat()
 
-		if (active == Duration.ZERO) animatable.snapTo(0f)
-		else animatable.snapTo((activeMs / durationMs).coerceIn(0f, 1f))
+		if (active == Duration.ZERO) {
+			animatable.snapTo(0f)
+		} else {
+			animatable.snapTo((activeMs / durationMs).coerceIn(0f, 1f))
+		}
 
 		if (playing) {
 			animatable.animateTo(
 				targetValue = 1f,
-				animationSpec = tween(
-					durationMillis = (durationMs - activeMs).roundToInt(),
-					easing = LinearEasing,
-				)
+				animationSpec =
+					tween(
+						durationMillis = (durationMs - activeMs).roundToInt(),
+						easing = LinearEasing,
+					),
 			)
 		}
 	}

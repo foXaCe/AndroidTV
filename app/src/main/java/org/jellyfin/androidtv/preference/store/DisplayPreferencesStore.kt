@@ -32,9 +32,10 @@ abstract class DisplayPreferencesStore(
 			api.displayPreferencesApi.updateDisplayPreferences(
 				displayPreferencesId = displayPreferencesId,
 				client = app,
-				data = displayPreferencesDto!!.copy(
-					customPrefs = cachedPreferences
-				)
+				data =
+					displayPreferencesDto!!.copy(
+						customPrefs = cachedPreferences,
+					),
 			)
 		} catch (err: ApiClientException) {
 			Timber.e(err, "Unable to save displaypreferences. (displayPreferencesId=$displayPreferencesId, app=$app)")
@@ -58,12 +59,14 @@ abstract class DisplayPreferencesStore(
 
 	override suspend fun update(): Boolean {
 		try {
-			val result = withContext(Dispatchers.IO) {
-				api.displayPreferencesApi.getDisplayPreferences(
-					displayPreferencesId = displayPreferencesId,
-					client = app
-				).content
-			}
+			val result =
+				withContext(Dispatchers.IO) {
+					api.displayPreferencesApi
+						.getDisplayPreferences(
+							displayPreferencesId = displayPreferencesId,
+							client = app,
+						).content
+				}
 			displayPreferencesDto = result
 			cachedPreferences = result.customPrefs.toMutableMap()
 
@@ -80,38 +83,63 @@ abstract class DisplayPreferencesStore(
 		}
 	}
 
-	override fun getInt(key: String, defaultValue: Int) =
-		cachedPreferences[key]?.toIntOrNull() ?: defaultValue
+	override fun getInt(
+		key: String,
+		defaultValue: Int,
+	) = cachedPreferences[key]?.toIntOrNull() ?: defaultValue
 
-	override fun getLong(key: String, defaultValue: Long) =
-		cachedPreferences[key]?.toLongOrNull() ?: defaultValue
+	override fun getLong(
+		key: String,
+		defaultValue: Long,
+	) = cachedPreferences[key]?.toLongOrNull() ?: defaultValue
 
-	override fun getFloat(key: String, defaultValue: Float) =
-		cachedPreferences[key]?.toFloatOrNull() ?: defaultValue
+	override fun getFloat(
+		key: String,
+		defaultValue: Float,
+	) = cachedPreferences[key]?.toFloatOrNull() ?: defaultValue
 
-	override fun getBool(key: String, defaultValue: Boolean) =
-		cachedPreferences[key]?.toBooleanStrictOrNull() ?: defaultValue
+	override fun getBool(
+		key: String,
+		defaultValue: Boolean,
+	) = cachedPreferences[key]?.toBooleanStrictOrNull() ?: defaultValue
 
-	override fun getString(key: String, defaultValue: String) =
-		cachedPreferences[key] ?: defaultValue
+	override fun getString(
+		key: String,
+		defaultValue: String,
+	) = cachedPreferences[key] ?: defaultValue
 
-	override fun setInt(key: String, value: Int) {
+	override fun setInt(
+		key: String,
+		value: Int,
+	) {
 		cachedPreferences[key] = value.toString()
 	}
 
-	override fun setLong(key: String, value: Long) {
+	override fun setLong(
+		key: String,
+		value: Long,
+	) {
 		cachedPreferences[key] = value.toString()
 	}
 
-	override fun setFloat(key: String, value: Float) {
+	override fun setFloat(
+		key: String,
+		value: Float,
+	) {
 		cachedPreferences[key] = value.toString()
 	}
 
-	override fun setBool(key: String, value: Boolean) {
+	override fun setBool(
+		key: String,
+		value: Boolean,
+	) {
 		cachedPreferences[key] = value.toString()
 	}
 
-	override fun setString(key: String, value: String) {
+	override fun setString(
+		key: String,
+		value: String,
+	) {
 		cachedPreferences[key] = value
 	}
 
@@ -121,36 +149,44 @@ abstract class DisplayPreferencesStore(
 
 	override fun <T : Enum<T>> getEnum(preference: Preference<T>): T {
 		val stringValue = cachedPreferences[preference.key]
-		return if (stringValue.isNullOrBlank()) preference.defaultValue
-		else preference.type.java.enumConstants?.find {
-			(it is PreferenceEnum && it.serializedName == stringValue) || it.name == stringValue
-		} ?: preference.defaultValue
+		return if (stringValue.isNullOrBlank()) {
+			preference.defaultValue
+		} else {
+			preference.type.java.enumConstants?.find {
+				(it is PreferenceEnum && it.serializedName == stringValue) || it.name == stringValue
+			} ?: preference.defaultValue
+		}
 	}
 
-	override fun <V : Enum<V>> setEnum(preference: Preference<*>, value: Enum<V>) =
-		setString(
-			preference.key, when (value) {
-				is PreferenceEnum -> value.serializedName ?: value.name
-				else -> value.name
-			}
-		)
+	override fun <V : Enum<V>> setEnum(
+		preference: Preference<*>,
+		value: Enum<V>,
+	) = setString(
+		preference.key,
+		when (value) {
+			is PreferenceEnum -> value.serializedName ?: value.name
+			else -> value.name
+		},
+	)
 
 	override fun runMigrations(body: MigrationContext<Unit, Unit>.() -> Unit) {
-		TODO("The DisplayPreferencesStore does not support migrations")
+		// No-op: DisplayPreferencesStore stores data on the server via the API,
+		// not locally, so local preference migrations do not apply.
 	}
 
 	/**
 	 * Create an empty [DisplayPreferencesDto] with default values.
 	 */
-	private fun DisplayPreferencesDto.Companion.empty() = DisplayPreferencesDto(
-		primaryImageHeight = 0,
-		primaryImageWidth = 0,
-		customPrefs = emptyMap(),
-		rememberIndexing = false,
-		scrollDirection = ScrollDirection.HORIZONTAL,
-		rememberSorting = false,
-		showBackdrop = false,
-		showSidebar = false,
-		sortOrder = SortOrder.ASCENDING
-	)
+	private fun DisplayPreferencesDto.Companion.empty() =
+		DisplayPreferencesDto(
+			primaryImageHeight = 0,
+			primaryImageWidth = 0,
+			customPrefs = emptyMap(),
+			rememberIndexing = false,
+			scrollDirection = ScrollDirection.HORIZONTAL,
+			rememberSorting = false,
+			showBackdrop = false,
+			showSidebar = false,
+			sortOrder = SortOrder.ASCENDING,
+		)
 }

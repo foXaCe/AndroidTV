@@ -10,10 +10,9 @@ import java.net.UnknownHostException
  * Provides standardized error handling patterns across the application.
  */
 object ErrorHandler {
-	
 	/**
 	 * Handle an error with logging and optional user message generation.
-	 * 
+	 *
 	 * @param error The throwable to handle
 	 * @param context A description of what operation failed (e.g., "load trending content")
 	 * @param includeStackTrace Whether to log the full stack trace (default: true)
@@ -22,7 +21,7 @@ object ErrorHandler {
 	fun handle(
 		error: Throwable,
 		context: String,
-		includeStackTrace: Boolean = true
+		includeStackTrace: Boolean = true,
 	): String {
 		val userMessage = getUserFriendlyMessage(error, context)
 		
@@ -34,10 +33,10 @@ object ErrorHandler {
 		
 		return userMessage
 	}
-	
+
 	/**
 	 * Handle an error with a warning level log.
-	 * 
+	 *
 	 * @param error The throwable to handle
 	 * @param context A description of what operation failed
 	 * @param includeStackTrace Whether to log the full stack trace (default: false)
@@ -46,7 +45,7 @@ object ErrorHandler {
 	fun handleWarning(
 		error: Throwable,
 		context: String,
-		includeStackTrace: Boolean = false
+		includeStackTrace: Boolean = false,
 	): String {
 		val userMessage = getUserFriendlyMessage(error, context)
 		
@@ -58,16 +57,19 @@ object ErrorHandler {
 		
 		return userMessage
 	}
-	
+
 	/**
 	 * Convert an exception to a user-friendly error message.
-	 * 
+	 *
 	 * @param error The throwable to convert
 	 * @param context A description of what operation failed
 	 * @return A user-friendly error message
 	 */
-	fun getUserFriendlyMessage(error: Throwable, context: String = ""): String {
-		return when (error) {
+	fun getUserFriendlyMessage(
+		error: Throwable,
+		context: String = "",
+	): String =
+		when (error) {
 			is UnknownHostException -> "Cannot connect to server. Check your network connection."
 			is SocketTimeoutException -> "Connection timed out. The server is taking too long to respond."
 			is IOException -> "Network error occurred. Please check your connection."
@@ -76,72 +78,73 @@ object ErrorHandler {
 				
 				// Check for common HTTP error codes in the message
 				when {
-					baseMessage.contains("403") || baseMessage.contains("Forbidden") -> 
+					baseMessage.contains("403") || baseMessage.contains("Forbidden") ->
 						"Permission denied. You may not have access to this resource."
-					baseMessage.contains("401") || baseMessage.contains("Unauthorized") -> 
+					baseMessage.contains("401") || baseMessage.contains("Unauthorized") ->
 						"Authentication failed. Please sign in again."
-					baseMessage.contains("404") || baseMessage.contains("Not Found") -> 
+					baseMessage.contains("404") || baseMessage.contains("Not Found") ->
 						"Resource not found. It may have been removed."
-					baseMessage.contains("500") || baseMessage.contains("Internal Server Error") -> 
+					baseMessage.contains("500") || baseMessage.contains("Internal Server Error") ->
 						"Server error occurred. Please try again later."
-					baseMessage.contains("503") || baseMessage.contains("Service Unavailable") -> 
+					baseMessage.contains("503") || baseMessage.contains("Service Unavailable") ->
 						"Service temporarily unavailable. Please try again later."
 					context.isNotEmpty() -> "Failed to $context: $baseMessage"
 					else -> baseMessage
 				}
 			}
 		}
-	}
-	
+
 	/**
 	 * Execute a block of code with automatic error handling.
 	 * Logs errors and returns a Result.
-	 * 
+	 *
 	 * @param context A description of the operation being performed
 	 * @param block The code block to execute
 	 * @return Result containing either the value or the error
 	 */
-	inline fun <T> catching(context: String, block: () -> T): Result<T> {
-		return runCatching(block).onFailure { error ->
+	inline fun <T> catching(
+		context: String,
+		block: () -> T,
+	): Result<T> =
+		runCatching(block).onFailure { error ->
 			handle(error, context)
 		}
-	}
-	
+
 	/**
 	 * Execute a block of code with automatic warning-level error handling.
 	 * Logs warnings and returns a Result.
-	 * 
+	 *
 	 * @param context A description of the operation being performed
 	 * @param block The code block to execute
 	 * @return Result containing either the value or the error
 	 */
-	inline fun <T> catchingWarning(context: String, block: () -> T): Result<T> {
-		return runCatching(block).onFailure { error ->
+	inline fun <T> catchingWarning(
+		context: String,
+		block: () -> T,
+	): Result<T> =
+		runCatching(block).onFailure { error ->
 			handleWarning(error, context)
 		}
-	}
 }
 
 /**
  * Extension function to handle errors in a Result with logging.
- * 
+ *
  * @param context A description of what operation failed
  * @return The user-friendly error message if the Result is a failure, null otherwise
  */
-fun <T> Result<T>.handleError(context: String): String? {
-	return exceptionOrNull()?.let { error ->
+fun <T> Result<T>.handleError(context: String): String? =
+	exceptionOrNull()?.let { error ->
 		ErrorHandler.handle(error, context)
 	}
-}
 
 /**
  * Extension function to handle errors in a Result with warning-level logging.
- * 
+ *
  * @param context A description of what operation failed
  * @return The user-friendly error message if the Result is a failure, null otherwise
  */
-fun <T> Result<T>.handleWarning(context: String): String? {
-	return exceptionOrNull()?.let { error ->
+fun <T> Result<T>.handleWarning(context: String): String? =
+	exceptionOrNull()?.let { error ->
 		ErrorHandler.handleWarning(error, context)
 	}
-}

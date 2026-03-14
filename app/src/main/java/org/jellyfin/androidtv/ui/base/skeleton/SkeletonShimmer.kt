@@ -9,7 +9,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -36,10 +35,11 @@ fun rememberShimmerBrush(
 	val translateX by transition.animateFloat(
 		initialValue = -500f,
 		targetValue = 1500f,
-		animationSpec = infiniteRepeatable(
-			animation = tween(durationMillis = 1200, easing = LinearEasing),
-			repeatMode = RepeatMode.Restart,
-		),
+		animationSpec =
+			infiniteRepeatable(
+				animation = tween(durationMillis = 1200, easing = LinearEasing),
+				repeatMode = RepeatMode.Restart,
+			),
 		label = "shimmer_translate",
 	)
 
@@ -60,8 +60,9 @@ fun SkeletonBox(
 ) {
 	val shimmerBrush = rememberShimmerBrush()
 	Box(
-		modifier = modifier
-			.background(brush = shimmerBrush, shape = shape),
+		modifier =
+			modifier
+				.background(brush = shimmerBrush, shape = shape),
 	)
 }
 
@@ -75,9 +76,10 @@ fun SkeletonTextLine(
 	modifier: Modifier = Modifier,
 ) {
 	SkeletonBox(
-		modifier = modifier
-			.width(width)
-			.height(height),
+		modifier =
+			modifier
+				.width(width)
+				.height(height),
 		shape = JellyfinTheme.shapes.extraSmall,
 	)
 }
@@ -98,9 +100,10 @@ fun SkeletonTextBlock(
 		repeat(lines) { index ->
 			val fraction = widthFractions[index % widthFractions.size]
 			SkeletonBox(
-				modifier = Modifier
-					.width(maxWidth * fraction)
-					.height(lineHeight),
+				modifier =
+					Modifier
+						.width(maxWidth * fraction)
+						.height(lineHeight),
 				shape = JellyfinTheme.shapes.extraSmall,
 			)
 			if (index < lines - 1) {

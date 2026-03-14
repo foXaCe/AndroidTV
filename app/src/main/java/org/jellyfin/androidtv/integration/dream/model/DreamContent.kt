@@ -6,6 +6,15 @@ import org.jellyfin.sdk.model.api.BaseItemDto
 
 sealed interface DreamContent {
 	data object Logo : DreamContent
-	data class LibraryShowcase(val item: BaseItemDto, val backdrop: Bitmap, val logo: Bitmap?) : DreamContent
-	data class NowPlaying(val entry: QueueEntry, val item: BaseItemDto) : DreamContent
+
+	data class LibraryShowcase(
+		val item: BaseItemDto,
+		val backdrop: Bitmap,
+		val logo: Bitmap?,
+	) : DreamContent
+
+	data class NowPlaying(
+		val entry: QueueEntry,
+		val item: BaseItemDto,
+	) : DreamContent
 }

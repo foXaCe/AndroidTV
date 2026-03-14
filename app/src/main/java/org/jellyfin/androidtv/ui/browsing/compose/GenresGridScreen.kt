@@ -44,18 +44,23 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
 import org.jellyfin.androidtv.R
-import org.jellyfin.design.Tokens
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.components.VegafoXButton
+import org.jellyfin.androidtv.ui.base.components.VegafoXButtonVariant
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.skeleton.SkeletonBox
 import org.jellyfin.androidtv.ui.base.state.DisplayState
 import org.jellyfin.androidtv.ui.base.state.EmptyState
 import org.jellyfin.androidtv.ui.base.state.ErrorState
 import org.jellyfin.androidtv.ui.base.state.StateContainer
+import org.jellyfin.androidtv.ui.base.theme.DialogDimensions
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.base.tv.TvCardGrid
 import org.jellyfin.androidtv.ui.base.tv.TvFocusCard
 import org.jellyfin.androidtv.ui.base.tv.TvHeader
@@ -66,6 +71,7 @@ import org.jellyfin.androidtv.ui.browsing.v2.GenresGridViewModel
 import org.jellyfin.androidtv.ui.browsing.v2.LibraryToolbarButton
 import org.jellyfin.androidtv.ui.composable.rememberErrorPlaceholder
 import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
+import org.jellyfin.design.Tokens
 import org.jellyfin.sdk.model.api.BaseItemDto
 import java.util.UUID
 
@@ -90,34 +96,38 @@ fun GenresGridScreen(
 	var showSortDialog by remember { mutableStateOf(false) }
 	var showLibraryDialog by remember { mutableStateOf(false) }
 
-	val displayState = when {
-		uiState.isLoading -> DisplayState.LOADING
-		uiState.error != null && uiState.genres.isEmpty() -> DisplayState.ERROR
-		uiState.genres.isEmpty() -> DisplayState.EMPTY
-		else -> DisplayState.CONTENT
-	}
+	val displayState =
+		when {
+			uiState.isLoading -> DisplayState.LOADING
+			uiState.error != null && uiState.genres.isEmpty() -> DisplayState.ERROR
+			uiState.genres.isEmpty() -> DisplayState.EMPTY
+			else -> DisplayState.CONTENT
+		}
 
 	TvScaffold {
 		Column(modifier = Modifier.fillMaxSize()) {
 			TvHeader(
 				title = uiState.title,
-				subtitle = if (uiState.totalGenres > 0) {
-					stringResource(R.string.lbl_genres_count, uiState.totalGenres)
-				} else null,
+				subtitle =
+					if (uiState.totalGenres > 0) {
+						stringResource(R.string.lbl_genres_count, uiState.totalGenres)
+					} else {
+						null
+					},
 			) {
 				LibraryToolbarButton(
-					iconRes = R.drawable.ic_house,
+					icon = VegafoXIcons.Home,
 					contentDescription = stringResource(R.string.home),
 					onClick = onHomeClick,
 				)
 				LibraryToolbarButton(
-					iconRes = R.drawable.ic_sort,
+					icon = VegafoXIcons.Sort,
 					contentDescription = stringResource(R.string.lbl_sort_by),
 					onClick = { showSortDialog = true },
 				)
 				if (uiState.libraries.size > 1 && showLibraryFilter) {
 					LibraryToolbarButton(
-						iconRes = R.drawable.ic_filter,
+						icon = VegafoXIcons.Filter,
 						contentDescription = stringResource(R.string.lbl_filter_by_library),
 						isActive = uiState.selectedLibraryId != null,
 						onClick = { showLibraryDialog = true },
@@ -142,9 +152,10 @@ fun GenresGridScreen(
 					) {
 						items(20) {
 							SkeletonBox(
-								modifier = Modifier
-									.width(180.dp)
-									.height(100.dp),
+								modifier =
+									Modifier
+										.width(180.dp)
+										.height(100.dp),
 								shape = JellyfinTheme.shapes.small,
 							)
 						}
@@ -218,10 +229,11 @@ private fun GenreCard(
 ) {
 	TvFocusCard(
 		onClick = onClick,
-		modifier = modifier
-			.fillMaxWidth()
-			.height(120.dp)
-			.onFocusChanged { if (it.isFocused) onFocused() },
+		modifier =
+			modifier
+				.fillMaxWidth()
+				.height(120.dp)
+				.onFocusChanged { if (it.isFocused) onFocused() },
 		shape = JellyfinTheme.shapes.small,
 	) {
 		Box(modifier = Modifier.fillMaxSize()) {
@@ -241,26 +253,28 @@ private fun GenreCard(
 
 			// Gradient overlay at bottom for text readability
 			Box(
-				modifier = Modifier
-					.fillMaxSize()
-					.background(
-						Brush.verticalGradient(
-							0.4f to Color.Transparent,
-							1.0f to Color.Black.copy(alpha = 0.75f),
-						)
-					),
+				modifier =
+					Modifier
+						.fillMaxSize()
+						.background(
+							Brush.verticalGradient(
+								0.4f to Color.Transparent,
+								1.0f to VegafoXColors.BackgroundDeep.copy(alpha = 0.80f),
+							),
+						),
 			)
 
 			// Genre name centered at bottom
 			Text(
 				text = genre.name,
 				style = JellyfinTheme.typography.titleMedium,
-				color = Color.White,
+				color = VegafoXColors.TextPrimary,
 				maxLines = 1,
 				overflow = TextOverflow.Ellipsis,
-				modifier = Modifier
-					.align(Alignment.BottomCenter)
-					.padding(horizontal = 12.dp, vertical = 8.dp),
+				modifier =
+					Modifier
+						.align(Alignment.BottomCenter)
+						.padding(horizontal = 12.dp, vertical = 8.dp),
 			)
 		}
 	}
@@ -288,32 +302,39 @@ private fun GenreSortDialog(
 			contentAlignment = Alignment.Center,
 		) {
 			Column(
-				modifier = Modifier
-					.widthIn(min = 340.dp, max = 440.dp)
-					.clip(JellyfinTheme.shapes.dialog)
-					.background(JellyfinTheme.colorScheme.dialogScrim)
-					.border(1.dp, JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.1f), JellyfinTheme.shapes.dialog)
-					.padding(vertical = 20.dp),
+				modifier =
+					Modifier
+						.widthIn(min = DialogDimensions.standardMinWidth, max = DialogDimensions.standardMaxWidth)
+						.clip(JellyfinTheme.shapes.dialog)
+						.background(VegafoXColors.Surface)
+						.border(1.dp, VegafoXColors.Outline, JellyfinTheme.shapes.dialog)
+						.padding(vertical = 20.dp),
 			) {
 				Text(
 					text = stringResource(R.string.lbl_sort_genres),
-					style = JellyfinTheme.typography.titleLarge,
-					color = JellyfinTheme.colorScheme.onSurface,
-					modifier = Modifier
-						.padding(horizontal = Tokens.Space.spaceLg)
-						.padding(bottom = 12.dp),
+					style =
+						JellyfinTheme.typography.titleLarge.copy(
+							fontSize = 18.sp,
+							fontWeight = FontWeight.Bold,
+						),
+					color = VegafoXColors.TextPrimary,
+					modifier =
+						Modifier
+							.padding(horizontal = Tokens.Space.spaceLg)
+							.padding(bottom = 12.dp),
 				)
 
 				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.height(1.dp)
-						.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.08f)),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.height(1.dp)
+							.background(VegafoXColors.Divider),
 				)
 
 				Spacer(modifier = Modifier.height(Tokens.Space.spaceXs))
 
-				LazyColumn {
+				LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
 					itemsIndexed(sortOptions) { _, option ->
 						DialogRadioItem(
 							text = stringResource(option.labelRes),
@@ -323,6 +344,31 @@ private fun GenreSortDialog(
 							onClick = { onSortSelected(option) },
 						)
 					}
+				}
+
+				// Action buttons
+				Spacer(modifier = Modifier.height(12.dp))
+				Box(
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.height(1.dp)
+							.background(VegafoXColors.Divider),
+				)
+				Spacer(modifier = Modifier.height(16.dp))
+				Row(
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.padding(horizontal = 24.dp),
+					horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
+				) {
+					VegafoXButton(
+						text = stringResource(R.string.lbl_cancel),
+						onClick = onDismiss,
+						variant = VegafoXButtonVariant.Ghost,
+						compact = true,
+					)
 				}
 			}
 		}
@@ -356,32 +402,39 @@ private fun LibraryFilterDialog(
 			contentAlignment = Alignment.Center,
 		) {
 			Column(
-				modifier = Modifier
-					.widthIn(min = 340.dp, max = 440.dp)
-					.clip(JellyfinTheme.shapes.dialog)
-					.background(JellyfinTheme.colorScheme.dialogScrim)
-					.border(1.dp, JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.1f), JellyfinTheme.shapes.dialog)
-					.padding(vertical = 20.dp),
+				modifier =
+					Modifier
+						.widthIn(min = DialogDimensions.standardMinWidth, max = DialogDimensions.standardMaxWidth)
+						.clip(JellyfinTheme.shapes.dialog)
+						.background(VegafoXColors.Surface)
+						.border(1.dp, VegafoXColors.Outline, JellyfinTheme.shapes.dialog)
+						.padding(vertical = 20.dp),
 			) {
 				Text(
 					text = stringResource(R.string.lbl_filter_by_library),
-					style = JellyfinTheme.typography.titleLarge,
-					color = JellyfinTheme.colorScheme.onSurface,
-					modifier = Modifier
-						.padding(horizontal = Tokens.Space.spaceLg)
-						.padding(bottom = 12.dp),
+					style =
+						JellyfinTheme.typography.titleLarge.copy(
+							fontSize = 18.sp,
+							fontWeight = FontWeight.Bold,
+						),
+					color = VegafoXColors.TextPrimary,
+					modifier =
+						Modifier
+							.padding(horizontal = Tokens.Space.spaceLg)
+							.padding(bottom = 12.dp),
 				)
 
 				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.height(1.dp)
-						.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.08f)),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.height(1.dp)
+							.background(VegafoXColors.Divider),
 				)
 
 				Spacer(modifier = Modifier.height(Tokens.Space.spaceXs))
 
-				LazyColumn {
+				LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
 					// "All Libraries" option
 					item {
 						DialogRadioItem(
@@ -397,11 +450,12 @@ private fun LibraryFilterDialog(
 					itemsIndexed(libraries) { _, library ->
 						val isSelected = library.id == selectedLibraryId
 						val serverName = libraryServerNames[library.id]
-						val displayText = if (serverName != null) {
-							"${library.name ?: ""} ($serverName)"
-						} else {
-							library.name ?: ""
-						}
+						val displayText =
+							if (serverName != null) {
+								"${library.name ?: ""} ($serverName)"
+							} else {
+								library.name ?: ""
+							}
 
 						DialogRadioItem(
 							text = displayText,
@@ -411,6 +465,31 @@ private fun LibraryFilterDialog(
 							onClick = { onLibrarySelected(library) },
 						)
 					}
+				}
+
+				// Action buttons
+				Spacer(modifier = Modifier.height(12.dp))
+				Box(
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.height(1.dp)
+							.background(VegafoXColors.Divider),
+				)
+				Spacer(modifier = Modifier.height(16.dp))
+				Row(
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.padding(horizontal = 24.dp),
+					horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
+				) {
+					VegafoXButton(
+						text = stringResource(R.string.lbl_cancel),
+						onClick = onDismiss,
+						variant = VegafoXButtonVariant.Ghost,
+						compact = true,
+					)
 				}
 			}
 		}
@@ -437,35 +516,37 @@ private fun DialogRadioItem(
 	val isFocused by interactionSource.collectIsFocusedAsState()
 
 	Row(
-		modifier = Modifier
-			.then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
-			.fillMaxWidth()
-			.clickable(
-				interactionSource = interactionSource,
-				indication = null,
-			) { onClick() }
-			.focusable(interactionSource = interactionSource)
-			.background(
-				if (isFocused) JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.12f) else Color.Transparent,
-			)
-			.padding(horizontal = Tokens.Space.spaceLg, vertical = 12.dp),
+		modifier =
+			Modifier
+				.then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
+				.fillMaxWidth()
+				.clickable(
+					interactionSource = interactionSource,
+					indication = null,
+				) { onClick() }
+				.focusable(interactionSource = interactionSource)
+				.background(
+					if (isFocused) JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.12f) else Color.Transparent,
+				).padding(horizontal = Tokens.Space.spaceLg, vertical = 12.dp),
 		verticalAlignment = Alignment.CenterVertically,
 	) {
 		Box(
-			modifier = Modifier
-				.size(18.dp)
-				.border(
-					width = 2.dp,
-					color = if (isSelected) JellyfinTheme.colorScheme.primary else JellyfinTheme.colorScheme.textDisabled,
-					shape = CircleShape,
-				),
+			modifier =
+				Modifier
+					.size(18.dp)
+					.border(
+						width = 2.dp,
+						color = if (isSelected) VegafoXColors.OrangePrimary else VegafoXColors.TextHint,
+						shape = CircleShape,
+					),
 			contentAlignment = Alignment.Center,
 		) {
 			if (isSelected) {
 				Box(
-					modifier = Modifier
-						.size(10.dp)
-						.background(JellyfinTheme.colorScheme.primary, CircleShape),
+					modifier =
+						Modifier
+							.size(10.dp)
+							.background(VegafoXColors.OrangePrimary, CircleShape),
 				)
 			}
 		}
@@ -476,11 +557,12 @@ private fun DialogRadioItem(
 			text = text,
 			style = JellyfinTheme.typography.titleMedium,
 			fontWeight = if (isSelected) FontWeight.W600 else FontWeight.W400,
-			color = when {
-				isSelected -> JellyfinTheme.colorScheme.primary
-				isFocused -> JellyfinTheme.colorScheme.onSurface
-				else -> JellyfinTheme.colorScheme.textSecondary
-			},
+			color =
+				when {
+					isSelected -> VegafoXColors.OrangePrimary
+					isFocused -> VegafoXColors.TextPrimary
+					else -> VegafoXColors.TextPrimary
+				},
 			maxLines = 1,
 			overflow = TextOverflow.Ellipsis,
 			modifier = Modifier.weight(1f),

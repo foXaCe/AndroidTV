@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,13 +20,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.repository.MdbListRepository
@@ -37,6 +33,7 @@ import org.jellyfin.androidtv.preference.UserSettingPreferences
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.BaseItemKind
@@ -54,12 +51,12 @@ private fun RatingItemWithLogo(
 	Row(
 		horizontalArrangement = Arrangement.spacedBy(6.dp),
 		verticalAlignment = Alignment.CenterVertically,
-		modifier = Modifier
-			.background(
-				JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.1f),
-				JellyfinTheme.shapes.button,
-			)
-			.padding(horizontal = 10.dp, vertical = 6.dp),
+		modifier =
+			Modifier
+				.background(
+					JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+					JellyfinTheme.shapes.button,
+				).padding(horizontal = 10.dp, vertical = 6.dp),
 	) {
 		RatingIconImage(icon = icon, contentDescription = contentDescription, modifier = Modifier.size(22.dp))
 		Column {
@@ -76,21 +73,22 @@ private fun RatingIconImage(
 	icon: RatingIconProvider.RatingIcon,
 	contentDescription: String,
 	modifier: Modifier = Modifier,
-	tint: Color? = null
+	tint: Color? = null,
 ) {
 	when (icon) {
-		is RatingIconProvider.RatingIcon.ServerUrl -> AsyncImage(
-			model = icon.url,
-			contentDescription = contentDescription,
-			modifier = modifier,
-		)
+		is RatingIconProvider.RatingIcon.ServerUrl ->
+			AsyncImage(
+				model = icon.url,
+				contentDescription = contentDescription,
+				modifier = modifier,
+			)
 		is RatingIconProvider.RatingIcon.LocalDrawable -> {
 			if (tint != null) {
 				Icon(
 					painter = painterResource(icon.resId),
 					contentDescription = contentDescription,
 					modifier = modifier,
-					tint = tint
+					tint = tint,
 				)
 			} else {
 				Image(
@@ -100,6 +98,19 @@ private fun RatingIconImage(
 				)
 			}
 		}
+	}
+}
+
+/**
+ * Format a rating value removing unnecessary trailing .0
+ * e.g. 7.0 → "7", 7.6 → "7.6"
+ */
+private fun formatRatingClean(value: Float): String {
+	val rounded = String.format("%.1f", value)
+	return if (rounded.endsWith(".0")) {
+		rounded.dropLast(2)
+	} else {
+		rounded
 	}
 }
 
@@ -162,42 +173,45 @@ fun InfoRowMultipleRatings(item: BaseItemDto) {
 		}
 	}
 
-	val allRatings = remember(apiRatings, item.criticRating, item.communityRating, episodeRating, seriesCommunityRating) {
-		linkedMapOf<String, Float>().apply {
-			// move community rating in here to keep ratings grouped together
-			// use series rating as fallback for episodes
-			val communityRating = item.communityRating ?: seriesCommunityRating
-			communityRating?.let { put("community", it / 10f) }
+	val allRatings =
+		remember(apiRatings, item.criticRating, item.communityRating, episodeRating, seriesCommunityRating) {
+			linkedMapOf<String, Float>().apply {
+				// move community rating in here to keep ratings grouped together
+				// use series rating as fallback for episodes
+				val communityRating = item.communityRating ?: seriesCommunityRating
+				communityRating?.let { put("community", it / 10f) }
 
-			episodeRating?.let { put("tmdb_episode", it / 10f) }
+				episodeRating?.let { put("tmdb_episode", it / 10f) }
 
-			apiRatings?.forEach { (source, value) ->
-				val normalized = when (source) {
-					"tomatoes" -> item.criticRating?.let { it / 100f } ?: (value / 100f)
-					"popcorn" -> value / 100f
-					"imdb" -> value / 10f
-					"tmdb" -> value / 100f
-					"metacritic" -> value / 100f
-					"metacriticuser" -> value / 100f
-					"trakt" -> value / 100f
-					"letterboxd" -> value / 5f
-					"rogerebert" -> value / 4f
-					"myanimelist" -> value / 10f
-					"anilist" -> value / 100f
-					else -> value / 10f
+				apiRatings?.forEach { (source, value) ->
+					val normalized =
+						when (source) {
+							"tomatoes" -> item.criticRating?.let { it / 100f } ?: (value / 100f)
+							"popcorn" -> value / 100f
+							"imdb" -> value / 10f
+							"tmdb" -> value / 100f
+							"metacritic" -> value / 100f
+							"metacriticuser" -> value / 100f
+							"trakt" -> value / 100f
+							"letterboxd" -> value / 5f
+							"rogerebert" -> value / 4f
+							"myanimelist" -> value / 10f
+							"anilist" -> value / 100f
+							else -> value / 10f
+						}
+					put(source, normalized)
 				}
-				put(source, normalized)
-			}
 
-			// Fallback: if API didn't provide tomatoes but item has criticRating
-			if ("tomatoes" !in this) {
-				item.criticRating?.let { put("tomatoes", it / 100f) }
+				// Fallback: if API didn't provide tomatoes but item has criticRating
+				if ("tomatoes" !in this) {
+					item.criticRating?.let { put("tomatoes", it / 100f) }
+				}
 			}
 		}
-	}
 
 	if ((enableAdditionalRatings && isLoading) ||
-		(enableEpisodeRatings && isEpisode && isLoadingEpisode)) {
+		(enableEpisodeRatings && isEpisode && isLoadingEpisode)
+	) {
 		return
 	}
 
@@ -220,13 +234,18 @@ fun InfoRowMultipleRatings(item: BaseItemDto) {
  * All rating values are expected in 0–1 normalized scale.
  */
 @Composable
-private fun RatingDisplay(sourceKey: String, rating: Float, baseUrl: String?, showLabel: Boolean = true) {
+private fun RatingDisplay(
+	sourceKey: String,
+	rating: Float,
+	baseUrl: String?,
+	showLabel: Boolean = true,
+) {
 	if (sourceKey == "community") {
 		RatingItemWithLogo(
 			icon = RatingIconProvider.RatingIcon.LocalDrawable(R.drawable.ic_star),
 			contentDescription = stringResource(R.string.lbl_community_rating),
-			rating = String.format("%.1f", rating * 10f),
-			showLabel = showLabel
+			rating = formatRatingClean(rating * 10f),
+			showLabel = showLabel,
 		)
 		return
 	}
@@ -234,27 +253,29 @@ private fun RatingDisplay(sourceKey: String, rating: Float, baseUrl: String?, sh
 	val scorePercent = (rating * 100f).toInt()
 
 	val icon = RatingIconProvider.getIcon(baseUrl, sourceKey, scorePercent) ?: return
-	val formattedRating = when (sourceKey) {
-		"tomatoes", "popcorn" -> NumberFormat.getPercentInstance().format(rating)
-		"tmdb", "tmdb_episode", "metacritic", "metacriticuser", "trakt", "anilist" -> "${(rating * 100f).toInt()}%"
-		"letterboxd" -> String.format("%.1f", rating * 5f)
-		"rogerebert" -> String.format("%.1f", rating * 4f)
-		else -> String.format("%.1f", rating * 10f)
-	}
-	val label = when (sourceKey) {
-		"tomatoes" -> "Rotten Tomatoes"
-		"popcorn" -> "RT Audience"
-		"imdb" -> "IMDB"
-		"tmdb", "tmdb_episode" -> "TMDB"
-		"metacritic" -> "Metacritic"
-		"metacriticuser" -> "Metacritic User"
-		"trakt" -> "Trakt"
-		"letterboxd" -> "Letterboxd"
-		"rogerebert" -> "Roger Ebert"
-		"myanimelist" -> "MyAnimeList"
-		"anilist" -> "AniList"
-		else -> sourceKey
-	}
+	val formattedRating =
+		when (sourceKey) {
+			"tomatoes", "popcorn" -> NumberFormat.getPercentInstance().format(rating)
+			"tmdb", "tmdb_episode", "metacritic", "metacriticuser", "trakt", "anilist" -> "${(rating * 100f).toInt()}%"
+			"letterboxd" -> String.format("%.1f", rating * 5f)
+			"rogerebert" -> String.format("%.1f", rating * 4f)
+			else -> String.format("%.1f", rating * 10f)
+		}
+	val label =
+		when (sourceKey) {
+			"tomatoes" -> "Rotten Tomatoes"
+			"popcorn" -> "RT Audience"
+			"imdb" -> "IMDB"
+			"tmdb", "tmdb_episode" -> "TMDB"
+			"metacritic" -> "Metacritic"
+			"metacriticuser" -> "Metacritic User"
+			"trakt" -> "Trakt"
+			"letterboxd" -> "Letterboxd"
+			"rogerebert" -> "Roger Ebert"
+			"myanimelist" -> "MyAnimeList"
+			"anilist" -> "AniList"
+			else -> sourceKey
+		}
 	RatingItemWithLogo(icon, label, formattedRating, showLabel)
 }
 
@@ -277,7 +298,10 @@ fun InfoRowParentalRating(parentalRating: String) {
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun InfoRowCompactRatings(item: BaseItemDto, leadingContent: @Composable () -> Unit = {}) {
+fun InfoRowCompactRatings(
+	item: BaseItemDto,
+	leadingContent: @Composable () -> Unit = {},
+) {
 	val userSettingPreferences = koinInject<UserSettingPreferences>()
 	val mdbListRepository = koinInject<MdbListRepository>()
 	val apiClient = koinInject<ApiClient>()
@@ -300,35 +324,37 @@ fun InfoRowCompactRatings(item: BaseItemDto, leadingContent: @Composable () -> U
 		}
 	}
 
-	val allRatings = remember(apiRatings, item.criticRating, item.communityRating) {
-		linkedMapOf<String, Float>().apply {
-			// move community rating in here to keep ratings grouped together
-			item.communityRating?.let { put("community", it / 10f) }
+	val allRatings =
+		remember(apiRatings, item.criticRating, item.communityRating) {
+			linkedMapOf<String, Float>().apply {
+				// move community rating in here to keep ratings grouped together
+				item.communityRating?.let { put("community", it / 10f) }
 
-			apiRatings?.forEach { (source, value) ->
-				val normalized = when (source) {
-					"tomatoes" -> item.criticRating?.let { it / 100f } ?: (value / 100f)
-					"popcorn" -> value / 100f
-					"imdb" -> value / 10f
-					"tmdb" -> value / 100f
-					"metacritic" -> value / 100f
-					"metacriticuser" -> value / 100f
-					"trakt" -> value / 100f
-					"letterboxd" -> value / 5f
-					"rogerebert" -> value / 4f
-					"myanimelist" -> value / 10f
-					"anilist" -> value / 100f
-					else -> value / 10f
+				apiRatings?.forEach { (source, value) ->
+					val normalized =
+						when (source) {
+							"tomatoes" -> item.criticRating?.let { it / 100f } ?: (value / 100f)
+							"popcorn" -> value / 100f
+							"imdb" -> value / 10f
+							"tmdb" -> value / 100f
+							"metacritic" -> value / 100f
+							"metacriticuser" -> value / 100f
+							"trakt" -> value / 100f
+							"letterboxd" -> value / 5f
+							"rogerebert" -> value / 4f
+							"myanimelist" -> value / 10f
+							"anilist" -> value / 100f
+							else -> value / 10f
+						}
+					put(source, normalized)
 				}
-				put(source, normalized)
-			}
 
-			// Fallback: if API didn't provide tomatoes but item has criticRating
-			if ("tomatoes" !in this) {
-				item.criticRating?.let { put("tomatoes", it / 100f) }
+				// Fallback: if API didn't provide tomatoes but item has criticRating
+				if ("tomatoes" !in this) {
+					item.criticRating?.let { put("tomatoes", it / 100f) }
+				}
 			}
 		}
-	}
 
 	if (enableAdditionalRatings && isLoading) return
 	if (allRatings.isEmpty()) return
@@ -348,22 +374,26 @@ fun InfoRowCompactRatings(item: BaseItemDto, leadingContent: @Composable () -> U
 }
 
 @Composable
-private fun CompactRatingChip(sourceKey: String, rating: Float, baseUrl: String?) {
+private fun CompactRatingChip(
+	sourceKey: String,
+	rating: Float,
+	baseUrl: String?,
+) {
 	// move community rating in here to keep the ratings grouped together
 	if (sourceKey == "community") {
 		Row(verticalAlignment = Alignment.CenterVertically) {
 			Icon(
-				imageVector = ImageVector.vectorResource(R.drawable.ic_star),
+				imageVector = VegafoXIcons.Star,
 				contentDescription = null,
 				modifier = Modifier.size(16.dp),
 				tint = JellyfinTheme.colorScheme.rating,
 			)
 			Spacer(modifier = Modifier.width(3.dp))
 			Text(
-				text = String.format("%.1f", rating * 10f),
+				text = formatRatingClean(rating * 10f),
 				color = JellyfinTheme.colorScheme.textSecondary,
 				style = JellyfinTheme.typography.bodyMedium,
-				fontWeight = FontWeight.W700
+				fontWeight = FontWeight.W700,
 			)
 		}
 		return
@@ -371,19 +401,25 @@ private fun CompactRatingChip(sourceKey: String, rating: Float, baseUrl: String?
 
 	val scorePercent = (rating * 100f).toInt()
 	val icon = RatingIconProvider.getIcon(baseUrl, sourceKey, scorePercent) ?: return
-	val formattedRating = when (sourceKey) {
-		"tomatoes", "popcorn" -> NumberFormat.getPercentInstance().format(rating)
-		"tmdb", "metacritic", "metacriticuser", "trakt", "anilist" -> "${(rating * 100f).toInt()}%"
-		"letterboxd" -> String.format("%.1f", rating * 5f)
-		"rogerebert" -> String.format("%.1f", rating * 4f)
-		else -> String.format("%.1f", rating * 10f)
-	}
+	val formattedRating =
+		when (sourceKey) {
+			"tomatoes", "popcorn" -> NumberFormat.getPercentInstance().format(rating)
+			"tmdb", "metacritic", "metacriticuser", "trakt", "anilist" -> "${(rating * 100f).toInt()}%"
+			"letterboxd" -> String.format("%.1f", rating * 5f)
+			"rogerebert" -> String.format("%.1f", rating * 4f)
+			else -> String.format("%.1f", rating * 10f)
+		}
 
 	Row(
 		horizontalArrangement = Arrangement.spacedBy(3.dp),
 		verticalAlignment = Alignment.CenterVertically,
 	) {
 		RatingIconImage(icon = icon, contentDescription = sourceKey, modifier = Modifier.size(16.dp))
-		Text(formattedRating, color = JellyfinTheme.colorScheme.textSecondary, style = JellyfinTheme.typography.bodyMedium, fontWeight = FontWeight.W700)
+		Text(
+			formattedRating,
+			color = JellyfinTheme.colorScheme.textSecondary,
+			style = JellyfinTheme.typography.bodyMedium,
+			fontWeight = FontWeight.W700,
+		)
 	}
 }

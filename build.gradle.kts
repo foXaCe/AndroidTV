@@ -14,7 +14,12 @@ buildscript {
 
 java {
 	toolchain {
-		languageVersion.set(JavaLanguageVersion.of(libs.versions.java.jdk.get()))
+		languageVersion.set(
+			JavaLanguageVersion.of(
+				libs.versions.java.jdk
+					.get(),
+			),
+		)
 	}
 }
 

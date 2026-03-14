@@ -28,6 +28,7 @@ import org.jellyfin.androidtv.integration.dream.model.DreamContent
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.SeekbarDefaults
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.theme.DreamDimensions
 import org.jellyfin.androidtv.ui.composable.AsyncImage
 import org.jellyfin.androidtv.ui.composable.LyricsDtoBox
 import org.jellyfin.androidtv.ui.composable.blurHashPainter
@@ -48,111 +49,118 @@ import org.jellyfin.sdk.model.api.ImageType
 import org.koin.compose.koinInject
 
 @Composable
-fun DreamContentNowPlaying(
-	content: DreamContent.NowPlaying,
-) = Box(
-	modifier = Modifier.fillMaxSize(),
-) {
-	val api = koinInject<ApiClient>()
-	val playbackManager = koinInject<PlaybackManager>()
-	val lyrics = content.entry.run { lyricsFlow.collectAsState(lyrics) }.value
-
-	val primaryImage = content.item.itemImages[ImageType.PRIMARY]
-		?: content.item.albumPrimaryImage
-		?: content.item.parentImages[ImageType.PRIMARY]
-
-	// Background
-	if (primaryImage?.blurHash != null) {
-		Image(
-			painter = blurHashPainter(primaryImage.blurHash, IntSize(32, 32)),
-			contentDescription = null,
-			alignment = Alignment.Center,
-			contentScale = ContentScale.Crop,
-			modifier = Modifier.fillMaxSize(),
-		)
-
-		DreamContentVignette()
-	}
-
-	// Lyrics overlay (on top of background)
-	if (lyrics != null) {
-		val playState by remember { playbackManager.state.playState }.collectAsState()
-
-		// Using the progress animation causes the layout to recompose, which we need for synced lyrics to work
-		// we don't actually use the animation value here
-		rememberPlayerProgress(playbackManager)
-
-		LyricsDtoBox(
-			lyricDto = lyrics,
-			currentTimestamp = playbackManager.state.positionInfo.active,
-			duration = playbackManager.state.positionInfo.duration,
-			paused = playState != PlayState.PLAYING,
-			fontSize = JellyfinTheme.typography.headlineMedium.fontSize,
-			color = Color.White,
-			modifier = Modifier
-				.fillMaxSize()
-				.fadingEdges(vertical = 250.dp)
-				.padding(horizontal = 50.dp),
-		)
-	}
-
-	// Metadata overlay (includes title / progress)
-	Row(
-		verticalAlignment = Alignment.Bottom,
-		horizontalArrangement = Arrangement.spacedBy(20.dp),
-		modifier = Modifier
-			.align(Alignment.BottomStart)
-			.overscan(),
+fun DreamContentNowPlaying(content: DreamContent.NowPlaying) =
+	Box(
+		modifier = Modifier.fillMaxSize(),
 	) {
-		if (primaryImage != null) {
-			AsyncImage(
-				url = primaryImage.getUrl(api),
-				blurHash = primaryImage.blurHash,
-				scaleType = ImageView.ScaleType.CENTER_CROP,
-				modifier = Modifier
-					.size(128.dp)
-					.clip(RoundedCornerShape(5.dp))
+		val api = koinInject<ApiClient>()
+		val playbackManager = koinInject<PlaybackManager>()
+		val lyrics = content.entry.run { lyricsFlow.collectAsState(lyrics) }.value
+
+		val primaryImage =
+			content.item.itemImages[ImageType.PRIMARY]
+				?: content.item.albumPrimaryImage
+				?: content.item.parentImages[ImageType.PRIMARY]
+
+		// Background
+		if (primaryImage?.blurHash != null) {
+			Image(
+				painter = blurHashPainter(primaryImage.blurHash, IntSize(32, 32)),
+				contentDescription = null,
+				alignment = Alignment.Center,
+				contentScale = ContentScale.Crop,
+				modifier = Modifier.fillMaxSize(),
+			)
+
+			DreamContentVignette()
+		}
+
+		// Lyrics overlay (on top of background)
+		if (lyrics != null) {
+			val playState by remember { playbackManager.state.playState }.collectAsState()
+
+			// Using the progress animation causes the layout to recompose, which we need for synced lyrics to work
+			// we don't actually use the animation value here
+			rememberPlayerProgress(playbackManager)
+
+			LyricsDtoBox(
+				lyricDto = lyrics,
+				currentTimestamp = playbackManager.state.positionInfo.active,
+				duration = playbackManager.state.positionInfo.duration,
+				paused = playState != PlayState.PLAYING,
+				fontSize = JellyfinTheme.typography.headlineMedium.fontSize,
+				color = Color.White,
+				modifier =
+					Modifier
+						.fillMaxSize()
+						.fadingEdges(vertical = DreamDimensions.fadingEdgeVertical)
+						.padding(horizontal = 50.dp),
 			)
 		}
 
-		Column(
-			modifier = Modifier
-				.padding(bottom = 10.dp)
+		// Metadata overlay (includes title / progress)
+		Row(
+			verticalAlignment = Alignment.Bottom,
+			horizontalArrangement = Arrangement.spacedBy(20.dp),
+			modifier =
+				Modifier
+					.align(Alignment.BottomStart)
+					.overscan(),
 		) {
-			Text(
-				text = content.item.name.orEmpty(),
-				style = JellyfinTheme.typography.headlineMedium,
-				color = Color.White,
-			)
+			if (primaryImage != null) {
+				AsyncImage(
+					url = primaryImage.getUrl(api),
+					blurHash = primaryImage.blurHash,
+					scaleType = ImageView.ScaleType.CENTER_CROP,
+					modifier =
+						Modifier
+							.size(DreamDimensions.albumCoverSize)
+							.clip(RoundedCornerShape(5.dp)),
+				)
+			}
 
-			Text(
-				text = content.item.run {
-					val artistNames = artists.orEmpty()
-					val albumArtistNames = albumArtists?.mapNotNull { it.name }.orEmpty()
+			Column(
+				modifier =
+					Modifier
+						.padding(bottom = 10.dp),
+			) {
+				Text(
+					text = content.item.name.orEmpty(),
+					style = JellyfinTheme.typography.headlineMedium,
+					color = Color.White,
+				)
 
-					when {
-						artistNames.isNotEmpty() -> artistNames
-						albumArtistNames.isNotEmpty() -> albumArtistNames
-						else -> listOfNotNull(albumArtist)
-					}.joinToString(", ")
-				},
-				style = JellyfinTheme.typography.titleLarge,
-				color = Color(0.8f, 0.8f, 0.8f),
-			)
+				Text(
+					text =
+						content.item.run {
+							val artistNames = artists.orEmpty()
+							val albumArtistNames = albumArtists?.mapNotNull { it.name }.orEmpty()
 
-			Spacer(modifier = Modifier.height(10.dp))
+							when {
+								artistNames.isNotEmpty() -> artistNames
+								albumArtistNames.isNotEmpty() -> albumArtistNames
+								else -> listOfNotNull(albumArtist)
+							}.joinToString(", ")
+						},
+					style = JellyfinTheme.typography.titleLarge,
+					color = Color(0.8f, 0.8f, 0.8f),
+				)
 
-			PlayerSeekbar(
-				playbackManager = playbackManager,
-				colors = SeekbarDefaults.colors(
-					backgroundColor = Color.White.copy(alpha = 0.2f),
-					progressColor = Color.White,
-					bufferColor = Color.Transparent,
-				),
-				modifier = Modifier
-					.fillMaxWidth()
-					.height(4.dp)
-			)
+				Spacer(modifier = Modifier.height(10.dp))
+
+				PlayerSeekbar(
+					playbackManager = playbackManager,
+					colors =
+						SeekbarDefaults.colors(
+							backgroundColor = Color.White.copy(alpha = 0.2f),
+							progressColor = Color.White,
+							bufferColor = Color.Transparent,
+						),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.height(4.dp),
+				)
+			}
 		}
 	}
-}

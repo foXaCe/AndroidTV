@@ -12,9 +12,14 @@ sealed interface Destination {
 	) : Destination
 }
 
-inline fun <reified T : Fragment> fragmentDestination(
-	vararg arguments: Pair<String, Any?>,
-) = Destination.Fragment(
-	fragment = T::class,
-	arguments = bundleOf(*arguments),
-)
+inline fun <reified T : Fragment> fragmentDestination(vararg arguments: Pair<String, Any?>) =
+	Destination.Fragment(
+		fragment = T::class,
+		arguments = bundleOf(*arguments),
+	)
+
+inline fun <reified T : Fragment> fragmentDestination(arguments: Bundle) =
+	Destination.Fragment(
+		fragment = T::class,
+		arguments = arguments,
+	)

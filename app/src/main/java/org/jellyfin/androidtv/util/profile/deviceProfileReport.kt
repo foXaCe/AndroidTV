@@ -22,29 +22,31 @@ import org.jellyfin.sdk.model.ServerVersion
 import kotlin.time.Duration.Companion.nanoseconds
 
 private val prettyPrintJson = Json { prettyPrint = true }
+
 private fun formatJson(json: String) = prettyPrintJson.encodeToString(prettyPrintJson.parseToJsonElement(json))
 
 private fun Range<Int>.prettyFormat() = if (lower == upper) "$lower" else "$lower-$upper"
 
 // Names are copied from MediaCodecInfo.CodecCapabilities.FEATURE_xxx constants as some constants are not available in older API versions
-private val featureNames = setOf(
-	"adaptive-playback",
-	"detached-surface",
-	"dynamic-color-aspects",
-	"dynamic-timestamp",
-	"encoding-statistics",
-	"frame-parsing",
-	"hdr-editing",
-	"hlg-editing",
-	"intra-refresh",
-	"low-latency",
-	"multiple-frames",
-	"partial-frame",
-	"qp-bounds",
-	"region-of-interest",
-	"secure-playback",
-	"tunneled-playback",
-)
+private val featureNames =
+	setOf(
+		"adaptive-playback",
+		"detached-surface",
+		"dynamic-color-aspects",
+		"dynamic-timestamp",
+		"encoding-statistics",
+		"frame-parsing",
+		"hdr-editing",
+		"hlg-editing",
+		"intra-refresh",
+		"low-latency",
+		"multiple-frames",
+		"partial-frame",
+		"qp-bounds",
+		"region-of-interest",
+		"secure-playback",
+		"tunneled-playback",
+	)
 
 // API levels
 private val isN = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N // API 24
@@ -56,7 +58,9 @@ private val isUpsideDownCake = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSI
 private val isBaklava = Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA // API 36
 
 // HDR formats to label strings
-enum class HdrFormats(val label: String) {
+enum class HdrFormats(
+	val label: String,
+) {
 	DOLBY_VISION("Dolby Vision"),
 	DOLBY_VISION_EL("Dolby Vision Enhancement Layer"),
 	HDR10("HDR10"),
@@ -84,21 +88,27 @@ fun createDeviceProfileReport(
 		appendLine("- Server compatibility: $serverVersion")
 		appendCodeBlock(
 			language = "json",
-			code = createDeviceProfile(context, userPreferences, serverVersion)
-				.let(ApiSerializer::encodeRequestBody)
-				?.let(::formatJson)
+			code =
+				createDeviceProfile(context, userPreferences, serverVersion)
+					.let(ApiSerializer::encodeRequestBody)
+					?.let(::formatJson),
 		)
 	}
 
 	// Device capabilities used to generate profile
-	val codecs = MediaCodecList(MediaCodecList.ALL_CODECS).codecInfos
-		.filter { !it.isEncoder }
-		.sortedBy { if (isQ) it.canonicalName else it.name }
+	val codecs =
+		MediaCodecList(MediaCodecList.ALL_CODECS)
+			.codecInfos
+			.filter { !it.isEncoder }
+			.sortedBy { if (isQ) it.canonicalName else it.name }
 
 	appendDetails("Device codec decoders") {
 		for (codec in codecs) {
-			if (isQ) appendLine("- **${codec.canonicalName} (${codec.name})**")
-			else appendLine("- **${codec.name}**")
+			if (isQ) {
+				appendLine("- **${codec.canonicalName} (${codec.name})**")
+			} else {
+				appendLine("- **${codec.name}**")
+			}
 
 			if (isQ) appendLine("  - isVendor: ${codec.isVendor}")
 			if (isQ) appendLine("  - isHardwareAccelerated: ${codec.isHardwareAccelerated}")
@@ -113,8 +123,10 @@ fun createDeviceProfileReport(
 				capabilities.audioCapabilities?.let { audio ->
 					if (isS) appendLine("    - minInputChannelCount: ${audio.minInputChannelCount}")
 					appendLine("    - maxInputChannelCount: ${audio.maxInputChannelCount}")
-					if (isS) audio.inputChannelCountRanges.takeIf { it.isNotEmpty() }?.let {
-						appendLine("    - inputChannelCountRanges: ${it.joinToString(", ") { it.prettyFormat() }}")
+					if (isS) {
+						audio.inputChannelCountRanges.takeIf { it.isNotEmpty() }?.let {
+							appendLine("    - inputChannelCountRanges: ${it.joinToString(", ") { it.prettyFormat() }}")
+						}
 					}
 					audio.bitrateRange?.let { appendLine("    - bitrateRange: ${it.prettyFormat()}") }
 					// Note: Fire OS has a bug in the getter for supportedSampleRates that throws NullPointerException
@@ -137,8 +149,10 @@ fun createDeviceProfileReport(
 					video.supportedHeights?.let {
 						appendLine("    - supportedHeights: ${it.prettyFormat()}")
 					}
-					if (isQ) video.supportedPerformancePoints?.takeIf { it.isNotEmpty() }?.let {
-						appendLine("    - supportedPerformancePoints: ${it.joinToString(", ")}")
+					if (isQ) {
+						video.supportedPerformancePoints?.takeIf { it.isNotEmpty() }?.let {
+							appendLine("    - supportedPerformancePoints: ${it.joinToString(", ")}")
+						}
 					}
 				}
 
@@ -154,18 +168,20 @@ fun createDeviceProfileReport(
 				}
 
 				// Only show features section if there is at least 1
-				featureNames.mapNotNull { name ->
-					when {
-						capabilities.isFeatureRequired(name) -> "$name (required)"
-						capabilities.isFeatureSupported(name) -> name
-						else -> null
+				featureNames
+					.mapNotNull { name ->
+						when {
+							capabilities.isFeatureRequired(name) -> "$name (required)"
+							capabilities.isFeatureSupported(name) -> name
+							else -> null
+						}
+					}.takeIf { it.isNotEmpty() }
+					?.let { features ->
+						appendLine("    - features")
+						for (feature in features) {
+							appendLine("      - $feature")
+						}
 					}
-				}.takeIf { it.isNotEmpty() }?.let { features ->
-					appendLine("    - features")
-					for (feature in features) {
-						appendLine("      - $feature")
-					}
-				}
 			}
 
 			appendLine()
@@ -183,27 +199,30 @@ fun createDeviceProfileReport(
 	appendDetails("Codec HDR Support") {
 		val mediaTest = MediaCodecCapabilitiesTest(context)
 
-		val codecHDRSupport = buildMap<String, Map<HdrFormats, Boolean>> {
-			if (mediaTest.supportsAV1()) {
-				put(
-					Codec.Video.AV1, mapOf(
-						HdrFormats.DOLBY_VISION to mediaTest.supportsAV1DolbyVision(),
-						HdrFormats.HDR10 to mediaTest.supportsAV1HDR10(),
-						HdrFormats.HDR10_PLUS to mediaTest.supportsAV1HDR10Plus()
+		val codecHDRSupport =
+			buildMap<String, Map<HdrFormats, Boolean>> {
+				if (mediaTest.supportsAV1()) {
+					put(
+						Codec.Video.AV1,
+						mapOf(
+							HdrFormats.DOLBY_VISION to mediaTest.supportsAV1DolbyVision(),
+							HdrFormats.HDR10 to mediaTest.supportsAV1HDR10(),
+							HdrFormats.HDR10_PLUS to mediaTest.supportsAV1HDR10Plus(),
+						),
 					)
-				)
-			}
-			if (mediaTest.supportsHevc()) {
-				put(
-					Codec.Video.HEVC, mapOf(
-						HdrFormats.DOLBY_VISION to mediaTest.supportsHevcDolbyVision(),
-						HdrFormats.DOLBY_VISION_EL to mediaTest.supportsHevcDolbyVisionEL(),
-						HdrFormats.HDR10 to mediaTest.supportsHevcHDR10(),
-						HdrFormats.HDR10_PLUS to mediaTest.supportsHevcHDR10Plus()
+				}
+				if (mediaTest.supportsHevc()) {
+					put(
+						Codec.Video.HEVC,
+						mapOf(
+							HdrFormats.DOLBY_VISION to mediaTest.supportsHevcDolbyVision(),
+							HdrFormats.DOLBY_VISION_EL to mediaTest.supportsHevcDolbyVisionEL(),
+							HdrFormats.HDR10 to mediaTest.supportsHevcHDR10(),
+							HdrFormats.HDR10_PLUS to mediaTest.supportsHevcHDR10Plus(),
+						),
 					)
-				)
+				}
 			}
-		}
 
 		for ((codec, formats) in codecHDRSupport) {
 			appendLine("**${codec.uppercase()}**")
@@ -252,8 +271,12 @@ fun createDeviceProfileReport(
 		if (isQ) appendItem("Preferred wide color space") { appendValue(display.preferredWideGamutColorSpace.toString()) }
 		if (isN) {
 			@Suppress("DEPRECATION")
-			val supportedHdrTypes = if (isUpsideDownCake) display.mode.supportedHdrTypes.toList()
-			else display.hdrCapabilities.supportedHdrTypes.toList()
+			val supportedHdrTypes =
+				if (isUpsideDownCake) {
+					display.mode.supportedHdrTypes.toList()
+				} else {
+					display.hdrCapabilities.supportedHdrTypes.toList()
+				}
 
 			appendItem("HDR capabilities") {
 				appendLine()
@@ -264,12 +287,14 @@ fun createDeviceProfileReport(
 			}
 		}
 
-		if (isUpsideDownCake) appendItem("HDR/SDR ratio") {
-			appendLine()
-			appendItem("Available") { appendValue(display.isHdrSdrRatioAvailable.toString()) }
-			appendItem("Ratio") { appendValue(display.hdrSdrRatio.toString()) }
-			if (isBaklava) {
-				appendItem("Highest ratio") { appendValue(display.highestHdrSdrRatio.toString()) }
+		if (isUpsideDownCake) {
+			appendItem("HDR/SDR ratio") {
+				appendLine()
+				appendItem("Available") { appendValue(display.isHdrSdrRatioAvailable.toString()) }
+				appendItem("Ratio") { appendValue(display.hdrSdrRatio.toString()) }
+				if (isBaklava) {
+					appendItem("Highest ratio") { appendValue(display.highestHdrSdrRatio.toString()) }
+				}
 			}
 		}
 	}

@@ -11,15 +11,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrDiscoverItemDto
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 
 /**
  * Compose overlay for Jellyseerr media cards, replacing the View-based PosterBadges.
@@ -27,13 +27,12 @@ import org.jellyfin.androidtv.ui.base.Text
  */
 @Composable
 @Stable
-fun ItemCardJellyseerrOverlay(
-	item: JellyseerrDiscoverItemDto,
-) {
+fun ItemCardJellyseerrOverlay(item: JellyseerrDiscoverItemDto) {
 	Box(
-		modifier = Modifier
-			.fillMaxSize()
-			.padding(6.dp)
+		modifier =
+			Modifier
+				.fillMaxSize()
+				.padding(6.dp),
 	) {
 		MediaTypeBadge(
 			mediaType = item.mediaType,
@@ -55,20 +54,22 @@ private fun MediaTypeBadge(
 ) {
 	if (mediaType == null) return
 
-	val (text, bgColor) = when (mediaType) {
-		"movie" -> stringResource(R.string.lbl_movie_type_upper) to JellyfinTheme.colorScheme.info
-		"tv" -> stringResource(R.string.lbl_series_type_upper) to JellyfinTheme.colorScheme.secondary
-		else -> return
-	}
+	val (text, bgColor) =
+		when (mediaType) {
+			"movie" -> stringResource(R.string.lbl_movie_type_upper) to JellyfinTheme.colorScheme.info
+			"tv" -> stringResource(R.string.lbl_series_type_upper) to JellyfinTheme.colorScheme.secondary
+			else -> return
+		}
 
 	Text(
 		text = text,
 		style = JellyfinTheme.typography.labelSmall,
 		color = JellyfinTheme.colorScheme.onPrimary,
 		letterSpacing = 0.8.sp,
-		modifier = modifier
-			.background(bgColor.copy(alpha = 0.85f), JellyfinTheme.shapes.extraSmall)
-			.padding(horizontal = 6.dp, vertical = 2.dp),
+		modifier =
+			modifier
+				.background(bgColor.copy(alpha = 0.85f), JellyfinTheme.shapes.extraSmall)
+				.padding(horizontal = 6.dp, vertical = 2.dp),
 	)
 }
 
@@ -80,15 +81,16 @@ private fun AvailabilityIndicator(
 ) {
 	if (status == null) return
 
-	val iconRes = when (status) {
-		5 -> R.drawable.ic_available
-		4 -> R.drawable.ic_partially_available
-		3 -> R.drawable.ic_indigo_spinner
-		else -> return
-	}
+	val icon: ImageVector =
+		when (status) {
+			5 -> VegafoXIcons.Available
+			4 -> VegafoXIcons.PartiallyAvailable
+			3 -> VegafoXIcons.Spinner
+			else -> return
+		}
 
 	Icon(
-		imageVector = ImageVector.vectorResource(iconRes),
+		imageVector = icon,
 		contentDescription = null,
 		tint = Color.Unspecified,
 		modifier = modifier.size(20.dp),

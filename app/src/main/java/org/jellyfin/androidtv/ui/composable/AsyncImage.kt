@@ -64,13 +64,15 @@ fun blurHashPainter(
 	blurHash: String,
 	size: IntSize,
 	punch: Float = 1f,
-): Painter = remember(blurHash, size, punch) {
-	val bitmap = BlurHashDecoder.decode(
-		blurHash = blurHash,
-		width = size.width,
-		height = size.height,
-		punch = punch,
-	)
+): Painter =
+	remember(blurHash, size, punch) {
+		val bitmap =
+			BlurHashDecoder.decode(
+				blurHash = blurHash,
+				width = size.width,
+				height = size.height,
+				punch = punch,
+			)
 
-	BitmapPainter(requireNotNull(bitmap).asImageBitmap())
-}
+		BitmapPainter(requireNotNull(bitmap).asImageBitmap())
+	}

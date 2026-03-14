@@ -1,10 +1,10 @@
 package org.jellyfin.androidtv.ui.shared.toolbar
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -50,9 +51,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
-import androidx.activity.compose.LocalActivity
 import coil3.compose.AsyncImage
-import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
@@ -72,6 +71,8 @@ import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.focusBorderColor
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
+import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
 import org.jellyfin.androidtv.ui.itemhandling.ItemLauncher
 import org.jellyfin.androidtv.ui.navigation.ActivityDestinations
 import org.jellyfin.androidtv.ui.navigation.Destinations
@@ -151,7 +152,14 @@ fun LeftSidebarNavigation(
 			jellyseerrEnabled = userJellyseerrPrefs[JellyseerrPreferences.enabled]
 			jellyseerrVariant = userJellyseerrPrefs[JellyseerrPreferences.vegafoxVariant]
 			val dn = userJellyseerrPrefs[JellyseerrPreferences.vegafoxDisplayName]
-			jellyseerrDisplayName = if (dn.isNotBlank()) dn else if (jellyseerrVariant == "seerr") "Seerr" else "Jellyseerr"
+			jellyseerrDisplayName =
+				if (dn.isNotBlank()) {
+					dn
+				} else if (jellyseerrVariant == "seerr") {
+					"Seerr"
+				} else {
+					"Jellyseerr"
+				}
 		} else {
 			jellyseerrEnabled = false
 		}
@@ -250,30 +258,33 @@ private fun CollapsibleSidebarContent(
 	val isShuffling by shuffleManager.isShuffling.collectAsState()
 	val showShuffle = shuffleContentType != "disabled" && showShuffleButton
 	
-	val homeIcon = ImageVector.vectorResource(R.drawable.ic_house)
-	val searchIcon = ImageVector.vectorResource(R.drawable.ic_search)
-	val shuffleIcon = ImageVector.vectorResource(R.drawable.ic_shuffle)
-	val genresIcon = ImageVector.vectorResource(R.drawable.ic_masks)
-	val favoritesIcon = ImageVector.vectorResource(R.drawable.ic_heart)
-	val jellyseerrIcon = ImageVector.vectorResource(
-		if (jellyseerrVariant == "seerr") R.drawable.ic_seer else R.drawable.ic_jellyseerr_jellyfish
-	)
-	val syncplayIcon = ImageVector.vectorResource(R.drawable.ic_syncplay)
-	val librariesIcon = ImageVector.vectorResource(R.drawable.ic_clapperboard)
-	val settingsIcon = ImageVector.vectorResource(R.drawable.ic_settings)
+	val homeIcon = VegafoXIcons.Home
+	val searchIcon = VegafoXIcons.Search
+	val shuffleIcon = VegafoXIcons.Shuffle
+	val genresIcon = VegafoXIcons.Genres
+	val favoritesIcon = VegafoXIcons.Favorite
+	val jellyseerrIcon =
+		ImageVector.vectorResource(
+			if (jellyseerrVariant == "seerr") R.drawable.ic_seer else R.drawable.ic_jellyseerr_jellyfish,
+		)
+	val syncplayIcon = VegafoXIcons.SyncPlay
+	val librariesIcon = VegafoXIcons.Clapperboard
+	val settingsIcon = VegafoXIcons.Settings
 	
 	val sidebarWidth by animateDpAsState(
 		targetValue = if (isExpanded) 280.dp else 56.dp,
-		label = "sidebarWidth"
+		label = "sidebarWidth",
 	)
 	
-	val expandedBackground = Brush.horizontalGradient(
-		colors = listOf(
-			Color.Black.copy(alpha = 0.9f),
-			Color.Black.copy(alpha = 0.7f),
-			Color.Transparent
+	val expandedBackground =
+		Brush.horizontalGradient(
+			colors =
+				listOf(
+					Color.Black.copy(alpha = 0.9f),
+					Color.Black.copy(alpha = 0.7f),
+					Color.Transparent,
+				),
 		)
-	)
 	
 	val scrollState = rememberScrollState()
 	
@@ -298,326 +309,333 @@ private fun CollapsibleSidebarContent(
 
 	// Parent Box to contain both sidebar and clock
 	Box(
-		modifier = Modifier
-			.fillMaxHeight()
-			.fillMaxWidth()
+		modifier =
+			Modifier
+				.fillMaxHeight()
+				.fillMaxWidth(),
 	) {
 		// Sidebar Box
 		Box(
-			modifier = Modifier
-			.fillMaxHeight()
-			.width(sidebarWidth)
-			.clipToBounds()
-			.then(
-				if (isExpanded) {
-					Modifier.background(expandedBackground)
-				} else {
-					Modifier
-				}
-			)
-			.then(
-				// Add key handler for HomeFragment (media bar case) and SearchFragment
-				if (isHomeFragment || isSearchFragment) {
-					Modifier.onKeyEvent { keyEvent ->
-						if (keyEvent.nativeKeyEvent.action == android.view.KeyEvent.ACTION_DOWN &&
-							keyEvent.key == Key.DirectionRight) {
-							when {
-								isHomeFragment -> {
-									// Navigate to Home content
-									val contentView = rootView.findViewById<android.view.ViewGroup?>(android.R.id.content)
-									val target = contentView?.focusSearch(android.view.View.FOCUS_RIGHT)
-									if (target != null) {
-										target.requestFocus()
-										true
-									} else {
-										false
+			modifier =
+				Modifier
+					.fillMaxHeight()
+					.width(sidebarWidth)
+					.clipToBounds()
+					.then(
+						if (isExpanded) {
+							Modifier.background(expandedBackground)
+						} else {
+							Modifier
+						},
+					).then(
+						// Add key handler for HomeFragment (media bar case) and SearchFragment
+						if (isHomeFragment || isSearchFragment) {
+							Modifier.onKeyEvent { keyEvent ->
+								if (keyEvent.nativeKeyEvent.action == android.view.KeyEvent.ACTION_DOWN &&
+									keyEvent.key == Key.DirectionRight
+								) {
+									when {
+										isHomeFragment -> {
+											// Navigate to Home content
+											val contentView = rootView.findViewById<android.view.ViewGroup?>(android.R.id.content)
+											val target = contentView?.focusSearch(android.view.View.FOCUS_RIGHT)
+											if (target != null) {
+												target.requestFocus()
+												true
+											} else {
+												false
+											}
+										}
+										isSearchFragment -> {
+											// Find any focusable view to the right of the sidebar
+											val contentView = rootView.findViewById<android.view.ViewGroup?>(android.R.id.content)
+											val focusTarget = contentView?.focusSearch(android.view.View.FOCUS_RIGHT)
+											if (focusTarget != null) {
+												focusTarget.requestFocus()
+												true
+											} else {
+												false
+											}
+										}
+										else -> false
 									}
+								} else {
+									false
 								}
-								isSearchFragment -> {
-									// Find any focusable view to the right of the sidebar
-									val contentView = rootView.findViewById<android.view.ViewGroup?>(android.R.id.content)
-									val focusTarget = contentView?.focusSearch(android.view.View.FOCUS_RIGHT)
-									if (focusTarget != null) {
+							}
+						} else {
+							// Generic handler for other fragments - allow DPAD_RIGHT to exit sidebar
+							Modifier.onKeyEvent { keyEvent ->
+								if (keyEvent.nativeKeyEvent.action == android.view.KeyEvent.ACTION_DOWN &&
+									keyEvent.key == Key.DirectionRight
+								) {
+									// Find the currently focused view and search for the next focusable to the right
+									val focused = rootView.findFocus()
+									val focusTarget = focused?.focusSearch(android.view.View.FOCUS_RIGHT)
+									if (focusTarget != null && focusTarget != focused) {
 										focusTarget.requestFocus()
 										true
 									} else {
+										// Fallback: collapse sidebar by clearing focus
+										onExpandedChange(false)
 										false
 									}
+								} else {
+									false
 								}
-								else -> false
 							}
-						} else {
-							false
-						}
-					}
-				} else {
-					// Generic handler for other fragments - allow DPAD_RIGHT to exit sidebar
-					Modifier.onKeyEvent { keyEvent ->
-						if (keyEvent.nativeKeyEvent.action == android.view.KeyEvent.ACTION_DOWN &&
-							keyEvent.key == Key.DirectionRight) {
-							// Find the currently focused view and search for the next focusable to the right
-							val focused = rootView.findFocus()
-							val focusTarget = focused?.focusSearch(android.view.View.FOCUS_RIGHT)
-							if (focusTarget != null && focusTarget != focused) {
-								focusTarget.requestFocus()
-								true
-							} else {
-								// Fallback: collapse sidebar by clearing focus
-								onExpandedChange(false)
-								false
-							}
-						} else {
-							false
-						}
-					}
-				}
-			)
-			.onFocusChanged { focusState ->
-				onExpandedChange(focusState.hasFocus)
-			}
-	) {
-		Column(
-			modifier = Modifier
-				.fillMaxHeight()
-				.padding(vertical = 16.dp, horizontal = 8.dp),
+						},
+					).onFocusChanged { focusState ->
+						onExpandedChange(focusState.hasFocus)
+					},
 		) {
-			Column {
-				SidebarIconItem(
-					icon = null,
-					imageUrl = userImageUrl,
-					label = userName,
-					showLabel = isExpanded,
-					isExpanded = isExpanded,
-					onClick = {
-						if (activeButton != MainToolbarActiveButton.User) {
-							mediaManager.clearAudioQueue()
-							sessionRepository.destroyCurrentSession()
-							activity?.startActivity(ActivityDestinations.startup(activity))
-							activity?.finishAfterTransition()
-						}
-					}
-				)
-			}
-
 			Column(
-				modifier = Modifier
-					.weight(1f)
-					.verticalScroll(scrollState),
-				horizontalAlignment = Alignment.Start,
-				verticalArrangement = if (isExpanded) Arrangement.Top else Arrangement.Center
+				modifier =
+					Modifier
+						.fillMaxHeight()
+						.padding(vertical = 16.dp, horizontal = 8.dp),
 			) {
-				SidebarIconItem(
-					icon = homeIcon,
-					label = context.getString(R.string.lbl_home),
-					showLabel = isExpanded,
-					isExpanded = isExpanded,
-					isActive = activeButton == MainToolbarActiveButton.Home,
-					focusRequester = homeFocusRequester,
-					onClick = {
-						navigationRepository.navigate(Destinations.home)
-					}
-				)
-
-				Spacer(modifier = Modifier.height(2.dp))
-
-				SidebarIconItem(
-					icon = searchIcon,
-					label = context.getString(R.string.lbl_search),
-					showLabel = isExpanded,
-					isExpanded = isExpanded,
-					isActive = activeButton == MainToolbarActiveButton.Search,
-					onClick = {
-						navigationRepository.navigate(Destinations.search())
-					}
-				)
-
-				Spacer(modifier = Modifier.height(2.dp))
-
-				if (showShuffle) {
+				Column {
 					SidebarIconItem(
-						icon = shuffleIcon,
-						label = if (isShuffling) "..." else stringResource(R.string.lbl_shuffle),
+						icon = null,
+						imageUrl = userImageUrl,
+						label = userName,
 						showLabel = isExpanded,
 						isExpanded = isExpanded,
 						onClick = {
-							if (!isShuffling) {
-								kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
-									shuffleManager.quickShuffle(context)
-								}
+							if (activeButton != MainToolbarActiveButton.User) {
+								mediaManager.clearAudioQueue()
+								sessionRepository.destroyCurrentSession()
+								activity?.startActivity(ActivityDestinations.startup(activity))
+								activity?.finishAfterTransition()
 							}
 						},
-						onLongClick = { showShuffleDialog = true }
 					)
-					Spacer(modifier = Modifier.height(2.dp))
 				}
 
-				if (showGenresButton) {
+				Column(
+					modifier =
+						Modifier
+							.weight(1f)
+							.verticalScroll(scrollState),
+					horizontalAlignment = Alignment.Start,
+					verticalArrangement = if (isExpanded) Arrangement.Top else Arrangement.Center,
+				) {
 					SidebarIconItem(
-						icon = genresIcon,
-						label = context.getString(R.string.lbl_genres),
+						icon = homeIcon,
+						label = context.getString(R.string.lbl_home),
 						showLabel = isExpanded,
 						isExpanded = isExpanded,
+						isActive = activeButton == MainToolbarActiveButton.Home,
+						focusRequester = homeFocusRequester,
 						onClick = {
-							navigationRepository.navigate(Destinations.allGenres)
-						}
-					)
-					Spacer(modifier = Modifier.height(2.dp))
-				}
-
-				if (showFavoritesButton) {
-					SidebarIconItem(
-						icon = favoritesIcon,
-						label = context.getString(R.string.lbl_favorites),
-						showLabel = isExpanded,
-						isExpanded = isExpanded,
-						onClick = {
-							navigationRepository.navigate(Destinations.allFavorites)
-						}
-					)
-					Spacer(modifier = Modifier.height(2.dp))
-				}
-
-				if (jellyseerrEnabled) {
-					SidebarIconItem(
-						icon = jellyseerrIcon,
-						label = jellyseerrDisplayName,
-						showLabel = isExpanded,
-						isExpanded = isExpanded,
-					isActive = activeButton == MainToolbarActiveButton.Jellyseerr,
-						onClick = {
-							navigationRepository.navigate(Destinations.jellyseerrDiscover)
-						}
-					)
-					Spacer(modifier = Modifier.height(2.dp))
-				}
-
-				if (enableFolderView) {
-					SidebarIconItem(
-						icon = ImageVector.vectorResource(R.drawable.ic_folder),
-						label = context.getString(R.string.lbl_folders),
-						showLabel = isExpanded,
-						isExpanded = isExpanded,
-						onClick = {
-							navigationRepository.navigate(Destinations.folderView)
-						}
-					)
-					Spacer(modifier = Modifier.height(2.dp))
-				}
-
-				if (syncPlayEnabled) {
-					SidebarIconItem(
-						icon = syncplayIcon,
-						label = context.getString(R.string.syncplay),
-						showLabel = isExpanded,
-						isExpanded = isExpanded,
-						onClick = {
-							syncPlayViewModel.show()
-						}
-					)
-					Spacer(modifier = Modifier.height(2.dp))
-				}
-
-				if (showLibrariesInToolbar) {
-					SidebarIconItem(
-						icon = librariesIcon,
-						label = stringResource(R.string.pref_libraries),
-						showLabel = isExpanded,
-						isExpanded = isExpanded,
-						onFocusChanged = { hasFocus ->
-							librariesHasFocus = hasFocus
+							navigationRepository.navigate(Destinations.home)
 						},
+					)
+
+					Spacer(modifier = Modifier.height(2.dp))
+
+					SidebarIconItem(
+						icon = searchIcon,
+						label = context.getString(R.string.lbl_search),
+						showLabel = isExpanded,
+						isExpanded = isExpanded,
+						isActive = activeButton == MainToolbarActiveButton.Search,
 						onClick = {
-							// Always navigate to first library when clicking Libraries button
-							if (enableMultiServer && aggregatedLibraries.isNotEmpty()) {
-								val firstLib = aggregatedLibraries.first()
-								scope.launch {
-									val destination = when (firstLib.library.collectionType) {
-										CollectionType.LIVETV, CollectionType.MUSIC -> {
-											itemLauncher.getUserViewDestination(firstLib.library)
-										}
-										else -> {
-											Destinations.libraryBrowser(firstLib.library, firstLib.server.id, firstLib.userId)
-										}
+							navigationRepository.navigate(Destinations.search())
+						},
+					)
+
+					Spacer(modifier = Modifier.height(2.dp))
+
+					if (showShuffle) {
+						SidebarIconItem(
+							icon = shuffleIcon,
+							label = if (isShuffling) "..." else stringResource(R.string.lbl_shuffle),
+							showLabel = isExpanded,
+							isExpanded = isExpanded,
+							onClick = {
+								if (!isShuffling) {
+									scope.launch {
+										shuffleManager.quickShuffle(context)
 									}
-									navigationRepository.navigate(destination)
 								}
-							} else if (userViews.isNotEmpty()) {
-								val firstLib = userViews.first()
-								val destination = itemLauncher.getUserViewDestination(firstLib)
-								navigationRepository.navigate(destination)
-							}
-						}
-					)
-					
-					if (isExpanded && librariesHasFocus) {
-						if (enableMultiServer && aggregatedLibraries.isNotEmpty()) {
-							aggregatedLibraries.forEach { aggLib ->
-								SidebarTextItem(
-									label = aggLib.displayName,
-									onFocusChanged = { hasFocus ->
-										if (hasFocus) librariesHasFocus = true
-									},
-									onClick = {
-										scope.launch {
-											val destination = when (aggLib.library.collectionType) {
+							},
+							onLongClick = { showShuffleDialog = true },
+						)
+						Spacer(modifier = Modifier.height(2.dp))
+					}
+
+					if (showGenresButton) {
+						SidebarIconItem(
+							icon = genresIcon,
+							label = context.getString(R.string.lbl_genres),
+							showLabel = isExpanded,
+							isExpanded = isExpanded,
+							onClick = {
+								navigationRepository.navigate(Destinations.allGenres)
+							},
+						)
+						Spacer(modifier = Modifier.height(2.dp))
+					}
+
+					if (showFavoritesButton) {
+						SidebarIconItem(
+							icon = favoritesIcon,
+							label = context.getString(R.string.lbl_favorites),
+							showLabel = isExpanded,
+							isExpanded = isExpanded,
+							onClick = {
+								navigationRepository.navigate(Destinations.allFavorites)
+							},
+						)
+						Spacer(modifier = Modifier.height(2.dp))
+					}
+
+					if (jellyseerrEnabled) {
+						SidebarIconItem(
+							icon = jellyseerrIcon,
+							label = jellyseerrDisplayName,
+							showLabel = isExpanded,
+							isExpanded = isExpanded,
+							isActive = activeButton == MainToolbarActiveButton.Jellyseerr,
+							onClick = {
+								navigationRepository.navigate(Destinations.jellyseerrDiscover)
+							},
+						)
+						Spacer(modifier = Modifier.height(2.dp))
+					}
+
+					if (enableFolderView) {
+						SidebarIconItem(
+							icon = VegafoXIcons.Folder,
+							label = context.getString(R.string.lbl_folders),
+							showLabel = isExpanded,
+							isExpanded = isExpanded,
+							onClick = {
+								navigationRepository.navigate(Destinations.folderView)
+							},
+						)
+						Spacer(modifier = Modifier.height(2.dp))
+					}
+
+					if (syncPlayEnabled) {
+						SidebarIconItem(
+							icon = syncplayIcon,
+							label = context.getString(R.string.syncplay),
+							showLabel = isExpanded,
+							isExpanded = isExpanded,
+							onClick = {
+								syncPlayViewModel.show()
+							},
+						)
+						Spacer(modifier = Modifier.height(2.dp))
+					}
+
+					if (showLibrariesInToolbar) {
+						SidebarIconItem(
+							icon = librariesIcon,
+							label = stringResource(R.string.pref_libraries),
+							showLabel = isExpanded,
+							isExpanded = isExpanded,
+							onFocusChanged = { hasFocus ->
+								librariesHasFocus = hasFocus
+							},
+							onClick = {
+								// Always navigate to first library when clicking Libraries button
+								if (enableMultiServer && aggregatedLibraries.isNotEmpty()) {
+									val firstLib = aggregatedLibraries.first()
+									scope.launch {
+										val destination =
+											when (firstLib.library.collectionType) {
 												CollectionType.LIVETV, CollectionType.MUSIC -> {
-													itemLauncher.getUserViewDestination(aggLib.library)
+													itemLauncher.getUserViewDestination(firstLib.library)
 												}
 												else -> {
-													Destinations.libraryBrowser(aggLib.library, aggLib.server.id, aggLib.userId)
+													Destinations.libraryBrowser(firstLib.library, firstLib.server.id, firstLib.userId)
 												}
 											}
-											navigationRepository.navigate(destination)
-										}
-									}
-								)
-							}
-						} else {
-							userViews.forEach { library ->
-								SidebarTextItem(
-									label = library.name ?: "",
-									onFocusChanged = { hasFocus ->
-										if (hasFocus) librariesHasFocus = true
-									},
-									onClick = {
-										val destination = itemLauncher.getUserViewDestination(library)
 										navigationRepository.navigate(destination)
 									}
-								)
+								} else if (userViews.isNotEmpty()) {
+									val firstLib = userViews.first()
+									val destination = itemLauncher.getUserViewDestination(firstLib)
+									navigationRepository.navigate(destination)
+								}
+							},
+						)
+					
+						if (isExpanded && librariesHasFocus) {
+							if (enableMultiServer && aggregatedLibraries.isNotEmpty()) {
+								aggregatedLibraries.forEach { aggLib ->
+									SidebarTextItem(
+										label = aggLib.displayName,
+										onFocusChanged = { hasFocus ->
+											if (hasFocus) librariesHasFocus = true
+										},
+										onClick = {
+											scope.launch {
+												val destination =
+													when (aggLib.library.collectionType) {
+														CollectionType.LIVETV, CollectionType.MUSIC -> {
+															itemLauncher.getUserViewDestination(aggLib.library)
+														}
+														else -> {
+															Destinations.libraryBrowser(aggLib.library, aggLib.server.id, aggLib.userId)
+														}
+													}
+												navigationRepository.navigate(destination)
+											}
+										},
+									)
+								}
+							} else {
+								userViews.forEach { library ->
+									SidebarTextItem(
+										label = library.name ?: "",
+										onFocusChanged = { hasFocus ->
+											if (hasFocus) librariesHasFocus = true
+										},
+										onClick = {
+											val destination = itemLauncher.getUserViewDestination(library)
+											navigationRepository.navigate(destination)
+										},
+									)
+								}
 							}
 						}
+						Spacer(modifier = Modifier.height(2.dp))
 					}
-					Spacer(modifier = Modifier.height(2.dp))
+				}
+
+				Column {
+					SidebarIconItem(
+						icon = settingsIcon,
+						label = stringResource(R.string.settings),
+						showLabel = isExpanded,
+						isExpanded = isExpanded,
+						onClick = {
+							scope.launch {
+								settingsViewModel.show()
+							}
+						},
+					)
 				}
 			}
-
-			Column {
-				SidebarIconItem(
-					icon = settingsIcon,
-					label = stringResource(R.string.settings),
-					showLabel = isExpanded,
-					isExpanded = isExpanded,
-					onClick = {
-						scope.launch {
-							settingsViewModel.show()
-						}
-					}
-				)
-			}
 		}
-	}
 		
 		// Clock display in top right corner of screen
 		if (showClock) {
 			Box(
-				modifier = Modifier
-					.fillMaxWidth()
-					.padding(top = 24.dp, end = 32.dp)
-					.align(Alignment.TopEnd)
+				modifier =
+					Modifier
+						.fillMaxWidth()
+						.padding(top = 24.dp, end = 32.dp)
+						.align(Alignment.TopEnd),
 			) {
 				Box(
 					modifier = Modifier.fillMaxWidth(),
-					contentAlignment = Alignment.TopEnd
+					contentAlignment = Alignment.TopEnd,
 				) {
 					ToolbarClock()
 				}
@@ -635,17 +653,17 @@ private fun CollapsibleSidebarContent(
 			onDismiss = { showShuffleDialog = false },
 			onShuffle = { libraryId, serverId, genreName, contentType, libraryCollectionType ->
 				showShuffleDialog = false
-				kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+				scope.launch {
 					shuffleManager.shuffle(
 						context = context,
 						libraryId = libraryId,
 						serverId = serverId,
 						genreName = genreName,
 						contentType = contentType,
-						libraryCollectionType = libraryCollectionType
+						libraryCollectionType = libraryCollectionType,
 					)
 				}
-			}
+			},
 		)
 	}
 
@@ -654,7 +672,7 @@ private fun CollapsibleSidebarContent(
 	if (syncPlayVisible) {
 		SyncPlayDialog(
 			visible = true,
-			onDismissRequest = { syncPlayViewModel.hide() }
+			onDismissRequest = { syncPlayViewModel.hide() },
 		)
 	}
 }
@@ -670,7 +688,7 @@ private fun SidebarIconItem(
 	focusRequester: FocusRequester? = null,
 	onFocusChanged: ((Boolean) -> Unit)? = null,
 	onClick: () -> Unit,
-	onLongClick: (() -> Unit)? = null
+	onLongClick: (() -> Unit)? = null,
 ) {
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
@@ -685,7 +703,7 @@ private fun SidebarIconItem(
 	val focusedColor = focusBorderColor()
 	val iconAlpha by animateFloatAsState(
 		targetValue = if (isActive || isExpanded || imageUrl != null) 1f else 0.5f,
-		label = "iconAlpha"
+		label = "iconAlpha",
 	)
 	val iconColor = if (isActive && !isFocused) focusedColor else JellyfinTheme.colorScheme.onSurface.copy(alpha = iconAlpha)
 	val textColor = if (isActive && !isFocused) focusedColor else JellyfinTheme.colorScheme.onSurface
@@ -703,72 +721,72 @@ private fun SidebarIconItem(
 	}
 
 	Row(
-		modifier = Modifier
-			.then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
-			.then(
-				if (isFocused) {
-					Modifier
-						.border(2.dp, focusedColor, JellyfinTheme.shapes.extraLarge)
-						.padding(horizontal = 4.dp)
-				} else if (isActive) {
-					Modifier
-						.border(2.dp, focusedColor.copy(alpha = 0.6f), JellyfinTheme.shapes.extraLarge)
-						.padding(horizontal = 4.dp)
-				} else {
-					Modifier.padding(horizontal = 4.dp)
-				}
-			)
-			.focusable(interactionSource = interactionSource)
-			.onKeyEvent { keyEvent ->
-				if (keyEvent.key == Key.DirectionCenter || keyEvent.key == Key.Enter) {
-					when (keyEvent.nativeKeyEvent.action) {
-						android.view.KeyEvent.ACTION_DOWN -> {
-							if (longPressJob == null && onLongClick != null) {
-								longPressTriggered = false
-								longPressJob = scope.launch {
-									delay(500L)
-									longPressTriggered = true
-									onLongClick()
+		modifier =
+			Modifier
+				.then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
+				.then(
+					if (isFocused) {
+						Modifier
+							.border(2.dp, focusedColor, JellyfinTheme.shapes.extraLarge)
+							.padding(horizontal = 4.dp)
+					} else if (isActive) {
+						Modifier
+							.border(2.dp, focusedColor.copy(alpha = 0.6f), JellyfinTheme.shapes.extraLarge)
+							.padding(horizontal = 4.dp)
+					} else {
+						Modifier.padding(horizontal = 4.dp)
+					},
+				).focusable(interactionSource = interactionSource)
+				.onKeyEvent { keyEvent ->
+					if (keyEvent.key == Key.DirectionCenter || keyEvent.key == Key.Enter) {
+						when (keyEvent.nativeKeyEvent.action) {
+							android.view.KeyEvent.ACTION_DOWN -> {
+								if (longPressJob == null && onLongClick != null) {
+									longPressTriggered = false
+									longPressJob =
+										scope.launch {
+											delay(500L)
+											longPressTriggered = true
+											onLongClick()
+										}
 								}
+								true
 							}
-							true
-						}
-						android.view.KeyEvent.ACTION_UP -> {
-							longPressJob?.cancel()
-							longPressJob = null
-							if (!longPressTriggered) {
-								onClick()
+							android.view.KeyEvent.ACTION_UP -> {
+								longPressJob?.cancel()
+								longPressJob = null
+								if (!longPressTriggered) {
+									onClick()
+								}
+								longPressTriggered = false
+								true
 							}
-							longPressTriggered = false
-							true
+							else -> false
 						}
-						else -> false
+					} else {
+						false
 					}
-				} else {
-					false
-				}
-			}
-			.combinedClickable(
-				interactionSource = interactionSource,
-				indication = null,
-				onClick = onClick,
-				onLongClick = onLongClick
-			)
-			.padding(vertical = 6.dp, horizontal = 4.dp),
-		verticalAlignment = Alignment.CenterVertically
+				}.combinedClickable(
+					interactionSource = interactionSource,
+					indication = null,
+					onClick = onClick,
+					onLongClick = onLongClick,
+				).padding(vertical = 6.dp, horizontal = 4.dp),
+		verticalAlignment = Alignment.CenterVertically,
 	) {
 		Box(
 			modifier = Modifier.size(32.dp),
-			contentAlignment = Alignment.Center
+			contentAlignment = Alignment.Center,
 		) {
 			if (imageUrl != null) {
 				val placeholder = rememberGradientPlaceholder()
 				AsyncImage(
 					model = imageUrl,
 					contentDescription = label,
-					modifier = Modifier
-						.size(32.dp)
-						.clip(CircleShape),
+					modifier =
+						Modifier
+							.size(32.dp)
+							.clip(CircleShape),
 					contentScale = ContentScale.Crop,
 					placeholder = placeholder,
 				)
@@ -777,7 +795,7 @@ private fun SidebarIconItem(
 					imageVector = icon,
 					contentDescription = label,
 					modifier = Modifier.size(24.dp),
-					tint = iconColor
+					tint = iconColor,
 				)
 			}
 		}
@@ -800,7 +818,7 @@ private fun SidebarIconItem(
 private fun SidebarTextItem(
 	label: String,
 	onFocusChanged: ((Boolean) -> Unit)? = null,
-	onClick: () -> Unit
+	onClick: () -> Unit,
 ) {
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
@@ -813,38 +831,36 @@ private fun SidebarTextItem(
 	val textColor = JellyfinTheme.colorScheme.onSurface
 
 	Row(
-		modifier = Modifier
-			.focusable(interactionSource = interactionSource)
-			.onKeyEvent { keyEvent ->
-				if (keyEvent.key == Key.DirectionCenter || keyEvent.key == Key.Enter) {
-					when (keyEvent.nativeKeyEvent.action) {
-						android.view.KeyEvent.ACTION_UP -> {
-							onClick()
-							true
+		modifier =
+			Modifier
+				.focusable(interactionSource = interactionSource)
+				.onKeyEvent { keyEvent ->
+					if (keyEvent.key == Key.DirectionCenter || keyEvent.key == Key.Enter) {
+						when (keyEvent.nativeKeyEvent.action) {
+							android.view.KeyEvent.ACTION_UP -> {
+								onClick()
+								true
+							}
+							android.view.KeyEvent.ACTION_DOWN -> true
+							else -> false
 						}
-						android.view.KeyEvent.ACTION_DOWN -> true
-						else -> false
+					} else {
+						false
 					}
-				} else {
-					false
-				}
-			}
-			.then(
-				if (isFocused) {
-					Modifier
-						.border(2.dp, focusedColor, JellyfinTheme.shapes.extraLarge)
-						.padding(horizontal = 4.dp)
-				} else {
-					Modifier.padding(horizontal = 4.dp)
-				}
-			)
-			.clickable(
-				interactionSource = interactionSource,
-				indication = null,
-				onClick = onClick
-			)
-			.padding(vertical = 6.dp, horizontal = 4.dp),
-		verticalAlignment = Alignment.CenterVertically
+				}.then(
+					if (isFocused) {
+						Modifier
+							.border(2.dp, focusedColor, JellyfinTheme.shapes.extraLarge)
+							.padding(horizontal = 4.dp)
+					} else {
+						Modifier.padding(horizontal = 4.dp)
+					},
+				).clickable(
+					interactionSource = interactionSource,
+					indication = null,
+					onClick = onClick,
+				).padding(vertical = 6.dp, horizontal = 4.dp),
+		verticalAlignment = Alignment.CenterVertically,
 	) {
 		Spacer(modifier = Modifier.width(48.dp))
 		Text(

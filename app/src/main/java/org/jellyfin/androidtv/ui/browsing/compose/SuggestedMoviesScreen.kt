@@ -56,56 +56,70 @@ data class SuggestedMoviesUiState(
 class SuggestedMoviesViewModel(
 	val api: ApiClient,
 ) : ViewModel() {
-
 	private val _uiState = MutableStateFlow(SuggestedMoviesUiState())
 	val uiState: StateFlow<SuggestedMoviesUiState> = _uiState.asStateFlow()
 
 	private var folderId: UUID? = null
 
-	fun initialize(folderJson: String, becauseYouWatchedTemplate: String) {
+	fun initialize(
+		folderJson: String,
+		becauseYouWatchedTemplate: String,
+	) {
 		val folder = Json.decodeFromString<BaseItemDto>(folderJson)
 		folderId = folder.id
 		_uiState.update { it.copy(title = folder.name ?: "", isLoading = true, error = null) }
 		loadSuggestions(folder.id, becauseYouWatchedTemplate)
 	}
 
-	private fun loadSuggestions(parentId: UUID, becauseTemplate: String) {
+	private fun loadSuggestions(
+		parentId: UUID,
+		becauseTemplate: String,
+	) {
 		viewModelScope.launch {
 			try {
-				val recentMovies = withContext(Dispatchers.IO) {
-					api.itemsApi.getItems(
-						parentId = parentId,
-						includeItemTypes = setOf(BaseItemKind.MOVIE),
-						sortOrder = setOf(SortOrder.DESCENDING),
-						sortBy = setOf(ItemSortBy.DATE_PLAYED),
-						limit = 8,
-						recursive = true,
-					).content.items
-				}
+				val recentMovies =
+					withContext(Dispatchers.IO) {
+						api.itemsApi
+							.getItems(
+								parentId = parentId,
+								includeItemTypes = setOf(BaseItemKind.MOVIE),
+								sortOrder = setOf(SortOrder.DESCENDING),
+								sortBy = setOf(ItemSortBy.DATE_PLAYED),
+								limit = 8,
+								recursive = true,
+							).content.items
+					}
 
-				val rows = withContext(Dispatchers.IO) {
-					recentMovies.map { movie ->
-						async {
-							try {
-								val similar = api.libraryApi.getSimilarItems(
-									itemId = movie.id,
-									fields = ItemRepository.itemFields,
-									limit = 7,
-								).content.items
-								if (similar.isNotEmpty()) {
-									TvRow(
-										title = becauseTemplate.replace("%1\$s", movie.name ?: ""),
-										items = similar,
-										key = movie.id.toString(),
-									)
-								} else null
-							} catch (e: Exception) {
-								Timber.w(e, "Failed to load similar for ${movie.name}")
-								null
-							}
-						}
-					}.awaitAll().filterNotNull()
-				}
+				val rows =
+					withContext(Dispatchers.IO) {
+						recentMovies
+							.map { movie ->
+								async {
+									try {
+										val similar =
+											api.libraryApi
+												.getSimilarItems(
+													itemId = movie.id,
+													fields = ItemRepository.itemFields,
+													limit = 7,
+												).content.items
+										if (similar.isNotEmpty()) {
+											TvRow(
+												title = becauseTemplate.replace("%1\$s", movie.name ?: ""),
+												items = similar,
+												key = movie.id.toString(),
+											)
+										} else {
+											null
+										}
+									} catch (e: Exception) {
+										Timber.w(e, "Failed to load similar for ${movie.name}")
+										null
+									}
+								}
+							}.awaitAll()
+							.filterNotNull()
+					}
 
 				_uiState.update { it.copy(isLoading = false, rows = rows) }
 			} catch (e: Exception) {
@@ -137,12 +151,13 @@ fun SuggestedMoviesScreen(
 
 			Spacer(modifier = Modifier.height(16.dp))
 
-			val displayState = when {
-				uiState.isLoading -> DisplayState.LOADING
-				uiState.error != null -> DisplayState.ERROR
-				uiState.rows.isEmpty() -> DisplayState.EMPTY
-				else -> DisplayState.CONTENT
-			}
+			val displayState =
+				when {
+					uiState.isLoading -> DisplayState.LOADING
+					uiState.error != null -> DisplayState.ERROR
+					uiState.rows.isEmpty() -> DisplayState.EMPTY
+					else -> DisplayState.CONTENT
+				}
 
 			StateContainer(
 				state = displayState,

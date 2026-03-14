@@ -34,30 +34,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import coil3.compose.AsyncImage
 import org.jellyfin.androidtv.R
-import org.jellyfin.androidtv.ui.composable.rememberErrorPlaceholder
-import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
 import org.jellyfin.androidtv.data.service.BackgroundService
 import org.jellyfin.androidtv.data.service.BlurContext
 import org.jellyfin.androidtv.ui.background.AppBackground
+import org.jellyfin.androidtv.ui.base.Icon
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
+import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.debug.ScreenIdOverlay
+import org.jellyfin.androidtv.ui.base.debug.ScreenIds
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.skeleton.SkeletonLandscapeCardRow
 import org.jellyfin.androidtv.ui.base.state.DisplayState
 import org.jellyfin.androidtv.ui.base.state.EmptyState
 import org.jellyfin.androidtv.ui.base.state.ErrorState
 import org.jellyfin.androidtv.ui.base.state.StateContainer
-import org.jellyfin.androidtv.ui.base.Icon
-import org.jellyfin.androidtv.ui.base.JellyfinTheme
-import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.theme.BrowseDimensions
+import org.jellyfin.androidtv.ui.composable.rememberErrorPlaceholder
+import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
 import org.jellyfin.androidtv.ui.itemhandling.BaseItemDtoBaseRowItem
 import org.jellyfin.androidtv.ui.itemhandling.ItemLauncher
 import org.jellyfin.androidtv.ui.navigation.Destinations
@@ -66,12 +68,11 @@ import org.jellyfin.androidtv.util.apiclient.getUrl
 import org.jellyfin.androidtv.util.apiclient.itemImages
 import org.jellyfin.androidtv.util.apiclient.parentImages
 import org.jellyfin.sdk.model.api.BaseItemDto
-import org.jellyfin.sdk.model.api.ImageType as JellyfinImageType
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.jellyfin.sdk.model.api.ImageType as JellyfinImageType
 
 class ScheduleBrowseFragment : Fragment() {
-
 	private val viewModel: ScheduleBrowseViewModel by viewModel()
 	private val navigationRepository: NavigationRepository by inject()
 	private val backgroundService: BackgroundService by inject()
@@ -82,26 +83,40 @@ class ScheduleBrowseFragment : Fragment() {
 		container: ViewGroup?,
 		savedInstanceState: Bundle?,
 	): View {
-		val mainContainer = FrameLayout(requireContext()).apply {
-			layoutParams = ViewGroup.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.MATCH_PARENT,
-			)
-		}
+		val mainContainer =
+			FrameLayout(requireContext()).apply {
+				layoutParams =
+					ViewGroup.LayoutParams(
+						ViewGroup.LayoutParams.MATCH_PARENT,
+						ViewGroup.LayoutParams.MATCH_PARENT,
+					)
+			}
 
-		val contentView = ComposeView(requireContext()).apply {
-			layoutParams = FrameLayout.LayoutParams(
-				FrameLayout.LayoutParams.MATCH_PARENT,
-				FrameLayout.LayoutParams.MATCH_PARENT,
-			)
-			setContent { JellyfinTheme { ScheduleBrowseContent() } }
-		}
+		val contentView =
+			ComposeView(requireContext()).apply {
+				layoutParams =
+					FrameLayout.LayoutParams(
+						FrameLayout.LayoutParams.MATCH_PARENT,
+						FrameLayout.LayoutParams.MATCH_PARENT,
+					)
+				setContent {
+					JellyfinTheme {
+						ScreenIdOverlay(
+							ScreenIds.SCHEDULE_BROWSE_ID,
+							ScreenIds.SCHEDULE_BROWSE_NAME,
+						) { ScheduleBrowseContent() }
+					}
+				}
+			}
 		mainContainer.addView(contentView)
 
 		return mainContainer
 	}
 
-	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+	override fun onViewCreated(
+		view: View,
+		savedInstanceState: Bundle?,
+	) {
 		super.onViewCreated(view, savedInstanceState)
 		viewModel.initialize(requireContext())
 	}
@@ -116,19 +131,21 @@ class ScheduleBrowseFragment : Fragment() {
 			val currentBg by backgroundService.currentBackground.collectAsState()
 			val overlayAlpha = if (currentBg != null) 0.45f else 0.75f
 			Box(
-				modifier = Modifier
-					.fillMaxSize()
-					.background(JellyfinTheme.colorScheme.surfaceDim.copy(alpha = overlayAlpha)),
+				modifier =
+					Modifier
+						.fillMaxSize()
+						.background(JellyfinTheme.colorScheme.surfaceDim.copy(alpha = overlayAlpha)),
 			)
 
 			Column(modifier = Modifier.fillMaxSize()) {
 				ScheduleHeader(uiState = uiState)
 
-				val displayState = when {
-					uiState.isLoading -> DisplayState.LOADING
-					uiState.error != null -> DisplayState.ERROR
-					else -> DisplayState.CONTENT
-				}
+				val displayState =
+					when {
+						uiState.isLoading -> DisplayState.LOADING
+						uiState.error != null -> DisplayState.ERROR
+						else -> DisplayState.CONTENT
+					}
 				StateContainer(
 					state = displayState,
 					modifier = Modifier.weight(1f),
@@ -169,9 +186,15 @@ class ScheduleBrowseFragment : Fragment() {
 	@Composable
 	private fun ScheduleHeader(uiState: ScheduleBrowseUiState) {
 		Column(
-			modifier = Modifier
-				.fillMaxWidth()
-				.padding(start = 60.dp, end = 60.dp, top = 12.dp, bottom = 4.dp),
+			modifier =
+				Modifier
+					.fillMaxWidth()
+					.padding(
+						start = BrowseDimensions.contentPaddingHorizontal,
+						end = BrowseDimensions.contentPaddingHorizontal,
+						top = 12.dp,
+						bottom = 4.dp,
+					),
 		) {
 			Box(
 				modifier = Modifier.fillMaxWidth(),
@@ -199,7 +222,7 @@ class ScheduleBrowseFragment : Fragment() {
 				verticalAlignment = Alignment.CenterVertically,
 			) {
 				LibraryToolbarButton(
-					iconRes = R.drawable.ic_house,
+					icon = VegafoXIcons.Home,
 					contentDescription = stringResource(R.string.home),
 					onClick = { navigationRepository.navigate(Destinations.home) },
 				)
@@ -215,16 +238,18 @@ class ScheduleBrowseFragment : Fragment() {
 		val scrollState = rememberScrollState()
 
 		Column(
-			modifier = modifier
-				.fillMaxWidth()
-				.verticalScroll(scrollState)
-				.padding(bottom = 16.dp),
+			modifier =
+				modifier
+					.fillMaxWidth()
+					.verticalScroll(scrollState)
+					.padding(bottom = 16.dp),
 		) {
 			if (uiState.scheduleGroups.isEmpty()) {
 				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.padding(top = 40.dp),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.padding(top = 40.dp),
 					contentAlignment = Alignment.Center,
 				) {
 					Text(
@@ -250,20 +275,21 @@ class ScheduleBrowseFragment : Fragment() {
 		items: List<BaseItemDto>,
 	) {
 		Column(
-			modifier = Modifier
-				.fillMaxWidth()
-				.padding(top = 12.dp),
+			modifier =
+				Modifier
+					.fillMaxWidth()
+					.padding(top = 12.dp),
 		) {
 			Text(
 				text = title,
 				style = JellyfinTheme.typography.titleMedium,
 				color = JellyfinTheme.colorScheme.onSurface,
-				modifier = Modifier.padding(start = 60.dp, bottom = 8.dp),
+				modifier = Modifier.padding(start = BrowseDimensions.contentPaddingHorizontal, bottom = 8.dp),
 			)
 
 			LazyRow(
 				horizontalArrangement = Arrangement.spacedBy(12.dp),
-				contentPadding = PaddingValues(horizontal = 60.dp),
+				contentPadding = PaddingValues(horizontal = BrowseDimensions.contentPaddingHorizontal),
 			) {
 				items(items, key = { it.id }) { item ->
 					ScheduleCard(
@@ -298,30 +324,33 @@ class ScheduleBrowseFragment : Fragment() {
 		val alpha = if (isFocused) 1.0f else 0.75f
 
 		Column(
-			modifier = Modifier
-				.width(cardWidth.dp)
-				.graphicsLayer {
-					scaleX = scale
-					scaleY = scale
-					this.alpha = alpha
-				}
-				.clickable(
-					interactionSource = interactionSource,
-					indication = null,
-					onClick = onClick,
-				),
+			modifier =
+				Modifier
+					.width(cardWidth.dp)
+					.graphicsLayer {
+						scaleX = scale
+						scaleY = scale
+						this.alpha = alpha
+					}.clickable(
+						interactionSource = interactionSource,
+						indication = null,
+						onClick = onClick,
+					),
 			horizontalAlignment = Alignment.Start,
 		) {
 			Box(
-				modifier = Modifier
-					.width(cardWidth.dp)
-					.height(cardHeight.dp)
-					.clip(JellyfinTheme.shapes.extraSmall)
-					.then(
-						if (isFocused) Modifier.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.08f))
-						else Modifier
-					)
-					.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.06f)),
+				modifier =
+					Modifier
+						.width(cardWidth.dp)
+						.height(cardHeight.dp)
+						.clip(JellyfinTheme.shapes.extraSmall)
+						.then(
+							if (isFocused) {
+								Modifier.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+							} else {
+								Modifier
+							},
+						).background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.06f)),
 			) {
 				val imageUrl = getScheduleImageUrl(item)
 				if (imageUrl != null) {
@@ -341,7 +370,7 @@ class ScheduleBrowseFragment : Fragment() {
 						contentAlignment = Alignment.Center,
 					) {
 						Icon(
-							imageVector = ImageVector.vectorResource(R.drawable.ic_tv_timer),
+							imageVector = VegafoXIcons.TvTimer,
 							contentDescription = null,
 							modifier = Modifier.size(48.dp),
 							tint = JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.2f),

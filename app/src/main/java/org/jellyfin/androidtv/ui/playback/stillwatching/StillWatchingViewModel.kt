@@ -12,12 +12,12 @@ class StillWatchingViewModel(
 	userPreferences: UserPreferences,
 	private val interactionTrackerViewModel: InteractionTrackerViewModel,
 ) : PlaybackPromptViewModel<StillWatchingState>(
-	context,
-	api,
-	userPreferences,
-	initialState = StillWatchingState.INITIALIZED,
-	noDataState = StillWatchingState.NO_DATA,
-) {
+		context,
+		api,
+		userPreferences,
+		initialState = StillWatchingState.INITIALIZED,
+		noDataState = StillWatchingState.NO_DATA,
+	) {
 	fun stillWatching() {
 		interactionTrackerViewModel.notifyStillWatching()
 		setState(StillWatchingState.STILL_WATCHING)

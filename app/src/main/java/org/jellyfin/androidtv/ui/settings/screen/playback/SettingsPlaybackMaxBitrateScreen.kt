@@ -42,7 +42,7 @@ fun SettingsPlaybackMaxBitrateScreen() {
 				onClick = {
 					maxBitrate = value
 					router.back()
-				}
+				},
 			)
 		}
 	}

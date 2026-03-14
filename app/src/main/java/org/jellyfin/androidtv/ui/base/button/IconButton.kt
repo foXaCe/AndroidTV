@@ -46,7 +46,7 @@ fun IconButton(
 	colors: ButtonColors = ButtonDefaults.colors(),
 	contentPadding: PaddingValues = IconButtonDefaults.ContentPadding,
 	interactionSource: MutableInteractionSource? = null,
-	content: @Composable BoxScope.() -> Unit
+	content: @Composable BoxScope.() -> Unit,
 ) {
 	ButtonBase(
 		onClick = onClick,
@@ -58,8 +58,9 @@ fun IconButton(
 		interactionSource = interactionSource,
 	) {
 		Box(
-			modifier = Modifier
-				.padding(contentPadding),
+			modifier =
+				Modifier
+					.padding(contentPadding),
 			content = content,
 		)
 	}

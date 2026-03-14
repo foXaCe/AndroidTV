@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.auth.repository.SessionRepository
 import org.jellyfin.androidtv.auth.repository.SessionRepositoryState
 import org.jellyfin.androidtv.auth.repository.UserRepository
@@ -63,16 +62,17 @@ class MainActivity : FragmentActivity() {
 	private lateinit var binding: ActivityMainBinding
 	private val showExitDialog = mutableStateOf(false)
 
-	private val backPressedCallback = object : OnBackPressedCallback(false) {
-		override fun handleOnBackPressed() {
-			if (navigationRepository.canGoBack) {
-				navigationRepository.goBack()
-			} else {
-				// User is on home screen, show exit confirmation
-				showExitConfirmation()
+	private val backPressedCallback =
+		object : OnBackPressedCallback(false) {
+			override fun handleOnBackPressed() {
+				if (navigationRepository.canGoBack) {
+					navigationRepository.goBack()
+				} else {
+					// User is on home screen, show exit confirmation
+					showExitConfirmation()
+				}
 			}
 		}
-	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		Log.d("STARTUP", "MainActivity.onCreate: ${System.currentTimeMillis()}")
@@ -95,10 +95,14 @@ class MainActivity : FragmentActivity() {
 	}
 
 	private fun setupActivity(savedInstanceState: Bundle?) {
-		interactionTrackerViewModel.keepScreenOn.flowWithLifecycle(lifecycle, Lifecycle.State.RESUMED)
+		interactionTrackerViewModel.keepScreenOn
+			.flowWithLifecycle(lifecycle, Lifecycle.State.RESUMED)
 			.onEach { keepScreenOn ->
-				if (keepScreenOn) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-				else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+				if (keepScreenOn) {
+					window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+				} else {
+					window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+				}
 			}.launchIn(lifecycleScope)
 
 		onBackPressedDispatcher.addCallback(this, backPressedCallback)
@@ -132,23 +136,24 @@ class MainActivity : FragmentActivity() {
 			checkForUpdatesOnLaunch()
 		}
 	}
-	
+
 	private fun setupSyncPlayQueueLauncher() {
 		// Set up callback to handle queue loading when no active PlaybackController exists
 		syncPlayManager.queueLaunchCallback = { itemIds, startIndex, startPositionTicks ->
 			lifecycleScope.launch {
-				val queueResult = org.jellyfin.androidtv.data.syncplay.SyncPlayQueueHelper.fetchQueue(
-					itemIds = itemIds,
-					startIndex = startIndex,
-					startPositionTicks = startPositionTicks,
-				)
+				val queueResult =
+					org.jellyfin.androidtv.data.syncplay.SyncPlayQueueHelper.fetchQueue(
+						itemIds = itemIds,
+						startIndex = startIndex,
+						startPositionTicks = startPositionTicks,
+					)
 				
 				if (queueResult != null) {
 					playbackLauncher.launch(
 						context = this@MainActivity,
 						items = queueResult.items,
 						position = queueResult.startPositionMs.toInt(),
-						itemsPosition = queueResult.startIndex
+						itemsPosition = queueResult.startIndex,
 					)
 				}
 			}
@@ -183,30 +188,29 @@ class MainActivity : FragmentActivity() {
 	private fun checkForUpdatesOnLaunch() {
 		// Check if update notifications are enabled
 		if (!userPreferences[UserPreferences.updateNotificationsEnabled]) {
-			Timber.d("Update notifications are disabled")
 			return
 		}
 
 		lifecycleScope.launch(Dispatchers.IO) {
 			try {
 				val result = updateCheckerService.checkForUpdate()
-				result.onSuccess { updateInfo ->
-					if (updateInfo != null && updateInfo.isNewer) {
-						// Show toast on main thread
-						launch(Dispatchers.Main) {
-							Toast.makeText(
-								this@MainActivity,
-								"Update available: ${updateInfo.version}",
-								Toast.LENGTH_LONG
-							).show()
+				result
+					.onSuccess { updateInfo ->
+						if (updateInfo != null && updateInfo.isNewer) {
+							// Show toast on main thread
+							launch(Dispatchers.Main) {
+								Toast
+									.makeText(
+										this@MainActivity,
+										"Update available: ${updateInfo.version}",
+										Toast.LENGTH_LONG,
+									).show()
+							}
+							Timber.i("Update available: ${updateInfo.version}")
 						}
-						Timber.i("Update available: ${updateInfo.version}")
-					} else {
-						Timber.d("No updates available")
+					}.onFailure { error ->
+						Timber.e(error, "Failed to check for updates")
 					}
-				}.onFailure { error ->
-					Timber.e(error, "Failed to check for updates")
-				}
 			} catch (e: Exception) {
 				Timber.e(e, "Error checking for updates on launch")
 			}
@@ -239,7 +243,6 @@ class MainActivity : FragmentActivity() {
 	}
 
 	private fun handleNavigationAction(action: NavigationAction) {
-
 		when (action) {
 			is NavigationAction.NavigateFragment -> binding.contentView.navigate(action)
 			NavigationAction.GoBack -> binding.contentView.goBack()
@@ -249,13 +252,19 @@ class MainActivity : FragmentActivity() {
 	}
 
 	// Forward key events to fragments
-	private fun Fragment.onKeyEvent(keyCode: Int, event: KeyEvent?): Boolean {
+	private fun Fragment.onKeyEvent(
+		keyCode: Int,
+		event: KeyEvent?,
+	): Boolean {
 		var result = childFragmentManager.fragments.any { it.onKeyEvent(keyCode, event) }
 		if (!result && this is View.OnKeyListener) result = onKey(currentFocus, keyCode, event)
 		return result
 	}
 
-	private fun onKeyEvent(keyCode: Int, event: KeyEvent?): Boolean {
+	private fun onKeyEvent(
+		keyCode: Int,
+		event: KeyEvent?,
+	): Boolean {
 		// Ignore the key event that closes the screensaver
 		if (interactionTrackerViewModel.visible.value) {
 			interactionTrackerViewModel.notifyInteraction(canCancel = event?.action == KeyEvent.ACTION_UP, userInitiated = true)
@@ -266,14 +275,20 @@ class MainActivity : FragmentActivity() {
 			.any { it.onKeyEvent(keyCode, event) }
 	}
 
-	override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean =
-		onKeyEvent(keyCode, event) || super.onKeyDown(keyCode, event)
+	override fun onKeyDown(
+		keyCode: Int,
+		event: KeyEvent?,
+	): Boolean = onKeyEvent(keyCode, event) || super.onKeyDown(keyCode, event)
 
-	override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean =
-		onKeyEvent(keyCode, event) || super.onKeyUp(keyCode, event)
+	override fun onKeyUp(
+		keyCode: Int,
+		event: KeyEvent?,
+	): Boolean = onKeyEvent(keyCode, event) || super.onKeyUp(keyCode, event)
 
-	override fun onKeyLongPress(keyCode: Int, event: KeyEvent?): Boolean =
-		onKeyEvent(keyCode, event) || super.onKeyUp(keyCode, event)
+	override fun onKeyLongPress(
+		keyCode: Int,
+		event: KeyEvent?,
+	): Boolean = onKeyEvent(keyCode, event) || super.onKeyUp(keyCode, event)
 
 	override fun onUserInteraction() {
 		super.onUserInteraction()
@@ -334,12 +349,12 @@ class MainActivity : FragmentActivity() {
 
 		// Check if this is just an input device change (keyboard/navigation)
 		// These changes don't require theme reapplication and can cause visual glitches during playback
-		val isInputDeviceChange = newConfig.keyboard != resources.configuration.keyboard ||
-			newConfig.keyboardHidden != resources.configuration.keyboardHidden ||
-			newConfig.navigation != resources.configuration.navigation
+		val isInputDeviceChange =
+			newConfig.keyboard != resources.configuration.keyboard ||
+				newConfig.keyboardHidden != resources.configuration.keyboardHidden ||
+				newConfig.navigation != resources.configuration.navigation
 
 		if (isInputDeviceChange) {
-			Timber.d("Input device configuration changed - preserving activity and playback state without theme reapplication")
 			// Don't call applyTheme() for input device changes to avoid visual glitches during playback
 		} else {
 			Timber.d("Configuration changed - applying theme")

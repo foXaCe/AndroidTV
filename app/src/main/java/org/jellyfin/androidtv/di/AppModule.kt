@@ -26,25 +26,23 @@ import org.jellyfin.androidtv.data.repository.ItemMutationRepository
 import org.jellyfin.androidtv.data.repository.ItemMutationRepositoryImpl
 import org.jellyfin.androidtv.data.repository.JellyseerrRepository
 import org.jellyfin.androidtv.data.repository.JellyseerrRepositoryImpl
-import org.jellyfin.androidtv.data.repository.LocalWatchlistRepository
 import org.jellyfin.androidtv.data.repository.MdbListRepository
-import org.jellyfin.androidtv.data.repository.TmdbRepository
 import org.jellyfin.androidtv.data.repository.NotificationsRepository
 import org.jellyfin.androidtv.data.repository.NotificationsRepositoryImpl
+import org.jellyfin.androidtv.data.repository.TmdbRepository
 import org.jellyfin.androidtv.data.repository.UserViewsRepository
 import org.jellyfin.androidtv.data.repository.UserViewsRepositoryImpl
 import org.jellyfin.androidtv.data.service.BackgroundService
 import org.jellyfin.androidtv.data.service.UpdateCheckerService
-import org.jellyfin.androidtv.preference.JellyseerrPreferences
 import org.jellyfin.androidtv.data.syncplay.SyncPlayManager
 import org.jellyfin.androidtv.integration.dream.DreamViewModel
+import org.jellyfin.androidtv.preference.JellyseerrPreferences
 import org.jellyfin.androidtv.ui.InteractionTrackerViewModel
-
 import org.jellyfin.androidtv.ui.itemhandling.ItemLauncher
+import org.jellyfin.androidtv.ui.livetv.LiveTvGuideViewModel
 import org.jellyfin.androidtv.ui.navigation.Destinations
 import org.jellyfin.androidtv.ui.navigation.NavigationRepository
 import org.jellyfin.androidtv.ui.navigation.NavigationRepositoryImpl
-import org.jellyfin.androidtv.ui.shuffle.ShuffleManager
 import org.jellyfin.androidtv.ui.playback.PlaybackControllerContainer
 import org.jellyfin.androidtv.ui.playback.nextup.NextUpViewModel
 import org.jellyfin.androidtv.ui.playback.segment.MediaSegmentRepository
@@ -54,13 +52,12 @@ import org.jellyfin.androidtv.ui.player.photo.PhotoPlayerViewModel
 import org.jellyfin.androidtv.ui.search.SearchRepository
 import org.jellyfin.androidtv.ui.search.SearchRepositoryImpl
 import org.jellyfin.androidtv.ui.search.SearchViewModel
-import org.jellyfin.androidtv.ui.syncplay.SyncPlayViewModel
 import org.jellyfin.androidtv.ui.settings.compat.SettingsViewModel
+import org.jellyfin.androidtv.ui.shuffle.ShuffleManager
 import org.jellyfin.androidtv.ui.startup.ServerAddViewModel
 import org.jellyfin.androidtv.ui.startup.StartupViewModel
 import org.jellyfin.androidtv.ui.startup.UserLoginViewModel
-import org.jellyfin.androidtv.util.KeyProcessor
-import org.jellyfin.androidtv.util.MarkdownRenderer
+import org.jellyfin.androidtv.ui.syncplay.SyncPlayViewModel
 import org.jellyfin.androidtv.util.PlaybackHelper
 import org.jellyfin.androidtv.util.apiclient.ReportingHelper
 import org.jellyfin.androidtv.util.coil.CoilTimberLogger
@@ -71,6 +68,7 @@ import org.jellyfin.sdk.api.client.HttpClientOptions
 import org.jellyfin.sdk.api.okhttp.OkHttpFactory
 import org.jellyfin.sdk.createJellyfin
 import org.jellyfin.sdk.model.ClientInfo
+import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.qualifier.named
@@ -79,157 +77,268 @@ import org.jellyfin.sdk.Jellyfin as JellyfinSdk
 
 val defaultDeviceInfo = named("defaultDeviceInfo")
 
-val appModule = module {
-	// SDK
-	single(defaultDeviceInfo) { androidDevice(get()) }
-	single { OkHttpFactory() }
-	factory { HttpClientOptions() }
-	single {
-		createJellyfin {
-			context = androidContext()
+val appModule =
+	module {
+		// SDK
+		single(defaultDeviceInfo) { androidDevice(get()) }
+		single { OkHttpFactory() }
+		factory { HttpClientOptions() }
+		single {
+			createJellyfin {
+				context = androidContext()
 
-			// Add client info
-			val clientName = buildString {
-				append("VegafoX Android TV")
-				if (BuildConfig.DEBUG) append(" (debug)")
+				// Add client info
+				val clientName =
+					buildString {
+						append("VegafoX Android TV")
+						if (BuildConfig.DEBUG) append(" (debug)")
+					}
+				clientInfo = ClientInfo(clientName, BuildConfig.VERSION_NAME)
+				deviceInfo = get(defaultDeviceInfo)
+
+				// Change server version
+				minimumServerVersion = ServerRepository.minimumServerVersion
+
+				// Use our own shared factory instance
+				apiClientFactory = get<OkHttpFactory>()
+				socketConnectionFactory = get<OkHttpFactory>()
 			}
-			clientInfo = ClientInfo(clientName, BuildConfig.VERSION_NAME)
-			deviceInfo = get(defaultDeviceInfo)
+		}
 
-			// Change server version
-			minimumServerVersion = ServerRepository.minimumServerVersion
+		single {
+			// Create an empty API instance, the actual values are set by the SessionRepository
+			get<JellyfinSdk>().createApi(httpClientOptions = get<HttpClientOptions>())
+		}
 
-			// Use our own shared factory instance
-			apiClientFactory = get<OkHttpFactory>()
-			socketConnectionFactory = get<OkHttpFactory>()
+		single { SocketHandler(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), ProcessLifecycleOwner.get().lifecycle) }
+
+		// Coil (images)
+		single {
+			val okHttpFactory = get<OkHttpFactory>()
+			val httpClientOptions = get<HttpClientOptions>()
+
+			@OptIn(ExperimentalCoilApi::class)
+			OkHttpNetworkFetcherFactory(
+				callFactory = {
+					okHttpFactory
+						.createClient(httpClientOptions)
+						.newBuilder()
+						.dispatcher(
+							okhttp3.Dispatcher().apply {
+								maxRequests = 4
+								maxRequestsPerHost = 4
+							},
+						).build()
+				},
+				connectivityChecker = ::createCoilConnectivityChecker,
+			)
+		}
+
+		single {
+			val context = androidContext()
+			ImageLoader
+				.Builder(context)
+				.apply {
+					serviceLoaderEnabled(false)
+					crossfade(200)
+					logger(CoilTimberLogger(if (BuildConfig.DEBUG) Logger.Level.Warn else Logger.Level.Error))
+
+					// Configure memory cache - use 25% of available memory for images
+					memoryCache {
+						coil3.memory.MemoryCache
+							.Builder()
+							.maxSizePercent(context, percent = 0.25)
+							.strongReferencesEnabled(true)
+							.build()
+					}
+
+					// Configure disk cache - 512MB for image caching
+					diskCache {
+						coil3.disk.DiskCache
+							.Builder()
+							.directory(context.cacheDir.resolve("image_cache").toOkioPath())
+							.maxSizeBytes(512L * 1024 * 1024) // 512 MB
+							.build()
+					}
+
+					components {
+						add(get<NetworkFetcher.Factory>())
+
+						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+							add(AnimatedImageDecoder.Factory())
+						} else {
+							add(GifDecoder.Factory())
+						}
+						add(SvgDecoder.Factory())
+					}
+				}.build()
+		}
+
+		// Non API related
+		single { DataRefreshService() }
+		single { PlaybackControllerContainer() }
+		// Use single scope to ensure the same instance is used across all playback sessions
+		single { InteractionTrackerViewModel(get(), get()) }
+
+		single<UserRepository> { UserRepositoryImpl() }
+		single<UserViewsRepository> { UserViewsRepositoryImpl(get(), get()) }
+		single<NotificationsRepository> { NotificationsRepositoryImpl(get(), get()) }
+		single<ItemMutationRepository> { ItemMutationRepositoryImpl(get(), get()) }
+		single<CustomMessageRepository> { CustomMessageRepositoryImpl() }
+		single<NavigationRepository> { NavigationRepositoryImpl(Destinations.home) }
+		single { ShuffleManager(get(), get(), get(), get()) }
+		factory<SearchRepository> { SearchRepositoryImpl(get(), get()) }
+		single<MediaSegmentRepository> { MediaSegmentRepositoryImpl(get(), get(), get()) }
+		factory<ExternalAppRepository> { ExternalAppRepository(get()) }
+		single<org.jellyfin.androidtv.data.repository.MultiServerRepository> {
+			org.jellyfin.androidtv.data.repository
+				.MultiServerRepositoryImpl(get(), get(), get(), get(), get(defaultDeviceInfo), get())
+		}
+		single {
+			org.jellyfin.androidtv.util.sdk
+				.ApiClientFactory(get(), get(), get(defaultDeviceInfo), get())
+		}
+		single<org.jellyfin.androidtv.data.repository.ParentalControlsRepository> {
+			org.jellyfin.androidtv.data.repository
+				.ParentalControlsRepositoryImpl(androidContext(), get(), get())
+		}
+
+		// Jellyseerr - Global preferences (server URL, UI settings)
+		single(named("global")) { JellyseerrPreferences(androidContext()) }
+		// Jellyseerr - User-specific preferences (auth data, API keys) - scoped per user
+		factory(named("user")) { (userId: String) -> JellyseerrPreferences(androidContext(), userId) }
+		single<JellyseerrRepository> { JellyseerrRepositoryImpl(androidContext(), get(named("global")), get(), get()) }
+		single { MdbListRepository(get<OkHttpFactory>().createClient(get()), get()) }
+		single { TmdbRepository(get<OkHttpFactory>().createClient(get()), get(), get()) }
+
+		viewModel { StartupViewModel(get(), get(), get(), get()) }
+		viewModel {
+			org.jellyfin.androidtv.ui.startup.user
+				.UserSelectionViewModel(get(), get(), get(), get())
+		}
+		viewModel { UserLoginViewModel(get(), get(), get(), get(defaultDeviceInfo)) }
+		viewModel { ServerAddViewModel(get()) }
+		viewModel { NextUpViewModel(get(), get(), get()) }
+		viewModel { StillWatchingViewModel(get(), get(), get(), get()) }
+		viewModel { PhotoPlayerViewModel(get()) }
+		viewModel { SearchViewModel(get(), get(), get(named("global")), get(), get()) }
+		viewModel { LiveTvGuideViewModel(androidContext(), get(), get(), get(), get(), get()) }
+		viewModel { DreamViewModel(get(), get(), get(), get(), get()) }
+		viewModel { SettingsViewModel(get()) }
+		viewModel { SyncPlayViewModel() }
+		viewModel {
+			org.jellyfin.androidtv.ui.settings.screen.vegafox
+				.JellyseerrSettingsViewModel(get(), get(), get(), get(named("global")))
+		}
+		viewModel {
+			org.jellyfin.androidtv.ui.jellyseerr
+				.JellyseerrAuthViewModel(get())
+		}
+		viewModel {
+			org.jellyfin.androidtv.ui.jellyseerr
+				.JellyseerrDetailsViewModel(get())
+		}
+		viewModel {
+			org.jellyfin.androidtv.ui.jellyseerr
+				.JellyseerrDiscoverViewModel(get())
+		}
+		viewModel {
+			org.jellyfin.androidtv.ui.itemdetail.v2
+				.ItemDetailsViewModel(get(), get())
+		}
+		viewModel {
+			org.jellyfin.androidtv.ui.browsing.v2
+				.LibraryBrowseViewModel(get(), get(), get(), get(), get())
+		}
+		viewModel {
+			org.jellyfin.androidtv.ui.browsing.v2
+				.GenresGridViewModel(get(), get(), get(), get())
+		}
+		viewModel {
+			org.jellyfin.androidtv.ui.browsing.v2
+				.MusicBrowseViewModel(get(), get())
+		}
+		viewModel {
+			org.jellyfin.androidtv.ui.browsing.v2
+				.FolderBrowseViewModel(get(), get())
+		}
+		viewModel {
+			org.jellyfin.androidtv.ui.browsing.v2
+				.RecordingsBrowseViewModel(get())
+		}
+		viewModel {
+			org.jellyfin.androidtv.ui.browsing.v2
+				.ScheduleBrowseViewModel(get())
+		}
+		viewModel {
+			org.jellyfin.androidtv.ui.browsing.v2
+				.SeriesRecordingsBrowseViewModel(get())
+		}
+		viewModel {
+			org.jellyfin.androidtv.ui.browsing.compose
+				.CollectionBrowseViewModel(get())
+		}
+		viewModel {
+			org.jellyfin.androidtv.ui.browsing.compose
+				.SuggestedMoviesViewModel(get())
+		}
+		viewModel {
+			org.jellyfin.androidtv.ui.browsing.compose
+				.ByLetterBrowseViewModel(get())
+		}
+		viewModel {
+			org.jellyfin.androidtv.ui.browsing.compose
+				.FolderViewViewModel(get())
+		}
+		viewModel {
+			org.jellyfin.androidtv.ui.browsing.compose
+				.AllFavoritesViewModel(get())
+		}
+		single {
+			org.jellyfin.androidtv.ui.home.compose
+				.HomePrefetchService(androidApplication(), get())
+		}
+		single {
+			org.jellyfin.androidtv.ui.home.compose
+				.HomeRowsCache(androidContext())
+		}
+		viewModel {
+			org.jellyfin.androidtv.ui.home.compose
+				.HomeViewModel(get(), androidApplication(), get(), get(), get(), get(), get(), get())
+		}
+		viewModel {
+			org.jellyfin.androidtv.ui.playback.audio
+				.AudioNowPlayingViewModel(get(), get(), get(), get())
+		}
+		// SyncPlay
+		single { SyncPlayManager(androidContext(), get(), get()) }
+
+		single { BackgroundService(get(), get(), get(), get(), get(), get(), get()) }
+		single { UpdateCheckerService(get()) }
+
+		factory { ItemLauncher(get(), get(), get(), get(), get(), get()) }
+		factory { ReportingHelper(get(), get(), get()) }
+		factory<PlaybackHelper> { SdkPlaybackHelper(get(), get(), get(), get(), get()) }
+		single {
+			org.jellyfin.androidtv.ui.playback
+				.ThemeMusicPlayer(androidContext(), get(), get(), get())
+		}
+
+		// Server discovery & QuickConnect for Welcome screen
+		single<org.jellyfin.androidtv.ui.startup.server.ServerDiscoveryRepository> {
+			org.jellyfin.androidtv.ui.startup.server
+				.ServerDiscoveryRepositoryImpl(get())
+		}
+		single<org.jellyfin.androidtv.ui.startup.server.QuickConnectRepository> {
+			org.jellyfin.androidtv.ui.startup.server
+				.QuickConnectRepositoryImpl(get(), get(defaultDeviceInfo))
+		}
+		viewModel {
+			org.jellyfin.androidtv.ui.startup.server
+				.ServerDiscoveryViewModel(get(), get())
+		}
+		viewModel { params ->
+			org.jellyfin.androidtv.ui.startup.server
+				.QuickConnectViewModel(params.get(), get())
 		}
 	}
-
-	single {
-		// Create an empty API instance, the actual values are set by the SessionRepository
-		get<JellyfinSdk>().createApi(httpClientOptions = get<HttpClientOptions>())
-	}
-
-	single { SocketHandler(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), ProcessLifecycleOwner.get().lifecycle) }
-
-	// Coil (images)
-	single {
-		val okHttpFactory = get<OkHttpFactory>()
-		val httpClientOptions = get<HttpClientOptions>()
-
-		@OptIn(ExperimentalCoilApi::class)
-		OkHttpNetworkFetcherFactory(
-			callFactory = { okHttpFactory.createClient(httpClientOptions) },
-			connectivityChecker = ::createCoilConnectivityChecker,
-		)
-	}
-
-	single {
-		val context = androidContext()
-		ImageLoader.Builder(context).apply {
-			serviceLoaderEnabled(false)
-			crossfade(200)
-			logger(CoilTimberLogger(if (BuildConfig.DEBUG) Logger.Level.Warn else Logger.Level.Error))
-
-			// Configure memory cache - use 25% of available memory for images
-			memoryCache {
-				coil3.memory.MemoryCache.Builder()
-					.maxSizePercent(context, percent = 0.25)
-					.strongReferencesEnabled(true)
-					.build()
-			}
-
-			// Configure disk cache - 250MB for image caching
-			diskCache {
-				coil3.disk.DiskCache.Builder()
-					.directory(context.cacheDir.resolve("image_cache").toOkioPath())
-					.maxSizeBytes(250L * 1024 * 1024) // 250 MB
-					.build()
-			}
-
-			components {
-				add(get<NetworkFetcher.Factory>())
-
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) add(AnimatedImageDecoder.Factory())
-				else add(GifDecoder.Factory())
-				add(SvgDecoder.Factory())
-			}
-		}.build()
-	}
-
-	// Non API related
-	single { DataRefreshService() }
-	single { PlaybackControllerContainer() }
-	// Use single scope to ensure the same instance is used across all playback sessions
-	single { InteractionTrackerViewModel(get(), get()) }
-
-	single<UserRepository> { UserRepositoryImpl() }
-	single<UserViewsRepository> { UserViewsRepositoryImpl(get(), get()) }
-	single<NotificationsRepository> { NotificationsRepositoryImpl(get(), get()) }
-	single<ItemMutationRepository> { ItemMutationRepositoryImpl(get(), get()) }
-	single<CustomMessageRepository> { CustomMessageRepositoryImpl() }
-	single<NavigationRepository> { NavigationRepositoryImpl(Destinations.home) }
-	single { ShuffleManager(get(), get(), get(), get()) }
-	factory<SearchRepository> { SearchRepositoryImpl(get(), get()) }
-	single<MediaSegmentRepository> { MediaSegmentRepositoryImpl(get(), get(), get()) }
-	factory<ExternalAppRepository> { ExternalAppRepository(get()) }
-	single { LocalWatchlistRepository(androidContext()) }
-	single<org.jellyfin.androidtv.data.repository.MultiServerRepository> { 
-		org.jellyfin.androidtv.data.repository.MultiServerRepositoryImpl(get(), get(), get(), get(), get(defaultDeviceInfo), get()) 
-	}
-	single { org.jellyfin.androidtv.util.sdk.ApiClientFactory(get(), get(), get(defaultDeviceInfo), get()) }
-	single<org.jellyfin.androidtv.data.repository.ParentalControlsRepository> {
-		org.jellyfin.androidtv.data.repository.ParentalControlsRepositoryImpl(androidContext(), get(), get())
-	}
-
-	// Jellyseerr - Global preferences (server URL, UI settings)
-	single(named("global")) { JellyseerrPreferences(androidContext()) }
-	// Jellyseerr - User-specific preferences (auth data, API keys) - scoped per user
-	factory(named("user")) { (userId: String) -> JellyseerrPreferences(androidContext(), userId) }
-	single<JellyseerrRepository> { JellyseerrRepositoryImpl(androidContext(), get(named("global")), get()) }
-	single { MdbListRepository(get<OkHttpFactory>().createClient(get()), get()) }
-	single { TmdbRepository(get<OkHttpFactory>().createClient(get()), get(), get()) }
-
-	viewModel { StartupViewModel(get(), get(), get(), get()) }
-	viewModel { UserLoginViewModel(get(), get(), get(), get(defaultDeviceInfo)) }
-	viewModel { ServerAddViewModel(get()) }
-	viewModel { NextUpViewModel(get(), get(), get()) }
-	viewModel { StillWatchingViewModel(get(), get(), get(), get()) }
-	viewModel { PhotoPlayerViewModel(get()) }
-	viewModel { SearchViewModel(get(), get(), get(named("global")), get(), get()) }
-	viewModel { DreamViewModel(get(), get(), get(), get(), get()) }
-	viewModel { SettingsViewModel() }
-	viewModel { SyncPlayViewModel() }
-	viewModel { org.jellyfin.androidtv.ui.jellyseerr.JellyseerrAuthViewModel(get()) }
-	viewModel { org.jellyfin.androidtv.ui.jellyseerr.JellyseerrDetailsViewModel(get()) }
-	viewModel { org.jellyfin.androidtv.ui.jellyseerr.JellyseerrDiscoverViewModel(get()) }
-	viewModel { org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsViewModel(get(), get()) }
-	viewModel { org.jellyfin.androidtv.ui.browsing.v2.LibraryBrowseViewModel(get(), get(), get(), get(), get()) }
-	viewModel { org.jellyfin.androidtv.ui.browsing.v2.GenresGridViewModel(get(), get(), get(), get()) }
-	viewModel { org.jellyfin.androidtv.ui.browsing.v2.MusicBrowseViewModel(get(), get()) }
-	viewModel { org.jellyfin.androidtv.ui.browsing.v2.FolderBrowseViewModel(get(), get()) }
-	viewModel { org.jellyfin.androidtv.ui.browsing.v2.LiveTvBrowseViewModel(get()) }
-	viewModel { org.jellyfin.androidtv.ui.browsing.v2.RecordingsBrowseViewModel(get()) }
-	viewModel { org.jellyfin.androidtv.ui.browsing.v2.ScheduleBrowseViewModel(get()) }
-	viewModel { org.jellyfin.androidtv.ui.browsing.v2.SeriesRecordingsBrowseViewModel(get()) }
-	viewModel { org.jellyfin.androidtv.ui.browsing.compose.CollectionBrowseViewModel(get()) }
-	viewModel { org.jellyfin.androidtv.ui.browsing.compose.SuggestedMoviesViewModel(get()) }
-	viewModel { org.jellyfin.androidtv.ui.browsing.compose.ByLetterBrowseViewModel(get()) }
-	viewModel { org.jellyfin.androidtv.ui.browsing.compose.FolderViewViewModel(get()) }
-	viewModel { org.jellyfin.androidtv.ui.browsing.compose.AllFavoritesViewModel(get()) }
-	single { org.jellyfin.androidtv.ui.home.compose.HomePrefetchService(get()) }
-	viewModel { org.jellyfin.androidtv.ui.home.compose.HomeViewModel(get(), get(), get(), get(), get(), get()) }
-	viewModel { org.jellyfin.androidtv.ui.playback.audio.AudioNowPlayingViewModel(get(), get(), get(), get()) }
-	// SyncPlay
-	single { SyncPlayManager(androidContext(), get(), get()) }
-
-	single { BackgroundService(get(), get(), get(), get(), get(), get(), get()) }
-	single { UpdateCheckerService(get()) }
-
-	single { MarkdownRenderer(get()) }
-	factory { ItemLauncher() }
-	factory { KeyProcessor() }
-	factory { ReportingHelper(get(), get(), get()) }
-	factory<PlaybackHelper> { SdkPlaybackHelper(get(), get(), get(), get(), get()) }
-	single { org.jellyfin.androidtv.ui.playback.ThemeMusicPlayer(androidContext()) }
-}

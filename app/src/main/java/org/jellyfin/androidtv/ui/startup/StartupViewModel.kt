@@ -33,18 +33,23 @@ class StartupViewModel(
 	private val _users = MutableStateFlow<List<User>>(emptyList())
 	val users = _users.asStateFlow()
 
-	private val userComparator = compareByDescending<User> { user ->
-		if (
-			authenticationPreferences[AuthenticationPreferences.sortBy] == AuthenticationSortBy.LAST_USE &&
-			user is PrivateUser
-		) user.lastUsed
-		else null
-	}.thenBy { user -> user.name }
+	private val userComparator =
+		compareByDescending<User> { user ->
+			if (
+				authenticationPreferences[AuthenticationPreferences.sortBy] == AuthenticationSortBy.LAST_USE &&
+				user is PrivateUser
+			) {
+				user.lastUsed
+			} else {
+				null
+			}
+		}.thenBy { user -> user.name }
 
 	private val discoveryMutex = Mutex()
 
-	fun getServer(id: UUID) = serverRepository.storedServers.value
-		.find { it.id == id }
+	fun getServer(id: UUID) =
+		serverRepository.storedServers.value
+			.find { it.id == id }
 
 	fun loadUsers(server: Server) {
 		viewModelScope.launch {
@@ -52,8 +57,10 @@ class StartupViewModel(
 			_users.value = storedUsers.sortedWith(userComparator)
 
 			val storedUserIds = storedUsers.map { it.id }
-			val publicUsers = serverUserRepository.getPublicServerUsers(server)
-				.filterNot { it.id in storedUserIds }
+			val publicUsers =
+				serverUserRepository
+					.getPublicServerUsers(server)
+					.filterNot { it.id in storedUserIds }
 			_users.value = (storedUsers + publicUsers).sortedWith(userComparator)
 		}
 	}
@@ -64,11 +71,15 @@ class StartupViewModel(
 		viewModelScope.launch { serverRepository.deleteServer(serverId) }
 	}
 
-	fun authenticate(server: Server, user: User): Flow<LoginState> =
-		authenticationRepository.authenticate(server, AutomaticAuthenticateMethod(user))
+	fun authenticate(
+		server: Server,
+		user: User,
+	): Flow<LoginState> = authenticationRepository.authenticate(server, AutomaticAuthenticateMethod(user))
 
-	fun getUserImage(server: Server, user: User): String? =
-		authenticationRepository.getUserImageUrl(server, user)
+	fun getUserImage(
+		server: Server,
+		user: User,
+	): String? = authenticationRepository.getUserImageUrl(server, user)
 
 	fun loadDiscoveryServers() {
 		// Only run one discovery process at a time
@@ -92,4 +103,3 @@ class StartupViewModel(
 
 	suspend fun updateServer(server: Server): Boolean = serverRepository.updateServer(server)
 }
-

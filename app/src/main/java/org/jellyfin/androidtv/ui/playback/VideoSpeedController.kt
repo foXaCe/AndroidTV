@@ -1,9 +1,11 @@
 package org.jellyfin.androidtv.ui.playback
 
 class VideoSpeedController(
-	private val parentController: PlaybackController
+	private val parentController: PlaybackController,
 ) {
-	enum class SpeedSteps(val speed: Float) {
+	enum class SpeedSteps(
+		val speed: Float,
+	) {
 		// Use named parameter so detekt knows these aren't magic values
 		SPEED_0_25(speed = 0.25f),
 		SPEED_0_50(speed = 0.5f),
@@ -24,7 +26,7 @@ class VideoSpeedController(
 	var currentSpeed = previousSpeedSelection
 		set(value) {
 			val checkedVal = if (parentController.isLiveTv) SpeedSteps.SPEED_1_00 else value
-			parentController.setPlaybackSpeed(checkedVal.speed)
+			parentController.playbackSpeed = checkedVal.speed
 
 			previousSpeedSelection = checkedVal
 			field = checkedVal

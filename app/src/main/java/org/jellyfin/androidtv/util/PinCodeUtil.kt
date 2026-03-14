@@ -13,7 +13,10 @@ object PinCodeUtil {
 	/**
 	 * Check if PIN protection is enabled for a specific user
 	 */
-	fun isPinEnabled(context: Context, userId: UUID): Boolean {
+	fun isPinEnabled(
+		context: Context,
+		userId: UUID,
+	): Boolean {
 		val prefs = UserSettingPreferences(context, userId)
 		return prefs[UserSettingPreferences.userPinEnabled] &&
 			prefs[UserSettingPreferences.userPinHash].isNotEmpty()
@@ -23,7 +26,11 @@ object PinCodeUtil {
 	 * Verify PIN code for a user by showing a dialog
 	 * @param onResult callback with true if PIN is correct, false otherwise
 	 */
-	fun verifyPin(context: Context, userId: UUID, onResult: (Boolean) -> Unit) {
+	fun verifyPin(
+		context: Context,
+		userId: UUID,
+		onResult: (Boolean) -> Unit,
+	) {
 		val prefs = UserSettingPreferences(context, userId)
 		val storedHash = prefs[UserSettingPreferences.userPinHash]
 
@@ -44,7 +51,7 @@ object PinCodeUtil {
 					// User cancelled
 					onResult(false)
 				}
-			}
+			},
 		)
 	}
 

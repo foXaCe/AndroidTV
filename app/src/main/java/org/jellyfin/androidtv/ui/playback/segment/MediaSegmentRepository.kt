@@ -18,13 +18,14 @@ interface MediaSegmentRepository {
 		/**
 		 * All media segments currently supported by the app. The order of these is used for the preferences UI.
 		 */
-		val SupportedTypes = listOf(
-			MediaSegmentType.INTRO,
-			MediaSegmentType.OUTRO,
-			MediaSegmentType.PREVIEW,
-			MediaSegmentType.RECAP,
-			MediaSegmentType.COMMERCIAL,
-		)
+		val SupportedTypes =
+			listOf(
+				MediaSegmentType.INTRO,
+				MediaSegmentType.OUTRO,
+				MediaSegmentType.PREVIEW,
+				MediaSegmentType.RECAP,
+				MediaSegmentType.COMMERCIAL,
+			)
 
 		/**
 		 * The minimum duration for a media segment to allow the [MediaSegmentAction.SKIP] action.
@@ -43,9 +44,14 @@ interface MediaSegmentRepository {
 	}
 
 	fun getDefaultSegmentTypeAction(type: MediaSegmentType): MediaSegmentAction
-	fun setDefaultSegmentTypeAction(type: MediaSegmentType, action: MediaSegmentAction)
+
+	fun setDefaultSegmentTypeAction(
+		type: MediaSegmentType,
+		action: MediaSegmentAction,
+	)
 
 	suspend fun getSegmentsForItem(item: BaseItemDto): List<MediaSegmentDto>
+
 	fun getMediaSegmentAction(segment: MediaSegmentDto): MediaSegmentAction
 }
 
@@ -65,14 +71,15 @@ class MediaSegmentRepositoryImpl(
 	}
 
 	private fun restoreMediaTypeActions() {
-		val restoredMediaTypeActions = userPreferences[UserPreferences.mediaSegmentActions]
-			.split(",")
-			.mapNotNull {
-				runCatching {
-					val (type, action) = it.split('=', limit = 2)
-					MediaSegmentType.fromName(type) to MediaSegmentAction.valueOf(action)
-				}.getOrNull()
-			}
+		val restoredMediaTypeActions =
+			userPreferences[UserPreferences.mediaSegmentActions]
+				.split(",")
+				.mapNotNull {
+					runCatching {
+						val (type, action) = it.split('=', limit = 2)
+						MediaSegmentType.fromName(type) to MediaSegmentAction.valueOf(action)
+					}.getOrNull()
+				}
 
 		mediaTypeActions.clear()
 		mediaTypeActions.putAll(restoredMediaTypeActions)
@@ -87,7 +94,10 @@ class MediaSegmentRepositoryImpl(
 		return mediaTypeActions.getOrDefault(type, MediaSegmentAction.NOTHING)
 	}
 
-	override fun setDefaultSegmentTypeAction(type: MediaSegmentType, action: MediaSegmentAction) {
+	override fun setDefaultSegmentTypeAction(
+		type: MediaSegmentType,
+		action: MediaSegmentAction,
+	) {
 		if (!MediaSegmentRepository.SupportedTypes.contains(type)) return
 		mediaTypeActions[type] = action
 		saveMediaTypeActions()
@@ -96,18 +106,24 @@ class MediaSegmentRepositoryImpl(
 	override fun getMediaSegmentAction(segment: MediaSegmentDto): MediaSegmentAction {
 		val action = getDefaultSegmentTypeAction(segment.type)
 		if (action == MediaSegmentAction.SKIP && segment.duration < MediaSegmentRepository.SkipMinDuration) return MediaSegmentAction.NOTHING
-		if (action == MediaSegmentAction.ASK_TO_SKIP && segment.duration < MediaSegmentRepository.AskToSkipMinDuration) return MediaSegmentAction.NOTHING
+		if (action == MediaSegmentAction.ASK_TO_SKIP &&
+			segment.duration < MediaSegmentRepository.AskToSkipMinDuration
+		) {
+			return MediaSegmentAction.NOTHING
+		}
 		return action
 	}
 
-	override suspend fun getSegmentsForItem(item: BaseItemDto): List<MediaSegmentDto> = runCatching {
-		val serverId = UUIDUtils.parseUUID(item.serverId)
-		val effectiveApi = if (serverId != null) apiClientFactory.getApiClientForServer(serverId) ?: api else api
-		withContext(Dispatchers.IO) {
-			effectiveApi.mediaSegmentsApi.getItemSegments(
-				itemId = item.id,
-				includeSegmentTypes = MediaSegmentRepository.SupportedTypes,
-			).content.items
-		}
-	}.getOrDefault(emptyList())
+	override suspend fun getSegmentsForItem(item: BaseItemDto): List<MediaSegmentDto> =
+		runCatching {
+			val serverId = UUIDUtils.parseUUID(item.serverId)
+			val effectiveApi = if (serverId != null) apiClientFactory.getApiClientForServer(serverId) ?: api else api
+			withContext(Dispatchers.IO) {
+				effectiveApi.mediaSegmentsApi
+					.getItemSegments(
+						itemId = item.id,
+						includeSegmentTypes = MediaSegmentRepository.SupportedTypes,
+					).content.items
+			}
+		}.getOrDefault(emptyList())
 }

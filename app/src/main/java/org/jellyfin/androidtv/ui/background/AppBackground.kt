@@ -37,14 +37,18 @@ import org.koin.compose.koinInject
 @Composable
 private fun AppThemeBackground() {
 	val context = LocalContext.current
-	val themeBackground = remember(context.theme) {
-		val attributes = context.theme.obtainStyledAttributes(intArrayOf(R.attr.defaultBackground))
-		val drawable = attributes.getDrawable(0)
-		attributes.recycle()
+	val themeBackground =
+		remember(context.theme) {
+			val attributes = context.theme.obtainStyledAttributes(intArrayOf(R.attr.defaultBackground))
+			val drawable = attributes.getDrawable(0)
+			attributes.recycle()
 
-		if (drawable is ColorDrawable) drawable.toBitmap(1, 1).asImageBitmap()
-		else drawable?.toBitmap()?.asImageBitmap()
-	}
+			if (drawable is ColorDrawable) {
+				drawable.toBitmap(1, 1).asImageBitmap()
+			} else {
+				drawable?.toBitmap()?.asImageBitmap()
+			}
+		}
 
 	if (themeBackground != null) {
 		Image(
@@ -52,13 +56,14 @@ private fun AppThemeBackground() {
 			contentDescription = null,
 			alignment = Alignment.Center,
 			contentScale = ContentScale.Crop,
-			modifier = Modifier.fillMaxSize()
+			modifier = Modifier.fillMaxSize(),
 		)
 	} else {
 		Box(
-			modifier = Modifier
-				.fillMaxSize()
-				.background(Color.Black)
+			modifier =
+				Modifier
+					.fillMaxSize()
+					.background(Color.Black),
 		)
 	}
 }
@@ -74,15 +79,16 @@ fun AppBackground() {
 	val detailsBlurAmount by rememberPreference(userSettingPreferences, UserSettingPreferences.detailsBackgroundBlurAmount)
 	val browsingBlurAmount by rememberPreference(userSettingPreferences, UserSettingPreferences.browsingBackgroundBlurAmount)
 	
-	val blurAmount = if (backgroundService.useComposeBlur) {
-		when (blurContext) {
-			BlurContext.DETAILS -> detailsBlurAmount
-			BlurContext.BROWSING -> browsingBlurAmount
-			BlurContext.NONE -> 0
+	val blurAmount =
+		if (backgroundService.useComposeBlur) {
+			when (blurContext) {
+				BlurContext.DETAILS -> detailsBlurAmount
+				BlurContext.BROWSING -> browsingBlurAmount
+				BlurContext.NONE -> 0
+			}
+		} else {
+			0
 		}
-	} else {
-		0
-	}
 
 	if (enabled) {
 		AnimatedContent(
@@ -100,9 +106,10 @@ fun AppBackground() {
 					alignment = Alignment.Center,
 					contentScale = ContentScale.Crop,
 					colorFilter = ColorFilter.tint(colorResource(R.color.background_filter), BlendMode.SrcAtop),
-					modifier = Modifier
-						.fillMaxSize()
-						.then(if (blurAmount > 0) Modifier.blur(blurAmount.dp) else Modifier)
+					modifier =
+						Modifier
+							.fillMaxSize()
+							.then(if (blurAmount > 0) Modifier.blur(blurAmount.dp) else Modifier),
 				)
 			} else {
 				AppThemeBackground()

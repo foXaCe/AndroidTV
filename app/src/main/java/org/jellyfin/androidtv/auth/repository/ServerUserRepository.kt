@@ -18,8 +18,9 @@ import timber.log.Timber
  * Authentication is done using the [AuthenticationRepository].
  */
 interface ServerUserRepository {
-	//server
+	// server
 	fun getStoredServerUsers(server: Server): List<PrivateUser>
+
 	suspend fun getPublicServerUsers(server: Server): List<PublicUser>
 
 	fun deleteStoredUser(user: PrivateUser)
@@ -29,29 +30,31 @@ class ServerUserRepositoryImpl(
 	private val jellyfin: Jellyfin,
 	private val authenticationStore: AuthenticationStore,
 ) : ServerUserRepository {
-	override fun getStoredServerUsers(server: Server) = authenticationStore.getUsers(server.id)
-		?.mapNotNull { (userId, userInfo) ->
-			val authInfo = authenticationStore.getUser(server.id, userId)
-			PrivateUser(
-				id = userId,
-				serverId = server.id,
-				name = userInfo.name,
-				accessToken = authInfo?.accessToken,
-				imageTag = userInfo.imageTag,
-				lastUsed = userInfo.lastUsed,
-			)
-		}
-		?.sortedWith(compareByDescending<PrivateUser> { it.lastUsed }.thenBy { it.name })
-		.orEmpty()
+	override fun getStoredServerUsers(server: Server) =
+		authenticationStore
+			.getUsers(server.id)
+			?.mapNotNull { (userId, userInfo) ->
+				val authInfo = authenticationStore.getUser(server.id, userId)
+				PrivateUser(
+					id = userId,
+					serverId = server.id,
+					name = userInfo.name,
+					accessToken = authInfo?.accessToken,
+					imageTag = userInfo.imageTag,
+					lastUsed = userInfo.lastUsed,
+				)
+			}?.sortedWith(compareByDescending<PrivateUser> { it.lastUsed }.thenBy { it.name })
+			.orEmpty()
 
 	override suspend fun getPublicServerUsers(server: Server): List<PublicUser> {
 		// Create a fresh API because the shared one might be authenticated for a different server
 		val api = jellyfin.createApi(server.address)
 
 		return try {
-			val users = withContext(Dispatchers.IO) {
-				api.userApi.getPublicUsers().content
-			}
+			val users =
+				withContext(Dispatchers.IO) {
+					api.userApi.getPublicUsers().content
+				}
 			users.mapNotNull(UserDto::toPublicUser)
 		} catch (err: ApiClientException) {
 			Timber.e(err, "Unable to retrieve public users")

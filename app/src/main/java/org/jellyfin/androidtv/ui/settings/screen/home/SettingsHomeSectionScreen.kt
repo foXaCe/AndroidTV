@@ -49,7 +49,7 @@ fun SettingsHomeSectionScreen(index: Int) {
 				onClick = {
 					sectionType = entry
 					router.back()
-				}
+				},
 			)
 		}
 	}

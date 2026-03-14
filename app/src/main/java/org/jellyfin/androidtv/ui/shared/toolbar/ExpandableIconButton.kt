@@ -57,8 +57,7 @@ fun ExpandableIconButton(
 		animationSpec = AnimationDefaults.focusSpec(),
 		label = "ButtonScale",
 	)
-	
-	
+
 	// Bring button into view when focused
 	LaunchedEffect(isFocused) {
 		if (isFocused) {
@@ -68,21 +67,23 @@ fun ExpandableIconButton(
 		}
 	}
 
-	val contentPadding = if (isFocused) {
-		PaddingValues(horizontal = 16.dp, vertical = 10.dp)
-	} else {
-		PaddingValues(horizontal = 5.dp, vertical = 10.dp)
-	}
+	val contentPadding =
+		if (isFocused) {
+			PaddingValues(horizontal = 16.dp, vertical = 10.dp)
+		} else {
+			PaddingValues(horizontal = 5.dp, vertical = 10.dp)
+		}
 
 	Button(
 		onClick = onClick,
 		onLongClick = onLongClick,
 		colors = colors,
 		contentPadding = contentPadding,
-		modifier = modifier
-			.then(if (!isFocused) Modifier.requiredWidthIn(max = 36.dp) else Modifier)
-			.bringIntoViewRequester(bringIntoViewRequester)
-			.scale(scale),
+		modifier =
+			modifier
+				.then(if (!isFocused) Modifier.requiredWidthIn(max = 36.dp) else Modifier)
+				.bringIntoViewRequester(bringIntoViewRequester)
+				.scale(scale),
 		interactionSource = interactionSource,
 	) {
 		Row(
@@ -98,11 +99,11 @@ fun ExpandableIconButton(
 			if (isFocused) {
 				Spacer(modifier = Modifier.width(8.dp))
 				ProvideTextStyle(
-					JellyfinTheme.typography.default.copy(fontWeight = FontWeight.Bold)
+					JellyfinTheme.typography.default.copy(fontWeight = FontWeight.Bold),
 				) {
 					Text(
 						text = label,
-						modifier = Modifier.padding(end = 4.dp)
+						modifier = Modifier.padding(end = 4.dp),
 					)
 				}
 			}

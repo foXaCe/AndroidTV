@@ -19,52 +19,56 @@ import org.jellyfin.sdk.model.deviceprofile.DeviceProfileBuilder
 import org.jellyfin.sdk.model.deviceprofile.buildDeviceProfile
 import kotlin.math.roundToInt
 
-private val downmixSupportedAudioCodecs = arrayOf(
-	Codec.Audio.AAC,
-	Codec.Audio.MP2,
-	Codec.Audio.MP3,
-)
+private val downmixSupportedAudioCodecs =
+	arrayOf(
+		Codec.Audio.AAC,
+		Codec.Audio.MP2,
+		Codec.Audio.MP3,
+	)
 
-private val supportedAudioCodecs = arrayOf(
-	Codec.Audio.AAC,
-	Codec.Audio.AAC_LATM,
-	Codec.Audio.AC3,
-	Codec.Audio.ALAC,
-	Codec.Audio.DCA,
-	Codec.Audio.DTS,
-	Codec.Audio.EAC3,
-	Codec.Audio.FLAC,
-	Codec.Audio.MLP,
-	Codec.Audio.MP2,
-	Codec.Audio.MP3,
-	Codec.Audio.OPUS,
-	Codec.Audio.PCM_ALAW,
-	Codec.Audio.PCM_MULAW,
-	Codec.Audio.PCM_S16LE,
-	Codec.Audio.PCM_S20LE,
-	Codec.Audio.PCM_S24LE,
-	Codec.Audio.TRUEHD,
-	Codec.Audio.VORBIS,
-)
+private val supportedAudioCodecs =
+	arrayOf(
+		Codec.Audio.AAC,
+		Codec.Audio.AAC_LATM,
+		Codec.Audio.AC3,
+		Codec.Audio.ALAC,
+		Codec.Audio.DCA,
+		Codec.Audio.DTS,
+		Codec.Audio.EAC3,
+		Codec.Audio.FLAC,
+		Codec.Audio.MLP,
+		Codec.Audio.MP2,
+		Codec.Audio.MP3,
+		Codec.Audio.OPUS,
+		Codec.Audio.PCM_ALAW,
+		Codec.Audio.PCM_MULAW,
+		Codec.Audio.PCM_S16LE,
+		Codec.Audio.PCM_S20LE,
+		Codec.Audio.PCM_S24LE,
+		Codec.Audio.TRUEHD,
+		Codec.Audio.VORBIS,
+	)
 
-private val hlsMpegTsAudioCodecs = arrayOf(
-	Codec.Audio.AAC,
-	Codec.Audio.AC3,
-	Codec.Audio.EAC3,
-	Codec.Audio.MP3
-)
+private val hlsMpegTsAudioCodecs =
+	arrayOf(
+		Codec.Audio.AAC,
+		Codec.Audio.AC3,
+		Codec.Audio.EAC3,
+		Codec.Audio.MP3,
+	)
 
-private val hlsFmp4AudioCodecs = arrayOf(
-	Codec.Audio.AAC,
-	Codec.Audio.AC3,
-	Codec.Audio.EAC3,
-	Codec.Audio.MP3,
-	Codec.Audio.ALAC,
-	Codec.Audio.FLAC,
-	Codec.Audio.OPUS,
-	Codec.Audio.DTS,
-	Codec.Audio.TRUEHD
-)
+private val hlsFmp4AudioCodecs =
+	arrayOf(
+		Codec.Audio.AAC,
+		Codec.Audio.AC3,
+		Codec.Audio.EAC3,
+		Codec.Audio.MP3,
+		Codec.Audio.ALAC,
+		Codec.Audio.FLAC,
+		Codec.Audio.OPUS,
+		Codec.Audio.DTS,
+		Codec.Audio.TRUEHD,
+	)
 
 private fun UserPreferences.getMaxBitrate(): Int {
 	var maxBitrate = this[UserPreferences.maxBitrate].toFloatOrNull()
@@ -99,11 +103,12 @@ fun createDeviceProfile(
 	assDirectPlay: Boolean,
 	pgsDirectPlay: Boolean,
 ) = buildDeviceProfile {
-	val allowedAudioCodecs = when {
-		downMixAudio -> downmixSupportedAudioCodecs
-		!isAC3Enabled -> supportedAudioCodecs.filterNot { it == Codec.Audio.EAC3 || it == Codec.Audio.AC3 }.toTypedArray()
-		else -> supportedAudioCodecs
-	}
+	val allowedAudioCodecs =
+		when {
+			downMixAudio -> downmixSupportedAudioCodecs
+			!isAC3Enabled -> supportedAudioCodecs.filterNot { it == Codec.Audio.EAC3 || it == Codec.Audio.AC3 }.toTypedArray()
+			else -> supportedAudioCodecs
+		}
 
 	val supportsHevc = mediaTest.supportsHevc()
 	val supportsHevcMain10 = mediaTest.supportsHevcMain10()
@@ -121,20 +126,24 @@ fun createDeviceProfile(
 	val userMaxWidth = maxVideoResolution.maxWidth
 	val userMaxHeight = maxVideoResolution.maxHeight
 
-	val maxResolutionAVC = mediaTest.getMaxResolution(MimeTypes.VIDEO_H264).let { hw ->
-		Size(minOf(hw.width, userMaxWidth), minOf(hw.height, userMaxHeight))
-	}
-	val maxResolutionHevc = mediaTest.getMaxResolution(MimeTypes.VIDEO_H265).let { hw ->
-		Size(minOf(hw.width, userMaxWidth), minOf(hw.height, userMaxHeight))
-	}
-	val maxResolutionAV1 = mediaTest.getMaxResolution(MimeTypes.VIDEO_AV1).let { hw ->
-		Size(minOf(hw.width, userMaxWidth), minOf(hw.height, userMaxHeight))
-	}
-	val maxResolutionVC1 = mediaTest.getMaxResolution(MimeTypes.VIDEO_VC1).let { hw ->
-		Size(minOf(hw.width, userMaxWidth), minOf(hw.height, userMaxHeight))
-	}
+	val maxResolutionAVC =
+		mediaTest.getMaxResolution(MimeTypes.VIDEO_H264).let { hw ->
+			Size(minOf(hw.width, userMaxWidth), minOf(hw.height, userMaxHeight))
+		}
+	val maxResolutionHevc =
+		mediaTest.getMaxResolution(MimeTypes.VIDEO_H265).let { hw ->
+			Size(minOf(hw.width, userMaxWidth), minOf(hw.height, userMaxHeight))
+		}
+	val maxResolutionAV1 =
+		mediaTest.getMaxResolution(MimeTypes.VIDEO_AV1).let { hw ->
+			Size(minOf(hw.width, userMaxWidth), minOf(hw.height, userMaxHeight))
+		}
+	val maxResolutionVC1 =
+		mediaTest.getMaxResolution(MimeTypes.VIDEO_VC1).let { hw ->
+			Size(minOf(hw.width, userMaxWidth), minOf(hw.height, userMaxHeight))
+		}
 
-	/// HDR capabilities
+	// / HDR capabilities
 
 	// Codecs
 	// AV1
@@ -150,16 +159,17 @@ fun createDeviceProfile(
 
 	name = "AndroidTV-Default"
 
-	/// Bitrate
+	// / Bitrate
 	maxStaticBitrate = maxBitrate
 	maxStreamingBitrate = maxBitrate
 
-	/// Transcoding profiles
+	// / Transcoding profiles
 	// Video
-	val hlsVideoCodecs = listOfNotNull(
-		if (supportsHevc) Codec.Video.HEVC else null,
-		Codec.Video.H264
-	).toTypedArray()
+	val hlsVideoCodecs =
+		listOfNotNull(
+			if (supportsHevc) Codec.Video.HEVC else null,
+			Codec.Video.H264,
+		).toTypedArray()
 
 	transcodingProfile {
 		type = DlnaProfileType.VIDEO
@@ -200,7 +210,7 @@ fun createDeviceProfile(
 		audioCodec(Codec.Audio.AAC)
 	}
 
-	/// Direct play profiles
+	// / Direct play profiles
 	// Video
 	directPlayProfile {
 		type = DlnaProfileType.VIDEO
@@ -212,6 +222,7 @@ fun createDeviceProfile(
 			Codec.Container.MKV,
 			Codec.Container.MOV,
 			Codec.Container.MP4,
+			Codec.Container.MPEGTS,
 			Codec.Container.OGM,
 			Codec.Container.OGV,
 			Codec.Container.TS,
@@ -242,7 +253,7 @@ fun createDeviceProfile(
 		audioCodec(*allowedAudioCodecs)
 	}
 
-	/// Codec profiles
+	// / Codec profiles
 	// H264 profile
 	codecProfile {
 		type = CodecType.VIDEO
@@ -251,13 +262,15 @@ fun createDeviceProfile(
 		conditions {
 			when {
 				!supportsAVC -> ProfileConditionValue.VIDEO_PROFILE equals "none"
-				else -> ProfileConditionValue.VIDEO_PROFILE inCollection listOfNotNull(
-					"high",
-					"main",
-					"baseline",
-					"constrained baseline",
-					if (supportsAVCHigh10) "high 10" else null
-				)
+				else ->
+					ProfileConditionValue.VIDEO_PROFILE inCollection
+						listOfNotNull(
+							"high",
+							"main",
+							"baseline",
+							"constrained baseline",
+							if (supportsAVCHigh10) "high 10" else null,
+						)
 			}
 		}
 	}
@@ -271,12 +284,13 @@ fun createDeviceProfile(
 			}
 
 			applyConditions {
-				ProfileConditionValue.VIDEO_PROFILE inCollection listOf(
-					"high",
-					"main",
-					"baseline",
-					"constrained baseline"
-				)
+				ProfileConditionValue.VIDEO_PROFILE inCollection
+					listOf(
+						"high",
+						"main",
+						"baseline",
+						"constrained baseline",
+					)
 			}
 		}
 	}
@@ -331,10 +345,12 @@ fun createDeviceProfile(
 		conditions {
 			when {
 				!supportsHevc -> ProfileConditionValue.VIDEO_PROFILE equals "none"
-				else -> ProfileConditionValue.VIDEO_PROFILE inCollection listOfNotNull(
-					"main",
-					if (supportsHevcMain10) "main 10" else null
-				)
+				else ->
+					ProfileConditionValue.VIDEO_PROFILE inCollection
+						listOfNotNull(
+							"main",
+							if (supportsHevcMain10) "main 10" else null,
+						)
 			}
 		}
 	}
@@ -439,48 +455,50 @@ fun createDeviceProfile(
 		}
 	}
 
-	/// HDR exclude list
+	// / HDR exclude list
 
-	val unsupportedRangeTypesAv1 = buildSet {
-		add(VideoRangeType.DOVI_INVALID)
+	val unsupportedRangeTypesAv1 =
+		buildSet {
+			add(VideoRangeType.DOVI_INVALID)
 
-		if (!supportsAV1DolbyVision) {
-			add(VideoRangeType.DOVI)
-			if (!supportsAV1HDR10) add(VideoRangeType.DOVI_WITH_HDR10)
-			if (!supportsAV1HDR10Plus) add(VideoRangeType.DOVI_WITH_HDR10_PLUS)
-		}
-
-		if (!supportsAV1HDR10Plus) {
-			add(VideoRangeType.HDR10_PLUS)
-
-			if (!mediaTest.supportsAV1HDR10()) add(VideoRangeType.HDR10)
-		}
-	}
-
-	val unsupportedRangeTypesHevc = buildSet {
-		add(VideoRangeType.DOVI_INVALID)
-
-		if (!supportsHevcDolbyVisionEL) {
-			add(VideoRangeType.DOVI_WITH_EL)
-			if (!supportsHevcHDR10Plus && !KnownDefects.hevcDoviHdr10PlusBug) add(VideoRangeType.DOVI_WITH_ELHDR10_PLUS)
-
-			if (!supportsHevcDolbyVision) {
+			if (!supportsAV1DolbyVision) {
 				add(VideoRangeType.DOVI)
-				if (!supportsHevcHDR10) add(VideoRangeType.DOVI_WITH_HDR10)
-				if (!supportsHevcHDR10Plus && !KnownDefects.hevcDoviHdr10PlusBug) add(VideoRangeType.DOVI_WITH_HDR10_PLUS)
+				if (!supportsAV1HDR10) add(VideoRangeType.DOVI_WITH_HDR10)
+				if (!supportsAV1HDR10Plus) add(VideoRangeType.DOVI_WITH_HDR10_PLUS)
+			}
+
+			if (!supportsAV1HDR10Plus) {
+				add(VideoRangeType.HDR10_PLUS)
+
+				if (!mediaTest.supportsAV1HDR10()) add(VideoRangeType.HDR10)
 			}
 		}
 
-		if (!supportsHevcHDR10Plus) {
-			add(VideoRangeType.HDR10_PLUS)
-			if (!supportsHevcHDR10) add(VideoRangeType.HDR10)
-		}
+	val unsupportedRangeTypesHevc =
+		buildSet {
+			add(VideoRangeType.DOVI_INVALID)
 
-		if (KnownDefects.hevcDoviHdr10PlusBug) {
-			add(VideoRangeType.DOVI_WITH_HDR10_PLUS)
-			add(VideoRangeType.DOVI_WITH_ELHDR10_PLUS)
+			if (!supportsHevcDolbyVisionEL) {
+				add(VideoRangeType.DOVI_WITH_EL)
+				if (!supportsHevcHDR10Plus && !KnownDefects.hevcDoviHdr10PlusBug) add(VideoRangeType.DOVI_WITH_ELHDR10_PLUS)
+
+				if (!supportsHevcDolbyVision) {
+					add(VideoRangeType.DOVI)
+					if (!supportsHevcHDR10) add(VideoRangeType.DOVI_WITH_HDR10)
+					if (!supportsHevcHDR10Plus && !KnownDefects.hevcDoviHdr10PlusBug) add(VideoRangeType.DOVI_WITH_HDR10_PLUS)
+				}
+			}
+
+			if (!supportsHevcHDR10Plus) {
+				add(VideoRangeType.HDR10_PLUS)
+				if (!supportsHevcHDR10) add(VideoRangeType.HDR10)
+			}
+
+			if (KnownDefects.hevcDoviHdr10PlusBug) {
+				add(VideoRangeType.DOVI_WITH_HDR10_PLUS)
+				add(VideoRangeType.DOVI_WITH_ELHDR10_PLUS)
+			}
 		}
-	}
 
 	// Note: The codec profiles use a workaround to create correct behavior
 	// The notEquals condition will always fail the ConditionProcessor test in the server so we use applyConditions to only have the codec
@@ -489,30 +507,34 @@ fun createDeviceProfile(
 
 	// Codecs
 	// AV1
-	if (unsupportedRangeTypesAv1.isNotEmpty()) codecProfile {
-		type = CodecType.VIDEO
-		codec = Codec.Video.AV1
+	if (unsupportedRangeTypesAv1.isNotEmpty()) {
+		codecProfile {
+			type = CodecType.VIDEO
+			codec = Codec.Video.AV1
 
-		conditions {
-			ProfileConditionValue.VIDEO_RANGE_TYPE notEquals unsupportedRangeTypesAv1.joinToString("|") { it.serialName }
-		}
+			conditions {
+				ProfileConditionValue.VIDEO_RANGE_TYPE notEquals unsupportedRangeTypesAv1.joinToString("|") { it.serialName }
+			}
 
-		applyConditions {
-			ProfileConditionValue.VIDEO_RANGE_TYPE inCollection unsupportedRangeTypesAv1.map { it.serialName }
+			applyConditions {
+				ProfileConditionValue.VIDEO_RANGE_TYPE inCollection unsupportedRangeTypesAv1.map { it.serialName }
+			}
 		}
 	}
 
 	// HEVC
-	if (unsupportedRangeTypesHevc.isNotEmpty()) codecProfile {
-		type = CodecType.VIDEO
-		codec = Codec.Video.HEVC
+	if (unsupportedRangeTypesHevc.isNotEmpty()) {
+		codecProfile {
+			type = CodecType.VIDEO
+			codec = Codec.Video.HEVC
 
-		conditions {
-			ProfileConditionValue.VIDEO_RANGE_TYPE notEquals unsupportedRangeTypesHevc.joinToString("|") { it.serialName }
-		}
+			conditions {
+				ProfileConditionValue.VIDEO_RANGE_TYPE notEquals unsupportedRangeTypesHevc.joinToString("|") { it.serialName }
+			}
 
-		applyConditions {
-			ProfileConditionValue.VIDEO_RANGE_TYPE inCollection unsupportedRangeTypesHevc.map { it.serialName }
+			applyConditions {
+				ProfileConditionValue.VIDEO_RANGE_TYPE inCollection unsupportedRangeTypesHevc.map { it.serialName }
+			}
 		}
 	}
 
@@ -525,7 +547,7 @@ fun createDeviceProfile(
 		}
 	}
 
-	/// Subtitle profiles
+	// / Subtitle profiles
 	// Jellyfin server only supports WebVTT subtitles in HLS, other text subtitles will be converted to WebVTT
 	// which we do not want so only allow delivery over HLS for WebVTT subtitles
 	subtitleProfile(Codec.Subtitle.VTT, embedded = true, hls = true, external = true)

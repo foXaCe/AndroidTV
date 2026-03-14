@@ -4,9 +4,11 @@ import android.widget.ImageView
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -20,6 +22,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -28,20 +32,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.focusRestorer
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
+import org.jellyfin.androidtv.ui.base.SeekbarColors
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.button.ButtonDefaults
 import org.jellyfin.androidtv.ui.base.button.IconButton
 import org.jellyfin.androidtv.ui.base.components.TvIconButton
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.JetBrainsMono
 import org.jellyfin.androidtv.ui.base.theme.TvSpacing
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.base.tv.TvFocusCard
 import org.jellyfin.androidtv.ui.base.tv.TvScaffold
 import org.jellyfin.androidtv.ui.composable.AsyncImage
@@ -65,99 +77,124 @@ import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.model.api.ImageType
 import org.koin.compose.koinInject
 
+private val ArtworkShape = RoundedCornerShape(16.dp)
+
 @Composable
-fun AudioNowPlayingScreen(
-	viewModel: AudioNowPlayingViewModel,
-) {
+fun AudioNowPlayingScreen(viewModel: AudioNowPlayingViewModel) {
 	val uiState by viewModel.uiState.collectAsState()
 
 	TvScaffold {
-		Row(modifier = Modifier.fillMaxSize()) {
-			// Left side: Artwork + lyrics
-			ArtworkPanel(
-				modifier = Modifier
-					.fillMaxHeight()
-					.weight(1f),
-			)
+		Box(
+			modifier =
+				Modifier
+					.fillMaxSize()
+					.background(VegafoXColors.BackgroundDeep),
+		) {
+			Row(modifier = Modifier.fillMaxSize()) {
+				// Left side: Artwork + lyrics
+				ArtworkPanel(
+					modifier =
+						Modifier
+							.fillMaxHeight()
+							.weight(1f),
+				)
 
-			Spacer(modifier = Modifier.width(TvSpacing.sectionGap))
+				Spacer(modifier = Modifier.width(TvSpacing.sectionGap))
 
-			// Right side: Info + controls + queue
-			Column(
-				modifier = Modifier
-					.fillMaxHeight()
-					.weight(1.5f),
-				verticalArrangement = Arrangement.SpaceBetween,
-			) {
-				// Artist + genres at top
-				Column {
-					Text(
-						text = uiState.artistName,
-						style = JellyfinTheme.typography.headlineLarge,
-						color = JellyfinTheme.colorScheme.onBackground,
-						maxLines = 1,
-					)
-					if (uiState.genres.isNotEmpty()) {
-						Text(
-							text = uiState.genres,
-							style = JellyfinTheme.typography.bodyMedium,
-							color = JellyfinTheme.colorScheme.onSurfaceVariant,
-							maxLines = 1,
-						)
-					}
-				}
-
-				// Song info
+				// Right side: Info + controls + queue
 				Column(
-					horizontalAlignment = Alignment.CenterHorizontally,
-					modifier = Modifier.fillMaxWidth(),
+					modifier =
+						Modifier
+							.fillMaxHeight()
+							.weight(1.5f),
+					verticalArrangement = Arrangement.SpaceBetween,
 				) {
-					Text(
-						text = uiState.songTitle,
-						style = JellyfinTheme.typography.headlineLargeBold,
-						color = JellyfinTheme.colorScheme.onBackground,
-						maxLines = 1,
-					)
-					if (uiState.albumTitle.isNotEmpty()) {
+					// Artist + genres at top
+					Column {
 						Text(
-							text = uiState.albumTitle,
-							style = JellyfinTheme.typography.titleMedium,
-							color = JellyfinTheme.colorScheme.onSurfaceVariant,
+							text = uiState.artistName,
+							style =
+								TextStyle(
+									fontSize = 16.sp,
+									color = VegafoXColors.TextSecondary,
+								),
 							maxLines = 1,
 						)
+						if (uiState.genres.isNotEmpty()) {
+							Text(
+								text = uiState.genres,
+								style =
+									TextStyle(
+										fontSize = 14.sp,
+										color = VegafoXColors.TextHint,
+									),
+								maxLines = 1,
+							)
+						}
 					}
-					Text(
-						text = uiState.trackInfo,
-						style = JellyfinTheme.typography.bodyMedium,
-						color = JellyfinTheme.colorScheme.onSurfaceVariant,
-					)
+
+					// Song info
+					Column(
+						horizontalAlignment = Alignment.CenterHorizontally,
+						modifier = Modifier.fillMaxWidth(),
+					) {
+						Text(
+							text = uiState.songTitle,
+							style =
+								TextStyle(
+									fontFamily = BebasNeue,
+									fontSize = 36.sp,
+									color = VegafoXColors.TextPrimary,
+									letterSpacing = 2.sp,
+								),
+							maxLines = 1,
+						)
+						if (uiState.albumTitle.isNotEmpty()) {
+							Text(
+								text = uiState.albumTitle,
+								style =
+									TextStyle(
+										fontSize = 14.sp,
+										color = VegafoXColors.TextHint,
+									),
+								maxLines = 1,
+							)
+						}
+						Text(
+							text = uiState.trackInfo,
+							style =
+								TextStyle(
+									fontSize = 14.sp,
+									color = VegafoXColors.TextHint,
+								),
+						)
+					}
+
+					// Progress bar with times
+					AudioProgressSection(uiState)
+
+					// Transport controls
+					AudioControlsRow(viewModel, uiState)
+
+					// Queue row
+					AudioQueueSection(viewModel, uiState)
 				}
-
-				// Progress bar with times
-				AudioProgressSection(uiState)
-
-				// Transport controls
-				AudioControlsRow(viewModel, uiState)
-
-				// Queue row
-				AudioQueueSection(viewModel, uiState)
 			}
 		}
 	}
 }
 
 @Composable
-private fun ArtworkPanel(
-	modifier: Modifier = Modifier,
-) {
+private fun ArtworkPanel(modifier: Modifier = Modifier) {
 	val api = koinInject<ApiClient>()
 	val playbackManager = koinInject<PlaybackManager>()
 	val entry by rememberQueueEntry(playbackManager)
 	val baseItem = entry?.run { baseItemFlow.collectAsState(baseItem).value }
 	val lyrics = entry?.run { lyricsFlow.collectAsState(lyrics) }?.value
-	val cover = baseItem?.itemImages?.get(ImageType.PRIMARY)
-		?: baseItem?.albumPrimaryImage
-		?: baseItem?.parentImages?.get(ImageType.PRIMARY)
+	val cover =
+		baseItem?.itemImages?.get(ImageType.PRIMARY)
+			?: baseItem?.albumPrimaryImage
+			?: baseItem?.parentImages?.get(ImageType.PRIMARY)
 
 	val coverAlpha by animateFloatAsState(
 		label = "coverAlpha",
@@ -171,10 +208,13 @@ private fun ArtworkPanel(
 		AnimatedContent(cover, label = "artwork") { currentCover ->
 			if (currentCover != null) {
 				Box(
-					modifier = Modifier
-						.aspectRatio(1f)
-						.clip(JellyfinTheme.shapes.medium)
-						.background(Color.Black),
+					modifier =
+						Modifier
+							.aspectRatio(1f)
+							.shadow(24.dp, ArtworkShape)
+							.clip(ArtworkShape)
+							.background(Color.Black)
+							.border(1.dp, Color.White.copy(alpha = 0.08f), ArtworkShape),
 				) {
 					AsyncImage(
 						url = currentCover.getUrl(api),
@@ -186,9 +226,9 @@ private fun ArtworkPanel(
 				}
 			} else if (lyrics == null) {
 				Icon(
-					ImageVector.vectorResource(R.drawable.ic_album),
+					VegafoXIcons.Album,
 					contentDescription = null,
-					tint = Color.White.copy(alpha = 0.4f),
+					tint = VegafoXColors.TextHint,
 					modifier = Modifier.size(128.dp),
 				)
 			}
@@ -206,10 +246,11 @@ private fun ArtworkPanel(
 				paused = playState != PlayState.PLAYING,
 				fontSize = JellyfinTheme.typography.bodySmall.fontSize,
 				color = Color.White,
-				modifier = Modifier
-					.fillMaxSize()
-					.fadingEdges(vertical = 50.dp)
-					.padding(horizontal = 15.dp),
+				modifier =
+					Modifier
+						.fillMaxSize()
+						.fadingEdges(vertical = 50.dp)
+						.padding(horizontal = 15.dp),
 			)
 		}
 	}
@@ -223,9 +264,17 @@ private fun AudioProgressSection(uiState: AudioNowPlayingUiState) {
 	Column(modifier = Modifier.fillMaxWidth()) {
 		PlayerSeekbar(
 			playbackManager = playbackManager,
-			modifier = Modifier
-				.fillMaxWidth()
-				.height(4.dp),
+			colors =
+				SeekbarColors(
+					backgroundColor = VegafoXColors.Outline,
+					bufferColor = VegafoXColors.TextSecondary,
+					progressColor = VegafoXColors.OrangePrimary,
+					knobColor = VegafoXColors.OrangePrimary,
+				),
+			modifier =
+				Modifier
+					.fillMaxWidth()
+					.height(4.dp),
 		)
 		Spacer(modifier = Modifier.height(4.dp))
 		Row(
@@ -234,14 +283,22 @@ private fun AudioProgressSection(uiState: AudioNowPlayingUiState) {
 		) {
 			Text(
 				text = TimeUtils.formatMillis(time),
-				style = JellyfinTheme.typography.bodySmall,
-				color = JellyfinTheme.colorScheme.onSurfaceVariant,
+				style =
+					TextStyle(
+						fontFamily = JetBrainsMono,
+						fontSize = 13.sp,
+						color = VegafoXColors.TextSecondary,
+					),
 			)
 			if (uiState.duration > 0L) {
 				Text(
 					text = "-${TimeUtils.formatMillis(uiState.duration - time)}",
-					style = JellyfinTheme.typography.bodySmall,
-					color = JellyfinTheme.colorScheme.onSurfaceVariant,
+					style =
+						TextStyle(
+							fontFamily = JetBrainsMono,
+							fontSize = 13.sp,
+							color = VegafoXColors.TextSecondary,
+						),
 				)
 			}
 		}
@@ -259,74 +316,96 @@ private fun AudioControlsRow(
 		verticalAlignment = Alignment.CenterVertically,
 	) {
 		TvIconButton(
-			icon = ImageVector.vectorResource(R.drawable.ic_previous),
+			icon = VegafoXIcons.Shuffle,
+			contentDescription = stringResource(R.string.lbl_shuffle_queue),
+			onClick = viewModel::toggleShuffle,
+			tint = if (uiState.isShuffleMode) VegafoXColors.OrangePrimary else VegafoXColors.TextHint,
+		)
+		Spacer(modifier = Modifier.width(12.dp))
+
+		TvIconButton(
+			icon = VegafoXIcons.SkipPrevious,
 			contentDescription = stringResource(R.string.lbl_prev_item),
 			onClick = viewModel::previous,
+			tint = VegafoXColors.TextSecondary,
 		)
-		Spacer(modifier = Modifier.width(8.dp))
+		Spacer(modifier = Modifier.width(12.dp))
 
-		TvIconButton(
-			icon = ImageVector.vectorResource(R.drawable.ic_rewind),
-			contentDescription = stringResource(R.string.rewind),
-			onClick = viewModel::rewind,
-		)
-		Spacer(modifier = Modifier.width(8.dp))
-
-		TvIconButton(
-			icon = ImageVector.vectorResource(
-				if (uiState.isPlaying) R.drawable.ic_pause else R.drawable.ic_play
-			),
-			contentDescription = stringResource(
-				if (uiState.isPlaying) R.string.lbl_pause else R.string.lbl_play
-			),
+		// Play/Pause — 72dp circle OrangePrimary, white icon 36dp, glow
+		IconButton(
 			onClick = viewModel::playPause,
-		)
-		Spacer(modifier = Modifier.width(8.dp))
+			shape = CircleShape,
+			colors =
+				ButtonDefaults.colors(
+					containerColor = VegafoXColors.OrangePrimary,
+					contentColor = Color.White,
+					focusedContainerColor = VegafoXColors.OrangeLight,
+					focusedContentColor = Color.White,
+					disabledContainerColor = VegafoXColors.OrangePrimary.copy(alpha = 0.38f),
+					disabledContentColor = Color.White.copy(alpha = 0.38f),
+				),
+			contentPadding = PaddingValues(0.dp),
+			modifier =
+				Modifier
+					.size(72.dp)
+					.drawBehind {
+						drawCircle(
+							brush =
+								Brush.radialGradient(
+									colors =
+										listOf(
+											VegafoXColors.OrangePrimary.copy(alpha = 0.25f),
+											Color.Transparent,
+										),
+									radius = size.maxDimension * 0.9f,
+								),
+						)
+					},
+		) {
+			Icon(
+				imageVector = if (uiState.isPlaying) VegafoXIcons.Pause else VegafoXIcons.Play,
+				contentDescription =
+					stringResource(
+						if (uiState.isPlaying) R.string.lbl_pause else R.string.lbl_play,
+					),
+				tint = Color.White,
+				modifier = Modifier.size(36.dp),
+			)
+		}
+		Spacer(modifier = Modifier.width(12.dp))
 
 		TvIconButton(
-			icon = ImageVector.vectorResource(R.drawable.ic_fast_forward),
-			contentDescription = stringResource(R.string.fast_forward),
-			onClick = viewModel::fastForward,
-		)
-		Spacer(modifier = Modifier.width(8.dp))
-
-		TvIconButton(
-			icon = ImageVector.vectorResource(R.drawable.ic_next),
+			icon = VegafoXIcons.SkipNext,
 			contentDescription = stringResource(R.string.lbl_next_item),
 			onClick = viewModel::next,
+			tint = VegafoXColors.TextSecondary,
+		)
+		Spacer(modifier = Modifier.width(12.dp))
+
+		TvIconButton(
+			icon = VegafoXIcons.Loop,
+			contentDescription = stringResource(R.string.lbl_repeat),
+			onClick = viewModel::toggleRepeat,
+			tint = if (uiState.isRepeatMode) VegafoXColors.OrangePrimary else VegafoXColors.TextHint,
 		)
 		Spacer(modifier = Modifier.width(16.dp))
 
-		TvIconButton(
-			icon = ImageVector.vectorResource(R.drawable.ic_loop),
-			contentDescription = stringResource(R.string.lbl_repeat),
-			onClick = viewModel::toggleRepeat,
-			tint = if (uiState.isRepeatMode) JellyfinTheme.colorScheme.primary else JellyfinTheme.colorScheme.onSurface,
-		)
-		Spacer(modifier = Modifier.width(8.dp))
-
-		TvIconButton(
-			icon = ImageVector.vectorResource(R.drawable.ic_shuffle),
-			contentDescription = stringResource(R.string.lbl_shuffle_queue),
-			onClick = viewModel::toggleShuffle,
-			tint = if (uiState.isShuffleMode) JellyfinTheme.colorScheme.primary else JellyfinTheme.colorScheme.onSurface,
-		)
-		Spacer(modifier = Modifier.width(8.dp))
-
 		if (uiState.canOpenAlbum) {
 			TvIconButton(
-				icon = ImageVector.vectorResource(R.drawable.ic_album),
+				icon = VegafoXIcons.Album,
 				contentDescription = stringResource(R.string.lbl_open_album),
 				onClick = viewModel::openAlbum,
+				tint = VegafoXColors.TextSecondary,
 			)
 			Spacer(modifier = Modifier.width(8.dp))
 		}
 
 		if (uiState.canOpenArtist) {
 			TvIconButton(
-				icon = ImageVector.vectorResource(R.drawable.ic_user),
+				icon = VegafoXIcons.Person,
 				contentDescription = stringResource(R.string.lbl_open_artist),
 				onClick = viewModel::openArtist,
+				tint = VegafoXColors.TextSecondary,
 			)
 		}
 	}
@@ -344,13 +423,22 @@ private fun AudioQueueSection(
 		) {
 			Text(
 				text = stringResource(R.string.current_queue),
-				style = JellyfinTheme.typography.titleMedium,
-				color = JellyfinTheme.colorScheme.onBackground,
+				style =
+					TextStyle(
+						fontFamily = BebasNeue,
+						fontSize = 20.sp,
+						color = VegafoXColors.TextPrimary,
+						letterSpacing = 1.sp,
+					),
 			)
 			Text(
 				text = "${uiState.queueItems.size}",
-				style = JellyfinTheme.typography.bodyMedium,
-				color = JellyfinTheme.colorScheme.onSurfaceVariant,
+				style =
+					TextStyle(
+						fontFamily = JetBrainsMono,
+						fontSize = 13.sp,
+						color = VegafoXColors.TextSecondary,
+					),
 			)
 		}
 		Spacer(modifier = Modifier.height(8.dp))
@@ -359,9 +447,10 @@ private fun AudioQueueSection(
 		LazyRow(
 			state = listState,
 			horizontalArrangement = Arrangement.spacedBy(TvSpacing.cardGap),
-			modifier = Modifier
-				.fillMaxWidth()
-				.focusRestorer(),
+			modifier =
+				Modifier
+					.fillMaxWidth()
+					.focusRestorer(),
 		) {
 			items(
 				items = uiState.queueItems,
@@ -382,9 +471,10 @@ private fun AudioQueueCard(
 	onClick: () -> Unit,
 ) {
 	val api = koinInject<ApiClient>()
-	val cover = item.baseItem.itemImages[ImageType.PRIMARY]
-		?: item.baseItem.albumPrimaryImage
-		?: item.baseItem.parentImages[ImageType.PRIMARY]
+	val cover =
+		item.baseItem.itemImages[ImageType.PRIMARY]
+			?: item.baseItem.albumPrimaryImage
+			?: item.baseItem.parentImages[ImageType.PRIMARY]
 
 	TvFocusCard(
 		onClick = onClick,
@@ -393,10 +483,11 @@ private fun AudioQueueCard(
 			modifier = Modifier.width(140.dp),
 		) {
 			Box(
-				modifier = Modifier
-					.size(140.dp)
-					.clip(JellyfinTheme.shapes.medium)
-					.background(JellyfinTheme.colorScheme.surfaceContainer),
+				modifier =
+					Modifier
+						.size(140.dp)
+						.clip(JellyfinTheme.shapes.medium)
+						.background(VegafoXColors.SurfaceContainer),
 				contentAlignment = Alignment.Center,
 			) {
 				if (cover != null) {
@@ -409,17 +500,18 @@ private fun AudioQueueCard(
 					)
 				} else {
 					Icon(
-						ImageVector.vectorResource(R.drawable.ic_album),
+						VegafoXIcons.Album,
 						contentDescription = null,
-						tint = JellyfinTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+						tint = VegafoXColors.TextHint,
 						modifier = Modifier.size(48.dp),
 					)
 				}
 				if (item.isCurrent) {
 					Box(
-						modifier = Modifier
-							.fillMaxSize()
-							.background(JellyfinTheme.colorScheme.primary.copy(alpha = 0.3f)),
+						modifier =
+							Modifier
+								.fillMaxSize()
+								.background(VegafoXColors.OrangePrimary.copy(alpha = 0.12f)),
 					)
 				}
 			}
@@ -427,14 +519,18 @@ private fun AudioQueueCard(
 			Text(
 				text = item.baseItem.name ?: "",
 				style = JellyfinTheme.typography.bodySmall,
-				color = if (item.isCurrent) JellyfinTheme.colorScheme.primary
-				else JellyfinTheme.colorScheme.onBackground,
+				color =
+					if (item.isCurrent) {
+						VegafoXColors.OrangePrimary
+					} else {
+						VegafoXColors.TextPrimary
+					},
 				maxLines = 1,
 			)
 			Text(
 				text = item.baseItem.artists?.firstOrNull() ?: item.baseItem.albumArtist ?: "",
 				style = JellyfinTheme.typography.bodySmall,
-				color = JellyfinTheme.colorScheme.onSurfaceVariant,
+				color = VegafoXColors.TextSecondary,
 				maxLines = 1,
 			)
 		}

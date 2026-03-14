@@ -92,10 +92,11 @@ fun EpisodePreviewOverlay(
 	var isPlaying by remember { mutableStateOf(false) }
 	var exoPlayer by remember { mutableStateOf<ExoPlayer?>(null) }
 
-	val effectiveApi = remember(item.serverId) {
-		val serverId = UUIDUtils.parseUUID(item.serverId)
-		if (serverId != null) apiClientFactory.getApiClientForServer(serverId) ?: api else api
-	}
+	val effectiveApi =
+		remember(item.serverId) {
+			val serverId = UUIDUtils.parseUUID(item.serverId)
+			if (serverId != null) apiClientFactory.getApiClientForServer(serverId) ?: api else api
+		}
 
 	val previewAlpha by animateFloatAsState(
 		targetValue = if (isPlaying) 1f else 0f,
@@ -114,54 +115,53 @@ fun EpisodePreviewOverlay(
 			return@LaunchedEffect
 		}
 
-		Timber.d("EpisodePreview: Card focused for ${item.name} (${item.type}), waiting ${PREVIEW_START_DELAY_MS}ms")
-
 		delay(PREVIEW_START_DELAY_MS)
 
-		Timber.d("EpisodePreview: Resolving stream URL for ${item.name}")
-
 		try {
-			val (primaryUrl, fallbackUrlResolved, introEndMs) = withContext(Dispatchers.IO) {
-				// Transcoded stream first: forces H.264 8-bit (SDR), no Dolby Vision/HDR
-				val transcoded = effectiveApi.videosApi.getVideoStreamUrl(
-					itemId = item.id,
-					static = false,
-					videoCodec = "h264",
-					audioCodec = "aac",
-					maxVideoBitDepth = 8,
-					audioBitRate = 128000,
-					audioChannels = 2,
-					subtitleMethod = org.jellyfin.sdk.model.api.SubtitleDeliveryMethod.DROP,
-				)
+			val (primaryUrl, fallbackUrlResolved, introEndMs) =
+				withContext(Dispatchers.IO) {
+					// Transcoded stream first: forces H.264 8-bit (SDR), no Dolby Vision/HDR
+					val transcoded =
+						effectiveApi.videosApi.getVideoStreamUrl(
+							itemId = item.id,
+							static = false,
+							videoCodec = "h264",
+							audioCodec = "aac",
+							maxVideoBitDepth = 8,
+							audioBitRate = 128000,
+							audioChannels = 2,
+							subtitleMethod = org.jellyfin.sdk.model.api.SubtitleDeliveryMethod.DROP,
+						)
 
-				val direct = effectiveApi.videosApi.getVideoStreamUrl(
-					itemId = item.id,
-					static = true,
-				)
+					val direct =
+						effectiveApi.videosApi.getVideoStreamUrl(
+							itemId = item.id,
+							static = true,
+						)
 
-				val seekMs = try {
-					val positionTicks = item.userData?.playbackPositionTicks ?: 0L
-					if (positionTicks > 0) {
-						positionTicks / 10_000L
-					} else {
-						val segments = mediaSegmentRepository.getSegmentsForItem(item)
-						val introSegment = segments.firstOrNull { it.type == MediaSegmentType.INTRO }
-						introSegment?.endTicks?.let { it / 10_000L }
-							?: runtimeFallbackMs(item)
-					}
-				} catch (e: Exception) {
-					Timber.w(e, "EpisodePreview: Failed to get intro segments for ${item.name}")
-					val positionTicks = item.userData?.playbackPositionTicks ?: 0L
-					if (positionTicks > 0) positionTicks / 10_000L else runtimeFallbackMs(item)
+					val seekMs =
+						try {
+							val positionTicks = item.userData?.playbackPositionTicks ?: 0L
+							if (positionTicks > 0) {
+								positionTicks / 10_000L
+							} else {
+								val segments = mediaSegmentRepository.getSegmentsForItem(item)
+								val introSegment = segments.firstOrNull { it.type == MediaSegmentType.INTRO }
+								introSegment?.endTicks?.let { it / 10_000L }
+									?: runtimeFallbackMs(item)
+							}
+						} catch (e: Exception) {
+							Timber.w(e, "EpisodePreview: Failed to get intro segments for ${item.name}")
+							val positionTicks = item.userData?.playbackPositionTicks ?: 0L
+							if (positionTicks > 0) positionTicks / 10_000L else runtimeFallbackMs(item)
+						}
+
+					Triple(transcoded, direct, seekMs)
 				}
-
-				Triple(transcoded, direct, seekMs)
-			}
 
 			streamUrl = primaryUrl
 			fallbackUrl = fallbackUrlResolved
 			seekPositionMs = introEndMs
-			Timber.d("EpisodePreview: Ready to play ${item.name}, seekTo=${introEndMs}ms, url=${primaryUrl.take(80)}...")
 		} catch (e: Exception) {
 			Timber.w(e, "EpisodePreview: Failed to resolve stream URL for ${item.name}")
 		}
@@ -171,63 +171,70 @@ fun EpisodePreviewOverlay(
 		val currentUrl = streamUrl!!
 
 		DisposableEffect(currentUrl) {
-			val renderersFactory = DefaultRenderersFactory(context).apply {
-				setEnableDecoderFallback(true)
-				setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER)
-			}
-
-			val trackSelector = DefaultTrackSelector(context).apply {
-				parameters = parameters.buildUpon()
-					.setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
-					.build()
-			}
-
-			val player = ExoPlayer.Builder(context)
-				.setRenderersFactory(renderersFactory)
-				.setTrackSelector(trackSelector)
-				.build()
-				.apply {
-					volume = if (muted) 0f else 1f
-					repeatMode = Player.REPEAT_MODE_OFF
-					playWhenReady = true
-					videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
+			val renderersFactory =
+				DefaultRenderersFactory(context).apply {
+					setEnableDecoderFallback(true)
+					setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER)
 				}
 
-			val mediaSource = ProgressiveMediaSource.Factory(httpDataSourceFactory)
-				.createMediaSource(MediaItem.fromUri(Uri.parse(currentUrl)))
+			val trackSelector =
+				DefaultTrackSelector(context).apply {
+					parameters =
+						parameters
+							.buildUpon()
+							.setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
+							.build()
+				}
+
+			val player =
+				ExoPlayer
+					.Builder(context)
+					.setRenderersFactory(renderersFactory)
+					.setTrackSelector(trackSelector)
+					.build()
+					.apply {
+						volume = if (muted) 0f else 1f
+						repeatMode = Player.REPEAT_MODE_OFF
+						playWhenReady = true
+						videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
+					}
+
+			val mediaSource =
+				ProgressiveMediaSource
+					.Factory(httpDataSourceFactory)
+					.createMediaSource(MediaItem.fromUri(Uri.parse(currentUrl)))
 
 			var hasSeeked = false
 
-			player.addListener(object : Player.Listener {
-				override fun onPlaybackStateChanged(playbackState: Int) {
-					when (playbackState) {
-						Player.STATE_READY -> {
-							if (!hasSeeked && seekPositionMs > 0) {
-								hasSeeked = true
-								player.seekTo(seekPositionMs)
+			player.addListener(
+				object : Player.Listener {
+					override fun onPlaybackStateChanged(playbackState: Int) {
+						when (playbackState) {
+							Player.STATE_READY -> {
+								if (!hasSeeked && seekPositionMs > 0) {
+									hasSeeked = true
+									player.seekTo(seekPositionMs)
+								}
+								isPlaying = true
 							}
-							isPlaying = true
-							Timber.d("EpisodePreview: Playing ${item.name} from ${seekPositionMs}ms")
+							Player.STATE_ENDED -> {
+								isPlaying = false
+							}
+							else -> { /* no-op */ }
 						}
-						Player.STATE_ENDED -> {
-							isPlaying = false
-							Timber.d("EpisodePreview: Ended ${item.name}")
-						}
-						else -> { /* no-op */ }
 					}
-				}
 
-				override fun onPlayerError(error: PlaybackException) {
-					Timber.w("EpisodePreview: Error for ${item.name}: ${error.message}")
-					isPlaying = false
-					val fb = fallbackUrl
-					if (fb != null) {
-						Timber.d("EpisodePreview: Retrying ${item.name} with fallback stream")
-						fallbackUrl = null
-						streamUrl = fb
+					override fun onPlayerError(error: PlaybackException) {
+						Timber.w("EpisodePreview: Error for ${item.name}: ${error.message}")
+						isPlaying = false
+						val fb = fallbackUrl
+						if (fb != null) {
+							fallbackUrl = null
+							streamUrl = fb
+						}
 					}
-				}
-			})
+				},
+			)
 
 			player.setMediaSource(mediaSource)
 			player.prepare()
@@ -242,11 +249,12 @@ fun EpisodePreviewOverlay(
 		}
 
 		Box(
-			modifier = modifier
-				.fillMaxSize()
-				.alpha(previewAlpha)
-				.clip(JellyfinTheme.shapes.medium)
-				.background(Color.Black)
+			modifier =
+				modifier
+					.fillMaxSize()
+					.alpha(previewAlpha)
+					.clip(JellyfinTheme.shapes.medium)
+					.background(Color.Black),
 		) {
 			AndroidView(
 				factory = { ctx ->
@@ -261,12 +269,11 @@ fun EpisodePreviewOverlay(
 				update = { playerView ->
 					playerView.player = exoPlayer
 				},
-				modifier = Modifier.fillMaxSize()
+				modifier = Modifier.fillMaxSize(),
 			)
 		}
 	}
 }
 
 /** Whether the given item type supports preview playback. */
-fun isEligibleForPreview(item: BaseItemDto?): Boolean =
-	item?.type == BaseItemKind.EPISODE || item?.type == BaseItemKind.MOVIE
+fun isEligibleForPreview(item: BaseItemDto?): Boolean = item?.type == BaseItemKind.EPISODE || item?.type == BaseItemKind.MOVIE

@@ -26,13 +26,14 @@ fun ListButton(
 
 	ListControl(
 		headingContent = headingContent,
-		modifier = modifier.combinedClickable(
-			interactionSource = interactionSource,
-			indication = null,
-			enabled = enabled,
-			role = Role.Button,
-			onClick = onClick,
-		),
+		modifier =
+			modifier.combinedClickable(
+				interactionSource = interactionSource,
+				indication = null,
+				enabled = enabled,
+				role = Role.Button,
+				onClick = onClick,
+			),
 		enabled = enabled,
 		interactionSource = interactionSource,
 		colors = colors,

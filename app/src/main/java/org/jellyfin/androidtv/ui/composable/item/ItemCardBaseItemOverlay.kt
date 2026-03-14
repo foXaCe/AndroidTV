@@ -17,19 +17,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.auth.repository.ServerRepository
 import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.preference.constant.WatchedIndicatorBehavior
 import org.jellyfin.androidtv.ui.base.Badge
-import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Icon
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Seekbar
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.composable.rememberPlayerProgress
 import org.jellyfin.androidtv.ui.composable.rememberQueueEntry
 import org.jellyfin.design.Tokens
@@ -47,9 +46,10 @@ fun ItemCardBaseItemOverlay(
 	showServerBadge: Boolean = false,
 	footer: (@Composable () -> Unit)? = null,
 ) = Box(
-	modifier = Modifier
-		.fillMaxSize()
-		.padding(Tokens.Space.spaceXs)
+	modifier =
+		Modifier
+			.fillMaxSize()
+			.padding(Tokens.Space.spaceXs),
 ) {
 	StateIndicator(
 		item = item,
@@ -65,12 +65,12 @@ fun ItemCardBaseItemOverlay(
 
 	WatchIndicator(
 		item = item,
-		modifier = Modifier.align(Alignment.TopEnd)
+		modifier = Modifier.align(Alignment.TopEnd),
 	)
 
 	Column(
 		modifier = Modifier.align(Alignment.BottomCenter),
-		verticalArrangement = Arrangement.spacedBy(Tokens.Space.spaceXs)
+		verticalArrangement = Arrangement.spacedBy(Tokens.Space.spaceXs),
 	) {
 		ProgressIndicator(
 			item = item,
@@ -99,17 +99,18 @@ private fun ServerBadge(
 
 	val serverRepository = koinInject<ServerRepository>()
 	val storedServers by serverRepository.storedServers.collectAsState()
-	val serverName = remember(storedServers, serverUuid) {
-		storedServers.find { it.id == serverUuid }?.name
-	} ?: return
+	val serverName =
+		remember(storedServers, serverUuid) {
+			storedServers.find { it.id == serverUuid }?.name
+		} ?: return
 
 	Box(
-		modifier = modifier
-			.background(
-				color = JellyfinTheme.colorScheme.scrim,
-				shape = JellyfinTheme.shapes.extraSmall,
-			)
-			.padding(horizontal = 4.dp, vertical = 2.dp),
+		modifier =
+			modifier
+				.background(
+					color = JellyfinTheme.colorScheme.scrim,
+					shape = JellyfinTheme.shapes.extraSmall,
+				).padding(horizontal = 4.dp, vertical = 2.dp),
 	) {
 		Text(
 			text = serverName,
@@ -133,25 +134,27 @@ private fun StateIndicator(
 
 	Column(
 		modifier = modifier,
-		verticalArrangement = Arrangement.spacedBy(Tokens.Space.spaceXs)
+		verticalArrangement = Arrangement.spacedBy(Tokens.Space.spaceXs),
 	) {
 		if (isRecording) {
 			Icon(
-				imageVector = ImageVector.vectorResource(R.drawable.ic_record_series),
+				imageVector = VegafoXIcons.RecordSeries,
 				contentDescription = null,
-				tint = if (isRecordingActive) Tokens.Color.colorRed600 else Tokens.Color.colorGrey100,
-				modifier = modifier
-					.size(24.dp)
+				tint = if (isRecordingActive) VegafoXColors.Error else VegafoXColors.TextPrimary,
+				modifier =
+					modifier
+						.size(24.dp),
 			)
 		}
 
 		if (isFavorited) {
 			Icon(
-				imageVector = ImageVector.vectorResource(R.drawable.ic_heart),
+				imageVector = VegafoXIcons.Favorite,
 				contentDescription = null,
-				tint = Tokens.Color.colorRed500,
-				modifier = modifier
-					.size(24.dp)
+				tint = VegafoXColors.Error,
+				modifier =
+					modifier
+						.size(24.dp),
 			)
 		}
 	}
@@ -174,21 +177,23 @@ private fun WatchIndicator(
 
 	if (isPlayed) {
 		Badge(
-			modifier = modifier
-				.size(24.dp),
+			modifier =
+				modifier
+					.size(24.dp),
 		) {
 			Icon(
-				imageVector = ImageVector.vectorResource(R.drawable.ic_watch),
+				imageVector = VegafoXIcons.Visibility,
 				contentDescription = null,
-				modifier = Modifier.size(12.dp)
+				modifier = Modifier.size(12.dp),
 			)
 		}
 	} else if (unplayedItems != null) {
 		if (watchedIndicatorBehavior == WatchedIndicatorBehavior.HIDE_UNWATCHED) return
 
 		Badge(
-			modifier = modifier
-				.sizeIn(minWidth = 24.dp, minHeight = 24.dp),
+			modifier =
+				modifier
+					.sizeIn(minWidth = 24.dp, minHeight = 24.dp),
 		) {
 			Text(
 				text = unplayedItems.toString(),
@@ -206,20 +211,27 @@ private fun ProgressIndicator(
 	val playState by playbackManager.state.playState.collectAsState()
 	val currentQueueEntry by rememberQueueEntry(playbackManager)
 
-	val playedPercentage = if (playState == PlayState.PLAYING && currentQueueEntry?.baseItem?.id == item.id) {
-		rememberPlayerProgress(playbackManager)
-	} else {
-		item.userData?.playedPercentage?.toFloat()?.div(100f)?.coerceIn(0f, 1f)?.takeIf { it > 0f && it < 1f }
-	}
+	val playedPercentage =
+		if (playState == PlayState.PLAYING && currentQueueEntry?.baseItem?.id == item.id) {
+			rememberPlayerProgress(playbackManager)
+		} else {
+			item.userData
+				?.playedPercentage
+				?.toFloat()
+				?.div(100f)
+				?.coerceIn(0f, 1f)
+				?.takeIf { it > 0f && it < 1f }
+		}
 
 	if (playedPercentage != null) {
 		Box(modifier = modifier.padding(Tokens.Space.spaceXs)) {
 			Seekbar(
 				progress = playedPercentage,
 				enabled = false,
-				modifier = Modifier
-					.fillMaxWidth()
-					.height(4.dp)
+				modifier =
+					Modifier
+						.fillMaxWidth()
+						.height(4.dp),
 			)
 		}
 	}

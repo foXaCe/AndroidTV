@@ -5,14 +5,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class SyncPlayViewModel : ViewModel() {
-    private val _visible = MutableStateFlow(false)
-    val visible get() = _visible.asStateFlow()
+	private val _visible = MutableStateFlow(false)
+	val visible get() = _visible.asStateFlow()
 
-    fun show() {
-        _visible.value = true
-    }
+	fun show() {
+		_visible.value = true
+	}
 
-    fun hide() {
-        _visible.value = false
-    }
+	fun hide() {
+		_visible.value = false
+	}
 }

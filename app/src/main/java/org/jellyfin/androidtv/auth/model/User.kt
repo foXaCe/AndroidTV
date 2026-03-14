@@ -14,9 +14,10 @@ sealed class User {
 
 	abstract fun withToken(accessToken: String): User
 
-	override fun equals(other: Any?) = other is User
-		&& serverId == other.serverId
-		&& id == other.id
+	override fun equals(other: Any?) =
+		other is User &&
+			serverId == other.serverId &&
+			id == other.id
 
 	override fun hashCode(): Int {
 		var result = id.hashCode()

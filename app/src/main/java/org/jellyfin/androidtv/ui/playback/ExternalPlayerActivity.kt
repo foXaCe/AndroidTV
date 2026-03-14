@@ -82,22 +82,24 @@ class ExternalPlayerActivity : FragmentActivity() {
 	private val externalAppRepository by inject<ExternalAppRepository>()
 	private val api by inject<ApiClient>()
 
-	private val playVideoLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-		Timber.i("Playback finished with result code ${result.resultCode}")
-		videoQueueManager.setCurrentMediaPosition(videoQueueManager.getCurrentMediaPosition() + 1)
+	private val playVideoLauncher =
+		registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+			Timber.i("Playback finished with result code ${result.resultCode}")
+			videoQueueManager.setCurrentMediaPosition(videoQueueManager.getCurrentMediaPosition() + 1)
 
-		if (result.isError) {
-			Toast.makeText(this, R.string.video_error_unknown_error, Toast.LENGTH_LONG).show()
-			finish()
-		} else {
-			onItemFinished(result.data)
+			if (result.isError) {
+				Toast.makeText(this, R.string.video_error_unknown_error, Toast.LENGTH_LONG).show()
+				finish()
+			} else {
+				onItemFinished(result.data)
+			}
 		}
-	}
 
-	private val ActivityResult.isError get() = when (data?.action) {
-		API_VIMU_RESULT_ID -> resultCode == API_VIMU_RESULT_ERROR
-		else -> resultCode != RESULT_OK
-	}
+	private val ActivityResult.isError get() =
+		when (data?.action) {
+			API_VIMU_RESULT_ID -> resultCode == API_VIMU_RESULT_ERROR
+			else -> resultCode != RESULT_OK
+		}
 
 	private var currentItem: Pair<BaseItemDto, MediaSourceInfo>? = null
 
@@ -111,8 +113,12 @@ class ExternalPlayerActivity : FragmentActivity() {
 		if (savedInstanceState != null) {
 			savedItemId = savedInstanceState.getString(STATE_ITEM_ID)?.toUUIDOrNull()
 			savedMediaSourceId = savedInstanceState.getString(STATE_MEDIA_SOURCE_ID)
-			savedRuntimeTicks = if (savedInstanceState.containsKey(STATE_RUNTIME_TICKS))
-				savedInstanceState.getLong(STATE_RUNTIME_TICKS) else null
+			savedRuntimeTicks =
+				if (savedInstanceState.containsKey(STATE_RUNTIME_TICKS)) {
+					savedInstanceState.getLong(STATE_RUNTIME_TICKS)
+				} else {
+					null
+				}
 			Timber.i("Restored external player state: itemId=$savedItemId")
 			return
 		}
@@ -145,71 +151,81 @@ class ExternalPlayerActivity : FragmentActivity() {
 		}
 	}
 
-	private fun playItem(item: BaseItemDto, mediaSource: MediaSourceInfo, position: Duration) {
-		val url = api.videosApi.getVideoStreamUrl(
-			itemId = item.id,
-			mediaSourceId = mediaSource.id,
-			static = true,
-		)
+	private fun playItem(
+		item: BaseItemDto,
+		mediaSource: MediaSourceInfo,
+		position: Duration,
+	) {
+		val url =
+			api.videosApi.getVideoStreamUrl(
+				itemId = item.id,
+				mediaSourceId = mediaSource.id,
+				static = true,
+			)
 
 		val title = item.getDisplayName(this)
 		val fileName = mediaSource.path?.let { File(it).name }
-		val externalSubtitles = mediaSource.mediaStreams
-			?.filter { it.type == MediaStreamType.SUBTITLE && it.isExternal }
-			?.sortedWith(compareBy<MediaStream> { it.isDefault }.thenBy { it.index })
-			.orEmpty()
+		val externalSubtitles =
+			mediaSource.mediaStreams
+				?.filter { it.type == MediaStreamType.SUBTITLE && it.isExternal }
+				?.sortedWith(compareBy<MediaStream> { it.isDefault }.thenBy { it.index })
+				.orEmpty()
 
-		val subtitleUrls = externalSubtitles.map { mediaStream ->
-			// We cannot use the DeliveryUrl as that is only populated when using the playback info API, which we skip as we'll always direct
-			// play when using external players. We need to infer the subtitle format based on its path (similar to how the server
-			// calculates it)
-			val format = mediaStream.path?.substringAfterLast('.', missingDelimiterValue = mediaStream.codec.orEmpty()) ?: "srt"
-			api.subtitleApi.getSubtitleUrl(
-				routeItemId = item.id,
-				routeMediaSourceId = mediaSource.id.toString(),
-				routeIndex = mediaStream.index,
-				routeFormat = format,
-			)
-		}.toTypedArray()
+		val subtitleUrls =
+			externalSubtitles
+				.map { mediaStream ->
+					// We cannot use the DeliveryUrl as that is only populated when using the playback info API, which we skip as we'll always direct
+					// play when using external players. We need to infer the subtitle format based on its path (similar to how the server
+					// calculates it)
+					val format = mediaStream.path?.substringAfterLast('.', missingDelimiterValue = mediaStream.codec.orEmpty()) ?: "srt"
+					api.subtitleApi.getSubtitleUrl(
+						routeItemId = item.id,
+						routeMediaSourceId = mediaSource.id.toString(),
+						routeIndex = mediaStream.index,
+						routeFormat = format,
+					)
+				}.toTypedArray()
 		val subtitleNames = externalSubtitles.map { it.displayTitle ?: it.title.orEmpty() }.toTypedArray()
 		val subtitleLanguages = externalSubtitles.map { it.language.orEmpty() }.toTypedArray()
 
 		Timber.i(
 			"Starting item ${item.id} from $position with ${subtitleUrls.size} external subtitles: $url${
 				subtitleUrls.joinToString(", ", ", ")
-			}"
+			}",
 		)
 
-		val playIntent = Intent(Intent.ACTION_VIEW).apply {
-			val mediaType = when (item.mediaType) {
-				MediaType.VIDEO -> "video/*"
-				MediaType.AUDIO -> "audio/*"
-				else -> null
+		val playIntent =
+			Intent(Intent.ACTION_VIEW).apply {
+				val mediaType =
+					when (item.mediaType) {
+						MediaType.VIDEO -> "video/*"
+						MediaType.AUDIO -> "audio/*"
+						else -> null
+					}
+
+				// Set configured app to launch
+				externalAppRepository
+					.getCurrentExternalPlayerApp(this@ExternalPlayerActivity)
+					?.componentName
+					?.let(::setComponent)
+
+				setDataAndTypeAndNormalize(url.toUri(), mediaType)
+
+				putExtra(API_MX_SEEK_POSITION, position.inWholeMilliseconds.toInt())
+				putExtra(API_MX_RETURN_RESULT, true)
+				putExtra(API_MX_TITLE, title)
+				putExtra(API_MX_FILENAME, fileName)
+				putExtra(API_MX_SECURE_URI, true)
+				putExtra(API_MX_SUBS, subtitleUrls)
+				putExtra(API_MX_SUBS_NAME, subtitleNames)
+				putExtra(API_MX_SUBS_FILENAME, subtitleLanguages)
+
+				if (subtitleUrls.isNotEmpty()) putExtra(API_VLC_SUBTITLES, subtitleUrls.first().toString())
+
+				putExtra(API_VIMU_SEEK_POSITION, position.inWholeMilliseconds.toInt())
+				putExtra(API_VIMU_RESUME, false)
+				putExtra(API_VIMU_TITLE, title)
 			}
-
-			// Set configured app to launch
-			externalAppRepository
-				.getCurrentExternalPlayerApp(this@ExternalPlayerActivity)
-				?.componentName
-				?.let(::setComponent)
-
-			setDataAndTypeAndNormalize(url.toUri(), mediaType)
-
-			putExtra(API_MX_SEEK_POSITION, position.inWholeMilliseconds.toInt())
-			putExtra(API_MX_RETURN_RESULT, true)
-			putExtra(API_MX_TITLE, title)
-			putExtra(API_MX_FILENAME, fileName)
-			putExtra(API_MX_SECURE_URI, true)
-			putExtra(API_MX_SUBS, subtitleUrls)
-			putExtra(API_MX_SUBS_NAME, subtitleNames)
-			putExtra(API_MX_SUBS_FILENAME, subtitleLanguages)
-
-			if (subtitleUrls.isNotEmpty()) putExtra(API_VLC_SUBTITLES, subtitleUrls.first().toString())
-
-			putExtra(API_VIMU_SEEK_POSITION, position.inWholeMilliseconds.toInt())
-			putExtra(API_VIMU_RESUME, false)
-			putExtra(API_VIMU_TITLE, title)
-		}
 
 		try {
 			currentItem = item to mediaSource
@@ -223,15 +239,19 @@ class ExternalPlayerActivity : FragmentActivity() {
 		}
 	}
 
-
 	private fun onItemFinished(result: Intent?) {
 		val extras = result?.extras ?: Bundle.EMPTY
 
-		val endPosition = resultPositionExtras.firstNotNullOfOrNull { key ->
-			@Suppress("DEPRECATION") val value = extras.get(key)
-			if (value is Number) value.toLong().milliseconds
-			else null
-		}
+		val endPosition =
+			resultPositionExtras.firstNotNullOfOrNull { key ->
+				@Suppress("DEPRECATION")
+				val value = extras.get(key)
+				if (value is Number) {
+					value.toLong().milliseconds
+				} else {
+					null
+				}
+			}
 
 		val itemId = currentItem?.first?.id ?: savedItemId
 		val mediaSourceId = currentItem?.second?.id ?: savedMediaSourceId
@@ -256,7 +276,7 @@ class ExternalPlayerActivity : FragmentActivity() {
 							mediaSourceId = mediaSourceId,
 							positionTicks = endPosition?.inWholeTicks,
 							failed = false,
-						)
+						),
 					)
 				}
 			}.onFailure { error ->
@@ -272,8 +292,11 @@ class ExternalPlayerActivity : FragmentActivity() {
 				else -> Unit
 			}
 
-			if (shouldPlayNext) playNext()
-			else finish()
+			if (shouldPlayNext) {
+				playNext()
+			} else {
+				finish()
+			}
 		}
 	}
 }

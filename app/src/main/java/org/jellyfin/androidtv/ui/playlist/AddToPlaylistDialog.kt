@@ -32,9 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -43,6 +41,8 @@ import kotlinx.coroutines.withContext
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.repository.ServerUserSession
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
+import org.jellyfin.androidtv.ui.base.theme.DialogDimensions
 import org.jellyfin.androidtv.ui.shuffle.GlassDialogRow
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.extensions.itemsApi
@@ -55,7 +55,9 @@ import timber.log.Timber
 import java.util.UUID
 
 internal enum class PlaylistDialogMode {
-	SELECT_SERVER, MAIN, SELECT_PLAYLIST
+	SELECT_SERVER,
+	MAIN,
+	SELECT_PLAYLIST,
 }
 
 @Composable
@@ -68,11 +70,12 @@ fun AddToPlaylistDialog(
 	enableMultiServer: Boolean = false,
 	serverSessions: List<ServerUserSession> = emptyList(),
 ) {
-	val initialMode = if (enableMultiServer && serverSessions.size > 1) {
-		PlaylistDialogMode.SELECT_SERVER
-	} else {
-		PlaylistDialogMode.MAIN
-	}
+	val initialMode =
+		if (enableMultiServer && serverSessions.size > 1) {
+			PlaylistDialogMode.SELECT_SERVER
+		} else {
+			PlaylistDialogMode.MAIN
+		}
 
 	var mode by remember { mutableStateOf(initialMode) }
 	var playlists by remember { mutableStateOf<List<BaseItemDto>>(emptyList()) }
@@ -88,15 +91,16 @@ fun AddToPlaylistDialog(
 			playlists = emptyList()
 			loadingPlaylists = true
 			try {
-				val response = withContext(Dispatchers.IO) {
-					activeApi.itemsApi.getItems(
-						includeItemTypes = setOf(BaseItemKind.PLAYLIST),
-						recursive = true,
-						sortBy = setOf(ItemSortBy.SORT_NAME),
-						sortOrder = setOf(SortOrder.ASCENDING),
-						fields = setOf(ItemFields.CAN_DELETE),
-					)
-				}
+				val response =
+					withContext(Dispatchers.IO) {
+						activeApi.itemsApi.getItems(
+							includeItemTypes = setOf(BaseItemKind.PLAYLIST),
+							recursive = true,
+							sortBy = setOf(ItemSortBy.SORT_NAME),
+							sortOrder = setOf(SortOrder.ASCENDING),
+							fields = setOf(ItemFields.CAN_DELETE),
+						)
+					}
 				playlists = response.content.items.filter { it.canDelete == true }
 			} catch (e: Exception) {
 				Timber.e(e, "Failed to load playlists")
@@ -120,39 +124,43 @@ fun AddToPlaylistDialog(
 			contentAlignment = Alignment.Center,
 		) {
 			Column(
-				modifier = Modifier
-					.widthIn(min = 340.dp, max = 440.dp)
-					.clip(JellyfinTheme.shapes.dialog)
-					.background(JellyfinTheme.colorScheme.dialogScrim)
-					.border(1.dp, Color.White.copy(alpha = 0.1f), JellyfinTheme.shapes.dialog)
-					.padding(vertical = 20.dp),
+				modifier =
+					Modifier
+						.widthIn(min = DialogDimensions.standardMinWidth, max = DialogDimensions.standardMaxWidth)
+						.clip(JellyfinTheme.shapes.dialog)
+						.background(JellyfinTheme.colorScheme.dialogScrim)
+						.border(1.dp, Color.White.copy(alpha = 0.1f), JellyfinTheme.shapes.dialog)
+						.padding(vertical = 20.dp),
 			) {
 				// Title row with optional back button
 				Row(
-					modifier = Modifier
-						.fillMaxWidth()
-						.padding(horizontal = 24.dp)
-						.padding(bottom = 12.dp),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.padding(horizontal = 24.dp)
+							.padding(bottom = 12.dp),
 					verticalAlignment = Alignment.CenterVertically,
 				) {
 					if (mode != initialMode) {
 						val backInteraction = remember { MutableInteractionSource() }
 						val backFocused by backInteraction.collectIsFocusedAsState()
-						val backMode = when (mode) {
-							PlaylistDialogMode.SELECT_PLAYLIST -> PlaylistDialogMode.MAIN
-							PlaylistDialogMode.MAIN -> PlaylistDialogMode.SELECT_SERVER
-							else -> PlaylistDialogMode.MAIN
-						}
+						val backMode =
+							when (mode) {
+								PlaylistDialogMode.SELECT_PLAYLIST -> PlaylistDialogMode.MAIN
+								PlaylistDialogMode.MAIN -> PlaylistDialogMode.SELECT_SERVER
+								else -> PlaylistDialogMode.MAIN
+							}
 						Box(
-							modifier = Modifier
-								.size(32.dp)
-								.clip(JellyfinTheme.shapes.small)
-								.background(if (backFocused) JellyfinTheme.colorScheme.listButtonFocused else Color.Transparent)
-								.clickable(
-									interactionSource = backInteraction,
-									indication = null,
-								) { mode = backMode }
-								.focusable(interactionSource = backInteraction),
+							modifier =
+								Modifier
+									.size(32.dp)
+									.clip(JellyfinTheme.shapes.small)
+									.background(if (backFocused) JellyfinTheme.colorScheme.listButtonFocused else Color.Transparent)
+									.clickable(
+										interactionSource = backInteraction,
+										indication = null,
+									) { mode = backMode }
+									.focusable(interactionSource = backInteraction),
 							contentAlignment = Alignment.Center,
 						) {
 							androidx.compose.material3.Text(
@@ -165,11 +173,12 @@ fun AddToPlaylistDialog(
 					}
 
 					androidx.compose.material3.Text(
-						text = when (mode) {
-							PlaylistDialogMode.SELECT_SERVER -> stringResource(R.string.lbl_select_server)
-							PlaylistDialogMode.MAIN -> stringResource(R.string.lbl_add_to_playlist)
-							PlaylistDialogMode.SELECT_PLAYLIST -> stringResource(R.string.lbl_select_playlist)
-						},
+						text =
+							when (mode) {
+								PlaylistDialogMode.SELECT_SERVER -> stringResource(R.string.lbl_select_server)
+								PlaylistDialogMode.MAIN -> stringResource(R.string.lbl_add_to_playlist)
+								PlaylistDialogMode.SELECT_PLAYLIST -> stringResource(R.string.lbl_select_playlist)
+							},
 						style = JellyfinTheme.typography.titleLarge,
 						color = JellyfinTheme.colorScheme.textPrimary,
 					)
@@ -177,10 +186,11 @@ fun AddToPlaylistDialog(
 
 				// Divider
 				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.height(1.dp)
-						.background(JellyfinTheme.colorScheme.divider),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.height(1.dp)
+							.background(JellyfinTheme.colorScheme.divider),
 				)
 
 				Spacer(modifier = Modifier.height(8.dp))
@@ -204,13 +214,13 @@ fun AddToPlaylistDialog(
 					}
 					PlaylistDialogMode.MAIN -> {
 						GlassDialogRow(
-							icon = ImageVector.vectorResource(R.drawable.ic_folder),
+							icon = VegafoXIcons.Folder,
 							label = stringResource(R.string.lbl_select_playlist),
 							onClick = { mode = PlaylistDialogMode.SELECT_PLAYLIST },
 							focusRequester = initialFocusRequester,
 						)
 						GlassDialogRow(
-							icon = ImageVector.vectorResource(R.drawable.ic_add),
+							icon = VegafoXIcons.Add,
 							label = stringResource(R.string.lbl_create_new_playlist),
 							onClick = { onCreateNewPlaylist(activeApi) },
 						)
@@ -218,9 +228,10 @@ fun AddToPlaylistDialog(
 					PlaylistDialogMode.SELECT_PLAYLIST -> {
 						if (loadingPlaylists) {
 							Row(
-								modifier = Modifier
-									.fillMaxWidth()
-									.padding(24.dp),
+								modifier =
+									Modifier
+										.fillMaxWidth()
+										.padding(24.dp),
 								horizontalArrangement = Arrangement.Center,
 							) {
 								CircularProgressIndicator(
@@ -253,10 +264,11 @@ fun AddToPlaylistDialog(
 				// Cancel
 				Spacer(modifier = Modifier.height(4.dp))
 				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.height(1.dp)
-						.background(JellyfinTheme.colorScheme.divider),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.height(1.dp)
+							.background(JellyfinTheme.colorScheme.divider),
 				)
 				Spacer(modifier = Modifier.height(4.dp))
 
@@ -273,4 +285,3 @@ fun AddToPlaylistDialog(
 		}
 	}
 }
-

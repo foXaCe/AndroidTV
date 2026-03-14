@@ -17,6 +17,6 @@ fun PlayerSurface(
 		modifier = modifier,
 		update = { view ->
 			view.playbackManager = playbackManager
-		}
+		},
 	)
 }

@@ -5,6 +5,13 @@ import org.jellyfin.playback.core.model.PlayState
 
 interface PlayerBackendEventListener {
 	fun onPlayStateChange(state: PlayState)
-	fun onVideoSizeChange(width: Int, height: Int)
+
+	fun onVideoSizeChange(
+		width: Int,
+		height: Int,
+	)
+
 	fun onMediaStreamEnd(mediaStream: PlayableMediaStream)
+
+	fun onBufferingChange(isBuffering: Boolean) {}
 }

@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import org.jellyfin.androidtv.ui.base.AnimationDefaults
 import kotlin.math.sin
 
 /**
@@ -32,11 +31,12 @@ fun rememberShakeState(): ShakeState = remember { ShakeState() }
  * Applies a horizontal shake effect when [ShakeState.shake] is called.
  * 3 oscillations with 6dp amplitude over 200ms.
  */
-fun Modifier.shake(state: ShakeState): Modifier = graphicsLayer {
-	val progress = state.offset.value
-	if (progress > 0f) {
-		// 3 oscillations using sin: sin(3 * 2PI * progress) with decaying amplitude
-		val amplitude = 6f * (1f - progress)
-		translationX = amplitude * sin(progress * 3f * 2f * Math.PI.toFloat())
+fun Modifier.shake(state: ShakeState): Modifier =
+	graphicsLayer {
+		val progress = state.offset.value
+		if (progress > 0f) {
+			// 3 oscillations using sin: sin(3 * 2PI * progress) with decaying amplitude
+			val amplitude = 6f * (1f - progress)
+			translationX = amplitude * sin(progress * 3f * 2f * Math.PI.toFloat())
+		}
 	}
-}

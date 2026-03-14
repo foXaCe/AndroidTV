@@ -53,10 +53,13 @@ fun PhotoPlayerScreen() {
 
 			playbackManager.queue.clear()
 			val queueEntry = createBaseItemQueueEntry(api, currentItem)
-			playbackManager.queue.addSupplier(object : org.jellyfin.playback.core.queue.supplier.QueueSupplier {
-				override val size: Int = 1
-				override suspend fun getItem(index: Int) = if (index == 0) queueEntry else null
-			})
+			playbackManager.queue.addSupplier(
+				object : org.jellyfin.playback.core.queue.supplier.QueueSupplier {
+					override val size: Int = 1
+
+					override suspend fun getItem(index: Int) = if (index == 0) queueEntry else null
+				},
+			)
 			playbackManager.state.play()
 		} else {
 			playbackManager.state.stop()
@@ -94,9 +97,10 @@ fun PhotoPlayerScreen() {
 	)
 
 	Box(
-		modifier = Modifier
-			.background(Color.Black)
-			.fillMaxSize()
+		modifier =
+			Modifier
+				.background(Color.Black)
+				.fillMaxSize(),
 	) {
 		// Always render PlayerSurface to ensure the video surface is attached and ready
 		// before playback starts. This prevents the black screen issue where video audio
@@ -106,10 +110,11 @@ fun PhotoPlayerScreen() {
 
 		PlayerSurface(
 			playbackManager = playbackManager,
-			modifier = Modifier
-				.aspectRatio(aspectRatio, videoSize.height < videoSize.width)
-				.fillMaxSize()
-				.align(Alignment.Center)
+			modifier =
+				Modifier
+					.aspectRatio(aspectRatio, videoSize.height < videoSize.width)
+					.fillMaxSize()
+					.align(Alignment.Center),
 		)
 
 		if (!isVideo) {

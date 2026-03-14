@@ -9,7 +9,10 @@ class VideoQueueManager {
 	private var _lastPlayedAudioLanguageIsoCode: String? = null
 	private var _serverIds: List<UUID?> = emptyList()
 
-	fun setCurrentVideoQueue(items: List<BaseItemDto>?, serverIds: List<UUID?>? = null) {
+	fun setCurrentVideoQueue(
+		items: List<BaseItemDto>?,
+		serverIds: List<UUID?>? = null,
+	) {
 		if (items.isNullOrEmpty()) return clearVideoQueue()
 
 		_currentVideoQueue = items.toMutableList()
@@ -18,10 +21,8 @@ class VideoQueueManager {
 	}
 
 	fun getCurrentVideoQueue(): List<BaseItemDto> = _currentVideoQueue
-	
-	fun getServerIdForPosition(position: Int): UUID? {
-		return _serverIds.getOrNull(position)
-	}
+
+	fun getServerIdForPosition(position: Int): UUID? = _serverIds.getOrNull(position)
 
 	fun setCurrentMediaPosition(currentMediaPosition: Int) {
 		if (currentMediaPosition !in 0.._currentVideoQueue.size) return
@@ -31,9 +32,7 @@ class VideoQueueManager {
 
 	fun getCurrentMediaPosition() = _currentMediaPosition
 
-	fun getLastPlayedAudioLanguageIsoCode(): String? {
-		return _lastPlayedAudioLanguageIsoCode
-	}
+	fun getLastPlayedAudioLanguageIsoCode(): String? = _lastPlayedAudioLanguageIsoCode
 
 	fun setLastPlayedAudioLanguageIsoCode(isoCode: String) {
 		_lastPlayedAudioLanguageIsoCode = isoCode

@@ -23,11 +23,12 @@ fun PlayerSeekbar(
 ) {
 	val playState by playbackManager.state.playState.collectAsState()
 	val positionInfo = playbackManager.state.positionInfo
-	val progress = rememberPlayerProgress(
-		playing = playState == PlayState.PLAYING,
-		active = positionInfo.active,
-		duration = positionInfo.duration,
-	)
+	val progress =
+		rememberPlayerProgress(
+			playing = playState == PlayState.PLAYING,
+			active = positionInfo.active,
+			duration = positionInfo.duration,
+		)
 	val seekForwardAmount = remember { playbackManager.options.defaultFastForwardAmount() }
 	val seekRewindAmount = remember { playbackManager.options.defaultRewindAmount() }
 

@@ -15,29 +15,30 @@ internal class MediaStreamService(
 	private val mediaStreamResolvers: Collection<MediaStreamResolver>,
 ) : PlayerService() {
 	override suspend fun onInitialize() {
-		manager.queue.entry.onEach { entry ->
-			Timber.d("Queue entry changed to $entry")
-			val backend = requireNotNull(manager.backend)
+		manager.queue.entry
+			.onEach { entry ->
+				Timber.d("Queue entry changed to $entry")
+				val backend = requireNotNull(manager.backend)
 
-			if (entry == null) {
-				backend.setCurrent(null)
-			} else {
-				val hasMediaStream = entry.ensureMediaStream()
-
-				if (hasMediaStream) {
-					backend.setCurrent(entry)
+				if (entry == null) {
+					backend.setCurrent(null)
 				} else {
-					Timber.e("Unable to resolve stream for entry $entry")
+					val hasMediaStream = entry.ensureMediaStream()
 
-					// TODO: Somehow notify the user that we skipped an unplayable entry
-					if (manager.queue.peekNext() != null) {
-						manager.queue.next(usePlaybackOrder = true, useRepeatMode = false)
+					if (hasMediaStream) {
+						backend.setCurrent(entry)
 					} else {
-						backend.setCurrent(null)
+						Timber.e("Unable to resolve stream for entry $entry")
+
+						// TODO: Somehow notify the user that we skipped an unplayable entry
+						if (manager.queue.peekNext() != null) {
+							manager.queue.next(usePlaybackOrder = true, useRepeatMode = false)
+						} else {
+							backend.setCurrent(null)
+						}
 					}
 				}
-			}
-		}.launchIn(coroutineScope + Dispatchers.Main)
+			}.launchIn(coroutineScope + Dispatchers.Main)
 		// TODO Register some kind of event when $current item is at -30 seconds to setNext()
 	}
 
@@ -58,7 +59,10 @@ internal class MediaStreamService(
 	private fun PlayerBackend.setCurrent(item: QueueEntry?) {
 		Timber.d("Current item changed to $item")
 
-		if (item == null) stop()
-		else playItem(item)
+		if (item == null) {
+			stop()
+		} else {
+			playItem(item)
+		}
 	}
 }

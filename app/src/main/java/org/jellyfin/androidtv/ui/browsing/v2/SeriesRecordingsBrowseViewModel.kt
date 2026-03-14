@@ -9,12 +9,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.jellyfin.androidtv.ui.base.state.UiError
+import org.jellyfin.androidtv.ui.base.state.toUiError
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.exception.ApiClientException
 import org.jellyfin.sdk.api.client.extensions.liveTvApi
 import org.jellyfin.sdk.model.api.SeriesTimerInfoDto
-import org.jellyfin.androidtv.ui.base.state.UiError
-import org.jellyfin.androidtv.ui.base.state.toUiError
 import timber.log.Timber
 
 data class SeriesRecordingsBrowseUiState(
@@ -27,7 +27,6 @@ data class SeriesRecordingsBrowseUiState(
 class SeriesRecordingsBrowseViewModel(
 	val api: ApiClient,
 ) : ViewModel() {
-
 	private val _uiState = MutableStateFlow(SeriesRecordingsBrowseUiState())
 	val uiState: StateFlow<SeriesRecordingsBrowseUiState> = _uiState.asStateFlow()
 
@@ -43,14 +42,17 @@ class SeriesRecordingsBrowseViewModel(
 	private fun loadSeriesTimers() {
 		viewModelScope.launch {
 			try {
-				val response = withContext(Dispatchers.IO) {
-					api.liveTvApi.getSeriesTimers().content
-				}
+				val response =
+					withContext(Dispatchers.IO) {
+						api.liveTvApi.getSeriesTimers().content
+					}
 
-				_uiState.update { it.copy(
-					isLoading = false,
-					seriesTimers = response.items,
-				) }
+				_uiState.update {
+					it.copy(
+						isLoading = false,
+						seriesTimers = response.items,
+					)
+				}
 			} catch (err: ApiClientException) {
 				Timber.e(err, "Failed to load series timers")
 				_uiState.update { it.copy(isLoading = false, error = err.toUiError()) }

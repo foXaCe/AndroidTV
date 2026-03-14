@@ -15,7 +15,6 @@ import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class FolderViewComposeFragment : Fragment() {
-
 	private val viewModel: FolderViewViewModel by viewModel()
 	private val itemLauncher: ItemLauncher by inject()
 
@@ -23,19 +22,23 @@ class FolderViewComposeFragment : Fragment() {
 		inflater: LayoutInflater,
 		container: ViewGroup?,
 		savedInstanceState: Bundle?,
-	): View = ComposeView(requireContext()).apply {
-		setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-		setContent {
-			JellyfinTheme {
-				FolderViewScreen(
-					viewModel = viewModel,
-					onItemClick = ::launchItem,
-				)
+	): View =
+		ComposeView(requireContext()).apply {
+			setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+			setContent {
+				JellyfinTheme {
+					FolderViewScreen(
+						viewModel = viewModel,
+						onItemClick = ::launchItem,
+					)
+				}
 			}
 		}
-	}
 
-	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+	override fun onViewCreated(
+		view: View,
+		savedInstanceState: Bundle?,
+	) {
 		super.onViewCreated(view, savedInstanceState)
 		viewModel.initialize()
 	}

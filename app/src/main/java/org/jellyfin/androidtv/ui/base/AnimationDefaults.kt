@@ -35,10 +35,11 @@ object AnimationDefaults {
 	const val STAGGER_DELAY = 30
 
 	// Focus animation spec: 150ms FastOutSlowIn
-	fun <T> focusSpec() = tween<T>(
-		durationMillis = DURATION_FAST,
-		easing = FastOutSlowInEasing,
-	)
+	fun <T> focusSpec() =
+		tween<T>(
+			durationMillis = DURATION_FAST,
+			easing = FastOutSlowInEasing,
+		)
 }
 
 /**
@@ -49,11 +50,12 @@ object AnimationDefaults {
 fun rememberReducedMotion(): Boolean {
 	val context = LocalContext.current
 	return remember {
-		val scale = Settings.Global.getFloat(
-			context.contentResolver,
-			Settings.Global.ANIMATOR_DURATION_SCALE,
-			1f,
-		)
+		val scale =
+			Settings.Global.getFloat(
+				context.contentResolver,
+				Settings.Global.ANIMATOR_DURATION_SCALE,
+				1f,
+			)
 		scale == 0f
 	}
 }

@@ -38,7 +38,7 @@ fun SettingsScreensaverTimeoutScreen() {
 				onClick = {
 					screensaverInAppTimeout = duration.inWholeMilliseconds
 					router.back()
-				}
+				},
 			)
 		}
 	}

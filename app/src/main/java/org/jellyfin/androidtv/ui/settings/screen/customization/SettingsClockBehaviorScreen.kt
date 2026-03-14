@@ -38,7 +38,7 @@ fun SettingsClockBehaviorScreen() {
 				onClick = {
 					clockBehavior = entry
 					router.back()
-				}
+				},
 			)
 		}
 	}

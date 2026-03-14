@@ -28,80 +28,86 @@ import org.jellyfin.playback.media3.session.media3SessionPlugin
 import org.jellyfin.sdk.api.client.HttpClientOptions
 import org.jellyfin.sdk.api.okhttp.OkHttpFactory
 import org.koin.android.ext.koin.androidContext
-import kotlin.time.Duration
 import org.koin.core.scope.Scope
 import org.koin.dsl.module
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import org.jellyfin.androidtv.ui.playback.PlaybackManager as LegacyPlaybackManager
 
-val playbackModule = module {
-	single<LegacyPlaybackManager> { LegacyPlaybackManager(get(), get()) }
-	single { VideoQueueManager() }
-	single<MediaManager> { RewriteMediaManager(get(), get()) }
+val playbackModule =
+	module {
+		single<LegacyPlaybackManager> { LegacyPlaybackManager(get(), get()) }
+		single { VideoQueueManager() }
+		single<MediaManager> { RewriteMediaManager(get(), get()) }
 
-	single { PlaybackLauncher(get(), get(), get(), get(), get()) }
-	factory { PrePlaybackTrackSelector(androidContext()) }
+		single { PlaybackLauncher(get(), get(), get(), get(), get(), get()) }
+		factory { PrePlaybackTrackSelector(androidContext()) }
 
-	single<HttpDataSource.Factory> {
-		val okHttpFactory = get<OkHttpFactory>()
-		val httpClientOptions = get<HttpClientOptions>().copy(
-			// Disable request timeout for media playback as this causes issues with Live TV
-			requestTimeout = Duration.ZERO
-		)
+		single<HttpDataSource.Factory> {
+			val okHttpFactory = get<OkHttpFactory>()
+			val httpClientOptions =
+				get<HttpClientOptions>().copy(
+					// Disable request timeout for media playback as this causes issues with Live TV
+					requestTimeout = Duration.ZERO,
+				)
 
-		OkHttpDataSource.Factory(okHttpFactory.createClient(httpClientOptions))
+			OkHttpDataSource.Factory(okHttpFactory.createClient(httpClientOptions))
+		}
+
+		single { createPlaybackManager() }
 	}
 
-	single { createPlaybackManager() }
-}
+fun Scope.createPlaybackManager() =
+	playbackManager(androidContext()) {
+		val activityIntent = Intent(get(), MainActivity::class.java)
+		val pendingIntent = PendingIntent.getActivity(get(), 0, activityIntent, PendingIntent.FLAG_IMMUTABLE)
 
-fun Scope.createPlaybackManager() = playbackManager(androidContext()) {
-	val activityIntent = Intent(get(), MainActivity::class.java)
-	val pendingIntent = PendingIntent.getActivity(get(), 0, activityIntent, PendingIntent.FLAG_IMMUTABLE)
+		val notificationChannelId = "session"
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			val channel =
+				NotificationChannel(
+					notificationChannelId,
+					notificationChannelId,
+					NotificationManager.IMPORTANCE_LOW,
+				)
+			channel.setShowBadge(false)
+			NotificationManagerCompat.from(get()).createNotificationChannel(channel)
+		}
 
-	val notificationChannelId = "session"
-	if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-		val channel = NotificationChannel(
-			notificationChannelId,
-			notificationChannelId,
-			NotificationManager.IMPORTANCE_LOW
-		)
-		channel.setShowBadge(false)
-		NotificationManagerCompat.from(get()).createNotificationChannel(channel)
-	}
+		val userPreferences = get<UserPreferences>()
+		val exoPlayerOptions =
+			ExoPlayerOptions(
+				preferFfmpeg = userPreferences[UserPreferences.preferExoPlayerFfmpeg],
+				enableDebugLogging = userPreferences[UserPreferences.debuggingEnabled],
+				enableLibAssRenderer = userPreferences[UserPreferences.assDirectPlay],
+				assSubtitleFontScale = userPreferences[UserPreferences.subtitlesTextSize] / 24f,
+				baseDataSourceFactory = get<HttpDataSource.Factory>(),
+			)
+		install(exoPlayerPlugin(get(), exoPlayerOptions))
 
-	val userPreferences = get<UserPreferences>()
-	val exoPlayerOptions = ExoPlayerOptions(
-		preferFfmpeg = userPreferences[UserPreferences.preferExoPlayerFfmpeg],
-		enableDebugLogging = userPreferences[UserPreferences.debuggingEnabled],
-		enableLibAssRenderer = userPreferences[UserPreferences.assDirectPlay],
-		assSubtitleFontScale = userPreferences[UserPreferences.subtitlesTextSize] / 24f,
-		baseDataSourceFactory = get<HttpDataSource.Factory>(),
-	)
-	install(exoPlayerPlugin(get(), exoPlayerOptions))
+		val mediaSessionOptions =
+			MediaSessionOptions(
+				channelId = notificationChannelId,
+				notificationId = 1,
+				iconSmall = R.drawable.app_icon_foreground,
+				openIntent = pendingIntent,
+			)
+		install(media3SessionPlugin(get(), mediaSessionOptions))
 
-	val mediaSessionOptions = MediaSessionOptions(
-		channelId = notificationChannelId,
-		notificationId = 1,
-		iconSmall = R.drawable.app_icon_foreground,
-		openIntent = pendingIntent,
-	)
-	install(media3SessionPlugin(get(), mediaSessionOptions))
-
-	val deviceProfileBuilder = { createDeviceProfile(androidContext(), userPreferences, get()) }
+		val deviceProfileBuilder = { createDeviceProfile(androidContext(), userPreferences, get()) }
 	
-	// Create API client resolver for cross-server support
-	// ApiClientFactory already prefers the current session's user for the current server
-	val apiClientFactory = get<org.jellyfin.androidtv.util.sdk.ApiClientFactory>()
-	val apiClientResolver: (java.util.UUID?) -> org.jellyfin.sdk.api.client.ApiClient? = { serverId ->
-		serverId?.let { apiClientFactory.getApiClientForServer(it) }
-	}
+		// Create API client resolver for cross-server support
+		// ApiClientFactory already prefers the current session's user for the current server
+		val apiClientFactory = get<org.jellyfin.androidtv.util.sdk.ApiClientFactory>()
+		val apiClientResolver: (java.util.UUID?) -> org.jellyfin.sdk.api.client.ApiClient? = { serverId ->
+			serverId?.let { apiClientFactory.getApiClientForServer(it) }
+		}
 	
-	install(jellyfinPlugin(get(), deviceProfileBuilder, ProcessLifecycleOwner.get().lifecycle, apiClientResolver))
+		install(jellyfinPlugin(get(), deviceProfileBuilder, ProcessLifecycleOwner.get().lifecycle, apiClientResolver))
 
-	// Options
-	val userSettingPreferences = get<UserSettingPreferences>()
-	defaultRewindAmount = { userSettingPreferences[UserSettingPreferences.skipBackLength].milliseconds }
-	defaultFastForwardAmount = { userSettingPreferences[UserSettingPreferences.skipForwardLength].milliseconds }
-	unpauseRewindAmount = { userSettingPreferences[UserSettingPreferences.unpauseRewindDuration].milliseconds }
-}
+		// Options
+		val userSettingPreferences = get<UserSettingPreferences>()
+		defaultRewindAmount = { userSettingPreferences[UserSettingPreferences.skipBackLength].milliseconds }
+		defaultFastForwardAmount = { userSettingPreferences[UserSettingPreferences.skipForwardLength].milliseconds }
+		unpauseRewindAmount = { userSettingPreferences[UserSettingPreferences.unpauseRewindDuration].milliseconds }
+	}

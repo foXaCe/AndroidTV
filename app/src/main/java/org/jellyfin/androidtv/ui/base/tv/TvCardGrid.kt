@@ -46,9 +46,10 @@ fun <T> TvCardGrid(
 		contentPadding = contentPadding,
 		verticalArrangement = Arrangement.spacedBy(Tokens.Space.spaceMd),
 		horizontalArrangement = Arrangement.spacedBy(Tokens.Space.spaceMd),
-		modifier = modifier
-			.fillMaxSize()
-			.focusRestorer(),
+		modifier =
+			modifier
+				.fillMaxSize()
+				.focusRestorer(),
 	) {
 		items(
 			items = items,

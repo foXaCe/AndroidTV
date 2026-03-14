@@ -19,15 +19,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.AnimationDefaults
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 
 /**
  * A compact error banner (56dp) that displays inline above content rather than replacing it.
@@ -46,15 +45,16 @@ fun ErrorBanner(
 	if (error == null) return
 
 	Row(
-		modifier = modifier
-			.fillMaxWidth()
-			.height(56.dp)
-			.background(JellyfinTheme.colorScheme.errorContainer)
-			.padding(horizontal = 24.dp),
+		modifier =
+			modifier
+				.fillMaxWidth()
+				.height(56.dp)
+				.background(JellyfinTheme.colorScheme.errorContainer)
+				.padding(horizontal = 24.dp),
 		verticalAlignment = Alignment.CenterVertically,
 	) {
 		Icon(
-			imageVector = ImageVector.vectorResource(R.drawable.ic_error),
+			imageVector = VegafoXIcons.Error,
 			contentDescription = null,
 			modifier = Modifier.size(20.dp),
 			tint = JellyfinTheme.colorScheme.error,
@@ -87,29 +87,31 @@ private fun BannerRetryButton(onClick: () -> Unit) {
 		label = "BannerRetryScale",
 	)
 
-	val bgColor = if (isFocused) {
-		JellyfinTheme.colorScheme.error
-	} else {
-		JellyfinTheme.colorScheme.error.copy(alpha = 0.2f)
-	}
-	val textColor = if (isFocused) {
-		JellyfinTheme.colorScheme.onPrimary
-	} else {
-		JellyfinTheme.colorScheme.error
-	}
+	val bgColor =
+		if (isFocused) {
+			JellyfinTheme.colorScheme.error
+		} else {
+			JellyfinTheme.colorScheme.error.copy(alpha = 0.2f)
+		}
+	val textColor =
+		if (isFocused) {
+			JellyfinTheme.colorScheme.onPrimary
+		} else {
+			JellyfinTheme.colorScheme.error
+		}
 
 	Text(
 		text = stringResource(R.string.lbl_retry),
 		style = JellyfinTheme.typography.labelLarge,
 		color = textColor,
-		modifier = Modifier
-			.graphicsLayer {
-				scaleX = scale
-				scaleY = scale
-			}
-			.background(bgColor, JellyfinTheme.shapes.button)
-			.clickable(interactionSource = interactionSource, indication = null) { onClick() }
-			.focusable(interactionSource = interactionSource)
-			.padding(horizontal = 16.dp, vertical = 6.dp),
+		modifier =
+			Modifier
+				.graphicsLayer {
+					scaleX = scale
+					scaleY = scale
+				}.background(bgColor, JellyfinTheme.shapes.button)
+				.clickable(interactionSource = interactionSource, indication = null) { onClick() }
+				.focusable(interactionSource = interactionSource)
+				.padding(horizontal = 16.dp, vertical = 6.dp),
 	)
 }

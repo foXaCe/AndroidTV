@@ -49,108 +49,115 @@ class MdbListRepository(
 	private val ratingsCache = mutableMapOf<String, Map<String, Float>>()
 	private val pendingRequests = mutableMapOf<String, CompletableDeferred<Map<String, Float>?>>()
 
-	private val json = Json {
-		ignoreUnknownKeys = true
-		isLenient = true
-	}
+	private val json =
+		Json {
+			ignoreUnknownKeys = true
+			isLenient = true
+		}
 
 	/**
 	 * Fetch ratings for [item] from the VegafoX MDBList plugin proxy.
 	 * Returns a map of source name (lowercase) → rating value, or null on failure.
 	 */
-	suspend fun getRatings(item: BaseItemDto): Map<String, Float>? = withContext(Dispatchers.IO) {
-		val tmdbId = item.providerIds?.get("Tmdb") ?: return@withContext null
+	suspend fun getRatings(item: BaseItemDto): Map<String, Float>? =
+		withContext(Dispatchers.IO) {
+			val tmdbId = item.providerIds?.get("Tmdb") ?: return@withContext null
 
-		val type = when (item.type) {
-			BaseItemKind.MOVIE -> "movie"
-			BaseItemKind.SERIES -> "show"
-			BaseItemKind.EPISODE, BaseItemKind.SEASON -> "show"
-			else -> "movie" // fallback for media bar items constructed as MOVIE
-		}
+			val type =
+				when (item.type) {
+					BaseItemKind.MOVIE -> "movie"
+					BaseItemKind.SERIES -> "show"
+					BaseItemKind.EPISODE, BaseItemKind.SEASON -> "show"
+					else -> "movie" // fallback for media bar items constructed as MOVIE
+				}
 
-		val cacheKey = "$type:$tmdbId"
+			val cacheKey = "$type:$tmdbId"
 
-		ratingsCache[cacheKey]?.let { return@withContext it }
-		pendingRequests[cacheKey]?.let { return@withContext it.await() }
+			ratingsCache[cacheKey]?.let { return@withContext it }
+			pendingRequests[cacheKey]?.let { return@withContext it.await() }
 
-		val deferred = CompletableDeferred<Map<String, Float>?>()
-		pendingRequests[cacheKey] = deferred
+			val deferred = CompletableDeferred<Map<String, Float>?>()
+			pendingRequests[cacheKey] = deferred
 
-		try {
-			val baseUrl = apiClient.baseUrl ?: run {
-				Timber.w("MdbListRepository: No server URL available")
-				deferred.complete(null)
-				pendingRequests.remove(cacheKey)
-				return@withContext null
-			}
-			val accessToken = apiClient.accessToken ?: run {
-				Timber.w("MdbListRepository: No access token available")
-				deferred.complete(null)
-				pendingRequests.remove(cacheKey)
-				return@withContext null
-			}
-
-			val url = "$baseUrl/VegafoX/MdbList/Ratings?type=$type&tmdbId=$tmdbId"
-			Timber.d("MdbListRepository: Fetching ratings from plugin: $url")
-
-			val request = Request.Builder()
-				.url(url)
-				.addHeader("Authorization", "MediaBrowser Token=\"$accessToken\"")
-				.build()
-			val response = okHttpClient.newCall(request).execute()
-
-			if (response.isSuccessful) {
-				val body = response.body?.string()
-				if (body != null) {
-					try {
-						val pluginResponse = json.decodeFromString<MdbListResponse>(body)
-
-						if (!pluginResponse.success || pluginResponse.error != null) {
-							Timber.w("MdbListRepository: Plugin returned error: ${pluginResponse.error}")
-							deferred.complete(null)
-							pendingRequests.remove(cacheKey)
-							return@withContext null
-						}
-
-						val ratingsMap = pluginResponse.ratings
-							?.mapNotNull { rating ->
-								val source = rating.source?.lowercase() ?: return@mapNotNull null
-								// metacriticuser: native value is 0-10 but display code expects 0-100.
-								// Use score (0-100 normalized) for correct display, matching web plugin.
-								// For all others: prefer native value, fall back to score.
-								val ratingValue = when (source) {
-									"metacriticuser" -> (rating.score ?: rating.value)?.takeIf { it > 0f }
-									else -> (rating.value ?: rating.score)?.takeIf { it > 0f }
-								}
-								ratingValue?.let { source to it }
-							}
-							?.toMap(LinkedHashMap())
-							?: linkedMapOf()
-
-						ratingsCache[cacheKey] = ratingsMap
-						deferred.complete(ratingsMap)
-						pendingRequests.remove(cacheKey)
-						return@withContext ratingsMap
-					} catch (e: Exception) {
-						Timber.w(e, "MdbListRepository: Failed to parse plugin response")
+			try {
+				val baseUrl =
+					apiClient.baseUrl ?: run {
+						Timber.w("MdbListRepository: No server URL available")
 						deferred.complete(null)
 						pendingRequests.remove(cacheKey)
 						return@withContext null
 					}
+				val accessToken =
+					apiClient.accessToken ?: run {
+						Timber.w("MdbListRepository: No access token available")
+						deferred.complete(null)
+						pendingRequests.remove(cacheKey)
+						return@withContext null
+					}
+
+				val url = "$baseUrl/VegafoX/MdbList/Ratings?type=$type&tmdbId=$tmdbId"
+
+				val request =
+					Request
+						.Builder()
+						.url(url)
+						.addHeader("Authorization", "MediaBrowser Token=\"$accessToken\"")
+						.build()
+				val response = okHttpClient.newCall(request).execute()
+
+				if (response.isSuccessful) {
+					val body = response.body?.string()
+					if (body != null) {
+						try {
+							val pluginResponse = json.decodeFromString<MdbListResponse>(body)
+
+							if (!pluginResponse.success || pluginResponse.error != null) {
+								Timber.w("MdbListRepository: Plugin returned error: ${pluginResponse.error}")
+								deferred.complete(null)
+								pendingRequests.remove(cacheKey)
+								return@withContext null
+							}
+
+							val ratingsMap =
+								pluginResponse.ratings
+									?.mapNotNull { rating ->
+										val source = rating.source?.lowercase() ?: return@mapNotNull null
+										// metacriticuser: native value is 0-10 but display code expects 0-100.
+										// Use score (0-100 normalized) for correct display, matching web plugin.
+										// For all others: prefer native value, fall back to score.
+										val ratingValue =
+											when (source) {
+												"metacriticuser" -> (rating.score ?: rating.value)?.takeIf { it > 0f }
+												else -> (rating.value ?: rating.score)?.takeIf { it > 0f }
+											}
+										ratingValue?.let { source to it }
+									}?.toMap(LinkedHashMap())
+									?: linkedMapOf()
+
+							ratingsCache[cacheKey] = ratingsMap
+							deferred.complete(ratingsMap)
+							pendingRequests.remove(cacheKey)
+							return@withContext ratingsMap
+						} catch (e: Exception) {
+							Timber.w(e, "MdbListRepository: Failed to parse plugin response")
+							deferred.complete(null)
+							pendingRequests.remove(cacheKey)
+							return@withContext null
+						}
+					}
+				} else {
+					Timber.w("MdbListRepository: Plugin request failed: ${response.code} ${response.message}")
 				}
-			} else {
-				Timber.w("MdbListRepository: Plugin request failed: ${response.code} ${response.message}")
+				deferred.complete(null)
+				pendingRequests.remove(cacheKey)
+				return@withContext null
+			} catch (e: Exception) {
+				Timber.e(e, "MdbListRepository: Error fetching ratings from plugin")
+				deferred.complete(null)
+				pendingRequests.remove(cacheKey)
+				return@withContext null
 			}
-			deferred.complete(null)
-			pendingRequests.remove(cacheKey)
-			return@withContext null
-		} catch (e: Exception) {
-			Timber.e(e, "MdbListRepository: Error fetching ratings from plugin")
-			deferred.complete(null)
-			pendingRequests.remove(cacheKey)
-			return@withContext null
 		}
-	}
 
 	fun clearCache() {
 		ratingsCache.clear()

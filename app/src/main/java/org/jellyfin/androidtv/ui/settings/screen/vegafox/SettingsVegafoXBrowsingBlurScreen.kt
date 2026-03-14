@@ -22,13 +22,14 @@ fun SettingsVegafoXBrowsingBlurScreen() {
 	val userSettingPreferences = koinInject<UserSettingPreferences>()
 	var browsingBackgroundBlurAmount by rememberPreference(userSettingPreferences, UserSettingPreferences.browsingBackgroundBlurAmount)
 
-	val options = listOf(
-		0 to stringResource(R.string.pref_blur_none),
-		5 to stringResource(R.string.pref_blur_light),
-		10 to stringResource(R.string.pref_blur_medium),
-		15 to stringResource(R.string.pref_blur_strong),
-		20 to stringResource(R.string.pref_blur_extra_strong)
-	)
+	val options =
+		listOf(
+			0 to stringResource(R.string.pref_blur_none),
+			5 to stringResource(R.string.pref_blur_light),
+			10 to stringResource(R.string.pref_blur_medium),
+			15 to stringResource(R.string.pref_blur_strong),
+			20 to stringResource(R.string.pref_blur_extra_strong),
+		)
 
 	SettingsColumn {
 		item {
@@ -46,7 +47,7 @@ fun SettingsVegafoXBrowsingBlurScreen() {
 				onClick = {
 					browsingBackgroundBlurAmount = value
 					router.back()
-				}
+				},
 			)
 		}
 	}

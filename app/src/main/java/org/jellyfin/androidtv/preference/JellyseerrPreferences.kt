@@ -17,17 +17,21 @@ import timber.log.Timber
  * - Server connection (URL, auth, API keys)
  * - UI preferences (navigation, toolbar, NSFW filter)
  * - Request profiles and discover rows
- * 
+ *
  * The global preferences instance is only used during migration from older versions.
  */
-class JellyseerrPreferences(context: Context, userId: String? = null) : SharedPreferenceStore(
-	sharedPreferences = if (userId != null) {
-		context.getSharedPreferences("jellyseerr_prefs_$userId", Context.MODE_PRIVATE)
-	} else {
-		// Legacy global preferences - only used for migration
-		context.getSharedPreferences("jellyseerr_prefs", Context.MODE_PRIVATE)
-	}
-) {
+class JellyseerrPreferences(
+	context: Context,
+	userId: String? = null,
+) : SharedPreferenceStore(
+		sharedPreferences =
+			if (userId != null) {
+				context.getSharedPreferences("jellyseerr_prefs_$userId", Context.MODE_PRIVATE)
+			} else {
+				// Legacy global preferences - only used for migration
+				context.getSharedPreferences("jellyseerr_prefs", Context.MODE_PRIVATE)
+			},
+	) {
 	companion object {
 		val enabled = booleanPreference("jellyseerr_enabled", false)
 		val serverUrl = stringPreference("jellyseerr_server_url", "")
@@ -68,17 +72,20 @@ class JellyseerrPreferences(context: Context, userId: String? = null) : SharedPr
 		
 		// Migration key to track if global->user migration has been done
 		private const val MIGRATION_DONE_KEY = "jellyseerr_migration_v1_done"
-		
+
 		/**
 		 * Migrate settings from global preferences to user-specific preferences.
 		 * This handles the transition where server config was stored globally but now
 		 * needs to be stored per-user.
-		 * 
+		 *
 		 * @param context Application context
 		 * @param userId The user ID to migrate settings to
 		 * @return The user-specific preferences (with migrated data if applicable)
 		 */
-		fun migrateToUserPreferences(context: Context, userId: String): JellyseerrPreferences {
+		fun migrateToUserPreferences(
+			context: Context,
+			userId: String,
+		): JellyseerrPreferences {
 			val globalPrefs = context.getSharedPreferences("jellyseerr_prefs", Context.MODE_PRIVATE)
 			val userPrefs = JellyseerrPreferences(context, userId)
 			
@@ -93,7 +100,10 @@ class JellyseerrPreferences(context: Context, userId: String? = null) : SharedPr
 			
 			if (globalServerUrl.isEmpty() && !globalEnabled) {
 				// Nothing to migrate, mark as done
-				userPrefs.sharedPreferences.edit().putBoolean(MIGRATION_DONE_KEY, true).apply()
+				userPrefs.sharedPreferences
+					.edit()
+					.putBoolean(MIGRATION_DONE_KEY, true)
+					.apply()
 				return userPrefs
 			}
 			
@@ -101,7 +111,10 @@ class JellyseerrPreferences(context: Context, userId: String? = null) : SharedPr
 			val userServerUrl = userPrefs.get(serverUrl)
 			if (userServerUrl.isNotEmpty()) {
 				// User already has config, mark migration done and skip
-				userPrefs.sharedPreferences.edit().putBoolean(MIGRATION_DONE_KEY, true).apply()
+				userPrefs.sharedPreferences
+					.edit()
+					.putBoolean(MIGRATION_DONE_KEY, true)
+					.apply()
 				return userPrefs
 			}
 			
@@ -148,7 +161,10 @@ class JellyseerrPreferences(context: Context, userId: String? = null) : SharedPr
 			}
 			
 			// Mark migration as done
-			userPrefs.sharedPreferences.edit().putBoolean(MIGRATION_DONE_KEY, true).apply()
+			userPrefs.sharedPreferences
+				.edit()
+				.putBoolean(MIGRATION_DONE_KEY, true)
+				.apply()
 			
 			Timber.i("Jellyseerr: Migration complete for user $userId")
 			
@@ -156,10 +172,11 @@ class JellyseerrPreferences(context: Context, userId: String? = null) : SharedPr
 		}
 	}
 
-	private val json = Json { 
-		ignoreUnknownKeys = true 
-		encodeDefaults = true
-	}
+	private val json =
+		Json {
+			ignoreUnknownKeys = true
+			encodeDefaults = true
+		}
 
 	var rowsConfig: List<JellyseerrRowConfig>
 		get() {
@@ -178,8 +195,9 @@ class JellyseerrPreferences(context: Context, userId: String? = null) : SharedPr
 		}
 
 	val activeRows: List<JellyseerrRowType>
-		get() = rowsConfig
-			.filter { it.enabled }
-			.sortedBy { it.order }
-			.map { it.type }
+		get() =
+			rowsConfig
+				.filter { it.enabled }
+				.sortedBy { it.order }
+				.map { it.type }
 }

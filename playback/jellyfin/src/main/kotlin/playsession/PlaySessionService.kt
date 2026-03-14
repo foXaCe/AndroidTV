@@ -32,29 +32,32 @@ class PlaySessionService(
 	private val apiClientResolver: ((UUID?) -> ApiClient?)? = null,
 ) : PlayerService() {
 	override suspend fun onInitialize() {
-		state.playState.onEach { playState ->
-			when (playState) {
-				PlayState.PLAYING -> sendStreamStart()
-				PlayState.STOPPED -> sendStreamStop()
-				PlayState.PAUSED -> sendStreamUpdate()
-				PlayState.ERROR -> sendStreamStop()
-			}
-		}.launchIn(coroutineScope)
+		state.playState
+			.onEach { playState ->
+				when (playState) {
+					PlayState.PLAYING -> sendStreamStart()
+					PlayState.STOPPED -> sendStreamStop()
+					PlayState.PAUSED -> sendStreamUpdate()
+					PlayState.ERROR -> sendStreamStop()
+				}
+			}.launchIn(coroutineScope)
 	}
 
 	private val MediaConversionMethod.playMethod
-		get() = when (this) {
-			MediaConversionMethod.None -> PlayMethod.DIRECT_PLAY
-			MediaConversionMethod.Remux -> PlayMethod.DIRECT_STREAM
-			MediaConversionMethod.Transcode -> PlayMethod.TRANSCODE
-		}
+		get() =
+			when (this) {
+				MediaConversionMethod.None -> PlayMethod.DIRECT_PLAY
+				MediaConversionMethod.Remux -> PlayMethod.DIRECT_STREAM
+				MediaConversionMethod.Transcode -> PlayMethod.TRANSCODE
+			}
 
 	private val RepeatMode.remoteRepeatMode
-		get() = when (this) {
-			RepeatMode.NONE -> SdkRepeatMode.REPEAT_NONE
-			RepeatMode.REPEAT_ENTRY_ONCE -> SdkRepeatMode.REPEAT_ONE
-			RepeatMode.REPEAT_ENTRY_INFINITE -> SdkRepeatMode.REPEAT_ALL
-		}
+		get() =
+			when (this) {
+				RepeatMode.NONE -> SdkRepeatMode.REPEAT_NONE
+				RepeatMode.REPEAT_ENTRY_ONCE -> SdkRepeatMode.REPEAT_ONE
+				RepeatMode.REPEAT_ENTRY_INFINITE -> SdkRepeatMode.REPEAT_ALL
+			}
 
 	/**
 	 * Get the correct API client for the given item.
@@ -76,14 +79,19 @@ class PlaySessionService(
 		// Try parsing directly first
 		try {
 			return UUID.fromString(serverId)
-		} catch (_: IllegalArgumentException) {}
+		} catch (_: IllegalArgumentException) {
+		}
 		
 		// If 32 chars without hyphens, add them back (8-4-4-4-12 format)
 		if (serverId.length == 32 && !serverId.contains("-")) {
-			val normalized = "${serverId.substring(0, 8)}-${serverId.substring(8, 12)}-${serverId.substring(12, 16)}-${serverId.substring(16, 20)}-${serverId.substring(20)}"
+			val normalized = "${serverId.substring(
+				0,
+				8,
+			)}-${serverId.substring(8, 12)}-${serverId.substring(12, 16)}-${serverId.substring(16, 20)}-${serverId.substring(20)}"
 			try {
 				return UUID.fromString(normalized)
-			} catch (_: IllegalArgumentException) {}
+			} catch (_: IllegalArgumentException) {
+			}
 		}
 		return null
 	}
@@ -117,17 +125,20 @@ class PlaySessionService(
 					isMuted = state.volume.muted,
 					volumeLevel = (state.volume.volume * 100).roundToInt(),
 					isPaused = state.playState.value != PlayState.PLAYING,
-					aspectRatio = state.videoSize.value.aspectRatio.toString(),
+					aspectRatio =
+						state.videoSize.value.aspectRatio
+							.toString(),
 					positionTicks = withContext(Dispatchers.Main) { state.positionInfo.active.inWholeTicks },
 					playMethod = stream.conversionMethod.playMethod,
 					repeatMode = state.repeatMode.value.remoteRepeatMode,
 					nowPlayingQueue = getQueue(),
-					playbackOrder = when (state.playbackOrder.value) {
-						org.jellyfin.playback.core.model.PlaybackOrder.DEFAULT -> PlaybackOrder.DEFAULT
-						org.jellyfin.playback.core.model.PlaybackOrder.RANDOM -> PlaybackOrder.SHUFFLE
-						org.jellyfin.playback.core.model.PlaybackOrder.SHUFFLE -> PlaybackOrder.SHUFFLE
-					}
-				)
+					playbackOrder =
+						when (state.playbackOrder.value) {
+							org.jellyfin.playback.core.model.PlaybackOrder.DEFAULT -> PlaybackOrder.DEFAULT
+							org.jellyfin.playback.core.model.PlaybackOrder.RANDOM -> PlaybackOrder.SHUFFLE
+							org.jellyfin.playback.core.model.PlaybackOrder.SHUFFLE -> PlaybackOrder.SHUFFLE
+						},
+				),
 			)
 		}.onFailure { error -> Timber.w(error, "Failed to send playback start event") }
 	}
@@ -148,17 +159,20 @@ class PlaySessionService(
 					isMuted = state.volume.muted,
 					volumeLevel = (state.volume.volume * 100).roundToInt(),
 					isPaused = state.playState.value != PlayState.PLAYING,
-					aspectRatio = state.videoSize.value.aspectRatio.toString(),
+					aspectRatio =
+						state.videoSize.value.aspectRatio
+							.toString(),
 					positionTicks = withContext(Dispatchers.Main) { state.positionInfo.active.inWholeTicks },
 					playMethod = stream.conversionMethod.playMethod,
 					repeatMode = state.repeatMode.value.remoteRepeatMode,
 					nowPlayingQueue = getQueue(),
-					playbackOrder = when (state.playbackOrder.value) {
-						org.jellyfin.playback.core.model.PlaybackOrder.DEFAULT -> PlaybackOrder.DEFAULT
-						org.jellyfin.playback.core.model.PlaybackOrder.RANDOM -> PlaybackOrder.SHUFFLE
-						org.jellyfin.playback.core.model.PlaybackOrder.SHUFFLE -> PlaybackOrder.SHUFFLE
-					}
-				)
+					playbackOrder =
+						when (state.playbackOrder.value) {
+							org.jellyfin.playback.core.model.PlaybackOrder.DEFAULT -> PlaybackOrder.DEFAULT
+							org.jellyfin.playback.core.model.PlaybackOrder.RANDOM -> PlaybackOrder.SHUFFLE
+							org.jellyfin.playback.core.model.PlaybackOrder.SHUFFLE -> PlaybackOrder.SHUFFLE
+						},
+				),
 			)
 		}.onFailure { error -> Timber.w("Failed to send playback update event", error) }
 	}
@@ -178,7 +192,7 @@ class PlaySessionService(
 					positionTicks = withContext(Dispatchers.Main) { state.positionInfo.active.inWholeTicks },
 					failed = false,
 					nowPlayingQueue = getQueue(),
-				)
+				),
 			)
 		}.onFailure { error -> Timber.w("Failed to send playback stop event", error) }
 	}

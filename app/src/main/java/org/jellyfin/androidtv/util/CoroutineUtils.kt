@@ -14,7 +14,7 @@ import org.jellyfin.androidtv.data.repository.CustomMessageRepository
 
 fun <T : Any> runOnLifecycle(
 	lifecycle: Lifecycle,
-	block: suspend CoroutineScope.() -> T
+	block: suspend CoroutineScope.() -> T,
 ) = lifecycle.coroutineScope.launch { block() }
 
 fun readCustomMessagesOnLifecycle(

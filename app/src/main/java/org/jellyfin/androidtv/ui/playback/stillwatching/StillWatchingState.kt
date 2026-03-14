@@ -4,5 +4,5 @@ enum class StillWatchingState {
 	INITIALIZED,
 	STILL_WATCHING,
 	CLOSE,
-	NO_DATA
+	NO_DATA,
 }

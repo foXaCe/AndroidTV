@@ -20,64 +20,68 @@ import org.jellyfin.androidtv.ui.shuffle.showShuffleDialog
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-class ClockUserView @JvmOverloads constructor(
-	context: Context,
-	attrs: AttributeSet? = null,
-	defStyleAttr: Int = 0,
-	defStyleRes: Int = 0,
-) : RelativeLayout(context, attrs, defStyleAttr, defStyleRes), KoinComponent {
-	private val binding: ClockUserBugBinding = ClockUserBugBinding.inflate(LayoutInflater.from(context), this, true)
-	private val userPreferences by inject<UserPreferences>()
-	private val navigationRepository by inject<NavigationRepository>()
-	private val shuffleManager by inject<ShuffleManager>()
+class ClockUserView
+	@JvmOverloads
+	constructor(
+		context: Context,
+		attrs: AttributeSet? = null,
+		defStyleAttr: Int = 0,
+		defStyleRes: Int = 0,
+	) : RelativeLayout(context, attrs, defStyleAttr, defStyleRes),
+		KoinComponent {
+		private val binding: ClockUserBugBinding = ClockUserBugBinding.inflate(LayoutInflater.from(context), this, true)
+		private val userPreferences by inject<UserPreferences>()
+		private val navigationRepository by inject<NavigationRepository>()
+		private val shuffleManager by inject<ShuffleManager>()
 	
-	private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+		private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
-	var isVideoPlayer = false
-		set(value) {
-			field = value
+		var isVideoPlayer = false
+			set(value) {
+				field = value
+				updateVisibility()
+			}
+
+		val homeButton get() = binding.home
+		val shuffleButton get() = binding.shuffle
+
+		init {
 			updateVisibility()
-		}
 
-	val homeButton get() = binding.home
-	val shuffleButton get() = binding.shuffle
+			binding.home.setOnClickListener {
+				navigationRepository.reset(Destinations.home, clearHistory = true)
+			}
 
-	init {
-		updateVisibility()
+			binding.shuffle.setOnClickListener {
+				scope.launch {
+					shuffleManager.quickShuffle(context)
+				}
+			}
 
-		binding.home.setOnClickListener {
-			navigationRepository.reset(Destinations.home, clearHistory = true)
-		}
-
-		binding.shuffle.setOnClickListener {
-			scope.launch {
-				shuffleManager.quickShuffle(context)
+			binding.shuffle.setOnLongClickListener {
+				showShuffleDialog(context, navigationRepository)
+				true
 			}
 		}
 
-		binding.shuffle.setOnLongClickListener {
-			showShuffleDialog(context, navigationRepository)
-			true
+		private fun updateVisibility() {
+			val showClock = userPreferences[UserPreferences.clockBehavior]
+
+			binding.clock.isVisible =
+				when (showClock) {
+					ClockBehavior.ALWAYS -> true
+					ClockBehavior.NEVER -> false
+					ClockBehavior.IN_VIDEO -> isVideoPlayer
+					ClockBehavior.IN_MENUS -> !isVideoPlayer
+				}
+
+			binding.home.isVisible = !isVideoPlayer
+			binding.shuffle.isVisible = !isVideoPlayer &&
+				userPreferences[UserPreferences.showShuffleButton]
+		}
+
+		override fun onDetachedFromWindow() {
+			super.onDetachedFromWindow()
+			scope.cancel()
 		}
 	}
-
-	private fun updateVisibility() {
-		val showClock = userPreferences[UserPreferences.clockBehavior]
-
-		binding.clock.isVisible = when (showClock) {
-			ClockBehavior.ALWAYS -> true
-			ClockBehavior.NEVER -> false
-			ClockBehavior.IN_VIDEO -> isVideoPlayer
-			ClockBehavior.IN_MENUS -> !isVideoPlayer
-		}
-
-		binding.home.isVisible = !isVideoPlayer
-		binding.shuffle.isVisible = !isVideoPlayer && 
-			userPreferences[UserPreferences.showShuffleButton]
-	}
-	
-	override fun onDetachedFromWindow() {
-		super.onDetachedFromWindow()
-		scope.cancel()
-	}
-}

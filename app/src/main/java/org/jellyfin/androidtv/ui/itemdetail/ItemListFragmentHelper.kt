@@ -7,7 +7,6 @@ import kotlinx.coroutines.withContext
 import org.jellyfin.androidtv.auth.repository.SessionRepository
 import org.jellyfin.androidtv.data.repository.ItemMutationRepository
 import org.jellyfin.androidtv.data.repository.ItemRepository
-import org.jellyfin.androidtv.util.Utils
 import org.jellyfin.androidtv.util.sdk.ApiClientFactory
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.extensions.itemsApi
@@ -24,8 +23,7 @@ private fun ItemListFragment.getCorrectApiClient(): ApiClient {
 	val apiClientFactory by inject<ApiClientFactory>()
 	val sessionRepository by inject<SessionRepository>()
 
-	val serverIdString = arguments?.getString("ServerId")
-	val serverId = Utils.uuidOrNull(serverIdString)
+	val serverId = arguments?.getString(ItemListFragment.KEY_SERVER_ID)?.let(java.util.UUID::fromString)
 	val currentSession = sessionRepository.currentSession.value
 
 	return when {
@@ -39,31 +37,34 @@ fun ItemListFragment.loadItem(itemId: UUID) {
 	val api = getCorrectApiClient()
 
 	lifecycleScope.launch {
-		val item = withContext(Dispatchers.IO) {
-			api.userLibraryApi.getItem(itemId).content
-		}
+		val item =
+			withContext(Dispatchers.IO) {
+				api.userLibraryApi.getItem(itemId).content
+			}
 		setBaseItem(item)
 	}
 }
 
 fun MusicFavoritesListFragment.getFavoritePlaylist(
 	parentId: UUID?,
-	callback: (items: List<BaseItemDto>) -> Unit
+	callback: (items: List<BaseItemDto>) -> Unit,
 ) {
 	val api by inject<ApiClient>()
 
 	lifecycleScope.launch {
-		val result = withContext(Dispatchers.IO) {
-			api.itemsApi.getItems(
-				parentId = parentId,
-				includeItemTypes = setOf(BaseItemKind.AUDIO),
-				recursive = true,
-				filters = setOf(org.jellyfin.sdk.model.api.ItemFilter.IS_FAVORITE_OR_LIKES),
-				sortBy = setOf(ItemSortBy.RANDOM),
-				limit = 100,
-				fields = ItemRepository.itemFields,
-			).content
-		}
+		val result =
+			withContext(Dispatchers.IO) {
+				api.itemsApi
+					.getItems(
+						parentId = parentId,
+						includeItemTypes = setOf(BaseItemKind.AUDIO),
+						recursive = true,
+						filters = setOf(org.jellyfin.sdk.model.api.ItemFilter.IS_FAVORITE_OR_LIKES),
+						sortBy = setOf(ItemSortBy.RANDOM),
+						limit = 100,
+						fields = ItemRepository.itemFields,
+					).content
+			}
 
 		callback(result.items)
 	}
@@ -71,42 +72,51 @@ fun MusicFavoritesListFragment.getFavoritePlaylist(
 
 fun ItemListFragment.getPlaylist(
 	item: BaseItemDto,
-	callback: (items: List<BaseItemDto>) -> Unit
+	callback: (items: List<BaseItemDto>) -> Unit,
 ) {
 	val api = getCorrectApiClient()
 
 	lifecycleScope.launch {
-		val result = withContext(Dispatchers.IO) {
-			when {
-				item.type == BaseItemKind.PLAYLIST -> api.playlistsApi.getPlaylistItems(
-					playlistId = item.id,
-					limit = 150,
-					fields = ItemRepository.itemFields,
-				).content
+		val result =
+			withContext(Dispatchers.IO) {
+				when {
+					item.type == BaseItemKind.PLAYLIST ->
+						api.playlistsApi
+							.getPlaylistItems(
+								playlistId = item.id,
+								limit = 150,
+								fields = ItemRepository.itemFields,
+							).content
 
-				else -> api.itemsApi.getItems(
-					parentId = item.id,
-					includeItemTypes = setOf(BaseItemKind.AUDIO),
-					recursive = true,
-					sortBy = setOf(ItemSortBy.SORT_NAME),
-					limit = 200,
-					fields = ItemRepository.itemFields,
-				).content
+					else ->
+						api.itemsApi
+							.getItems(
+								parentId = item.id,
+								includeItemTypes = setOf(BaseItemKind.AUDIO),
+								recursive = true,
+								sortBy = setOf(ItemSortBy.SORT_NAME),
+								limit = 200,
+								fields = ItemRepository.itemFields,
+							).content
+				}
 			}
-		}
 
 		callback(result.items)
 	}
 }
 
-fun ItemListFragment.toggleFavorite(item: BaseItemDto, callback: (item: BaseItemDto) -> Unit) {
+fun ItemListFragment.toggleFavorite(
+	item: BaseItemDto,
+	callback: (item: BaseItemDto) -> Unit,
+) {
 	val itemMutationRepository by inject<ItemMutationRepository>()
 
 	lifecycleScope.launch {
-		val userData = itemMutationRepository.setFavorite(
-			item = item.id,
-			favorite = !(item.userData?.isFavorite ?: false)
-		)
+		val userData =
+			itemMutationRepository.setFavorite(
+				item = item.id,
+				favorite = !(item.userData?.isFavorite ?: false),
+			)
 		callback(item.copy(userData = userData))
 	}
 }
@@ -114,7 +124,7 @@ fun ItemListFragment.toggleFavorite(item: BaseItemDto, callback: (item: BaseItem
 fun ItemListFragment.removeFromPlaylist(
 	playlistId: UUID,
 	playlistItemId: String,
-	callback: () -> Unit
+	callback: () -> Unit,
 ) {
 	val api = getCorrectApiClient()
 
@@ -123,7 +133,7 @@ fun ItemListFragment.removeFromPlaylist(
 			withContext(Dispatchers.IO) {
 				api.playlistsApi.removeItemFromPlaylist(
 					playlistId = playlistId.toString(),
-					entryIds = listOf(playlistItemId)
+					entryIds = listOf(playlistItemId),
 				)
 			}
 			callback()
@@ -137,7 +147,7 @@ fun ItemListFragment.movePlaylistItem(
 	playlistId: UUID,
 	playlistItemId: String,
 	newIndex: Int,
-	callback: () -> Unit
+	callback: () -> Unit,
 ) {
 	val api = getCorrectApiClient()
 
@@ -147,7 +157,7 @@ fun ItemListFragment.movePlaylistItem(
 				api.playlistsApi.moveItem(
 					playlistId = playlistId.toString(),
 					itemId = playlistItemId,
-					newIndex = newIndex
+					newIndex = newIndex,
 				)
 			}
 			callback()

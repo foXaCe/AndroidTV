@@ -9,11 +9,13 @@ enum class LiveTvChannelOrder(
 	val stringValue: String,
 ) : PreferenceEnum {
 	LAST_PLAYED(R.string.lbl_guide_option_played, ItemSortBy.DATE_PLAYED.serialName),
-	CHANNEL_NUMBER(R.string.lbl_guide_option_number, ItemSortBy.SORT_NAME.serialName);
+	CHANNEL_NUMBER(R.string.lbl_guide_option_number, ItemSortBy.SORT_NAME.serialName),
+	;
 
 	companion object {
-		fun fromString(value: String) = entries
-			.firstOrNull { it.stringValue.equals(value, ignoreCase = true) }
-			?: LAST_PLAYED
+		fun fromString(value: String) =
+			entries
+				.firstOrNull { it.stringValue.equals(value, ignoreCase = true) }
+				?: LAST_PLAYED
 	}
 }

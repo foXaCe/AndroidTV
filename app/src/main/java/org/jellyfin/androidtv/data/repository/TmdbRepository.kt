@@ -7,12 +7,12 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.jellyfin.androidtv.util.UUIDUtils
+import org.jellyfin.androidtv.util.sdk.ApiClientFactory
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.extensions.userLibraryApi
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.BaseItemKind
-import org.jellyfin.androidtv.util.sdk.ApiClientFactory
-import org.jellyfin.androidtv.util.UUIDUtils
 import timber.log.Timber
 import java.util.UUID
 
@@ -81,10 +81,11 @@ class TmdbRepository(
 	private val pendingSeasonRequests = mutableMapOf<String, CompletableDeferred<Map<Int, Float>?>>()
 	private val seriesCommunityRatingCache = mutableMapOf<String, Float?>()
 
-	private val json = Json {
-		ignoreUnknownKeys = true
-		isLenient = true
-	}
+	private val json =
+		Json {
+			ignoreUnknownKeys = true
+			isLenient = true
+		}
 
 	private fun getApiClientForItem(item: BaseItemDto) = resolveApiClient(item.serverId)
 
@@ -92,109 +93,104 @@ class TmdbRepository(
 	 * Fetch individual episode rating from the VegafoX TMDB plugin proxy.
 	 * Returns the vote_average (0-10 scale) or null.
 	 */
-	suspend fun getEpisodeRating(item: BaseItemDto): Float? = withContext(Dispatchers.IO) {
-		if (item.type != BaseItemKind.EPISODE) {
-			Timber.d("Item ${item.name} is not an episode, skipping")
-			return@withContext null
-		}
+	suspend fun getEpisodeRating(item: BaseItemDto): Float? =
+		withContext(Dispatchers.IO) {
+			if (item.type != BaseItemKind.EPISODE) return@withContext null
 
-		val seriesId = item.seriesId
-		if (seriesId == null) {
-			Timber.w("Episode ${item.name} has no seriesId")
-			return@withContext null
-		}
-
-		val tmdbId = getSeriesTmdbId(seriesId, item)
-		if (tmdbId == null) {
-			Timber.w("Could not get TMDB ID for series ${item.seriesName} (${seriesId})")
-			return@withContext null
-		}
-
-		val seasonNumber = item.parentIndexNumber
-		val episodeNumber = item.indexNumber
-		if (seasonNumber == null || episodeNumber == null) {
-			Timber.w("Episode ${item.name} missing season/episode numbers: S${seasonNumber}E${episodeNumber}")
-			return@withContext null
-		}
-
-		val cacheKey = "$tmdbId:$seasonNumber:$episodeNumber"
-		Timber.d("Fetching TMDB episode rating from plugin for ${item.seriesName} S${seasonNumber}E${episodeNumber}")
-
-		episodeRatingsCache[cacheKey]?.let {
-			Timber.d("Cache hit for episode $cacheKey: $it")
-			return@withContext it
-		}
-		pendingRequests[cacheKey]?.let {
-			Timber.d("Awaiting pending episode request for $cacheKey")
-			return@withContext it.await()
-		}
-
-		val deferred = CompletableDeferred<Float?>()
-		pendingRequests[cacheKey] = deferred
-
-		try {
-			val effectiveApi = getApiClientForItem(item)
-			val baseUrl = effectiveApi.baseUrl ?: run {
-				Timber.w("TmdbRepository: No server URL available")
-				deferred.complete(null)
-				pendingRequests.remove(cacheKey)
-				return@withContext null
-			}
-			val accessToken = effectiveApi.accessToken ?: run {
-				Timber.w("TmdbRepository: No access token available")
-				deferred.complete(null)
-				pendingRequests.remove(cacheKey)
+			val seriesId = item.seriesId
+			if (seriesId == null) {
+				Timber.w("Episode ${item.name} has no seriesId")
 				return@withContext null
 			}
 
-			val url = "$baseUrl/VegafoX/Tmdb/EpisodeRating?tmdbId=$tmdbId&season=$seasonNumber&episode=$episodeNumber"
-			Timber.d("TmdbRepository: Fetching from plugin: $url")
+			val tmdbId = getSeriesTmdbId(seriesId, item)
+			if (tmdbId == null) {
+				Timber.w("Could not get TMDB ID for series ${item.seriesName} ($seriesId)")
+				return@withContext null
+			}
 
-			val request = Request.Builder()
-				.url(url)
-				.addHeader("Authorization", "MediaBrowser Token=\"$accessToken\"")
-				.build()
-			val response = okHttpClient.newCall(request).execute()
+			val seasonNumber = item.parentIndexNumber
+			val episodeNumber = item.indexNumber
+			if (seasonNumber == null || episodeNumber == null) {
+				Timber.w("Episode ${item.name} missing season/episode numbers: S${seasonNumber}E$episodeNumber")
+				return@withContext null
+			}
 
-			val result = if (response.isSuccessful) {
-				val body = response.body?.string()
-				if (body != null) {
-					try {
-						val episodeResponse = json.decodeFromString<TmdbEpisodeResponse>(body)
-						if (!episodeResponse.success || episodeResponse.error != null) {
-							Timber.w("TmdbRepository: Plugin returned error: ${episodeResponse.error}")
-							null
-						} else {
-							val rating = episodeResponse.voteAverage
-							Timber.d("Parsed episode response: name='${episodeResponse.name}', rating=$rating, votes=${episodeResponse.voteCount}")
-							if (rating != null && rating > 0f) {
-								episodeRatingsCache[cacheKey] = rating
-								Timber.i("Cached TMDB episode rating for $cacheKey: $rating/10")
-								rating
-							} else {
-								Timber.d("No valid rating for episode $cacheKey")
+			val cacheKey = "$tmdbId:$seasonNumber:$episodeNumber"
+
+			episodeRatingsCache[cacheKey]?.let { return@withContext it }
+			pendingRequests[cacheKey]?.let { return@withContext it.await() }
+
+			val deferred = CompletableDeferred<Float?>()
+			pendingRequests[cacheKey] = deferred
+
+			try {
+				val effectiveApi = getApiClientForItem(item)
+				val baseUrl =
+					effectiveApi.baseUrl ?: run {
+						Timber.w("TmdbRepository: No server URL available")
+						deferred.complete(null)
+						pendingRequests.remove(cacheKey)
+						return@withContext null
+					}
+				val accessToken =
+					effectiveApi.accessToken ?: run {
+						Timber.w("TmdbRepository: No access token available")
+						deferred.complete(null)
+						pendingRequests.remove(cacheKey)
+						return@withContext null
+					}
+
+				val url = "$baseUrl/VegafoX/Tmdb/EpisodeRating?tmdbId=$tmdbId&season=$seasonNumber&episode=$episodeNumber"
+
+				val request =
+					Request
+						.Builder()
+						.url(url)
+						.addHeader("Authorization", "MediaBrowser Token=\"$accessToken\"")
+						.build()
+				val response = okHttpClient.newCall(request).execute()
+
+				val result =
+					if (response.isSuccessful) {
+						val body = response.body?.string()
+						if (body != null) {
+							try {
+								val episodeResponse = json.decodeFromString<TmdbEpisodeResponse>(body)
+								if (!episodeResponse.success || episodeResponse.error != null) {
+									Timber.w("TmdbRepository: Plugin returned error: ${episodeResponse.error}")
+									null
+								} else {
+									val rating = episodeResponse.voteAverage
+									if (rating != null && rating > 0f) {
+										episodeRatingsCache[cacheKey] = rating
+										Timber.i("Cached TMDB episode rating for $cacheKey: $rating/10")
+										rating
+									} else {
+										null
+									}
+								}
+							} catch (e: Exception) {
+								Timber.w(e, "Failed to parse TMDB episode response for $cacheKey")
 								null
 							}
+						} else {
+							null
 						}
-					} catch (e: Exception) {
-						Timber.w(e, "Failed to parse TMDB episode response for $cacheKey")
+					} else {
+						Timber.w("TMDB plugin request failed for episode $cacheKey: ${response.code} ${response.message}")
 						null
 					}
-				} else null
-			} else {
-				Timber.w("TMDB plugin request failed for episode $cacheKey: ${response.code} ${response.message}")
-				null
+				deferred.complete(result)
+				return@withContext result
+			} catch (e: Exception) {
+				Timber.e(e, "Error fetching TMDB episode rating for $cacheKey")
+				deferred.complete(null)
+				return@withContext null
+			} finally {
+				pendingRequests.remove(cacheKey)
 			}
-			deferred.complete(result)
-			return@withContext result
-		} catch (e: Exception) {
-			Timber.e(e, "Error fetching TMDB episode rating for $cacheKey")
-			deferred.complete(null)
-			return@withContext null
-		} finally {
-			pendingRequests.remove(cacheKey)
 		}
-	}
 
 	/**
 	 * Fetch all episode ratings for a season from the VegafoX TMDB plugin proxy.
@@ -204,101 +200,110 @@ class TmdbRepository(
 		seriesTmdbId: String,
 		seasonNumber: Int,
 		serverId: String? = null,
-	): Map<Int, Float>? = withContext(Dispatchers.IO) {
-		val cacheKey = "$seriesTmdbId:$seasonNumber"
+	): Map<Int, Float>? =
+		withContext(Dispatchers.IO) {
+			val cacheKey = "$seriesTmdbId:$seasonNumber"
 
-		seasonCache[cacheKey]?.let { return@withContext it }
-		pendingSeasonRequests[cacheKey]?.let { return@withContext it.await() }
+			seasonCache[cacheKey]?.let { return@withContext it }
+			pendingSeasonRequests[cacheKey]?.let { return@withContext it.await() }
 
-		val deferred = CompletableDeferred<Map<Int, Float>?>()
-		pendingSeasonRequests[cacheKey] = deferred
+			val deferred = CompletableDeferred<Map<Int, Float>?>()
+			pendingSeasonRequests[cacheKey] = deferred
 
-		try {
-			val effectiveApi = resolveApiClient(serverId)
-			val baseUrl = effectiveApi.baseUrl ?: run {
-				deferred.complete(null)
-				pendingSeasonRequests.remove(cacheKey)
-				return@withContext null
-			}
-			val accessToken = effectiveApi.accessToken ?: run {
-				deferred.complete(null)
-				pendingSeasonRequests.remove(cacheKey)
-				return@withContext null
-			}
+			try {
+				val effectiveApi = resolveApiClient(serverId)
+				val baseUrl =
+					effectiveApi.baseUrl ?: run {
+						deferred.complete(null)
+						pendingSeasonRequests.remove(cacheKey)
+						return@withContext null
+					}
+				val accessToken =
+					effectiveApi.accessToken ?: run {
+						deferred.complete(null)
+						pendingSeasonRequests.remove(cacheKey)
+						return@withContext null
+					}
 
-			val url = "$baseUrl/VegafoX/Tmdb/SeasonRatings?tmdbId=$seriesTmdbId&season=$seasonNumber"
-			Timber.d("TmdbRepository: Fetching season ratings from plugin: $url")
+				val url = "$baseUrl/VegafoX/Tmdb/SeasonRatings?tmdbId=$seriesTmdbId&season=$seasonNumber"
 
-			val request = Request.Builder()
-				.url(url)
-				.addHeader("Authorization", "MediaBrowser Token=\"$accessToken\"")
-				.build()
-			val response = okHttpClient.newCall(request).execute()
+				val request =
+					Request
+						.Builder()
+						.url(url)
+						.addHeader("Authorization", "MediaBrowser Token=\"$accessToken\"")
+						.build()
+				val response = okHttpClient.newCall(request).execute()
 
-			val result = if (response.isSuccessful) {
-				val body = response.body?.string()
-				if (body != null) {
-					try {
-						val seasonResponse = json.decodeFromString<TmdbSeasonResponse>(body)
-						if (!seasonResponse.success || seasonResponse.error != null) {
-							Timber.w("TmdbRepository: Plugin returned error: ${seasonResponse.error}")
-							null
-						} else {
-							val ratingsMap = seasonResponse.episodes
-								?.filter { it.voteAverage != null && it.voteAverage > 0f && it.episodeNumber != null }
-								?.associate { it.episodeNumber!! to it.voteAverage!! }
-								?: emptyMap()
+				val result =
+					if (response.isSuccessful) {
+						val body = response.body?.string()
+						if (body != null) {
+							try {
+								val seasonResponse = json.decodeFromString<TmdbSeasonResponse>(body)
+								if (!seasonResponse.success || seasonResponse.error != null) {
+									Timber.w("TmdbRepository: Plugin returned error: ${seasonResponse.error}")
+									null
+								} else {
+									val ratingsMap =
+										seasonResponse.episodes
+											?.filter { it.voteAverage != null && it.voteAverage > 0f && it.episodeNumber != null }
+											?.associate { it.episodeNumber!! to it.voteAverage!! }
+											?: emptyMap()
 
-							if (ratingsMap.isNotEmpty()) {
-								seasonCache[cacheKey] = ratingsMap
-								ratingsMap.forEach { (epNum, rating) ->
-									episodeRatingsCache["$seriesTmdbId:$seasonNumber:$epNum"] = rating
+									if (ratingsMap.isNotEmpty()) {
+										seasonCache[cacheKey] = ratingsMap
+										ratingsMap.forEach { (epNum, rating) ->
+											episodeRatingsCache["$seriesTmdbId:$seasonNumber:$epNum"] = rating
+										}
+									}
+									ratingsMap
 								}
+							} catch (e: Exception) {
+								Timber.w(e, "Failed to parse TMDB season response for $cacheKey")
+								null
 							}
-							ratingsMap
+						} else {
+							null
 						}
-					} catch (e: Exception) {
-						Timber.w(e, "Failed to parse TMDB season response for $cacheKey")
+					} else {
+						Timber.w("TMDB plugin request failed for season $cacheKey: ${response.code}")
 						null
 					}
-				} else null
-			} else {
-				Timber.w("TMDB plugin request failed for season $cacheKey: ${response.code}")
-				null
+				deferred.complete(result)
+				return@withContext result
+			} catch (e: Exception) {
+				Timber.e(e, "Error fetching TMDB season ratings for $cacheKey")
+				deferred.complete(null)
+				return@withContext null
+			} finally {
+				pendingSeasonRequests.remove(cacheKey)
 			}
-			deferred.complete(result)
-			return@withContext result
-		} catch (e: Exception) {
-			Timber.e(e, "Error fetching TMDB season ratings for $cacheKey")
-			deferred.complete(null)
-			return@withContext null
-		} finally {
-			pendingSeasonRequests.remove(cacheKey)
 		}
-	}
 
 	/**
 	 * Fetch the parent series' community rating for an episode.
 	 * Returns the communityRating (0-10 scale) or null.
 	 */
-	suspend fun getSeriesCommunityRating(item: BaseItemDto): Float? = withContext(Dispatchers.IO) {
-		if (item.type != BaseItemKind.EPISODE) return@withContext null
-		val seriesId = item.seriesId ?: return@withContext null
-		val cacheKey = seriesId.toString()
+	suspend fun getSeriesCommunityRating(item: BaseItemDto): Float? =
+		withContext(Dispatchers.IO) {
+			if (item.type != BaseItemKind.EPISODE) return@withContext null
+			val seriesId = item.seriesId ?: return@withContext null
+			val cacheKey = seriesId.toString()
 
-		seriesCommunityRatingCache[cacheKey]?.let { return@withContext it }
+			seriesCommunityRatingCache[cacheKey]?.let { return@withContext it }
 
-		try {
-			val effectiveApi = getApiClientForItem(item)
-			val response = effectiveApi.userLibraryApi.getItem(itemId = seriesId)
-			val rating = response.content.communityRating
-			seriesCommunityRatingCache[cacheKey] = rating
-			rating
-		} catch (e: Exception) {
-			Timber.e(e, "Failed to fetch series community rating for seriesId: $seriesId")
-			null
+			try {
+				val effectiveApi = getApiClientForItem(item)
+				val response = effectiveApi.userLibraryApi.getItem(itemId = seriesId)
+				val rating = response.content.communityRating
+				seriesCommunityRatingCache[cacheKey] = rating
+				rating
+			} catch (e: Exception) {
+				Timber.e(e, "Failed to fetch series community rating for seriesId: $seriesId")
+				null
+			}
 		}
-	}
 
 	private fun resolveApiClient(serverId: String?): ApiClient {
 		if (serverId != null) {
@@ -311,13 +316,15 @@ class TmdbRepository(
 		return apiClient
 	}
 
-	private suspend fun getSeriesTmdbId(seriesId: UUID, item: BaseItemDto? = null): String? {
+	private suspend fun getSeriesTmdbId(
+		seriesId: UUID,
+		item: BaseItemDto? = null,
+	): String? {
 		val cacheKey = seriesId.toString()
 		seriesTmdbIdCache[cacheKey]?.let { return it }
 
 		try {
 			val effectiveApi = if (item != null) getApiClientForItem(item) else apiClient
-			Timber.d("Fetching series info from Jellyfin for seriesId: $seriesId")
 			val response = effectiveApi.userLibraryApi.getItem(itemId = seriesId)
 			val seriesItem = response.content
 

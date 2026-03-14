@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Legacy layout — kept for data binding compatibility but no longer used at runtime -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -31,29 +32,6 @@
             android:layout_height="match_parent"
             app:use_controller="false" />
 
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/leanback_fragment"
-            android:name="org.jellyfin.androidtv.ui.playback.overlay.LeanbackOverlayFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center" />
-
-    </FrameLayout>
-
-    <FrameLayout
-        android:id="@+id/popupArea"
-        android:layout_width="fill_parent"
-        android:layout_height="225dp"
-        android:layout_gravity="bottom"
-        android:background="@color/black_transparent"
-        android:visibility="gone">
-
-        <org.jellyfin.androidtv.ui.playback.overlay.PlayerPopupView
-            android:id="@+id/popup_content"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="start|bottom"
-            android:layout_marginTop="16dp" />
     </FrameLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout

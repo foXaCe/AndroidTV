@@ -52,7 +52,6 @@ data class FolderViewUiState(
 class FolderViewViewModel(
 	val api: ApiClient,
 ) : ViewModel() {
-
 	private val _uiState = MutableStateFlow(FolderViewUiState())
 	val uiState: StateFlow<FolderViewUiState> = _uiState.asStateFlow()
 
@@ -64,15 +63,17 @@ class FolderViewViewModel(
 	private fun loadFolders() {
 		viewModelScope.launch {
 			try {
-				val rootFolders = withContext(Dispatchers.IO) {
-					api.itemsApi.getItems(
-						includeItemTypes = setOf(BaseItemKind.FOLDER, BaseItemKind.COLLECTION_FOLDER),
-						sortBy = setOf(ItemSortBy.SORT_NAME),
-						sortOrder = setOf(SortOrder.ASCENDING),
-						fields = ItemRepository.itemFields,
-						recursive = false,
-					).content.items
-				}
+				val rootFolders =
+					withContext(Dispatchers.IO) {
+						api.itemsApi
+							.getItems(
+								includeItemTypes = setOf(BaseItemKind.FOLDER, BaseItemKind.COLLECTION_FOLDER),
+								sortBy = setOf(ItemSortBy.SORT_NAME),
+								sortOrder = setOf(SortOrder.ASCENDING),
+								fields = ItemRepository.itemFields,
+								recursive = false,
+							).content.items
+					}
 
 				if (rootFolders.isEmpty()) {
 					_uiState.update { it.copy(isLoading = false, rows = emptyList()) }
@@ -80,31 +81,38 @@ class FolderViewViewModel(
 				}
 
 				// Load each folder's contents concurrently
-				val rows = withContext(Dispatchers.IO) {
-					rootFolders.map { folder ->
-						async {
-							try {
-								val items = api.itemsApi.getItems(
-									parentId = folder.id,
-									fields = ItemRepository.itemFields,
-									sortBy = setOf(ItemSortBy.SORT_NAME),
-									sortOrder = setOf(SortOrder.ASCENDING),
-									limit = 50,
-								).content.items
-								if (items.isNotEmpty()) {
-									TvRow(
-										title = folder.name ?: "Folder",
-										items = items,
-										key = folder.id.toString(),
-									)
-								} else null
-							} catch (e: Exception) {
-								Timber.w(e, "Failed to load folder ${folder.name}")
-								null
-							}
-						}
-					}.awaitAll().filterNotNull()
-				}
+				val rows =
+					withContext(Dispatchers.IO) {
+						rootFolders
+							.map { folder ->
+								async {
+									try {
+										val items =
+											api.itemsApi
+												.getItems(
+													parentId = folder.id,
+													fields = ItemRepository.itemFields,
+													sortBy = setOf(ItemSortBy.SORT_NAME),
+													sortOrder = setOf(SortOrder.ASCENDING),
+													limit = 50,
+												).content.items
+										if (items.isNotEmpty()) {
+											TvRow(
+												title = folder.name ?: "Folder",
+												items = items,
+												key = folder.id.toString(),
+											)
+										} else {
+											null
+										}
+									} catch (e: Exception) {
+										Timber.w(e, "Failed to load folder ${folder.name}")
+										null
+									}
+								}
+							}.awaitAll()
+							.filterNotNull()
+					}
 
 				_uiState.update { it.copy(isLoading = false, rows = rows) }
 			} catch (e: Exception) {
@@ -133,12 +141,13 @@ fun FolderViewScreen(
 
 			Spacer(modifier = Modifier.height(16.dp))
 
-			val displayState = when {
-				uiState.isLoading -> DisplayState.LOADING
-				uiState.error != null -> DisplayState.ERROR
-				uiState.rows.isEmpty() -> DisplayState.EMPTY
-				else -> DisplayState.CONTENT
-			}
+			val displayState =
+				when {
+					uiState.isLoading -> DisplayState.LOADING
+					uiState.error != null -> DisplayState.ERROR
+					uiState.rows.isEmpty() -> DisplayState.EMPTY
+					else -> DisplayState.CONTENT
+				}
 
 			StateContainer(
 				state = displayState,

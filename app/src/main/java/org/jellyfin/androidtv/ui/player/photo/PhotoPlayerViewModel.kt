@@ -22,7 +22,9 @@ import org.jellyfin.sdk.model.api.SortOrder
 import java.util.UUID
 import kotlin.time.Duration.Companion.seconds
 
-class PhotoPlayerViewModel(private val api: ApiClient) : ViewModel() {
+class PhotoPlayerViewModel(
+	private val api: ApiClient,
+) : ViewModel() {
 	private var album: List<BaseItemDto> = emptyList()
 	private var albumIndex = -1
 
@@ -35,24 +37,30 @@ class PhotoPlayerViewModel(private val api: ApiClient) : ViewModel() {
 	val isCurrentItemVideo: Boolean
 		get() = _currentItem.value?.mediaType == MediaType.VIDEO
 
-	suspend fun loadItem(id: UUID, sortBy: Collection<ItemSortBy>, sortOrder: SortOrder) {
+	suspend fun loadItem(
+		id: UUID,
+		sortBy: Collection<ItemSortBy>,
+		sortOrder: SortOrder,
+	) {
 		// Load requested item
-		val itemResponse = api.ioCallContent {
-			userLibraryApi.getItem(itemId = id)
-		}
+		val itemResponse =
+			api.ioCallContent {
+				userLibraryApi.getItem(itemId = id)
+			}
 		_currentItem.value = itemResponse
 
 		// Load all media items (photos AND videos) from the same folder
 		// This enables slideshow-style playback through mixed media
-		val albumResponse = api.ioCallContent {
-			itemsApi.getItems(
-				parentId = itemResponse.parentId,
-				includeItemTypes = setOf(BaseItemKind.PHOTO, BaseItemKind.VIDEO),
-				fields = ItemRepository.itemFields,
-				sortBy = sortBy,
-				sortOrder = listOf(sortOrder),
-			)
-		}
+		val albumResponse =
+			api.ioCallContent {
+				itemsApi.getItems(
+					parentId = itemResponse.parentId,
+					includeItemTypes = setOf(BaseItemKind.PHOTO, BaseItemKind.VIDEO),
+					fields = ItemRepository.itemFields,
+					sortBy = sortBy,
+					sortOrder = listOf(sortOrder),
+				)
+			}
 		album = albumResponse.items
 		albumIndex = album.indexOfFirst { it.id == id }
 
@@ -95,14 +103,15 @@ class PhotoPlayerViewModel(private val api: ApiClient) : ViewModel() {
 
 	private var wasPlayingBeforeVideo = false
 
-	fun createPresentationJob() = viewModelScope.launch(Dispatchers.IO) {
-		while (isActive) {
-			delay(presentationDelay)
-			if (_currentItem.value?.mediaType != MediaType.VIDEO) {
-				showNext()
+	fun createPresentationJob() =
+		viewModelScope.launch(Dispatchers.IO) {
+			while (isActive) {
+				delay(presentationDelay)
+				if (_currentItem.value?.mediaType != MediaType.VIDEO) {
+					showNext()
+				}
 			}
 		}
-	}
 
 	/**
 	 * Pause the slideshow timer while a video is playing.
@@ -154,7 +163,10 @@ class PhotoPlayerViewModel(private val api: ApiClient) : ViewModel() {
 	}
 
 	fun togglePresentation() {
-		if (presentationActive.value) stopPresentation()
-		else startPresentation()
+		if (presentationActive.value) {
+			stopPresentation()
+		} else {
+			startPresentation()
+		}
 	}
 }

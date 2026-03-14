@@ -43,6 +43,7 @@ import kotlinx.coroutines.delay
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.theme.HeroDimensions
 import org.jellyfin.androidtv.ui.composable.rememberErrorPlaceholder
 import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
 import org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsUiState
@@ -69,12 +70,13 @@ fun PersonDetailsContent(
 	val personMovies = uiState.similar.filter { it.type == BaseItemKind.MOVIE }
 	val personSeries = uiState.similar.filter { it.type == BaseItemKind.SERIES }
 
-	val backdropUrls = remember(uiState.similar) {
-		uiState.similar
-			.mapNotNull { filmItem -> getBackdropUrl(filmItem, api) }
-			.distinct()
-			.take(10)
-	}
+	val backdropUrls =
+		remember(uiState.similar) {
+			uiState.similar
+				.mapNotNull { filmItem -> getBackdropUrl(filmItem, api) }
+				.distinct()
+				.take(10)
+		}
 
 	var currentBackdropIndex by remember { mutableStateOf(0) }
 	var focusedBackdropUrl by remember { mutableStateOf<String?>(null) }
@@ -96,72 +98,82 @@ fun PersonDetailsContent(
 			Crossfade(
 				targetState = displayUrl,
 				animationSpec = tween(1000),
-				label = "person_backdrop_slideshow"
+				label = "person_backdrop_slideshow",
 			) { backdropUrl ->
 				if (backdropUrl != null) {
 					AsyncImage(
 						model = backdropUrl,
 						contentDescription = null,
-						modifier = Modifier
-							.fillMaxSize()
-							.graphicsLayer { alpha = 0.6f },
+						modifier =
+							Modifier
+								.fillMaxSize()
+								.graphicsLayer { alpha = 0.6f },
 						contentScale = ContentScale.Crop,
 					)
 					Box(
-						modifier = Modifier
-							.fillMaxSize()
-							.background(
-								brush = Brush.verticalGradient(
-									colors = listOf(
-										Color.Black.copy(alpha = 0.3f),
-										Color.Black.copy(alpha = 0.6f),
-									),
-								)
-							)
+						modifier =
+							Modifier
+								.fillMaxSize()
+								.background(
+									brush =
+										Brush.verticalGradient(
+											colors =
+												listOf(
+													Color.Black.copy(alpha = 0.3f),
+													Color.Black.copy(alpha = 0.6f),
+												),
+										),
+								),
 					)
 				}
 			}
 		} else if (showBackdrop) {
 			Box(
-				modifier = Modifier
-					.fillMaxSize()
-					.background(
-						brush = Brush.linearGradient(
-							colors = listOf(
-								JellyfinTheme.colorScheme.gradientEnd,
-								JellyfinTheme.colorScheme.gradientMid,
-								JellyfinTheme.colorScheme.gradientStart,
-							),
-						)
-					)
+				modifier =
+					Modifier
+						.fillMaxSize()
+						.background(
+							brush =
+								Brush.linearGradient(
+									colors =
+										listOf(
+											JellyfinTheme.colorScheme.gradientEnd,
+											JellyfinTheme.colorScheme.gradientMid,
+											JellyfinTheme.colorScheme.gradientStart,
+										),
+								),
+						),
 			)
 		}
 
 		LazyColumn(
 			state = listState,
 			modifier = Modifier.fillMaxSize(),
-			contentPadding = PaddingValues(top = 100.dp, start = 48.dp, end = 48.dp, bottom = 80.dp),
+			contentPadding = PaddingValues(top = HeroDimensions.contentTopPadding, start = 48.dp, end = 48.dp, bottom = 80.dp),
 		) {
 			item {
 				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.focusRequester(titleFocusRequester)
-						.focusable()
-						.onKeyEvent { keyEvent ->
-							if (keyEvent.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
-								when (keyEvent.key) {
-									Key.DirectionDown -> {
-										try {
-											filmographyFocusRequester.requestFocus()
-										} catch (_: Exception) {
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.focusRequester(titleFocusRequester)
+							.focusable()
+							.onKeyEvent { keyEvent ->
+								if (keyEvent.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
+									when (keyEvent.key) {
+										Key.DirectionDown -> {
+											try {
+												filmographyFocusRequester.requestFocus()
+											} catch (_: Exception) {
+											}
+											true
 										}
-										true
+										else -> false
 									}
-									else -> false
+								} else {
+									false
 								}
-							} else false
-						},
+							},
 				) {
 					Row(modifier = Modifier.padding(bottom = 24.dp)) {
 						Box(modifier = Modifier.width(160.dp)) {
@@ -172,26 +184,28 @@ fun PersonDetailsContent(
 								AsyncImage(
 									model = personPhotoUrl,
 									contentDescription = item.name,
-									modifier = Modifier
-										.fillMaxWidth()
-										.height(240.dp)
-										.background(
-											JellyfinTheme.colorScheme.outlineVariant,
-											JellyfinTheme.shapes.medium,
-										),
+									modifier =
+										Modifier
+											.fillMaxWidth()
+											.height(240.dp)
+											.background(
+												JellyfinTheme.colorScheme.outlineVariant,
+												JellyfinTheme.shapes.medium,
+											),
 									contentScale = ContentScale.Crop,
 									placeholder = placeholder,
 									error = errorFallback,
 								)
 							} else {
 								Box(
-									modifier = Modifier
-										.fillMaxWidth()
-										.height(240.dp)
-										.background(
-											JellyfinTheme.colorScheme.outlineVariant,
-											JellyfinTheme.shapes.medium,
-										),
+									modifier =
+										Modifier
+											.fillMaxWidth()
+											.height(240.dp)
+											.background(
+												JellyfinTheme.colorScheme.outlineVariant,
+												JellyfinTheme.shapes.medium,
+											),
 									contentAlignment = Alignment.Center,
 								) {
 									Text(
@@ -216,11 +230,14 @@ fun PersonDetailsContent(
 							Spacer(modifier = Modifier.height(8.dp))
 
 							item.premiereDate?.let { birthDate ->
-								val age = java.time.temporal.ChronoUnit.YEARS.between(
-									birthDate,
-									item.endDate ?: java.time.LocalDateTime.now(),
-								)
-								val formatter = java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy")
+								val age =
+									java.time.temporal.ChronoUnit.YEARS.between(
+										birthDate,
+										item.endDate ?: java.time.LocalDateTime.now(),
+									)
+								val formatter =
+									java.time.format.DateTimeFormatter
+										.ofPattern("MMMM d, yyyy")
 								Text(
 									text = stringResource(R.string.lbl_born_date, birthDate.toLocalDate().format(formatter), age),
 									style = JellyfinTheme.typography.titleLarge,

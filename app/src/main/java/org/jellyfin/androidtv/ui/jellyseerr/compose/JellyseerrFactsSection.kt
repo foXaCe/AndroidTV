@@ -6,13 +6,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import org.jellyfin.design.token.RadiusTokens
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jellyfin.androidtv.R
@@ -21,6 +19,9 @@ import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrMovieDetailsDto
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrTvDetailsDto
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.theme.JellyseerrDimensions
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
+import org.jellyfin.design.token.RadiusTokens
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -33,13 +34,14 @@ fun JellyseerrFactsSection(
 	modifier: Modifier = Modifier,
 ) {
 	val context = LocalContext.current
-	val factRows = remember(movieDetails, tvDetails, selectedItem) {
-		buildFactRows(context, movieDetails, tvDetails, selectedItem)
-	}
+	val factRows =
+		remember(movieDetails, tvDetails, selectedItem) {
+			buildFactRows(context, movieDetails, tvDetails, selectedItem)
+		}
 
 	if (factRows.isEmpty()) return
 
-	androidx.compose.foundation.layout.Column(modifier = modifier.width(320.dp)) {
+	androidx.compose.foundation.layout.Column(modifier = modifier.width(JellyseerrDimensions.factsColumnWidth)) {
 		factRows.forEachIndexed { index, (label, value) ->
 			val isFirst = index == 0
 			val isLast = index == factRows.size - 1
@@ -56,30 +58,32 @@ private fun FactRow(
 	isLast: Boolean,
 ) {
 	val radius = RadiusTokens.radiusSm
-	val shape = RoundedCornerShape(
-		topStart = if (isFirst) radius else 0.dp,
-		topEnd = if (isFirst) radius else 0.dp,
-		bottomStart = if (isLast) radius else 0.dp,
-		bottomEnd = if (isLast) radius else 0.dp,
-	)
+	val shape =
+		RoundedCornerShape(
+			topStart = if (isFirst) radius else 0.dp,
+			topEnd = if (isFirst) radius else 0.dp,
+			bottomStart = if (isLast) radius else 0.dp,
+			bottomEnd = if (isLast) radius else 0.dp,
+		)
 
 	Row(
-		modifier = Modifier
-			.fillMaxWidth()
-			.clip(shape)
-			.border(1.dp, JellyfinTheme.colorScheme.outlineVariant, shape)
-			.padding(horizontal = 16.dp, vertical = 8.dp),
+		modifier =
+			Modifier
+				.fillMaxWidth()
+				.clip(shape)
+				.border(1.dp, VegafoXColors.OutlineVariant, shape)
+				.padding(horizontal = 16.dp, vertical = 8.dp),
 	) {
 		Text(
 			text = label,
 			style = JellyfinTheme.typography.bodySmall,
-			color = JellyfinTheme.colorScheme.textPrimary,
+			color = VegafoXColors.TextPrimary,
 			modifier = Modifier.weight(1f),
 		)
 		Text(
 			text = value,
 			style = JellyfinTheme.typography.bodySmall,
-			color = JellyfinTheme.colorScheme.textSecondary,
+			color = VegafoXColors.TextSecondary,
 			textAlign = TextAlign.End,
 			modifier = Modifier.weight(1f),
 		)
@@ -130,11 +134,12 @@ private fun buildFactRows(
 	movieDetails?.runtime?.let { runtime ->
 		val hours = runtime / 60
 		val minutes = runtime % 60
-		val runtimeText = if (hours > 0) {
-			context.getString(R.string.runtime_hours_minutes, hours, minutes)
-		} else {
-			context.getString(R.string.runtime_minutes, minutes)
-		}
+		val runtimeText =
+			if (hours > 0) {
+				context.getString(R.string.runtime_hours_minutes, hours, minutes)
+			} else {
+				context.getString(R.string.runtime_minutes, minutes)
+			}
 		rows.add(context.getString(R.string.lbl_runtime) to runtimeText)
 	}
 
@@ -152,8 +157,8 @@ private fun buildFactRows(
 	return rows
 }
 
-private fun formatDate(dateString: String): String? {
-	return try {
+private fun formatDate(dateString: String): String? =
+	try {
 		val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
 		val outputFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.US)
 		val date = inputFormat.parse(dateString)
@@ -161,4 +166,3 @@ private fun formatDate(dateString: String): String? {
 	} catch (_: Exception) {
 		dateString
 	}
-}

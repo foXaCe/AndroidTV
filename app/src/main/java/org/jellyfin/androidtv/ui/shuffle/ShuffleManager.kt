@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.preference.UserPreferences
@@ -50,7 +49,7 @@ class ShuffleManager(
 			serverId = null,
 			genreName = null,
 			contentType = contentType,
-			libraryCollectionType = null
+			libraryCollectionType = null,
 		)
 	}
 
@@ -61,7 +60,7 @@ class ShuffleManager(
 		context: Context,
 		genreName: String,
 		libraryId: UUID?,
-		serverId: UUID?
+		serverId: UUID?,
 	) {
 		val contentType = userPreferences[UserPreferences.shuffleContentType]
 		shuffle(
@@ -70,7 +69,7 @@ class ShuffleManager(
 			serverId = serverId,
 			genreName = genreName,
 			contentType = contentType,
-			libraryCollectionType = null
+			libraryCollectionType = null,
 		)
 	}
 
@@ -83,7 +82,7 @@ class ShuffleManager(
 		serverId: UUID?,
 		genreName: String?,
 		contentType: String?,
-		libraryCollectionType: CollectionType?
+		libraryCollectionType: CollectionType?,
 	) {
 		shuffle(
 			context = context,
@@ -91,7 +90,7 @@ class ShuffleManager(
 			serverId = serverId,
 			genreName = genreName,
 			contentType = contentType ?: userPreferences[UserPreferences.shuffleContentType],
-			libraryCollectionType = libraryCollectionType
+			libraryCollectionType = libraryCollectionType,
 		)
 	}
 
@@ -104,11 +103,10 @@ class ShuffleManager(
 		serverId: UUID?,
 		genreName: String?,
 		contentType: String,
-		libraryCollectionType: CollectionType?
+		libraryCollectionType: CollectionType?,
 	) {
 		// Debounce - don't allow multiple simultaneous shuffles
 		if (!shuffleMutex.tryLock()) {
-			Timber.d("Shuffle already in progress, ignoring request")
 			return
 		}
 
@@ -116,15 +114,17 @@ class ShuffleManager(
 			_isShuffling.value = true
 
 			val includeTypes = determineIncludeTypes(contentType, libraryCollectionType)
-			val targetApi = if (serverId != null) {
-				apiClientFactory.getApiClientForServer(serverId) ?: api
-			} else {
-				api
-			}
+			val targetApi =
+				if (serverId != null) {
+					apiClientFactory.getApiClientForServer(serverId) ?: api
+				} else {
+					api
+				}
 
-			val randomItem = withContext(Dispatchers.IO) {
-				fetchRandomItem(targetApi, libraryId, genreName, includeTypes)
-			}
+			val randomItem =
+				withContext(Dispatchers.IO) {
+					fetchRandomItem(targetApi, libraryId, genreName, includeTypes)
+				}
 
 			if (randomItem != null) {
 				Timber.i("Shuffle found: ${randomItem.name} (${randomItem.type})")
@@ -132,21 +132,23 @@ class ShuffleManager(
 			} else {
 				Timber.w("No items found for shuffle")
 				withContext(Dispatchers.Main) {
-					Toast.makeText(
-						context,
-						context.getString(R.string.shuffle_no_items_found),
-						Toast.LENGTH_SHORT
-					).show()
+					Toast
+						.makeText(
+							context,
+							context.getString(R.string.shuffle_no_items_found),
+							Toast.LENGTH_SHORT,
+						).show()
 				}
 			}
 		} catch (e: Exception) {
 			Timber.e(e, "Shuffle failed")
 			withContext(Dispatchers.Main) {
-				Toast.makeText(
-					context,
-					context.getString(R.string.shuffle_error),
-					Toast.LENGTH_SHORT
-				).show()
+				Toast
+					.makeText(
+						context,
+						context.getString(R.string.shuffle_error),
+						Toast.LENGTH_SHORT,
+					).show()
 			}
 		} finally {
 			_isShuffling.value = false
@@ -156,16 +158,15 @@ class ShuffleManager(
 
 	private fun determineIncludeTypes(
 		contentType: String,
-		libraryCollectionType: CollectionType?
-	): Set<BaseItemKind> {
-		return when {
+		libraryCollectionType: CollectionType?,
+	): Set<BaseItemKind> =
+		when {
 			libraryCollectionType == CollectionType.MOVIES -> setOf(BaseItemKind.MOVIE)
 			libraryCollectionType == CollectionType.TVSHOWS -> setOf(BaseItemKind.SERIES)
 			contentType == "movies" -> setOf(BaseItemKind.MOVIE)
 			contentType == "tv" -> setOf(BaseItemKind.SERIES)
 			else -> setOf(BaseItemKind.MOVIE, BaseItemKind.SERIES)
 		}
-	}
 
 	/**
 	 * Fetch a random item using server-side RANDOM sort (single API call).
@@ -176,28 +177,26 @@ class ShuffleManager(
 		targetApi: ApiClient,
 		libraryId: UUID?,
 		genreName: String?,
-		includeTypes: Set<BaseItemKind>
+		includeTypes: Set<BaseItemKind>,
 	): BaseItemDto? {
 		val maxRetries = 5
 		
 		// Primary: Use server-side RANDOM sort with retries for excluded item types
 		for (attempt in 1..maxRetries) {
 			try {
-				Timber.d("Shuffle: Using server-side RANDOM sort (attempt $attempt)")
-				val response = targetApi.itemsApi.getItems(
-					parentId = libraryId,
-					genres = genreName?.let { setOf(it) },
-					includeItemTypes = includeTypes,
-					excludeItemTypes = setOf(BaseItemKind.BOX_SET),
-					recursive = true,
-					sortBy = setOf(ItemSortBy.RANDOM),
-					limit = 1,
-				)
+				val response =
+					targetApi.itemsApi.getItems(
+						parentId = libraryId,
+						genres = genreName?.let { setOf(it) },
+						includeItemTypes = includeTypes,
+						excludeItemTypes = setOf(BaseItemKind.BOX_SET),
+						recursive = true,
+						sortBy = setOf(ItemSortBy.RANDOM),
+						limit = 1,
+					)
 
 				val item = response.content.items?.firstOrNull()
 				if (item == null) {
-					val totalCount = response.content.totalRecordCount ?: 0
-					Timber.d("Shuffle: Server returned no items, totalRecordCount = $totalCount")
 					return null
 				}
 				
@@ -218,31 +217,32 @@ class ShuffleManager(
 		
 		// Fallback: Client-side random (two API calls)
 		try {
-			val countResponse = targetApi.itemsApi.getItems(
-				parentId = libraryId,
-				genres = genreName?.let { setOf(it) },
-				includeItemTypes = includeTypes,
-				excludeItemTypes = setOf(BaseItemKind.BOX_SET),
-				recursive = true,
-				limit = 0,
-			)
+			val countResponse =
+				targetApi.itemsApi.getItems(
+					parentId = libraryId,
+					genres = genreName?.let { setOf(it) },
+					includeItemTypes = includeTypes,
+					excludeItemTypes = setOf(BaseItemKind.BOX_SET),
+					recursive = true,
+					limit = 0,
+				)
 
 			val totalCount = countResponse.content.totalRecordCount ?: 0
 			if (totalCount == 0) return null
 
 			val randomOffset = Random.nextInt(totalCount)
-			Timber.d("Shuffle: Client-side picking offset $randomOffset of $totalCount")
 
-			val itemResponse = targetApi.itemsApi.getItems(
-				parentId = libraryId,
-				genres = genreName?.let { setOf(it) },
-				includeItemTypes = includeTypes,
-				excludeItemTypes = setOf(BaseItemKind.BOX_SET),
-				recursive = true,
-				startIndex = randomOffset,
-				limit = 1,
-				sortBy = setOf(ItemSortBy.SORT_NAME),
-			)
+			val itemResponse =
+				targetApi.itemsApi.getItems(
+					parentId = libraryId,
+					genres = genreName?.let { setOf(it) },
+					includeItemTypes = includeTypes,
+					excludeItemTypes = setOf(BaseItemKind.BOX_SET),
+					recursive = true,
+					startIndex = randomOffset,
+					limit = 1,
+					sortBy = setOf(ItemSortBy.SORT_NAME),
+				)
 
 			return itemResponse.content.items?.firstOrNull()
 		} catch (fallbackException: Exception) {

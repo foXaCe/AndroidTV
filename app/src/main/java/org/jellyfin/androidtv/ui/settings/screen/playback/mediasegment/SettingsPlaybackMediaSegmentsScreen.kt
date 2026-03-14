@@ -35,11 +35,12 @@ fun SettingsPlaybackMediaSegmentsScreen() {
 				onClick = {
 					router.push(
 						route = Routes.PLAYBACK_MEDIA_SEGMENT,
-						parameters = mapOf(
-							"segmentType" to segmentType.toString(),
-						),
+						parameters =
+							mapOf(
+								"segmentType" to segmentType.toString(),
+							),
 					)
-				}
+				},
 			)
 		}
 	}

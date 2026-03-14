@@ -26,19 +26,27 @@ object TrailerUtils {
 	}
 
 	@JvmStatic
-	fun getExternalTrailerIntent(context: Context, item: BaseItemDto): Intent? = item.remoteTrailers.orEmpty()
-		.mapNotNull { it.url?.let(::getExternalTrailerIntent) }
-		.firstOrNull {
-			val component = it.resolveActivity(context.packageManager)
+	fun getExternalTrailerIntent(
+		context: Context,
+		item: BaseItemDto,
+	): Intent? =
+		item.remoteTrailers
+			.orEmpty()
+			.mapNotNull { it.url?.let(::getExternalTrailerIntent) }
+			.firstOrNull {
+				val component = it.resolveActivity(context.packageManager)
 
-			// Check if there is an activity to handle the intent
-			// exclude the FrameworkPackageStubs module, which only displays a message
-			// that there is no app to open the intent
-			component != null && component.packageName != FRAMEWORK_STUB_PACKAGE
-		}
+				// Check if there is an activity to handle the intent
+				// exclude the FrameworkPackageStubs module, which only displays a message
+				// that there is no app to open the intent
+				component != null && component.packageName != FRAMEWORK_STUB_PACKAGE
+			}
 
 	@JvmStatic
-	fun hasPlayableTrailers(context: Context, item: BaseItemDto): Boolean {
+	fun hasPlayableTrailers(
+		context: Context,
+		item: BaseItemDto,
+	): Boolean {
 		// Local trailer
 		if (item.localTrailerCount != null && item.localTrailerCount!! > 0) return true
 

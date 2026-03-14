@@ -30,13 +30,15 @@ class AuthenticationStore(
 	private val storePath
 		get() = context.filesDir.resolve("authentication_store.json")
 
-	private val json = Json {
-		encodeDefaults = true
-		serializersModule = SerializersModule {
-			contextual(UUIDSerializer())
+	private val json =
+		Json {
+			encodeDefaults = true
+			serializersModule =
+				SerializersModule {
+					contextual(UUIDSerializer())
+				}
+			ignoreUnknownKeys = true
 		}
-		ignoreUnknownKeys = true
-	}
 
 	private val store by lazy {
 		load().toMutableMap()
@@ -47,12 +49,13 @@ class AuthenticationStore(
 		if (!storePath.exists()) return emptyMap()
 
 		// Parse JSON document
-		val root = try {
-			json.parseToJsonElement(storePath.readText()).jsonObject
-		} catch (e: SerializationException) {
-			Timber.e(e, "Unable to read JSON")
-			JsonObject(emptyMap())
-		}
+		val root =
+			try {
+				json.parseToJsonElement(storePath.readText()).jsonObject
+			} catch (e: SerializationException) {
+				Timber.e(e, "Unable to read JSON")
+				JsonObject(emptyMap())
+			}
 
 		// Check for version
 		return when (root["version"]?.jsonPrimitive?.intOrNull) {
@@ -78,19 +81,20 @@ class AuthenticationStore(
 	}
 
 	private fun write(servers: Map<UUID, AuthenticationStoreServer>): Boolean {
-		val root = JsonObject(mapOf(
-			"version" to JsonPrimitive(2),
-			"servers" to json.encodeToJsonElement(servers)
-		))
+		val root =
+			JsonObject(
+				mapOf(
+					"version" to JsonPrimitive(2),
+					"servers" to json.encodeToJsonElement(servers),
+				),
+			)
 
 		storePath.writeText(json.encodeToString(root))
 
 		return true
 	}
 
-	private fun save(): Boolean {
-		return write(store)
-	}
+	private fun save(): Boolean = write(store)
 
 	fun getServers(): Map<UUID, AuthenticationStoreServer> = store
 
@@ -98,14 +102,24 @@ class AuthenticationStore(
 
 	fun getServer(serverId: UUID) = store[serverId]
 
-	fun getUser(serverId: UUID, userId: UUID) = getUsers(serverId)?.get(userId)
+	fun getUser(
+		serverId: UUID,
+		userId: UUID,
+	) = getUsers(serverId)?.get(userId)
 
-	fun putServer(id: UUID, server: AuthenticationStoreServer): Boolean {
+	fun putServer(
+		id: UUID,
+		server: AuthenticationStoreServer,
+	): Boolean {
 		store[id] = server
 		return save()
 	}
 
-	fun putUser(server: UUID, userId: UUID, userInfo: AuthenticationStoreUser): Boolean {
+	fun putUser(
+		server: UUID,
+		userId: UUID,
+		userInfo: AuthenticationStoreUser,
+	): Boolean {
 		val serverInfo = store[server] ?: return false
 
 		store[server] = serverInfo.copy(users = serverInfo.users.toMutableMap().apply { put(userId, userInfo) })
@@ -121,7 +135,10 @@ class AuthenticationStore(
 		return save()
 	}
 
-	fun removeUser(server: UUID, user: UUID): Boolean {
+	fun removeUser(
+		server: UUID,
+		user: UUID,
+	): Boolean {
 		val serverInfo = store[server] ?: return false
 
 		store[server] = serverInfo.copy(users = serverInfo.users.toMutableMap().apply { remove(user) })

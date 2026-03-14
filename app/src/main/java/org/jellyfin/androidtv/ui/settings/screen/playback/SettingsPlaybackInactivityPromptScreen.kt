@@ -38,7 +38,7 @@ fun SettingsPlaybackInactivityPromptScreen() {
 				onClick = {
 					stillWatchingBehavior = entry
 					router.back()
-				}
+				},
 			)
 		}
 	}

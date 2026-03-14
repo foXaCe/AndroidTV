@@ -31,22 +31,23 @@ class SearchViewModel(
 		private val debounceDuration = 300.milliseconds
 		private const val MIN_QUERY_LENGTH = 2
 
-		private val groups = mapOf(
-			R.string.lbl_movies to setOf(BaseItemKind.MOVIE),
-			R.string.lbl_series to setOf(BaseItemKind.SERIES),
-			R.string.lbl_episodes to setOf(BaseItemKind.EPISODE),
-			R.string.lbl_videos to setOf(BaseItemKind.VIDEO),
-			R.string.lbl_programs to setOf(BaseItemKind.LIVE_TV_PROGRAM),
-			R.string.channels to setOf(BaseItemKind.LIVE_TV_CHANNEL),
-			R.string.lbl_playlists to setOf(BaseItemKind.PLAYLIST),
-			R.string.lbl_artists to setOf(BaseItemKind.MUSIC_ARTIST),
-			R.string.lbl_albums to setOf(BaseItemKind.MUSIC_ALBUM),
-			R.string.lbl_songs to setOf(BaseItemKind.AUDIO),
-			R.string.photo_albums to setOf(BaseItemKind.PHOTO_ALBUM),
-			R.string.photos to setOf(BaseItemKind.PHOTO),
-			R.string.lbl_collections to setOf(BaseItemKind.BOX_SET),
-			R.string.lbl_people to setOf(BaseItemKind.PERSON),
-		)
+		private val groups =
+			mapOf(
+				R.string.lbl_movies to setOf(BaseItemKind.MOVIE),
+				R.string.lbl_series to setOf(BaseItemKind.SERIES),
+				R.string.lbl_episodes to setOf(BaseItemKind.EPISODE),
+				R.string.lbl_videos to setOf(BaseItemKind.VIDEO),
+				R.string.lbl_programs to setOf(BaseItemKind.LIVE_TV_PROGRAM),
+				R.string.channels to setOf(BaseItemKind.LIVE_TV_CHANNEL),
+				R.string.lbl_playlists to setOf(BaseItemKind.PLAYLIST),
+				R.string.lbl_artists to setOf(BaseItemKind.MUSIC_ARTIST),
+				R.string.lbl_albums to setOf(BaseItemKind.MUSIC_ALBUM),
+				R.string.lbl_songs to setOf(BaseItemKind.AUDIO),
+				R.string.photo_albums to setOf(BaseItemKind.PHOTO_ALBUM),
+				R.string.photos to setOf(BaseItemKind.PHOTO),
+				R.string.lbl_collections to setOf(BaseItemKind.BOX_SET),
+				R.string.lbl_people to setOf(BaseItemKind.PERSON),
+			)
 	}
 
 	private var searchJob: Job? = null
@@ -58,7 +59,10 @@ class SearchViewModel(
 
 	fun searchImmediately(query: String) = searchDebounced(query, 0.milliseconds)
 
-	fun searchDebounced(query: String, debounce: Duration = debounceDuration): Boolean {
+	fun searchDebounced(
+		query: String,
+		debounce: Duration = debounceDuration,
+	): Boolean {
 		val trimmed = query.trim()
 		if (trimmed == previousQuery) return false
 		previousQuery = trimmed
@@ -70,45 +74,58 @@ class SearchViewModel(
 			return true
 		}
 
-		searchJob = viewModelScope.launch {
-			delay(debounce)
+		searchJob =
+			viewModelScope.launch {
+				delay(debounce)
 
-			val enableMultiServer = userPreferences[UserPreferences.enableMultiServerLibraries]
+				val enableMultiServer = userPreferences[UserPreferences.enableMultiServerLibraries]
 
-			val jellyfinResults = groups.map { (stringRes, itemKinds) ->
-				async {
-					val result = if (enableMultiServer) {
-						searchRepository.searchMultiServer(trimmed, itemKinds)
+				val jellyfinResults =
+					groups
+						.map { (stringRes, itemKinds) ->
+							async {
+								val result =
+									if (enableMultiServer) {
+										searchRepository.searchMultiServer(trimmed, itemKinds)
+									} else {
+										searchRepository.search(trimmed, itemKinds)
+									}
+								val items = result.getOrNull().orEmpty()
+								val filteredItems =
+									items.filter { item ->
+										!parentalControlsRepository.shouldFilterItem(item)
+									}
+								SearchResultGroup(stringRes, filteredItems)
+							}
+						}.awaitAll()
+
+				val allResults =
+					if (jellyseerrRepository.isAvailable.value) {
+						val jellyseerrResult =
+							ErrorHandler.catchingWarning("search Jellyseerr") {
+								jellyseerrRepository.search(trimmed)
+							}
+						val jellyseerrItems =
+							jellyseerrResult
+								.getOrNull()
+								?.getOrNull()
+								?.results
+								?.map { it.toBaseItemDto() } ?: emptyList()
+						val filteredJellyseerrItems =
+							jellyseerrItems.filter { item ->
+								!parentalControlsRepository.shouldFilterItem(item)
+							}
+						if (filteredJellyseerrItems.isNotEmpty()) {
+							jellyfinResults + listOf(SearchResultGroup(R.string.jellyseerr_search_results, filteredJellyseerrItems))
+						} else {
+							jellyfinResults
+						}
 					} else {
-						searchRepository.search(trimmed, itemKinds)
+						jellyfinResults
 					}
-					val items = result.getOrNull().orEmpty()
-					val filteredItems = items.filter { item ->
-						!parentalControlsRepository.shouldFilterItem(item)
-					}
-					SearchResultGroup(stringRes, filteredItems)
-				}
-			}.awaitAll()
 
-		val allResults = if (jellyseerrRepository.isAvailable.value) {
-			val jellyseerrResult = ErrorHandler.catchingWarning("search Jellyseerr") {
-				jellyseerrRepository.search(trimmed)
+				_searchResultsFlow.value = allResults
 			}
-			val jellyseerrItems = jellyseerrResult.getOrNull()?.getOrNull()?.results?.map { it.toBaseItemDto() } ?: emptyList()
-			val filteredJellyseerrItems = jellyseerrItems.filter { item ->
-				!parentalControlsRepository.shouldFilterItem(item)
-			}
-			if (filteredJellyseerrItems.isNotEmpty()) {
-				jellyfinResults + listOf(SearchResultGroup(R.string.jellyseerr_search_results, filteredJellyseerrItems))
-			} else {
-				jellyfinResults
-			}
-		} else {
-			jellyfinResults
-		}
-
-		_searchResultsFlow.value = allResults
-		}
 
 		return true
 	}

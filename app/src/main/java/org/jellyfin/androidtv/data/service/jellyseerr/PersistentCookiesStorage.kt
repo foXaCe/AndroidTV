@@ -15,23 +15,28 @@ import timber.log.Timber
  * This allows the HTTP client to maintain the same CookiesStorage reference
  * while the underlying storage changes when users switch
  */
-class DelegatingCookiesStorage(private val context: Context) : CookiesStorage {
+class DelegatingCookiesStorage(
+	private val context: Context,
+) : CookiesStorage {
 	private var delegate: PersistentCookiesStorage = PersistentCookiesStorage(context, null)
 	private var currentUserId: String? = null
-	
+
 	fun switchToUser(userId: String) {
 		if (currentUserId != userId) {
 			currentUserId = userId
 			delegate = PersistentCookiesStorage(context, userId)
 		}
 	}
-	
+
 	override suspend fun get(requestUrl: Url): List<Cookie> = delegate.get(requestUrl)
-	
-	override suspend fun addCookie(requestUrl: Url, cookie: Cookie) = delegate.addCookie(requestUrl, cookie)
-	
+
+	override suspend fun addCookie(
+		requestUrl: Url,
+		cookie: Cookie,
+	) = delegate.addCookie(requestUrl, cookie)
+
 	override fun close() = delegate.close()
-	
+
 	suspend fun clearAll() = delegate.clearAll()
 }
 
@@ -40,7 +45,10 @@ class DelegatingCookiesStorage(private val context: Context) : CookiesStorage {
  * This allows cookies to survive app restarts
  * Each Jellyfin user gets their own cookie storage to maintain separate Jellyseerr sessions
  */
-class PersistentCookiesStorage(context: Context, userId: String? = null) : CookiesStorage {
+class PersistentCookiesStorage(
+	context: Context,
+	userId: String? = null,
+) : CookiesStorage {
 	private val prefsKey = if (userId != null) "jellyseerr_cookies_$userId" else "jellyseerr_cookies"
 	private val preferences = context.getSharedPreferences(prefsKey, Context.MODE_PRIVATE)
 	private val mutex = Mutex()
@@ -80,33 +88,40 @@ class PersistentCookiesStorage(context: Context, userId: String? = null) : Cooki
 		}
 	}
 
-	override suspend fun get(requestUrl: Url): List<Cookie> = mutex.withLock {
-		// Remove expired cookies
-		val expiredKeys = cookies.filter { (_, cookie) ->
-			isExpired(cookie)
-		}.keys
+	override suspend fun get(requestUrl: Url): List<Cookie> =
+		mutex.withLock {
+			// Remove expired cookies
+			val expiredKeys =
+				cookies
+					.filter { (_, cookie) ->
+						isExpired(cookie)
+					}.keys
 		
-		if (expiredKeys.isNotEmpty()) {
-			expiredKeys.forEach { cookies.remove(it) }
+			if (expiredKeys.isNotEmpty()) {
+				expiredKeys.forEach { cookies.remove(it) }
+				saveCookies()
+			}
+
+			// Return cookies that match the URL
+			cookies.values.filter { cookie ->
+				matchesDomain(cookie, requestUrl) && matchesPath(cookie, requestUrl)
+			}
+		}
+
+	override suspend fun addCookie(
+		requestUrl: Url,
+		cookie: Cookie,
+	): Unit =
+		mutex.withLock {
+			val key = "${cookie.name}_${requestUrl.host}"
+			// Force RAW encoding to prevent Ktor from double-encoding cookie values.
+			// Jellyseerr (Express.js) sends connect.sid values already URL-encoded (e.g. s%3A...).
+			// Without RAW encoding, Ktor re-encodes on send, turning %3A into %253A,
+			// which Jellyseerr doesn't recognize → 401 Unauthorized on API calls.
+			val rawCookie = cookie.copy(encoding = CookieEncoding.RAW)
+			cookies[key] = rawCookie
 			saveCookies()
 		}
-
-		// Return cookies that match the URL
-		cookies.values.filter { cookie ->
-			matchesDomain(cookie, requestUrl) && matchesPath(cookie, requestUrl)
-		}
-	}
-
-	override suspend fun addCookie(requestUrl: Url, cookie: Cookie): Unit = mutex.withLock {
-		val key = "${cookie.name}_${requestUrl.host}"
-		// Force RAW encoding to prevent Ktor from double-encoding cookie values.
-		// Jellyseerr (Express.js) sends connect.sid values already URL-encoded (e.g. s%3A...).
-		// Without RAW encoding, Ktor re-encodes on send, turning %3A into %253A,
-		// which Jellyseerr doesn't recognize → 401 Unauthorized on API calls.
-		val rawCookie = cookie.copy(encoding = CookieEncoding.RAW)
-		cookies[key] = rawCookie
-		saveCookies()
-	}
 
 	override fun close() {
 		try {
@@ -119,19 +134,23 @@ class PersistentCookiesStorage(context: Context, userId: String? = null) : Cooki
 	/**
 	 * Clear all stored cookies
 	 */
-	suspend fun clearAll() = mutex.withLock {
-		cookies.clear()
-		// Use commit() (synchronous) instead of apply() (async) to ensure
-		// cookies are removed from disk before any new storage instance can load them
-		preferences.edit().clear().commit()
-	}
+	suspend fun clearAll() =
+		mutex.withLock {
+			cookies.clear()
+			// Use commit() (synchronous) instead of apply() (async) to ensure
+			// cookies are removed from disk before any new storage instance can load them
+			preferences.edit().clear().commit()
+		}
 
 	private fun isExpired(cookie: Cookie): Boolean {
 		val expires = cookie.expires ?: return false
 		return expires.timestamp < GMTDate().timestamp
 	}
 
-	private fun matchesDomain(cookie: Cookie, url: Url): Boolean {
+	private fun matchesDomain(
+		cookie: Cookie,
+		url: Url,
+	): Boolean {
 		val domain = cookie.domain?.lowercase() ?: return true
 		val host = url.host.lowercase()
 		
@@ -144,14 +163,17 @@ class PersistentCookiesStorage(context: Context, userId: String? = null) : Cooki
 		}
 	}
 
-	private fun matchesPath(cookie: Cookie, url: Url): Boolean {
+	private fun matchesPath(
+		cookie: Cookie,
+		url: Url,
+	): Boolean {
 		val cookiePath = cookie.path ?: "/"
 		val urlPath = url.encodedPath
 		return urlPath.startsWith(cookiePath)
 	}
 
-	private fun serializeCookie(cookie: Cookie): String {
-		return buildString {
+	private fun serializeCookie(cookie: Cookie): String =
+		buildString {
 			append(cookie.name)
 			append("|")
 			append(cookie.value)
@@ -168,7 +190,6 @@ class PersistentCookiesStorage(context: Context, userId: String? = null) : Cooki
 			append("|")
 			append(cookie.httpOnly)
 		}
-	}
 
 	private fun deserializeCookie(data: String): Cookie? {
 		return try {
@@ -184,7 +205,7 @@ class PersistentCookiesStorage(context: Context, userId: String? = null) : Cooki
 				expires = parts[4].toLongOrNull()?.let { GMTDate(it) },
 				maxAge = parts[5].toIntOrNull() ?: 0,
 				secure = parts[6].toBoolean(),
-				httpOnly = parts[7].toBoolean()
+				httpOnly = parts[7].toBoolean(),
 			)
 		} catch (e: Exception) {
 			Timber.e(e, "PersistentCookiesStorage: Error deserializing cookie")

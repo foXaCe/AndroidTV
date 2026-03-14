@@ -43,13 +43,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
 import kotlinx.coroutines.delay
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.theme.HeroDimensions
 import org.jellyfin.androidtv.ui.browsing.composable.inforow.InfoRowMultipleRatings
-import org.jellyfin.androidtv.ui.itemdetail.v2.DetailBackdrop
+import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
 import org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsUiState
 import org.jellyfin.androidtv.ui.itemdetail.v2.PosterImage
 import org.jellyfin.androidtv.ui.itemdetail.v2.TrackAction
@@ -62,7 +62,6 @@ import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailInfoRow
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailMetadataSection
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailPlaylistHint
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailSectionWithCards
-import org.jellyfin.androidtv.ui.itemdetail.v2.shared.formatDuration
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.getBackdropUrl
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.getLogoUrl
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.getPosterUrl
@@ -103,13 +102,17 @@ fun MusicDetailsContent(
 
 	// Playlist rotating backdrop state
 	var focusedBackdropUrl by remember { mutableStateOf<String?>(null) }
-	val playlistBackdropUrls = if (isPlaylist) {
-		remember(uiState.tracks) {
-			uiState.tracks.mapNotNull { getBackdropUrl(it, api) }.distinct().take(10)
+	val playlistBackdropUrls =
+		if (isPlaylist) {
+			remember(uiState.tracks) {
+				uiState.tracks
+					.mapNotNull { getBackdropUrl(it, api) }
+					.distinct()
+					.take(10)
+			}
+		} else {
+			emptyList()
 		}
-	} else {
-		emptyList()
-	}
 	var playlistBackdropIndex by remember { mutableStateOf(0) }
 
 	if (isPlaylist) {
@@ -139,38 +142,45 @@ fun MusicDetailsContent(
 					AsyncImage(
 						model = url,
 						contentDescription = null,
-						modifier = Modifier
-							.fillMaxSize()
-							.graphicsLayer { alpha = 0.6f },
+						modifier =
+							Modifier
+								.fillMaxSize()
+								.graphicsLayer { alpha = 0.6f },
 						contentScale = ContentScale.Crop,
 						placeholder = placeholder,
 					)
 					Box(
-						modifier = Modifier
-							.fillMaxSize()
-							.background(
-								brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-									colors = listOf(
-										Color.Black.copy(alpha = 0.3f),
-										Color.Black.copy(alpha = 0.6f),
-									),
+						modifier =
+							Modifier
+								.fillMaxSize()
+								.background(
+									brush =
+										androidx.compose.ui.graphics.Brush.verticalGradient(
+											colors =
+												listOf(
+													Color.Black.copy(alpha = 0.3f),
+													Color.Black.copy(alpha = 0.6f),
+												),
+										),
 								),
-							),
 					)
 				}
 			} else {
 				Box(
-					modifier = Modifier
-						.fillMaxSize()
-						.background(
-							brush = androidx.compose.ui.graphics.Brush.linearGradient(
-								colors = listOf(
-									JellyfinTheme.colorScheme.gradientEnd,
-									JellyfinTheme.colorScheme.gradientMid,
-									JellyfinTheme.colorScheme.gradientStart,
-								),
+					modifier =
+						Modifier
+							.fillMaxSize()
+							.background(
+								brush =
+									androidx.compose.ui.graphics.Brush.linearGradient(
+										colors =
+											listOf(
+												JellyfinTheme.colorScheme.gradientEnd,
+												JellyfinTheme.colorScheme.gradientMid,
+												JellyfinTheme.colorScheme.gradientStart,
+											),
+									),
 							),
-						),
 				)
 			}
 		}
@@ -182,43 +192,56 @@ fun MusicDetailsContent(
 		if (trackActionIndex2 != null && trackActionIndex2 in uiState.tracks.indices) {
 			val actionTrack = uiState.tracks[trackActionIndex2]
 			val canRemoveFromPlaylist = isPlaylist && item.canDelete == true
-			val actions = buildList {
-				if (actionTrack.type != BaseItemKind.AUDIO) {
-					add(TrackAction(
-						label = stringResource(R.string.lbl_open),
-						onClick = { onNavigateToItem(actionTrack.id) },
-					))
+			val actions =
+				buildList {
+					if (actionTrack.type != BaseItemKind.AUDIO) {
+						add(
+							TrackAction(
+								label = stringResource(R.string.lbl_open),
+								onClick = { onNavigateToItem(actionTrack.id) },
+							),
+						)
+					}
+					add(
+						TrackAction(
+							label = stringResource(R.string.lbl_play_from_here),
+							onClick = {
+								val trackIds = uiState.tracks.subList(trackActionIndex2, uiState.tracks.size).map { it.id }
+								onPlayFromHere(trackIds)
+							},
+						),
+					)
+					add(
+						TrackAction(
+							label = stringResource(R.string.lbl_play),
+							onClick = { onPlaySingle(actionTrack.id) },
+						),
+					)
+					if (actionTrack.type == BaseItemKind.AUDIO) {
+						add(
+							TrackAction(
+								label = stringResource(R.string.lbl_add_to_queue),
+								onClick = { onQueueAudioItem(actionTrack) },
+							),
+						)
+					}
+					if (actionTrack.type == BaseItemKind.AUDIO) {
+						add(
+							TrackAction(
+								label = stringResource(R.string.lbl_instant_mix),
+								onClick = { onPlayInstantMix(actionTrack) },
+							),
+						)
+					}
+					if (canRemoveFromPlaylist && actionTrack.playlistItemId != null) {
+						add(
+							TrackAction(
+								label = stringResource(R.string.lbl_remove_from_playlist),
+								onClick = { onRemoveFromPlaylist(trackActionIndex2) },
+							),
+						)
+					}
 				}
-				add(TrackAction(
-					label = stringResource(R.string.lbl_play_from_here),
-					onClick = {
-						val trackIds = uiState.tracks.subList(trackActionIndex2, uiState.tracks.size).map { it.id }
-						onPlayFromHere(trackIds)
-					},
-				))
-				add(TrackAction(
-					label = stringResource(R.string.lbl_play),
-					onClick = { onPlaySingle(actionTrack.id) },
-				))
-				if (actionTrack.type == BaseItemKind.AUDIO) {
-					add(TrackAction(
-						label = stringResource(R.string.lbl_add_to_queue),
-						onClick = { onQueueAudioItem(actionTrack) },
-					))
-				}
-				if (actionTrack.type == BaseItemKind.AUDIO) {
-					add(TrackAction(
-						label = stringResource(R.string.lbl_instant_mix),
-						onClick = { onPlayInstantMix(actionTrack) },
-					))
-				}
-				if (canRemoveFromPlaylist && actionTrack.playlistItemId != null) {
-					add(TrackAction(
-						label = stringResource(R.string.lbl_remove_from_playlist),
-						onClick = { onRemoveFromPlaylist(trackActionIndex2) },
-					))
-				}
-			}
 
 			TrackActionDialog(
 				trackTitle = actionTrack.name ?: "",
@@ -229,26 +252,34 @@ fun MusicDetailsContent(
 
 		LazyColumn(
 			state = listState,
-			contentPadding = PaddingValues(top = 100.dp, start = 48.dp, end = 48.dp, bottom = 48.dp),
+			contentPadding = PaddingValues(top = HeroDimensions.contentTopPadding, start = 48.dp, end = 48.dp, bottom = 48.dp),
 			modifier = Modifier.fillMaxSize(),
 		) {
 			// ---- Header + Action buttons ----
 			item {
 				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.focusRequester(titleFocusRequester)
-						.focusable()
-						.onKeyEvent { keyEvent ->
-							if (keyEvent.nativeKeyEvent.action == android.view.KeyEvent.ACTION_DOWN) {
-								when (keyEvent.key) {
-									Key.DirectionDown -> {
-										try { playButtonFocusRequester.requestFocus(); true } catch (_: Exception) { false }
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.focusRequester(titleFocusRequester)
+							.focusable()
+							.onKeyEvent { keyEvent ->
+								if (keyEvent.nativeKeyEvent.action == android.view.KeyEvent.ACTION_DOWN) {
+									when (keyEvent.key) {
+										Key.DirectionDown -> {
+											try {
+												playButtonFocusRequester.requestFocus()
+												true
+											} catch (_: Exception) {
+												false
+											}
+										}
+										else -> false
 									}
-									else -> false
+								} else {
+									false
 								}
-							} else false
-						},
+							},
 				) {
 					Row(
 						modifier = Modifier.fillMaxWidth(),
@@ -261,9 +292,10 @@ fun MusicDetailsContent(
 								AsyncImage(
 									model = logoUrl,
 									contentDescription = item.name,
-									modifier = Modifier
-										.width(300.dp)
-										.height(80.dp),
+									modifier =
+										Modifier
+											.width(300.dp)
+											.height(80.dp),
 									contentScale = ContentScale.Fit,
 									alignment = Alignment.CenterStart,
 								)
@@ -319,9 +351,10 @@ fun MusicDetailsContent(
 
 				Spacer(modifier = Modifier.height(24.dp))
 				Row(
-					modifier = Modifier
-						.fillMaxWidth()
-						.focusRestorer(playButtonFocusRequester),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.focusRestorer(playButtonFocusRequester),
 					horizontalArrangement = Arrangement.Center,
 				) {
 					DetailActionButtonsRow(
@@ -377,17 +410,24 @@ fun MusicDetailsContent(
 						runtime = track.runTimeTicks?.let { TimeUtils.formatMillis(it / 10_000) },
 						onClick = { trackActionIndex = index },
 						onMenuAction = { onPlaySingle(track.id) },
-						onFocused = if (isPlaylist) {
-							{ focusedBackdropUrl = getBackdropUrl(track, api) }
-						} else {
-							null
-						},
-						onMoveUp = if (canReorder && index > 0) {
-							{ onMovePlaylistItem(index, index - 1) }
-						} else null,
-						onMoveDown = if (canReorder && index < uiState.tracks.size - 1) {
-							{ onMovePlaylistItem(index, index + 1) }
-						} else null,
+						onFocused =
+							if (isPlaylist) {
+								{ focusedBackdropUrl = getBackdropUrl(track, api) }
+							} else {
+								null
+							},
+						onMoveUp =
+							if (canReorder && index > 0) {
+								{ onMovePlaylistItem(index, index - 1) }
+							} else {
+								null
+							},
+						onMoveDown =
+							if (canReorder && index < uiState.tracks.size - 1) {
+								{ onMovePlaylistItem(index, index + 1) }
+							} else {
+								null
+							},
 						isFirst = index == 0,
 						isLast = index == uiState.tracks.size - 1,
 						modifier = Modifier.padding(bottom = 12.dp),
@@ -410,11 +450,12 @@ fun MusicDetailsContent(
 						items = uiState.similar,
 						api = api,
 						onNavigateToItem = onNavigateToItem,
-						onItemFocused = if (isPlaylist) {
-							{ focusItem -> focusedBackdropUrl = getBackdropUrl(focusItem, api) }
-						} else {
-							null
-						},
+						onItemFocused =
+							if (isPlaylist) {
+								{ focusItem -> focusedBackdropUrl = getBackdropUrl(focusItem, api) }
+							} else {
+								null
+							},
 					)
 				}
 			}

@@ -42,7 +42,7 @@ fun DialogBase(
 	val transition = updateTransition(visible)
 	val alpha by transition.animateFloat(
 		transitionSpec = { tween(1000) },
-		targetValueByState = { visible -> if (visible) 1f else 0f }
+		targetValueByState = { visible -> if (visible) 1f else 0f },
 	)
 
 	if (transition.currentState || transition.isRunning) {
@@ -51,19 +51,21 @@ fun DialogBase(
 
 		Dialog(
 			onDismissRequest = onDismissRequest,
-			properties = DialogProperties(
-				dismissOnBackPress = true,
-				dismissOnClickOutside = true,
-				usePlatformDefaultWidth = false,
-				decorFitsSystemWindows = false
-			),
+			properties =
+				DialogProperties(
+					dismissOnBackPress = true,
+					dismissOnClickOutside = true,
+					usePlatformDefaultWidth = false,
+					decorFitsSystemWindows = false,
+				),
 		) {
 			Box(
-				modifier = modifier
-					.fillMaxSize()
-					.background(scrimColor.copy(alpha = scrimColor.alpha * alpha))
-					.focusRequester(focusRequester)
-					.focusGroup(),
+				modifier =
+					modifier
+						.fillMaxSize()
+						.background(scrimColor.copy(alpha = scrimColor.alpha * alpha))
+						.focusRequester(focusRequester)
+						.focusGroup(),
 				contentAlignment = contentAlignment,
 			) {
 				transition.AnimatedVisibility(

@@ -41,7 +41,7 @@ fun SettingsVegafoXThemeMusicVolumeScreen() {
 				onClick = {
 					themeMusicVolume = value
 					router.back()
-				}
+				},
 			)
 		}
 	}

@@ -34,30 +34,31 @@ class ReportingHelper(
 			api
 		}
 	}
-	
+
 	fun reportStart(
 		lifecycleOwner: LifecycleOwner,
 		playbackController: PlaybackController?,
 		item: BaseItemDto,
 		streamInfo: StreamInfo,
 		position: Long,
-		paused: Boolean
+		paused: Boolean,
 	) {
-		val info = PlaybackStartInfo(
-			itemId = item.id,
-			positionTicks = position,
-			canSeek = (streamInfo.runTimeTicks ?: 0) > 0,
-			isPaused = paused,
-			liveStreamId = streamInfo.mediaSource?.liveStreamId,
-			playSessionId = streamInfo.playSessionId,
-			playMethod = streamInfo.playMethod,
-			audioStreamIndex = playbackController?.audioStreamIndex,
-			subtitleStreamIndex = playbackController?.subtitleStreamIndex,
-			isMuted = false,
-			repeatMode = RepeatMode.REPEAT_NONE,
-			playbackOrder = PlaybackOrder.DEFAULT,
-			mediaSourceId = streamInfo.mediaSourceId,
-		)
+		val info =
+			PlaybackStartInfo(
+				itemId = item.id,
+				positionTicks = position,
+				canSeek = (streamInfo.runTimeTicks ?: 0) > 0,
+				isPaused = paused,
+				liveStreamId = streamInfo.mediaSource?.liveStreamId,
+				playSessionId = streamInfo.playSessionId,
+				playMethod = streamInfo.playMethod,
+				audioStreamIndex = playbackController?.audioStreamIndex,
+				subtitleStreamIndex = playbackController?.subtitleStreamIndex,
+				isMuted = false,
+				repeatMode = RepeatMode.REPEAT_NONE,
+				playbackOrder = PlaybackOrder.DEFAULT,
+				mediaSourceId = streamInfo.mediaSourceId,
+			)
 
 		lifecycleOwner.lifecycleScope.launch(Dispatchers.IO + NonCancellable) {
 			Timber.i("Reporting ${item.name} playback started at $position")
@@ -74,26 +75,26 @@ class ReportingHelper(
 		item: BaseItemDto,
 		streamInfo: StreamInfo,
 		position: Long,
-		paused: Boolean
+		paused: Boolean,
 	) {
-		val info = PlaybackProgressInfo(
-			itemId = item.id,
-			positionTicks = position,
-			canSeek = (streamInfo.runTimeTicks ?: 0) > 0,
-			isPaused = paused,
-			liveStreamId = streamInfo.mediaSource?.liveStreamId,
-			playSessionId = streamInfo.playSessionId,
-			playMethod = streamInfo.playMethod,
-			audioStreamIndex = playbackController?.audioStreamIndex,
-			subtitleStreamIndex = playbackController?.subtitleStreamIndex,
-			isMuted = false,
-			repeatMode = RepeatMode.REPEAT_NONE,
-			playbackOrder = PlaybackOrder.DEFAULT,
-			mediaSourceId = streamInfo.mediaSourceId,
-		)
+		val info =
+			PlaybackProgressInfo(
+				itemId = item.id,
+				positionTicks = position,
+				canSeek = (streamInfo.runTimeTicks ?: 0) > 0,
+				isPaused = paused,
+				liveStreamId = streamInfo.mediaSource?.liveStreamId,
+				playSessionId = streamInfo.playSessionId,
+				playMethod = streamInfo.playMethod,
+				audioStreamIndex = playbackController?.audioStreamIndex,
+				subtitleStreamIndex = playbackController?.subtitleStreamIndex,
+				isMuted = false,
+				repeatMode = RepeatMode.REPEAT_NONE,
+				playbackOrder = PlaybackOrder.DEFAULT,
+				mediaSourceId = streamInfo.mediaSourceId,
+			)
 
 		lifecycleOwner.lifecycleScope.launch(Dispatchers.IO + NonCancellable) {
-			Timber.d("Reporting ${item.name} playback progress at $position")
 			val itemApi = getApiClientForItem(item)
 			runCatching {
 				itemApi.playStateApi.reportPlaybackProgress(info)
@@ -101,15 +102,21 @@ class ReportingHelper(
 		}
 	}
 
-	fun reportStopped(lifecycleOwner: LifecycleOwner, item: BaseItemDto, streamInfo: StreamInfo, position: Long?) {
-		val info = PlaybackStopInfo(
-			itemId = item.id,
-			positionTicks = position,
-			mediaSourceId = streamInfo.mediaSourceId,
-			liveStreamId = streamInfo.mediaSource?.liveStreamId,
-			playSessionId = streamInfo.playSessionId,
-			failed = false,
-		)
+	fun reportStopped(
+		lifecycleOwner: LifecycleOwner,
+		item: BaseItemDto,
+		streamInfo: StreamInfo,
+		position: Long?,
+	) {
+		val info =
+			PlaybackStopInfo(
+				itemId = item.id,
+				positionTicks = position,
+				mediaSourceId = streamInfo.mediaSourceId,
+				liveStreamId = streamInfo.mediaSource?.liveStreamId,
+				playSessionId = streamInfo.playSessionId,
+				failed = false,
+			)
 
 		lifecycleOwner.lifecycleScope.launch(Dispatchers.IO + NonCancellable) {
 			Timber.i("Reporting ${item.name} playback stopped at $position")

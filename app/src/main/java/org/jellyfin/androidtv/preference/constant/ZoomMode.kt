@@ -21,4 +21,3 @@ enum class ZoomMode(
 	 */
 	STRETCH(R.string.lbl_stretch),
 }
-

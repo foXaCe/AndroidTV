@@ -14,5 +14,5 @@ data class AggregatedItem(
 	val item: BaseItemDto,
 	val server: Server,
 	val userId: UUID,
-	val apiClient: ApiClient
+	val apiClient: ApiClient,
 )

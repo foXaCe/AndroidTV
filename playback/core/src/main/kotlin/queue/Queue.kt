@@ -55,7 +55,10 @@ interface Queue {
 	 * @param usePlaybackOrder Whether to use the playback order from the [PlayerState]. Default to true.
 	 * @param useRepeatMode Whether to use the repeat mode from the [PlayerState]. Default to false.
 	 */
-	suspend fun next(usePlaybackOrder: Boolean = true, useRepeatMode: Boolean = false): QueueEntry?
+	suspend fun next(
+		usePlaybackOrder: Boolean = true,
+		useRepeatMode: Boolean = false,
+	): QueueEntry?
 
 	/**
 	 * Skip to the given index.
@@ -63,7 +66,10 @@ interface Queue {
 	 * @param index The index of the entry to play
 	 * @param saveHistory Whether to save the current entry to the play history
 	 */
-	suspend fun setIndex(index: Int, saveHistory: Boolean = false): QueueEntry?
+	suspend fun setIndex(
+		index: Int,
+		saveHistory: Boolean = false,
+	): QueueEntry?
 
 	/**
 	 * Find the index of a given entry.
@@ -71,7 +77,6 @@ interface Queue {
 	 * @param entry The entry to find the index for
 	 */
 	fun indexOf(entry: QueueEntry): Int?
-
 
 	/**
 	 * Remove a given queue entry.

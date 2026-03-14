@@ -1,10 +1,14 @@
 package org.jellyfin.androidtv.ui.settings.screen.livetv
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.preference.LiveTvPreferences
 import org.jellyfin.androidtv.preference.constant.LiveTvChannelOrder
@@ -12,6 +16,8 @@ import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.form.Checkbox
 import org.jellyfin.androidtv.ui.base.list.ListButton
 import org.jellyfin.androidtv.ui.base.list.ListSection
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.navigation.LocalRouter
 import org.jellyfin.androidtv.ui.settings.Routes
 import org.jellyfin.androidtv.ui.settings.compat.rememberPreference
@@ -23,19 +29,23 @@ fun SettingsLiveTvGuideOptionsScreen() {
 	val router = LocalRouter.current
 	val liveTvPreferences = koinInject<LiveTvPreferences>()
 
-	val indicators = listOf(
-		rememberPreference(liveTvPreferences, LiveTvPreferences.showHDIndicator) to stringResource(R.string.lbl_hd_programs),
-		rememberPreference(liveTvPreferences, LiveTvPreferences.showLiveIndicator) to stringResource(R.string.lbl_live_broadcasts),
-		rememberPreference(liveTvPreferences, LiveTvPreferences.showNewIndicator) to stringResource(R.string.lbl_new_episodes),
-		rememberPreference(liveTvPreferences, LiveTvPreferences.showPremiereIndicator) to stringResource(R.string.lbl_premieres),
-		rememberPreference(liveTvPreferences, LiveTvPreferences.showRepeatIndicator) to stringResource(R.string.lbl_repeat_episodes),
-	)
+	val indicators =
+		listOf(
+			rememberPreference(liveTvPreferences, LiveTvPreferences.showHDIndicator) to stringResource(R.string.lbl_hd_programs),
+			rememberPreference(liveTvPreferences, LiveTvPreferences.showLiveIndicator) to stringResource(R.string.lbl_live_broadcasts),
+			rememberPreference(liveTvPreferences, LiveTvPreferences.showNewIndicator) to stringResource(R.string.lbl_new_episodes),
+			rememberPreference(liveTvPreferences, LiveTvPreferences.showPremiereIndicator) to stringResource(R.string.lbl_premieres),
+			rememberPreference(liveTvPreferences, LiveTvPreferences.showRepeatIndicator) to stringResource(R.string.lbl_repeat_episodes),
+		)
 
 	SettingsColumn {
 		item {
-			ListSection(
-				overlineContent = { Text(stringResource(R.string.lbl_live_tv_guide).uppercase()) },
-				headingContent = { Text(stringResource(R.string.settings)) },
+			Text(
+				text = stringResource(R.string.lbl_live_tv_guide),
+				fontFamily = BebasNeue,
+				fontSize = 22.sp,
+				color = VegafoXColors.TextPrimary,
+				modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp),
 			)
 		}
 
@@ -45,7 +55,7 @@ fun SettingsLiveTvGuideOptionsScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.lbl_sort_by)) },
 				captionContent = { Text(stringResource(LiveTvChannelOrder.fromString(channelOrder).nameRes)) },
-				onClick = { router.push(Routes.LIVETV_GUIDE_CHANNEL_ORDER) }
+				onClick = { router.push(Routes.LIVETV_GUIDE_CHANNEL_ORDER) },
 			)
 		}
 
@@ -55,7 +65,7 @@ fun SettingsLiveTvGuideOptionsScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.lbl_start_favorites)) },
 				trailingContent = { Checkbox(checked = favsAtTop) },
-				onClick = { favsAtTop = !favsAtTop }
+				onClick = { favsAtTop = !favsAtTop },
 			)
 		}
 
@@ -65,7 +75,7 @@ fun SettingsLiveTvGuideOptionsScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.lbl_colored_backgrounds)) },
 				trailingContent = { Checkbox(checked = colorCodeGuide) },
-				onClick = { colorCodeGuide = !colorCodeGuide }
+				onClick = { colorCodeGuide = !colorCodeGuide },
 			)
 		}
 
@@ -77,7 +87,7 @@ fun SettingsLiveTvGuideOptionsScreen() {
 			ListButton(
 				headingContent = { Text(label) },
 				trailingContent = { Checkbox(checked = enabled) },
-				onClick = { enabled = !enabled }
+				onClick = { enabled = !enabled },
 			)
 		}
 	}

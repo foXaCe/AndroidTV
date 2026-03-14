@@ -8,16 +8,16 @@ import org.koin.compose.viewmodel.koinActivityViewModel
 
 @Composable
 fun MainActivitySyncPlay() {
-    val viewModel = koinActivityViewModel<SyncPlayViewModel>()
-    val visible by viewModel.visible.collectAsState()
+	val viewModel = koinActivityViewModel<SyncPlayViewModel>()
+	val visible by viewModel.visible.collectAsState()
 
-    // Only render dialog when visible to avoid unnecessary composition overhead
-    if (visible) {
-        JellyfinTheme {
-            SyncPlayDialog(
-                visible = true,
-                onDismissRequest = { viewModel.hide() }
-            )
-        }
-    }
+	// Only render dialog when visible to avoid unnecessary composition overhead
+	if (visible) {
+		JellyfinTheme {
+			SyncPlayDialog(
+				visible = true,
+				onDismissRequest = { viewModel.hide() },
+			)
+		}
+	}
 }

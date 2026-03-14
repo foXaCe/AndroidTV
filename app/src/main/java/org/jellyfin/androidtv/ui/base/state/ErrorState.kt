@@ -19,9 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jellyfin.androidtv.R
@@ -29,6 +27,7 @@ import org.jellyfin.androidtv.ui.base.AnimationDefaults
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 
 /**
  * A standardized error state display with icon, message, and retry button.
@@ -49,7 +48,7 @@ fun ErrorState(
 		verticalArrangement = Arrangement.Center,
 	) {
 		Icon(
-			imageVector = ImageVector.vectorResource(R.drawable.ic_error),
+			imageVector = VegafoXIcons.Error,
 			contentDescription = null,
 			modifier = Modifier.size(48.dp),
 			tint = JellyfinTheme.colorScheme.error,
@@ -75,9 +74,7 @@ fun ErrorState(
  * A retry button that follows the design system focus patterns.
  */
 @Composable
-private fun RetryButton(
-	onClick: () -> Unit,
-) {
+private fun RetryButton(onClick: () -> Unit) {
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
 
@@ -87,29 +84,31 @@ private fun RetryButton(
 		label = "RetryButtonScale",
 	)
 
-	val bgColor = if (isFocused) {
-		JellyfinTheme.colorScheme.primary
-	} else {
-		JellyfinTheme.colorScheme.surfaceContainer
-	}
-	val textColor = if (isFocused) {
-		JellyfinTheme.colorScheme.onPrimary
-	} else {
-		JellyfinTheme.colorScheme.textPrimary
-	}
+	val bgColor =
+		if (isFocused) {
+			JellyfinTheme.colorScheme.primary
+		} else {
+			JellyfinTheme.colorScheme.surfaceContainer
+		}
+	val textColor =
+		if (isFocused) {
+			JellyfinTheme.colorScheme.onPrimary
+		} else {
+			JellyfinTheme.colorScheme.textPrimary
+		}
 
 	Text(
 		text = stringResource(R.string.lbl_retry),
 		style = JellyfinTheme.typography.labelLarge,
 		color = textColor,
-		modifier = Modifier
-			.graphicsLayer {
-				scaleX = scale
-				scaleY = scale
-			}
-			.background(bgColor, JellyfinTheme.shapes.button)
-			.clickable(interactionSource = interactionSource, indication = null) { onClick() }
-			.focusable(interactionSource = interactionSource)
-			.padding(horizontal = 24.dp, vertical = 10.dp),
+		modifier =
+			Modifier
+				.graphicsLayer {
+					scaleX = scale
+					scaleY = scale
+				}.background(bgColor, JellyfinTheme.shapes.button)
+				.clickable(interactionSource = interactionSource, indication = null) { onClick() }
+				.focusable(interactionSource = interactionSource)
+				.padding(horizontal = 24.dp, vertical = 10.dp),
 	)
 }

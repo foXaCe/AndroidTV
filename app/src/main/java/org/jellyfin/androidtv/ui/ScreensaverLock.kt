@@ -12,9 +12,7 @@ import org.koin.compose.koinInject
 private typealias Lock = () -> Unit
 
 @Composable
-fun ScreensaverLock(
-	enabled: Boolean
-) {
+fun ScreensaverLock(enabled: Boolean) {
 	val viewModel = koinInject<InteractionTrackerViewModel>()
 	val lifecycleOwner = LocalLifecycleOwner.current
 

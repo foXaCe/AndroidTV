@@ -25,15 +25,16 @@ fun DreamView(
 	val dimmingLevel = userPreferences[UserPreferences.screensaverDimmingLevel]
 
 	Box(
-		modifier = Modifier
-			.fillMaxSize()
+		modifier =
+			Modifier
+				.fillMaxSize(),
 	) {
 		AnimatedContent(
 			targetState = content,
 			transitionSpec = {
 				fadeIn(tween(durationMillis = 1_000)) togetherWith fadeOut(snap(delayMillis = 1_000))
 			},
-			label = "DreamContentTransition"
+			label = "DreamContentTransition",
 		) { content ->
 			when (content) {
 				DreamContent.Logo -> DreamContentLogo()
@@ -44,9 +45,10 @@ fun DreamView(
 
 		if (dimmingLevel > 0) {
 			Box(
-				modifier = Modifier
-					.fillMaxSize()
-					.background(Color.Black.copy(alpha = dimmingLevel / 100f))
+				modifier =
+					Modifier
+						.fillMaxSize()
+						.background(Color.Black.copy(alpha = dimmingLevel / 100f)),
 			)
 		}
 

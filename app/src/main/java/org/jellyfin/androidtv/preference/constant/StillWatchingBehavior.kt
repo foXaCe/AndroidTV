@@ -59,5 +59,5 @@ enum class StillWatchingBehavior(
 		enabled = false,
 		episodeCount = 0,
 		minDuration = Duration.ZERO,
-	)
+	),
 }

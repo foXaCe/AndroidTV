@@ -39,7 +39,7 @@ fun SettingsPlaybackMaxResolutionScreen() {
 				onClick = {
 					maxVideoResolution = resolution
 					router.back()
-				}
+				},
 			)
 		}
 	}

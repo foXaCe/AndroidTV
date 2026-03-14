@@ -1,5 +1,6 @@
 package org.jellyfin.androidtv.ui.settings.screen.authentication
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -7,9 +8,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.auth.repository.ServerRepository
 import org.jellyfin.androidtv.auth.repository.ServerUserRepository
@@ -18,8 +22,11 @@ import org.jellyfin.androidtv.preference.constant.UserSelectBehavior
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.form.Checkbox
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.list.ListButton
 import org.jellyfin.androidtv.ui.base.list.ListSection
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.navigation.LocalRouter
 import org.jellyfin.androidtv.ui.settings.Routes
 import org.jellyfin.androidtv.ui.settings.compat.rememberPreference
@@ -28,26 +35,26 @@ import org.jellyfin.sdk.model.serializer.toUUIDOrNull
 import org.koin.compose.koinInject
 
 @Composable
-fun SettingsAuthenticationScreen(launchedFromLogin: Boolean = false) {
+fun SettingsAuthenticationScreen(
+	launchedFromLogin: Boolean = false,
+	serverRepository: ServerRepository = koinInject(),
+	serverUserRepository: ServerUserRepository = koinInject(),
+	authenticationPreferences: AuthenticationPreferences = koinInject(),
+) {
 	val router = LocalRouter.current
-	val serverRepository = koinInject<ServerRepository>()
-	val serverUserRepository = koinInject<ServerUserRepository>()
-	val authenticationPreferences = koinInject<AuthenticationPreferences>()
 
 	LaunchedEffect(serverRepository) { serverRepository.loadStoredServers() }
 
 	val storedServers by serverRepository.storedServers.collectAsState()
 
 	SettingsColumn {
-		if (launchedFromLogin) item {
-			ListSection(
-				overlineContent = { Text(stringResource(R.string.app_name).uppercase()) },
-				headingContent = { Text(stringResource(R.string.pref_login)) },
-			)
-		} else item {
-			ListSection(
-				overlineContent = { Text(stringResource(R.string.settings).uppercase()) },
-				headingContent = { Text(stringResource(R.string.pref_login)) },
+		item {
+			Text(
+				text = stringResource(R.string.pref_login),
+				fontFamily = BebasNeue,
+				fontSize = 22.sp,
+				color = VegafoXColors.TextPrimary,
+				modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp),
 			)
 		}
 
@@ -55,13 +62,15 @@ fun SettingsAuthenticationScreen(launchedFromLogin: Boolean = false) {
 			var autoLoginUserBehavior by rememberPreference(authenticationPreferences, AuthenticationPreferences.autoLoginUserBehavior)
 			var autoLoginServerId by rememberPreference(authenticationPreferences, AuthenticationPreferences.autoLoginServerId)
 			var autoLoginUserId by rememberPreference(authenticationPreferences, AuthenticationPreferences.autoLoginUserId)
-			val autoLoginServer = remember(storedServers, autoLoginServerId) {
-				storedServers.find { server -> server.id == autoLoginServerId.toUUIDOrNull() }
-			}
-			val autoLoginUser = remember(autoLoginServer, autoLoginUserId) {
-				val users = autoLoginServer?.let(serverUserRepository::getStoredServerUsers)
-				users?.find { user -> user.id == autoLoginUserId.toUUIDOrNull() }
-			}
+			val autoLoginServer =
+				remember(storedServers, autoLoginServerId) {
+					storedServers.find { server -> server.id == autoLoginServerId.toUUIDOrNull() }
+				}
+			val autoLoginUser =
+				remember(autoLoginServer, autoLoginUserId) {
+					val users = autoLoginServer?.let(serverUserRepository::getStoredServerUsers)
+					users?.find { user -> user.id == autoLoginUserId.toUUIDOrNull() }
+				}
 
 			ListButton(
 				headingContent = { Text(stringResource(R.string.auto_sign_in)) },
@@ -72,7 +81,7 @@ fun SettingsAuthenticationScreen(launchedFromLogin: Boolean = false) {
 						UserSelectBehavior.SPECIFIC_USER -> Text(autoLoginUser?.name ?: stringResource(R.string.loading))
 					}
 				},
-				onClick = { router.push(Routes.AUTHENTICATION_AUTO_SIGN_IN) }
+				onClick = { router.push(Routes.AUTHENTICATION_AUTO_SIGN_IN) },
 			)
 		}
 
@@ -81,7 +90,7 @@ fun SettingsAuthenticationScreen(launchedFromLogin: Boolean = false) {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.sort_accounts_by)) },
 				captionContent = { Text(stringResource(sortBy.nameRes)) },
-				onClick = { router.push(Routes.AUTHENTICATION_SORT_BY) }
+				onClick = { router.push(Routes.AUTHENTICATION_SORT_BY) },
 			)
 		}
 
@@ -90,17 +99,18 @@ fun SettingsAuthenticationScreen(launchedFromLogin: Boolean = false) {
 
 			items(storedServers) { server ->
 				ListButton(
-					leadingContent = { Icon(painterResource(R.drawable.ic_house), contentDescription = null) },
+					leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Home), contentDescription = null) },
 					headingContent = { Text(server.name) },
 					captionContent = { Text(server.address) },
 					onClick = {
 						router.push(
 							route = Routes.AUTHENTICATION_SERVER,
-							parameters = mapOf(
-								"serverId" to server.id.toString(),
-							),
+							parameters =
+								mapOf(
+									"serverId" to server.id.toString(),
+								),
 						)
-					}
+					},
 				)
 			}
 		}
@@ -116,25 +126,27 @@ fun SettingsAuthenticationScreen(launchedFromLogin: Boolean = false) {
 					headingContent = { Text(stringResource(R.string.always_authenticate)) },
 					trailingContent = { Checkbox(checked = alwaysAuthenticate) },
 					captionContent = { Text(stringResource(R.string.always_authenticate_description)) },
-					onClick = { alwaysAuthenticate = !alwaysAuthenticate }
+					onClick = { alwaysAuthenticate = !alwaysAuthenticate },
 				)
 			}
 
 			item {
 				ListButton(
-					leadingContent = { Icon(painterResource(R.drawable.ic_lock), contentDescription = null) },
+					leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Lock), contentDescription = null) },
 					headingContent = { Text(stringResource(R.string.lbl_pin_code)) },
-					onClick = { router.push(Routes.AUTHENTICATION_PIN_CODE) }
+					onClick = { router.push(Routes.AUTHENTICATION_PIN_CODE) },
 				)
 			}
 		}
 
-		if (launchedFromLogin) item {
-			ListButton(
-				leadingContent = { Icon(painterResource(R.drawable.ic_jellyfin), contentDescription = null) },
-				headingContent = { Text(stringResource(R.string.pref_about_title)) },
-				onClick = { router.push(Routes.ABOUT, mapOf("fromLogin" to "true")) }
-			)
+		if (launchedFromLogin) {
+			item {
+				ListButton(
+					leadingContent = { Icon(painterResource(R.drawable.ic_jellyfin), contentDescription = null) },
+					headingContent = { Text(stringResource(R.string.pref_about_title)) },
+					onClick = { router.push(Routes.ABOUT, mapOf("fromLogin" to "true")) },
+				)
+			}
 		}
 	}
 }

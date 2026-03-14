@@ -13,8 +13,6 @@ import org.jellyfin.androidtv.ui.navigation.NavigationRepository
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.BaseItemKind
 import org.jellyfin.sdk.model.api.MediaType
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -27,23 +25,24 @@ class PlaybackLauncher(
 	private val navigationRepository: NavigationRepository,
 	private val userPreferences: UserPreferences,
 	private val syncPlayManager: SyncPlayManager,
-) : KoinComponent {
-	private val themeMusicPlayer by inject<ThemeMusicPlayer>()
+	private val themeMusicPlayer: ThemeMusicPlayer,
+) {
 	private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 	private val BaseItemDto.supportsExternalPlayer
-		get() = when (type) {
-			BaseItemKind.MOVIE,
-			BaseItemKind.EPISODE,
-			BaseItemKind.VIDEO,
-			BaseItemKind.SERIES,
-			BaseItemKind.SEASON,
-			BaseItemKind.RECORDING,
-			BaseItemKind.TV_CHANNEL,
-			BaseItemKind.PROGRAM,
+		get() =
+			when (type) {
+				BaseItemKind.MOVIE,
+				BaseItemKind.EPISODE,
+				BaseItemKind.VIDEO,
+				BaseItemKind.SERIES,
+				BaseItemKind.SEASON,
+				BaseItemKind.RECORDING,
+				BaseItemKind.TV_CHANNEL,
+				BaseItemKind.PROGRAM,
 				-> true
 
-			else -> false
-		}
+				else -> false
+			}
 
 	@JvmOverloads
 	fun launch(
@@ -78,17 +77,17 @@ class PlaybackLauncher(
 
 			if (userPreferences[UserPreferences.useExternalPlayer] && items.all { it.supportsExternalPlayer }) {
 				context.startActivity(ActivityDestinations.externalPlayer(context, position?.milliseconds ?: Duration.ZERO))
-			} else if (userPreferences[UserPreferences.playbackRewriteVideoEnabled]) {
-				val destination = Destinations.videoPlayerNew(position)
-				navigationRepository.navigate(destination, replace)
 			} else {
 				val destination = Destinations.videoPlayer(position)
 				navigationRepository.navigate(destination, replace)
 			}
 		}
 	}
-	
-	private fun syncPlayQueueIfNeeded(items: List<BaseItemDto>, startIndex: Int) {
+
+	private fun syncPlayQueueIfNeeded(
+		items: List<BaseItemDto>,
+		startIndex: Int,
+	) {
 		// Only sync if user is in a SyncPlay group
 		val groupInfo = syncPlayManager.state.value.groupInfo
 		if (groupInfo == null) return
@@ -101,7 +100,7 @@ class PlaybackLauncher(
 			syncPlayManager.setPlayQueue(
 				itemIds = itemIds,
 				startIndex = startIndex,
-				startPositionTicks = 0
+				startPositionTicks = 0,
 			)
 		}
 	}

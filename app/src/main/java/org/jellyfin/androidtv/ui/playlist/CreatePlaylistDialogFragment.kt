@@ -15,6 +15,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Switch
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +33,6 @@ import java.util.UUID
  * Uses proper D-pad navigation for Android TV remotes.
  */
 class CreatePlaylistDialogFragment : DialogFragment() {
-
 	private var itemId: UUID? = null
 	private var apiClient: ApiClient? = null
 	private var onPlaylistCreated: (() -> Unit)? = null
@@ -44,15 +44,14 @@ class CreatePlaylistDialogFragment : DialogFragment() {
 			itemId: UUID,
 			apiClient: ApiClient,
 			onPlaylistCreated: () -> Unit,
-			onBackPressed: () -> Unit
-		): CreatePlaylistDialogFragment {
-			return CreatePlaylistDialogFragment().apply {
+			onBackPressed: () -> Unit,
+		): CreatePlaylistDialogFragment =
+			CreatePlaylistDialogFragment().apply {
 				this.itemId = itemId
 				this.apiClient = apiClient
 				this.onPlaylistCreated = onPlaylistCreated
 				this.onBackPressed = onBackPressed
 			}
-		}
 	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,12 +82,13 @@ class CreatePlaylistDialogFragment : DialogFragment() {
 	override fun onCreateView(
 		inflater: LayoutInflater,
 		container: ViewGroup?,
-		savedInstanceState: Bundle?
-	): View? {
-		return inflater.inflate(R.layout.dialog_create_playlist, container, false)
-	}
+		savedInstanceState: Bundle?,
+	): View? = inflater.inflate(R.layout.dialog_create_playlist, container, false)
 
-	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+	override fun onViewCreated(
+		view: View,
+		savedInstanceState: Bundle?,
+	) {
 		super.onViewCreated(view, savedInstanceState)
 
 		val playlistNameInput = view.findViewById<EditText>(R.id.playlist_name_input)
@@ -100,11 +100,12 @@ class CreatePlaylistDialogFragment : DialogFragment() {
 		val createButton = view.findViewById<Button>(R.id.button_create)
 
 		publicSwitchContainer.setOnFocusChangeListener { _, hasFocus ->
-			val textColor = if (hasFocus) {
-				resources.getColor(R.color.button_default_highlight_text, null)
-			} else {
-				resources.getColor(android.R.color.black, null)
-			}
+			val textColor =
+				if (hasFocus) {
+					ContextCompat.getColor(requireContext(), R.color.button_default_highlight_text)
+				} else {
+					ContextCompat.getColor(requireContext(), android.R.color.black)
+				}
 			publicSwitchLabel.setTextColor(textColor)
 		}
 
@@ -133,11 +134,12 @@ class CreatePlaylistDialogFragment : DialogFragment() {
 		createButton.setOnClickListener {
 			val playlistName = playlistNameInput.text.toString().trim()
 			if (playlistName.isBlank()) {
-				Toast.makeText(
-					requireContext(),
-					R.string.msg_enter_playlist_name,
-					Toast.LENGTH_SHORT
-				).show()
+				Toast
+					.makeText(
+						requireContext(),
+						R.string.msg_enter_playlist_name,
+						Toast.LENGTH_SHORT,
+					).show()
 				playlistNameInput.requestFocus()
 				return@setOnClickListener
 			}
@@ -154,7 +156,7 @@ class CreatePlaylistDialogFragment : DialogFragment() {
 		dialog?.window?.apply {
 			setLayout(
 				ViewGroup.LayoutParams.WRAP_CONTENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT
+				ViewGroup.LayoutParams.WRAP_CONTENT,
 			)
 			setGravity(Gravity.CENTER)
 		}
@@ -167,35 +169,41 @@ class CreatePlaylistDialogFragment : DialogFragment() {
 		}
 	}
 
-	private fun createPlaylist(name: String, isPublic: Boolean) {
+	private fun createPlaylist(
+		name: String,
+		isPublic: Boolean,
+	) {
 		val api = apiClient ?: return
 		val id = itemId ?: return
 
 		CoroutineScope(Dispatchers.Main).launch {
 			try {
 				withContext(Dispatchers.IO) {
-					val createRequest = CreatePlaylistDto(
-						name = name,
-						ids = listOf(id),
-						users = emptyList(),
-						isPublic = isPublic,
-					)
+					val createRequest =
+						CreatePlaylistDto(
+							name = name,
+							ids = listOf(id),
+							users = emptyList(),
+							isPublic = isPublic,
+						)
 					api.playlistsApi.createPlaylist(createRequest)
 				}
-				Toast.makeText(
-					requireContext(),
-					R.string.msg_playlist_created,
-					Toast.LENGTH_SHORT
-				).show()
+				Toast
+					.makeText(
+						requireContext(),
+						R.string.msg_playlist_created,
+						Toast.LENGTH_SHORT,
+					).show()
 				dismiss()
 				onPlaylistCreated?.invoke()
 			} catch (e: Exception) {
 				Timber.e(e, "Failed to create playlist")
-				Toast.makeText(
-					requireContext(),
-					R.string.msg_failed_to_create_playlist,
-					Toast.LENGTH_SHORT
-				).show()
+				Toast
+					.makeText(
+						requireContext(),
+						R.string.msg_failed_to_create_playlist,
+						Toast.LENGTH_SHORT,
+					).show()
 			}
 		}
 	}

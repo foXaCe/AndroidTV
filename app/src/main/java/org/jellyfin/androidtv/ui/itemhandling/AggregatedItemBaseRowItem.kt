@@ -10,19 +10,21 @@ import java.util.UUID
  * Includes server and user information to enable session switching when clicked.
  * Image URLs are resolved via ApiClientFactory using the item's serverId.
  */
-class AggregatedItemBaseRowItem @JvmOverloads constructor(
-	aggregatedItem: AggregatedItem,
-	preferParentThumb: Boolean = false,
-	staticHeight: Boolean = false,
-	selectAction: BaseRowItemSelectAction = BaseRowItemSelectAction.ShowDetails,
-	preferSeriesPoster: Boolean = false,
-	val server: Server = aggregatedItem.server,
-	val userId: UUID = aggregatedItem.userId,
-	val apiClient: ApiClient = aggregatedItem.apiClient,
-) : BaseItemDtoBaseRowItem(
-	item = aggregatedItem.item,
-	preferParentThumb = preferParentThumb,
-	staticHeight = staticHeight,
-	selectAction = selectAction,
-	preferSeriesPoster = preferSeriesPoster,
-)
+class AggregatedItemBaseRowItem
+	@JvmOverloads
+	constructor(
+		aggregatedItem: AggregatedItem,
+		preferParentThumb: Boolean = false,
+		staticHeight: Boolean = false,
+		selectAction: BaseRowItemSelectAction = BaseRowItemSelectAction.ShowDetails,
+		preferSeriesPoster: Boolean = false,
+		val server: Server = aggregatedItem.server,
+		val userId: UUID = aggregatedItem.userId,
+		val apiClient: ApiClient = aggregatedItem.apiClient,
+	) : BaseItemDtoBaseRowItem(
+			item = aggregatedItem.item,
+			preferParentThumb = preferParentThumb,
+			staticHeight = staticHeight,
+			selectAction = selectAction,
+			preferSeriesPoster = preferSeriesPoster,
+		)

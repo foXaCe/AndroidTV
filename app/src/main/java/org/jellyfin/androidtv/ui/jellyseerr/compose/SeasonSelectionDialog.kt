@@ -19,10 +19,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -35,13 +35,17 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.tv.material3.Text
 import org.jellyfin.androidtv.R
-import org.jellyfin.androidtv.ui.base.JellyfinTheme
-import org.jellyfin.androidtv.ui.base.Text
-import org.jellyfin.androidtv.ui.base.focusBorderColor
+import org.jellyfin.androidtv.ui.base.components.VegafoXButton
+import org.jellyfin.androidtv.ui.base.components.VegafoXButtonVariant
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 
 @Composable
 fun SeasonSelectionDialog(
@@ -52,20 +56,21 @@ fun SeasonSelectionDialog(
 	onConfirm: (selectedSeasons: List<Int>) -> Unit,
 	onDismiss: () -> Unit,
 ) {
-	val accentColor = focusBorderColor()
-	val confirmFocusRequester = remember { FocusRequester() }
+	val accentColor = VegafoXColors.OrangePrimary
 
-	val checkedStates = remember {
-		mutableStateListOf<Boolean>().apply {
-			for (season in 1..numberOfSeasons) {
-				add(season !in unavailableSeasons)
+	val checkedStates =
+		remember {
+			mutableStateListOf<Boolean>().apply {
+				for (season in 1..numberOfSeasons) {
+					add(season !in unavailableSeasons)
+				}
 			}
 		}
-	}
 
-	val availableSeasons = remember(numberOfSeasons, unavailableSeasons) {
-		(1..numberOfSeasons).filter { it !in unavailableSeasons }
-	}
+	val availableSeasons =
+		remember(numberOfSeasons, unavailableSeasons) {
+			(1..numberOfSeasons).filter { it !in unavailableSeasons }
+		}
 
 	var selectAllChecked by remember { mutableStateOf(true) }
 
@@ -82,37 +87,47 @@ fun SeasonSelectionDialog(
 			contentAlignment = Alignment.Center,
 		) {
 			Column(
-				modifier = Modifier
-					.widthIn(min = 400.dp, max = 600.dp)
-					.clip(JellyfinTheme.shapes.dialog)
-					.background(JellyfinTheme.colorScheme.surface)
-					.border(1.dp, JellyfinTheme.colorScheme.outlineVariant, JellyfinTheme.shapes.dialog)
-					.padding(horizontal = 24.dp, vertical = 24.dp),
+				modifier =
+					Modifier
+						.widthIn(min = 400.dp, max = 600.dp)
+						.clip(RoundedCornerShape(16.dp))
+						.background(VegafoXColors.Surface)
+						.border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
+						.padding(horizontal = 24.dp, vertical = 24.dp),
 			) {
 				// Title
 				Text(
 					text = stringResource(R.string.jellyseerr_select_seasons),
-					style = JellyfinTheme.typography.titleLarge,
-					color = JellyfinTheme.colorScheme.textPrimary,
+					style =
+						TextStyle(
+							fontFamily = BebasNeue,
+							fontSize = 22.sp,
+							letterSpacing = 2.sp,
+							color = VegafoXColors.TextPrimary,
+						),
 					modifier = Modifier.padding(bottom = 6.dp),
 				)
 
 				// Subtitle
 				Text(
 					text = "$showName ${if (is4k) "(4K)" else "(HD)"}",
-					style = JellyfinTheme.typography.bodyMedium,
-					color = JellyfinTheme.colorScheme.textSecondary,
+					style =
+						TextStyle(
+							fontSize = 14.sp,
+							color = VegafoXColors.TextSecondary,
+						),
 					modifier = Modifier.padding(bottom = 16.dp),
 				)
 
 				// Select All checkbox
 				if (availableSeasons.isNotEmpty()) {
 					SeasonCheckboxRow(
-						label = if (unavailableSeasons.isEmpty()) {
-							stringResource(R.string.jellyseerr_select_all_seasons)
-						} else {
-							stringResource(R.string.jellyseerr_select_all_available)
-						},
+						label =
+							if (unavailableSeasons.isEmpty()) {
+								stringResource(R.string.jellyseerr_select_all_seasons)
+							} else {
+								stringResource(R.string.jellyseerr_select_all_available)
+							},
 						checked = selectAllChecked,
 						enabled = true,
 						accentColor = accentColor,
@@ -127,10 +142,11 @@ fun SeasonSelectionDialog(
 
 				// Divider
 				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.height(1.dp)
-						.background(JellyfinTheme.colorScheme.outlineVariant),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.height(1.dp)
+							.background(Color.White.copy(alpha = 0.10f)),
 				)
 
 				Spacer(modifier = Modifier.height(12.dp))
@@ -142,11 +158,12 @@ fun SeasonSelectionDialog(
 					itemsIndexed((1..numberOfSeasons).toList()) { _, season ->
 						val isUnavailable = season in unavailableSeasons
 						SeasonCheckboxRow(
-							label = if (isUnavailable) {
-								stringResource(R.string.jellyseerr_season_already_requested, season)
-							} else {
-								stringResource(R.string.jellyseerr_season_number, season)
-							},
+							label =
+								if (isUnavailable) {
+									stringResource(R.string.jellyseerr_season_already_requested, season)
+								} else {
+									stringResource(R.string.jellyseerr_season_number, season)
+								},
 							checked = checkedStates[season - 1],
 							enabled = !isUnavailable,
 							accentColor = accentColor,
@@ -166,28 +183,27 @@ fun SeasonSelectionDialog(
 					horizontalArrangement = Arrangement.Center,
 				) {
 					// Cancel
-					DialogActionButton(
+					VegafoXButton(
 						text = stringResource(R.string.btn_cancel),
-						backgroundColor = JellyfinTheme.colorScheme.surfaceContainer,
-						focusedBackgroundColor = JellyfinTheme.colorScheme.textSecondary,
-						accentColor = accentColor,
+						variant = VegafoXButtonVariant.Ghost,
+						compact = true,
 						onClick = onDismiss,
 					)
 
 					Spacer(modifier = Modifier.width(24.dp))
 
 					// Confirm
-					DialogActionButton(
+					VegafoXButton(
 						text = stringResource(R.string.btn_request_selected),
-						backgroundColor = JellyfinTheme.colorScheme.info,
-						focusedBackgroundColor = JellyfinTheme.colorScheme.primary,
-						accentColor = accentColor,
-						focusRequester = confirmFocusRequester,
+						variant = VegafoXButtonVariant.Primary,
+						compact = true,
+						autoFocus = true,
 						onClick = {
-							val selected = checkedStates
-								.mapIndexedNotNull { index, checked ->
-									if (checked) index + 1 else null
-								}
+							val selected =
+								checkedStates
+									.mapIndexedNotNull { index, checked ->
+										if (checked) index + 1 else null
+									}
 							if (selected.isNotEmpty()) {
 								onConfirm(selected)
 								onDismiss()
@@ -196,10 +212,6 @@ fun SeasonSelectionDialog(
 					)
 				}
 			}
-		}
-
-		LaunchedEffect(Unit) {
-			confirmFocusRequester.requestFocus()
 		}
 	}
 }
@@ -216,39 +228,54 @@ private fun SeasonCheckboxRow(
 	val isFocused by interactionSource.collectIsFocusedAsState()
 
 	Row(
-		modifier = Modifier
-			.fillMaxWidth()
-			.then(
-				if (enabled) Modifier
-					.clickable(interactionSource = interactionSource, indication = null) {
-						onCheckedChange(!checked)
-					}
-					.focusable(interactionSource = interactionSource)
-				else Modifier
-			)
-			.background(if (isFocused) JellyfinTheme.colorScheme.surfaceBright else Color.Transparent)
-			.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
+		modifier =
+			Modifier
+				.fillMaxWidth()
+				.then(
+					if (enabled) {
+						Modifier
+							.clickable(interactionSource = interactionSource, indication = null) {
+								onCheckedChange(!checked)
+							}.focusable(interactionSource = interactionSource)
+					} else {
+						Modifier
+					},
+				).background(if (isFocused) Color.White.copy(alpha = 0.05f) else Color.Transparent)
+				.then(
+					if (isFocused) {
+						Modifier.border(
+							width = 3.dp,
+							color = VegafoXColors.OrangePrimary,
+							shape = RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 4.dp, bottomEnd = 4.dp),
+						)
+					} else {
+						Modifier
+					},
+				).padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
 		verticalAlignment = Alignment.CenterVertically,
 	) {
 		Checkbox(
 			checked = checked,
 			onCheckedChange = if (enabled) onCheckedChange else null,
 			enabled = enabled,
-			colors = CheckboxDefaults.colors(
-				checkedColor = accentColor,
-				uncheckedColor = JellyfinTheme.colorScheme.textSecondary,
-				disabledCheckedColor = JellyfinTheme.colorScheme.textDisabled,
-				disabledUncheckedColor = JellyfinTheme.colorScheme.textDisabled,
-			),
+			colors =
+				CheckboxDefaults.colors(
+					checkedColor = accentColor,
+					uncheckedColor = VegafoXColors.TextSecondary,
+					disabledCheckedColor = VegafoXColors.TextDisabled,
+					disabledUncheckedColor = VegafoXColors.TextDisabled,
+				),
 		)
 
 		Spacer(modifier = Modifier.width(8.dp))
 
 		Text(
 			text = label,
-			style = JellyfinTheme.typography.bodyMedium,
-			color = if (enabled) JellyfinTheme.colorScheme.textPrimary else JellyfinTheme.colorScheme.textDisabled,
-			modifier = if (!enabled) Modifier.padding() else Modifier,
+			style =
+				TextStyle(
+					fontSize = 16.sp,
+					color = if (enabled) VegafoXColors.TextPrimary else VegafoXColors.TextDisabled,
+				),
 		)
 	}
 }
@@ -265,29 +292,37 @@ internal fun DialogActionButton(
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
 
-	val focusModifier = if (focusRequester != null) {
-		Modifier.focusRequester(focusRequester)
-	} else {
-		Modifier
-	}
+	val focusModifier =
+		if (focusRequester != null) {
+			Modifier.focusRequester(focusRequester)
+		} else {
+			Modifier
+		}
 
+	val buttonShape = RoundedCornerShape(14.dp)
 	Box(
-		modifier = focusModifier
-			.clip(JellyfinTheme.shapes.small)
-			.background(if (isFocused) focusedBackgroundColor else backgroundColor)
-			.then(
-				if (isFocused) Modifier.border(2.dp, accentColor, JellyfinTheme.shapes.small)
-				else Modifier
-			)
-			.clickable(interactionSource = interactionSource, indication = null) { onClick() }
-			.focusable(interactionSource = interactionSource)
-			.padding(horizontal = 24.dp, vertical = 12.dp),
+		modifier =
+			focusModifier
+				.clip(buttonShape)
+				.background(if (isFocused) focusedBackgroundColor else backgroundColor)
+				.then(
+					if (isFocused) {
+						Modifier.border(2.dp, accentColor, buttonShape)
+					} else {
+						Modifier
+					},
+				).clickable(interactionSource = interactionSource, indication = null) { onClick() }
+				.focusable(interactionSource = interactionSource)
+				.padding(horizontal = 24.dp, vertical = 12.dp),
 		contentAlignment = Alignment.Center,
 	) {
 		Text(
 			text = text,
-			style = JellyfinTheme.typography.labelLarge,
-			color = JellyfinTheme.colorScheme.textPrimary,
+			style =
+				TextStyle(
+					fontSize = 14.sp,
+					color = VegafoXColors.TextPrimary,
+				),
 		)
 	}
 }

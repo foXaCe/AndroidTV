@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.constant.getQualityProfiles
 import org.jellyfin.androidtv.preference.UserPreferences
@@ -28,6 +30,8 @@ import org.jellyfin.androidtv.ui.base.form.RangeControl
 import org.jellyfin.androidtv.ui.base.list.ListButton
 import org.jellyfin.androidtv.ui.base.list.ListControl
 import org.jellyfin.androidtv.ui.base.list.ListSection
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.navigation.LocalRouter
 import org.jellyfin.androidtv.ui.settings.Routes
 import org.jellyfin.androidtv.ui.settings.compat.rememberPreference
@@ -52,9 +56,12 @@ fun SettingsPlaybackAdvancedScreen() {
 
 	SettingsColumn {
 		item {
-			ListSection(
-				overlineContent = { Text(stringResource(R.string.pref_playback).uppercase()) },
-				headingContent = { Text(stringResource(R.string.pref_playback_advanced)) },
+			Text(
+				text = stringResource(R.string.pref_playback_advanced),
+				fontFamily = BebasNeue,
+				fontSize = 22.sp,
+				color = VegafoXColors.TextPrimary,
+				modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp),
 			)
 		}
 
@@ -67,7 +74,7 @@ fun SettingsPlaybackAdvancedScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.lbl_resume_preroll)) },
 				captionContent = { Text(options[resumeSubtractDuration].orEmpty()) },
-				onClick = { router.push(Routes.PLAYBACK_RESUME_SUBTRACT_DURATION) }
+				onClick = { router.push(Routes.PLAYBACK_RESUME_SUBTRACT_DURATION) },
 			)
 		}
 
@@ -83,23 +90,24 @@ fun SettingsPlaybackAdvancedScreen() {
 					verticalAlignment = Alignment.CenterVertically,
 				) {
 					RangeControl(
-						modifier = Modifier
-							.height(4.dp)
-							.weight(1f),
+						modifier =
+							Modifier
+								.height(4.dp)
+								.weight(1f),
 						interactionSource = interactionSource,
 						// 5 - 30 seconds with 5 second increment
 						min = 5_000f,
 						max = 30_000f,
 						stepForward = 5_000f,
 						value = skipForwardLength.toFloat(),
-						onValueChange = { skipForwardLength = it.roundToInt() }
+						onValueChange = { skipForwardLength = it.roundToInt() },
 					)
 
 					Spacer(Modifier.width(Tokens.Space.spaceSm))
 
 					Box(
 						modifier = Modifier.sizeIn(minWidth = 32.dp),
-						contentAlignment = Alignment.CenterEnd
+						contentAlignment = Alignment.CenterEnd,
 					) {
 						Text("${skipForwardLength / 1000}s")
 					}
@@ -119,23 +127,24 @@ fun SettingsPlaybackAdvancedScreen() {
 					verticalAlignment = Alignment.CenterVertically,
 				) {
 					RangeControl(
-						modifier = Modifier
-							.height(4.dp)
-							.weight(1f),
+						modifier =
+							Modifier
+								.height(4.dp)
+								.weight(1f),
 						interactionSource = interactionSource,
 						// 0 - 10 seconds with 1 second increment
 						min = 0f,
 						max = 10_000f,
 						stepForward = 1_000f,
 						value = unpauseRewindDuration.toFloat(),
-						onValueChange = { unpauseRewindDuration = it.roundToInt() }
+						onValueChange = { unpauseRewindDuration = it.roundToInt() },
 					)
 
 					Spacer(Modifier.width(Tokens.Space.spaceSm))
 
 					Box(
 						modifier = Modifier.sizeIn(minWidth = 32.dp),
-						contentAlignment = Alignment.CenterEnd
+						contentAlignment = Alignment.CenterEnd,
 					) {
 						Text("${unpauseRewindDuration / 1000}s")
 					}
@@ -149,7 +158,7 @@ fun SettingsPlaybackAdvancedScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.show_description_on_pause)) },
 				trailingContent = { Checkbox(checked = showDescriptionOnPause) },
-				onClick = { showDescriptionOnPause = !showDescriptionOnPause }
+				onClick = { showDescriptionOnPause = !showDescriptionOnPause },
 			)
 		}
 
@@ -162,7 +171,7 @@ fun SettingsPlaybackAdvancedScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_max_bitrate_title)) },
 				captionContent = { Text(options[maxBitrate].orEmpty()) },
-				onClick = { router.push(Routes.PLAYBACK_MAX_BITRATE) }
+				onClick = { router.push(Routes.PLAYBACK_MAX_BITRATE) },
 			)
 		}
 
@@ -172,7 +181,7 @@ fun SettingsPlaybackAdvancedScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_max_resolution_title)) },
 				captionContent = { Text(stringResource(maxVideoResolution.nameRes)) },
-				onClick = { router.push(Routes.PLAYBACK_MAX_RESOLUTION) }
+				onClick = { router.push(Routes.PLAYBACK_MAX_RESOLUTION) },
 			)
 		}
 
@@ -182,7 +191,7 @@ fun SettingsPlaybackAdvancedScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.lbl_refresh_switching)) },
 				captionContent = { Text(stringResource(refreshRateSwitchingBehavior.nameRes)) },
-				onClick = { router.push(Routes.PLAYBACK_REFRESH_RATE_SWITCHING_BEHAVIOR) }
+				onClick = { router.push(Routes.PLAYBACK_REFRESH_RATE_SWITCHING_BEHAVIOR) },
 			)
 		}
 
@@ -198,23 +207,24 @@ fun SettingsPlaybackAdvancedScreen() {
 					verticalAlignment = Alignment.CenterVertically,
 				) {
 					RangeControl(
-						modifier = Modifier
-							.height(4.dp)
-							.weight(1f),
+						modifier =
+							Modifier
+								.height(4.dp)
+								.weight(1f),
 						interactionSource = interactionSource,
 						// 0 - 5 seconds with 0.25 second increment
 						min = 0_000f,
 						max = 5_000f,
 						stepForward = 250f,
 						value = videoStartDelay.toFloat(),
-						onValueChange = { videoStartDelay = it.roundToLong() }
+						onValueChange = { videoStartDelay = it.roundToLong() },
 					)
 
 					Spacer(Modifier.width(Tokens.Space.spaceSm))
 
 					Box(
 						modifier = Modifier.sizeIn(minWidth = 48.dp),
-						contentAlignment = Alignment.CenterEnd
+						contentAlignment = Alignment.CenterEnd,
 					) {
 						val formatter = remember { DecimalFormat("0.##") }
 						Text("${formatter.format(videoStartDelay / 1000f)}s")
@@ -229,7 +239,7 @@ fun SettingsPlaybackAdvancedScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.default_video_zoom)) },
 				captionContent = { Text(stringResource(playerZoomMode.nameRes)) },
-				onClick = { router.push(Routes.PLAYBACK_ZOOM_MODE) }
+				onClick = { router.push(Routes.PLAYBACK_ZOOM_MODE) },
 			)
 		}
 
@@ -239,7 +249,7 @@ fun SettingsPlaybackAdvancedScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.preference_enable_pgs)) },
 				trailingContent = { Checkbox(checked = pgsDirectPlay) },
-				onClick = { pgsDirectPlay = !pgsDirectPlay }
+				onClick = { pgsDirectPlay = !pgsDirectPlay },
 			)
 		}
 
@@ -249,7 +259,7 @@ fun SettingsPlaybackAdvancedScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.preference_enable_libass)) },
 				trailingContent = { Checkbox(checked = assDirectPlay) },
-				onClick = { assDirectPlay = !assDirectPlay }
+				onClick = { assDirectPlay = !assDirectPlay },
 			)
 		}
 
@@ -261,7 +271,7 @@ fun SettingsPlaybackAdvancedScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.lbl_audio_output)) },
 				captionContent = { Text(stringResource(audioBehaviour.nameRes)) },
-				onClick = { router.push(Routes.PLAYBACK_AUDIO_BEHAVIOR) }
+				onClick = { router.push(Routes.PLAYBACK_AUDIO_BEHAVIOR) },
 			)
 		}
 
@@ -271,7 +281,7 @@ fun SettingsPlaybackAdvancedScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_audio_night_mode)) },
 				trailingContent = { Checkbox(checked = audioNightMode) },
-				onClick = { audioNightMode = !audioNightMode }
+				onClick = { audioNightMode = !audioNightMode },
 			)
 		}
 
@@ -281,7 +291,7 @@ fun SettingsPlaybackAdvancedScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.lbl_direct_stream_live)) },
 				trailingContent = { Checkbox(checked = liveTvDirectPlayEnabled) },
-				onClick = { liveTvDirectPlayEnabled = !liveTvDirectPlayEnabled }
+				onClick = { liveTvDirectPlayEnabled = !liveTvDirectPlayEnabled },
 			)
 		}
 
@@ -291,7 +301,7 @@ fun SettingsPlaybackAdvancedScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.lbl_bitstream_ac3)) },
 				trailingContent = { Checkbox(checked = ac3Enabled) },
-				onClick = { ac3Enabled = !ac3Enabled }
+				onClick = { ac3Enabled = !ac3Enabled },
 			)
 		}
 
@@ -310,12 +320,13 @@ fun SettingsPlaybackAdvancedScreen() {
 					response
 				},
 				onSuccess = { result ->
-					Toast.makeText(
-						context,
-						@SuppressLint("LocalContextGetResourceValueCall")
-						context.getString(R.string.pref_report_device_profile_success, result.fileName),
-						Toast.LENGTH_LONG
-					).show()
+					Toast
+						.makeText(
+							context,
+							@SuppressLint("LocalContextGetResourceValueCall")
+							context.getString(R.string.pref_report_device_profile_success, result.fileName),
+							Toast.LENGTH_LONG,
+						).show()
 				},
 				onFailure = {
 					Toast.makeText(context, R.string.pref_report_device_profile_failure, Toast.LENGTH_LONG).show()

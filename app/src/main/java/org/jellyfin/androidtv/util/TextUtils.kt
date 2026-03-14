@@ -18,7 +18,11 @@ fun String.stripHtml(): String = HtmlCompat.fromHtml(this, HtmlCompat.FROM_HTML_
 /**
  * Utility to get the string for the "Load channels" button in the Live TV guide.
  */
-fun getLoadChannelsLabel(context: Context, startNumber: String? = null, endNumber: String? = null) = buildString {
+fun getLoadChannelsLabel(
+	context: Context,
+	startNumber: String? = null,
+	endNumber: String? = null,
+) = buildString {
 	append(context.getString(R.string.lbl_load_channels))
 
 	if (!startNumber.isNullOrBlank() && !endNumber.isNullOrBlank()) append("$startNumber - $endNumber")

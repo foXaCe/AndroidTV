@@ -10,9 +10,12 @@ class AudioAttributeState {
 		builder: AudioAttributes.Builder.() -> Unit,
 		onChange: (audioAttributes: AudioAttributes) -> Unit,
 	) {
-		val newAudioAttributes = AudioAttributes.Builder().apply {
-			builder()
-		}.build()
+		val newAudioAttributes =
+			AudioAttributes
+				.Builder()
+				.apply {
+					builder()
+				}.build()
 
 		if (_audioAttributes != newAudioAttributes) {
 			Timber.d("Audio attributes changed")

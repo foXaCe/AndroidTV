@@ -23,7 +23,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.repository.ItemRepository
-import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.skeleton.SkeletonCardRow
 import org.jellyfin.androidtv.ui.base.state.DisplayState
 import org.jellyfin.androidtv.ui.base.state.EmptyState
@@ -52,56 +51,71 @@ data class CollectionBrowseUiState(
 class CollectionBrowseViewModel(
 	val api: ApiClient,
 ) : ViewModel() {
-
 	private val _uiState = MutableStateFlow(CollectionBrowseUiState())
 	val uiState: StateFlow<CollectionBrowseUiState> = _uiState.asStateFlow()
 
 	private var folderId: UUID? = null
 
-	fun initialize(folderJson: String, moviesLabel: String, seriesLabel: String, otherLabel: String) {
+	fun initialize(
+		folderJson: String,
+		moviesLabel: String,
+		seriesLabel: String,
+		otherLabel: String,
+	) {
 		val folder = Json.decodeFromString<BaseItemDto>(folderJson)
 		folderId = folder.id
 		_uiState.update { it.copy(title = folder.name ?: "", isLoading = true, error = null) }
 		loadRows(folder.id, moviesLabel, seriesLabel, otherLabel)
 	}
 
-	private fun loadRows(parentId: UUID, moviesLabel: String, seriesLabel: String, otherLabel: String) {
+	private fun loadRows(
+		parentId: UUID,
+		moviesLabel: String,
+		seriesLabel: String,
+		otherLabel: String,
+	) {
 		viewModelScope.launch {
 			try {
 				val rows = mutableListOf<TvRow<BaseItemDto>>()
 
-				val movies = withContext(Dispatchers.IO) {
-					api.itemsApi.getItems(
-						parentId = parentId,
-						includeItemTypes = setOf(BaseItemKind.MOVIE),
-						fields = ItemRepository.itemFields,
-						recursive = true,
-					).content.items
-				}
+				val movies =
+					withContext(Dispatchers.IO) {
+						api.itemsApi
+							.getItems(
+								parentId = parentId,
+								includeItemTypes = setOf(BaseItemKind.MOVIE),
+								fields = ItemRepository.itemFields,
+								recursive = true,
+							).content.items
+					}
 				if (movies.isNotEmpty()) {
 					rows.add(TvRow(title = moviesLabel, items = movies))
 				}
 
-				val series = withContext(Dispatchers.IO) {
-					api.itemsApi.getItems(
-						parentId = parentId,
-						includeItemTypes = setOf(BaseItemKind.SERIES),
-						fields = ItemRepository.itemFields,
-						recursive = true,
-					).content.items
-				}
+				val series =
+					withContext(Dispatchers.IO) {
+						api.itemsApi
+							.getItems(
+								parentId = parentId,
+								includeItemTypes = setOf(BaseItemKind.SERIES),
+								fields = ItemRepository.itemFields,
+								recursive = true,
+							).content.items
+					}
 				if (series.isNotEmpty()) {
 					rows.add(TvRow(title = seriesLabel, items = series))
 				}
 
-				val others = withContext(Dispatchers.IO) {
-					api.itemsApi.getItems(
-						parentId = parentId,
-						excludeItemTypes = setOf(BaseItemKind.MOVIE, BaseItemKind.SERIES),
-						fields = ItemRepository.itemFields,
-						recursive = true,
-					).content.items
-				}
+				val others =
+					withContext(Dispatchers.IO) {
+						api.itemsApi
+							.getItems(
+								parentId = parentId,
+								excludeItemTypes = setOf(BaseItemKind.MOVIE, BaseItemKind.SERIES),
+								fields = ItemRepository.itemFields,
+								recursive = true,
+							).content.items
+					}
 				if (others.isNotEmpty()) {
 					rows.add(TvRow(title = otherLabel, items = others))
 				}
@@ -114,7 +128,11 @@ class CollectionBrowseViewModel(
 		}
 	}
 
-	fun retry(moviesLabel: String, seriesLabel: String, otherLabel: String) {
+	fun retry(
+		moviesLabel: String,
+		seriesLabel: String,
+		otherLabel: String,
+	) {
 		folderId?.let { loadRows(it, moviesLabel, seriesLabel, otherLabel) }
 	}
 }
@@ -135,12 +153,13 @@ fun CollectionBrowseScreen(
 
 			Spacer(modifier = Modifier.height(16.dp))
 
-			val displayState = when {
-				uiState.isLoading -> DisplayState.LOADING
-				uiState.error != null -> DisplayState.ERROR
-				uiState.rows.isEmpty() -> DisplayState.EMPTY
-				else -> DisplayState.CONTENT
-			}
+			val displayState =
+				when {
+					uiState.isLoading -> DisplayState.LOADING
+					uiState.error != null -> DisplayState.ERROR
+					uiState.rows.isEmpty() -> DisplayState.EMPTY
+					else -> DisplayState.CONTENT
+				}
 
 			StateContainer(
 				state = displayState,

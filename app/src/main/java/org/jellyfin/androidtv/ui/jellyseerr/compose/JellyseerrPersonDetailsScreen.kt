@@ -2,6 +2,7 @@ package org.jellyfin.androidtv.ui.jellyseerr.compose
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -33,8 +34,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import org.jellyfin.androidtv.R
@@ -42,6 +45,9 @@ import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrDiscoverItemDto
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrPersonDetailsDto
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.JellyseerrDimensions
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -55,11 +61,12 @@ fun JellyseerrPersonDetailsScreen(
 	val scrollState = rememberScrollState()
 
 	Column(
-		modifier = Modifier
-			.fillMaxSize()
-			.background(JellyfinTheme.colorScheme.background)
-			.verticalScroll(scrollState)
-			.padding(horizontal = 50.dp, vertical = 24.dp),
+		modifier =
+			Modifier
+				.fillMaxSize()
+				.background(VegafoXColors.BackgroundDeep)
+				.verticalScroll(scrollState)
+				.padding(horizontal = JellyseerrDimensions.screenPaddingHorizontal, vertical = 24.dp),
 	) {
 		// Header: photo + name + birth info
 		PersonHeader(personName = personName, personDetails = personDetails)
@@ -92,17 +99,23 @@ private fun PersonHeader(
 		// Profile photo (circular)
 		val profilePath = personDetails?.profilePath
 		AsyncImage(
-			model = if (profilePath != null) {
-				ImageRequest.Builder(LocalContext.current)
-					.data("https://image.tmdb.org/t/p/w185$profilePath")
-					.build()
-			} else null,
+			model =
+				if (profilePath != null) {
+					ImageRequest
+						.Builder(LocalContext.current)
+						.data("https://image.tmdb.org/t/p/w185$profilePath")
+						.build()
+				} else {
+					null
+				},
 			contentDescription = personDetails?.name ?: personName,
 			contentScale = ContentScale.Crop,
-			modifier = Modifier
-				.size(120.dp)
-				.clip(CircleShape)
-				.background(JellyfinTheme.colorScheme.surface),
+			modifier =
+				Modifier
+					.size(120.dp)
+					.border(2.dp, VegafoXColors.OrangePrimary, CircleShape)
+					.clip(CircleShape)
+					.background(VegafoXColors.Surface),
 		)
 
 		Spacer(modifier = Modifier.width(24.dp))
@@ -110,25 +123,31 @@ private fun PersonHeader(
 		Column(modifier = Modifier.weight(1f)) {
 			Text(
 				text = personDetails?.name ?: personName,
-				style = JellyfinTheme.typography.headlineMedium,
-				color = JellyfinTheme.colorScheme.textPrimary,
+				style =
+					TextStyle(
+						fontFamily = BebasNeue,
+						fontSize = 36.sp,
+						letterSpacing = 2.sp,
+					),
+				color = VegafoXColors.TextPrimary,
 				modifier = Modifier.padding(bottom = 8.dp),
 			)
 
-			val birthInfo = remember(personDetails) {
-				buildList {
-					personDetails?.birthday?.let { bday ->
-						formatDate(bday)?.let { add("Born $it") }
-					}
-					personDetails?.placeOfBirth?.let { add("in $it") }
-				}.joinToString(" ")
-			}
+			val birthInfo =
+				remember(personDetails) {
+					buildList {
+						personDetails?.birthday?.let { bday ->
+							formatDate(bday)?.let { add("Born $it") }
+						}
+						personDetails?.placeOfBirth?.let { add("in $it") }
+					}.joinToString(" ")
+				}
 
 			if (birthInfo.isNotEmpty()) {
 				Text(
 					text = birthInfo,
 					style = JellyfinTheme.typography.bodyMedium,
-					color = JellyfinTheme.colorScheme.textSecondary,
+					color = VegafoXColors.TextSecondary,
 				)
 			}
 		}
@@ -142,20 +161,21 @@ private fun BiographySection(biography: String) {
 	Text(
 		text = stringResource(R.string.lbl_biography),
 		style = JellyfinTheme.typography.titleLarge,
-		color = JellyfinTheme.colorScheme.textPrimary,
+		color = VegafoXColors.TextPrimary,
 		modifier = Modifier.padding(bottom = 12.dp),
 	)
 
 	Text(
 		text = biography,
 		style = JellyfinTheme.typography.bodyMedium,
-		color = JellyfinTheme.colorScheme.textPrimary,
-		maxLines = if (isExpanded) Int.MAX_VALUE else 4,
+		color = VegafoXColors.TextSecondary,
+		maxLines = if (isExpanded) Int.MAX_VALUE else 6,
 		overflow = TextOverflow.Ellipsis,
-		modifier = Modifier
-			.fillMaxWidth()
-			.animateContentSize()
-			.padding(bottom = 8.dp),
+		modifier =
+			Modifier
+				.fillMaxWidth()
+				.animateContentSize()
+				.padding(bottom = 8.dp),
 	)
 
 	// Toggle button
@@ -165,14 +185,14 @@ private fun BiographySection(biography: String) {
 	Text(
 		text = stringResource(if (isExpanded) R.string.btn_show_less else R.string.btn_show_more),
 		style = JellyfinTheme.typography.bodyMedium,
-		color = JellyfinTheme.colorScheme.info,
-		modifier = Modifier
-			.background(if (isFocused) JellyfinTheme.colorScheme.surfaceBright else Color.Transparent)
-			.clickable(interactionSource = interactionSource, indication = null) {
-				isExpanded = !isExpanded
-			}
-			.focusable(interactionSource = interactionSource)
-			.padding(8.dp),
+		color = VegafoXColors.Info,
+		modifier =
+			Modifier
+				.background(if (isFocused) VegafoXColors.SurfaceBright else Color.Transparent)
+				.clickable(interactionSource = interactionSource, indication = null) {
+					isExpanded = !isExpanded
+				}.focusable(interactionSource = interactionSource)
+				.padding(8.dp),
 	)
 }
 
@@ -185,7 +205,7 @@ private fun AppearancesSection(
 	Text(
 		text = stringResource(R.string.lbl_appearances),
 		style = JellyfinTheme.typography.titleLarge,
-		color = JellyfinTheme.colorScheme.textPrimary,
+		color = VegafoXColors.TextPrimary,
 		modifier = Modifier.padding(bottom = 16.dp),
 	)
 
@@ -211,8 +231,8 @@ private fun AppearanceCard(
 	)
 }
 
-private fun formatDate(dateString: String): String? {
-	return try {
+private fun formatDate(dateString: String): String? =
+	try {
 		val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
 		val outputFormat = SimpleDateFormat("MMMM d, yyyy", Locale.US)
 		val date = inputFormat.parse(dateString)
@@ -220,4 +240,3 @@ private fun formatDate(dateString: String): String? {
 	} catch (_: Exception) {
 		null
 	}
-}

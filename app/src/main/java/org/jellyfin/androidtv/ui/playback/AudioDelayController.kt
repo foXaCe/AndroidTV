@@ -5,9 +5,12 @@ package org.jellyfin.androidtv.ui.playback
  * Positive values delay audio (audio plays later), negative values advance audio (audio plays earlier).
  */
 class AudioDelayController(
-	private val parentController: PlaybackController
+	private val parentController: PlaybackController,
 ) {
-	enum class DelaySteps(val delayMs: Long, val label: String) {
+	enum class DelaySteps(
+		val delayMs: Long,
+		val label: String,
+	) {
 		DELAY_NEG_2000(delayMs = -2000L, label = "-2.0s"),
 		DELAY_NEG_1500(delayMs = -1500L, label = "-1.5s"),
 		DELAY_NEG_1000(delayMs = -1000L, label = "-1.0s"),

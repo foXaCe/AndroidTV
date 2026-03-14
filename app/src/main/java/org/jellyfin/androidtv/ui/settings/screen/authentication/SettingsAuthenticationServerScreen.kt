@@ -9,7 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -24,6 +24,7 @@ import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.ProfilePicture
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.button.IconButtonDefaults
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.list.ListButton
 import org.jellyfin.androidtv.ui.base.list.ListSection
 import org.jellyfin.androidtv.ui.navigation.LocalRouter
@@ -70,34 +71,37 @@ fun SettingsAuthenticationServerScreen(serverId: UUID) {
 					leadingContent = {
 						ProfilePicture(
 							url = authenticationRepository.getUserImageUrl(requireNotNull(server), user),
-							modifier = Modifier
-								.size(24.dp)
-								.clip(IconButtonDefaults.Shape)
+							modifier =
+								Modifier
+									.size(24.dp)
+									.clip(IconButtonDefaults.Shape),
 						)
 					},
 					headingContent = { Text(user.name) },
 					captionContent = {
-						val lastUsedDate = LocalDateTime.ofInstant(
-							Instant.ofEpochMilli(user.lastUsed),
-							ZoneId.systemDefault()
-						)
+						val lastUsedDate =
+							LocalDateTime.ofInstant(
+								Instant.ofEpochMilli(user.lastUsed),
+								ZoneId.systemDefault(),
+							)
 						Text(
 							stringResource(
 								R.string.lbl_user_last_used,
 								lastUsedDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)),
 								lastUsedDate.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),
-							)
+							),
 						)
 					},
 					onClick = {
 						router.push(
 							route = Routes.AUTHENTICATION_SERVER_USER,
-							parameters = mapOf(
-								"serverId" to user.serverId.toString(),
-								"userId" to user.id.toString(),
-							),
+							parameters =
+								mapOf(
+									"serverId" to user.serverId.toString(),
+									"userId" to user.id.toString(),
+								),
 						)
-					}
+					},
 				)
 			}
 		}
@@ -106,7 +110,7 @@ fun SettingsAuthenticationServerScreen(serverId: UUID) {
 
 		item {
 			ListButton(
-				leadingContent = { Icon(painterResource(R.drawable.ic_delete), contentDescription = null) },
+				leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Delete), contentDescription = null) },
 				headingContent = { Text(stringResource(R.string.lbl_remove_server)) },
 				captionContent = { Text(stringResource(R.string.lbl_remove_users)) },
 				onClick = {
@@ -114,7 +118,7 @@ fun SettingsAuthenticationServerScreen(serverId: UUID) {
 						serverRepository.deleteServer(server?.id ?: serverId)
 						router.back()
 					}
-				}
+				},
 			)
 		}
 	}

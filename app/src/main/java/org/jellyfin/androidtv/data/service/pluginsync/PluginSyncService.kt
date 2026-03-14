@@ -96,17 +96,20 @@ class PluginSyncService(
 		private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
 	}
 
-	private val httpClient = OkHttpClient.Builder()
-		.connectTimeout(10, TimeUnit.SECONDS)
-		.readTimeout(10, TimeUnit.SECONDS)
-		.writeTimeout(10, TimeUnit.SECONDS)
-		.build()
+	private val httpClient =
+		OkHttpClient
+			.Builder()
+			.connectTimeout(10, TimeUnit.SECONDS)
+			.readTimeout(10, TimeUnit.SECONDS)
+			.writeTimeout(10, TimeUnit.SECONDS)
+			.build()
 
-	private val json = Json {
-		ignoreUnknownKeys = true
-		isLenient = true
-		encodeDefaults = true
-	}
+	private val json =
+		Json {
+			ignoreUnknownKeys = true
+			isLenient = true
+			encodeDefaults = true
+		}
 
 	/** Whether the server plugin was reachable on the last ping. */
 	@Volatile
@@ -141,51 +144,52 @@ class PluginSyncService(
 	/**
 	 * Run full startup sync. Call after session is established and API client is configured.
 	 */
-	suspend fun syncOnStartup() = withContext(Dispatchers.IO) {
-		if (!userPreferences[UserPreferences.pluginSyncEnabled]) {
-			Timber.d("$TAG: Plugin sync disabled, skipping")
-			unregisterChangeListeners()
-			return@withContext
-		}
-
-		val baseUrl = api.baseUrl
-		val token = api.accessToken
-		if (baseUrl.isNullOrBlank() || token.isNullOrBlank()) {
-			Timber.w("$TAG: API not configured (no baseUrl or token)")
-			return@withContext
-		}
-
-		serverAvailable = ping(baseUrl, token)
-		if (!serverAvailable) {
-			Timber.w("$TAG: Server plugin not reachable, skipping sync")
-			return@withContext
-		}
-
-		val serverSettings = fetchServerSettings(baseUrl, token)
-		val localSettings = collectLocalSettings()
-		val snapshot = loadSnapshot()
-
-		when {
-			serverSettings != null -> {
-				val merged = mergeThreeWay(localSettings, serverSettings, snapshot)
-				applySettings(merged)
-				pushSettings(baseUrl, token, merged)
-				saveSnapshot(merged)
-				_syncCompletedCounter.value++
-				Timber.i("$TAG: Startup sync complete (three-way merge)")
+	suspend fun syncOnStartup() =
+		withContext(Dispatchers.IO) {
+			if (!userPreferences[UserPreferences.pluginSyncEnabled]) {
+				Timber.d("$TAG: Plugin sync disabled, skipping")
+				unregisterChangeListeners()
+				return@withContext
 			}
-			else -> {
-				pushSettings(baseUrl, token, localSettings)
-				saveSnapshot(localSettings)
-				Timber.i("$TAG: Startup sync complete (pushed local to server)")
+
+			val baseUrl = api.baseUrl
+			val token = api.accessToken
+			if (baseUrl.isNullOrBlank() || token.isNullOrBlank()) {
+				Timber.w("$TAG: API not configured (no baseUrl or token)")
+				return@withContext
+			}
+
+			serverAvailable = ping(baseUrl, token)
+			if (!serverAvailable) {
+				Timber.w("$TAG: Server plugin not reachable, skipping sync")
+				return@withContext
+			}
+
+			val serverSettings = fetchServerSettings(baseUrl, token)
+			val localSettings = collectLocalSettings()
+			val snapshot = loadSnapshot()
+
+			when {
+				serverSettings != null -> {
+					val merged = mergeThreeWay(localSettings, serverSettings, snapshot)
+					applySettings(merged)
+					pushSettings(baseUrl, token, merged)
+					saveSnapshot(merged)
+					_syncCompletedCounter.value++
+					Timber.i("$TAG: Startup sync complete (three-way merge)")
+				}
+				else -> {
+					pushSettings(baseUrl, token, localSettings)
+					saveSnapshot(localSettings)
+					Timber.i("$TAG: Startup sync complete (pushed local to server)")
+				}
+			}
+
+			registerChangeListeners()
+			if (org.jellyfin.androidtv.BuildConfig.ENABLE_OTA_UPDATES) {
+				checkForPluginUpdate(baseUrl, token)
 			}
 		}
-
-		registerChangeListeners()
-		if (org.jellyfin.androidtv.BuildConfig.ENABLE_OTA_UPDATES) {
-			checkForPluginUpdate(baseUrl, token)
-		}
-	}
 
 	/**
 	 * Configure Jellyseerr proxy mode via VegafoX plugin.
@@ -193,32 +197,32 @@ class PluginSyncService(
 	 * Separated from [syncOnStartup] because settings sync must run before the user is published
 	 * to prevent stale preference reads, while Jellyseerr needs the user ID.
 	 */
-	suspend fun configureJellyseerrProxy() = withContext(Dispatchers.IO) {
-		if (!userPreferences[UserPreferences.pluginSyncEnabled]) return@withContext
+	suspend fun configureJellyseerrProxy() =
+		withContext(Dispatchers.IO) {
+			if (!userPreferences[UserPreferences.pluginSyncEnabled]) return@withContext
 
-		val baseUrl = api.baseUrl
-		val token = api.accessToken
-		if (baseUrl.isNullOrBlank() || token.isNullOrBlank()) return@withContext
-		if (!serverAvailable) return@withContext
+			val baseUrl = api.baseUrl
+			val token = api.accessToken
+			if (baseUrl.isNullOrBlank() || token.isNullOrBlank()) return@withContext
+			if (!serverAvailable) return@withContext
 
-		fetchJellyseerrConfig(baseUrl, token)
-		autoConfigureVegafoXProxy(baseUrl, token)
-	}
+			fetchJellyseerrConfig(baseUrl, token)
+			autoConfigureVegafoXProxy(baseUrl, token)
+		}
 
 	/**
 	 * Silently checks for app updates via `/VegafoX/ClientUpdate` and caches the result
 	 * in [UpdateCheckerService.latestPluginUpdateInfo].
 	 */
-	private suspend fun checkForPluginUpdate(baseUrl: String, token: String) {
+	private suspend fun checkForPluginUpdate(
+		baseUrl: String,
+		token: String,
+	) {
 		val result = updateCheckerService.checkForUpdateViaPlugin(baseUrl, token)
 		result.onSuccess { updateInfo ->
 			if (updateInfo != null && updateInfo.isNewer) {
 				Timber.i("$TAG: Update available via plugin: ${updateInfo.version}")
-			} else {
-				Timber.d("$TAG: No update available via plugin")
 			}
-		}.onFailure { error ->
-			Timber.d(error, "$TAG: Plugin update check failed")
 		}
 	}
 
@@ -228,13 +232,14 @@ class PluginSyncService(
 	 * ensuring existing server settings are pulled down rather than overwritten
 	 * by local defaults.
 	 */
-	suspend fun initialSync() = withContext(Dispatchers.IO) {
-		// Clear snapshot so mergeThreeWay treats this as a first sync (server wins)
-		snapshotPrefs.edit().clear().apply()
-		Timber.i("$TAG: Snapshot cleared for initial server-wins sync")
+	suspend fun initialSync() =
+		withContext(Dispatchers.IO) {
+			// Clear snapshot so mergeThreeWay treats this as a first sync (server wins)
+			snapshotPrefs.edit().clear().apply()
+			Timber.i("$TAG: Snapshot cleared for initial server-wins sync")
 
-		syncOnStartup()
-	}
+			syncOnStartup()
+		}
 
 	/**
 	 * Stop listening for changes. Called when sync is disabled or session ends.
@@ -247,30 +252,32 @@ class PluginSyncService(
 		pushJob?.cancel()
 		pushJob = null
 		pushScope = null
-		Timber.d("$TAG: Change listeners unregistered")
 	}
 
 	/**
 	 * Ping the VegafoX server plugin to check availability.
 	 * `GET {baseUrl}/VegafoX/Ping`
 	 */
-	private fun ping(baseUrl: String, token: String): Boolean {
-		return try {
-			val request = Request.Builder()
-				.url("$baseUrl$PING_PATH")
-				.header("Authorization", "MediaBrowser Token=\"$token\"")
-				.get()
-				.build()
+	private fun ping(
+		baseUrl: String,
+		token: String,
+	): Boolean =
+		try {
+			val request =
+				Request
+					.Builder()
+					.url("$baseUrl$PING_PATH")
+					.header("Authorization", "MediaBrowser Token=\"$token\"")
+					.get()
+					.build()
 			val response = httpClient.newCall(request).execute()
 			val success = response.isSuccessful
 			response.close()
-			Timber.d("$TAG: Ping ${if (success) "OK" else "FAILED"}")
 			success
 		} catch (e: Exception) {
 			Timber.w(e, "$TAG: Ping failed")
 			false
 		}
-	}
 
 	/**
 	 * Fetch settings from the server.
@@ -282,13 +289,18 @@ class PluginSyncService(
 	 *
 	 * @return Flat key-value map of server settings, or null if unavailable.
 	 */
-	private fun fetchServerSettings(baseUrl: String, token: String): Map<String, Any?>? {
+	private fun fetchServerSettings(
+		baseUrl: String,
+		token: String,
+	): Map<String, Any?>? {
 		return try {
-			val request = Request.Builder()
-				.url("$baseUrl$SETTINGS_PATH")
-				.header("Authorization", "MediaBrowser Token=\"$token\"")
-				.get()
-				.build()
+			val request =
+				Request
+					.Builder()
+					.url("$baseUrl$SETTINGS_PATH")
+					.header("Authorization", "MediaBrowser Token=\"$token\"")
+					.get()
+					.build()
 			val response = httpClient.newCall(request).execute()
 			if (!response.isSuccessful) {
 				Timber.w("$TAG: Fetch settings failed (${response.code})")
@@ -299,29 +311,30 @@ class PluginSyncService(
 			response.close()
 			if (body.isNullOrBlank()) return null
 
-			Timber.d("$TAG: Raw server response (${body.length} bytes)")
-
 			val jsonObject = json.decodeFromString<JsonObject>(body)
 
 			// Detect v2 envelope: schemaVersion >= 2 with nested profiles
-			val schemaVersion = (jsonObject["SchemaVersion"] ?: jsonObject["schemaVersion"])
-				?.let { (it as? JsonPrimitive)?.intOrNull } ?: 1
+			val schemaVersion =
+				(jsonObject["SchemaVersion"] ?: jsonObject["schemaVersion"])
+					?.let { (it as? JsonPrimitive)?.intOrNull } ?: 1
 			serverSchemaVersion = schemaVersion
 
-			val mapped = if (schemaVersion >= 2) {
-				// v2 envelope — resolve flat settings from TV → global profile chain
-				val globalProfile = (jsonObject["Global"] ?: jsonObject["global"])
-					as? JsonObject
-				val tvProfile = (jsonObject["Tv"] ?: jsonObject["tv"])
-					as? JsonObject
-				resolveV2Profile(globalProfile, tvProfile)
-			} else {
-				// v1 flat settings — parse directly
-				val rawMap = jsonObjectToMap(jsonObject)
-				rawMap.mapKeys { (key, _) -> toCamelCase(key) }
-			}
+			val mapped =
+				if (schemaVersion >= 2) {
+					// v2 envelope — resolve flat settings from TV → global profile chain
+					val globalProfile =
+						(jsonObject["Global"] ?: jsonObject["global"])
+							as? JsonObject
+					val tvProfile =
+						(jsonObject["Tv"] ?: jsonObject["tv"])
+							as? JsonObject
+					resolveV2Profile(globalProfile, tvProfile)
+				} else {
+					// v1 flat settings — parse directly
+					val rawMap = jsonObjectToMap(jsonObject)
+					rawMap.mapKeys { (key, _) -> toCamelCase(key) }
+				}
 
-			Timber.d("$TAG: Server keys received (v$schemaVersion): ${mapped.keys}")
 			mapped
 		} catch (e: Exception) {
 			Timber.w(e, "$TAG: Fetch settings failed")
@@ -370,16 +383,20 @@ class PluginSyncService(
 	 *
 	 * This is pull-only — the URL is admin-configured on the server and never pushed by clients.
 	 */
-	private fun fetchJellyseerrConfig(baseUrl: String, token: String) {
+	private fun fetchJellyseerrConfig(
+		baseUrl: String,
+		token: String,
+	) {
 		try {
-			val request = Request.Builder()
-				.url("$baseUrl$JELLYSEERR_CONFIG_PATH")
-				.header("Authorization", "MediaBrowser Token=\"$token\"")
-				.get()
-				.build()
+			val request =
+				Request
+					.Builder()
+					.url("$baseUrl$JELLYSEERR_CONFIG_PATH")
+					.header("Authorization", "MediaBrowser Token=\"$token\"")
+					.get()
+					.build()
 			val response = httpClient.newCall(request).execute()
 			if (!response.isSuccessful) {
-				Timber.d("$TAG: Jellyseerr config not available (${response.code})")
 				response.close()
 				return
 			}
@@ -406,8 +423,6 @@ class PluginSyncService(
 			if (enabled && !url.isNullOrBlank()) {
 				jellyseerrPrefs.putRawString(JellyseerrPreferences.serverUrl.key, url)
 				Timber.i("$TAG: Jellyseerr URL set from server config: $url")
-			} else {
-				Timber.d("$TAG: Jellyseerr not enabled or no URL configured on server")
 			}
 		} catch (e: Exception) {
 			Timber.w(e, "$TAG: Failed to fetch Jellyseerr config")
@@ -418,20 +433,22 @@ class PluginSyncService(
 	 * Auto-configure Jellyseerr proxy mode when the VegafoX plugin is available.
 	 * Checks if Jellyseerr is enabled on the server and sets up proxy routing.
 	 */
-	private suspend fun autoConfigureVegafoXProxy(baseUrl: String, token: String) {
+	private suspend fun autoConfigureVegafoXProxy(
+		baseUrl: String,
+		token: String,
+	) {
 		try {
 			val result = jellyseerrRepository.configureWithVegafoX(baseUrl, token)
-			result.onSuccess { status ->
-				if (status.authenticated) {
-					Timber.i("$TAG: VegafoX Jellyseerr proxy configured (authenticated)")
-				} else if (status.enabled) {
-					Timber.i("$TAG: VegafoX Jellyseerr proxy configured (not yet authenticated)")
-				} else {
-					Timber.d("$TAG: Jellyseerr not enabled on server plugin")
+			result
+				.onSuccess { status ->
+					if (status.authenticated) {
+						Timber.i("$TAG: VegafoX Jellyseerr proxy configured (authenticated)")
+					} else if (status.enabled) {
+						Timber.i("$TAG: VegafoX Jellyseerr proxy configured (not yet authenticated)")
+					}
+				}.onFailure { error ->
+					Timber.w(error, "$TAG: Failed to configure VegafoX Jellyseerr proxy")
 				}
-			}.onFailure { error ->
-				Timber.w(error, "$TAG: Failed to configure VegafoX Jellyseerr proxy")
-			}
 		} catch (e: Exception) {
 			Timber.w(e, "$TAG: Error during VegafoX proxy auto-configure")
 		}
@@ -444,23 +461,32 @@ class PluginSyncService(
 	 * For v2 servers: `POST {baseUrl}/VegafoX/Settings/Profile/global` to
 	 * save into the global profile so settings are visible on all devices.
 	 */
-	private fun pushSettings(baseUrl: String, token: String, settings: Map<String, Any?>) {
+	private fun pushSettings(
+		baseUrl: String,
+		token: String,
+		settings: Map<String, Any?>,
+	) {
 		try {
 			val settingsObj = settingsToJsonObject(settings)
 
 			if (serverSchemaVersion >= 2) {
 				// v2: push into the global profile directly
-				val wrappedBody = JsonObject(mapOf(
-					"profile" to settingsObj,
-					"clientId" to JsonPrimitive(PluginSyncConstants.CLIENT_ID),
-				))
+				val wrappedBody =
+					JsonObject(
+						mapOf(
+							"profile" to settingsObj,
+							"clientId" to JsonPrimitive(PluginSyncConstants.CLIENT_ID),
+						),
+					)
 				val jsonBody = json.encodeToString(JsonObject.serializer(), wrappedBody)
 				val requestBody = jsonBody.toRequestBody(JSON_MEDIA_TYPE)
-				val request = Request.Builder()
-					.url("$baseUrl$SETTINGS_PATH/Profile/global")
-					.header("Authorization", "MediaBrowser Token=\"$token\"")
-					.post(requestBody)
-					.build()
+				val request =
+					Request
+						.Builder()
+						.url("$baseUrl$SETTINGS_PATH/Profile/global")
+						.header("Authorization", "MediaBrowser Token=\"$token\"")
+						.post(requestBody)
+						.build()
 				val response = httpClient.newCall(request).execute()
 				if (!response.isSuccessful) {
 					Timber.w("$TAG: Push settings (v2 profile) failed (${response.code})")
@@ -468,17 +494,22 @@ class PluginSyncService(
 				response.close()
 			} else {
 				// v1: push flat settings
-				val wrappedBody = JsonObject(mapOf(
-					"settings" to settingsObj,
-					"clientId" to JsonPrimitive(PluginSyncConstants.CLIENT_ID),
-				))
+				val wrappedBody =
+					JsonObject(
+						mapOf(
+							"settings" to settingsObj,
+							"clientId" to JsonPrimitive(PluginSyncConstants.CLIENT_ID),
+						),
+					)
 				val jsonBody = json.encodeToString(JsonObject.serializer(), wrappedBody)
 				val requestBody = jsonBody.toRequestBody(JSON_MEDIA_TYPE)
-				val request = Request.Builder()
-					.url("$baseUrl$SETTINGS_PATH")
-					.header("Authorization", "MediaBrowser Token=\"$token\"")
-					.post(requestBody)
-					.build()
+				val request =
+					Request
+						.Builder()
+						.url("$baseUrl$SETTINGS_PATH")
+						.header("Authorization", "MediaBrowser Token=\"$token\"")
+						.post(requestBody)
+						.build()
 				val response = httpClient.newCall(request).execute()
 				if (!response.isSuccessful) {
 					Timber.w("$TAG: Push settings failed (${response.code})")
@@ -554,14 +585,12 @@ class PluginSyncService(
 		server: Map<String, Any?>,
 		snapshot: Map<String, Any?>,
 	): Map<String, Any?> {
-		if (snapshot.isEmpty()) {
-			Timber.d("$TAG: No snapshot — falling back to server-wins")
-			return local + server
-		}
+		if (snapshot.isEmpty()) return local + server
 
-		val allKeys = (local.keys + server.keys + snapshot.keys)
-			.filter { it in PluginSyncConstants.ALL_SERVER_KEYS }
-			.toSet()
+		val allKeys =
+			(local.keys + server.keys + snapshot.keys)
+				.filter { it in PluginSyncConstants.ALL_SERVER_KEYS }
+				.toSet()
 
 		val merged = mutableMapOf<String, Any?>()
 		for (key in allKeys) {
@@ -572,17 +601,18 @@ class PluginSyncService(
 			val localChanged = normalizeForComparison(localVal) != normalizeForComparison(snapshotVal)
 			val serverChanged = normalizeForComparison(serverVal) != normalizeForComparison(snapshotVal)
 
-			val chosen = when {
-				serverChanged && !localChanged -> {
-					Timber.d("$TAG: Merge [$key] → server (server changed, local same)")
-					serverVal
+			val chosen =
+				when {
+					serverChanged && !localChanged -> {
+						Timber.d("$TAG: Merge [$key] → server (server changed, local same)")
+						serverVal
+					}
+					localChanged && serverChanged -> {
+						Timber.d("$TAG: Merge [$key] → local (conflict, local wins)")
+						localVal
+					}
+					else -> localVal
 				}
-				localChanged && serverChanged -> {
-					Timber.d("$TAG: Merge [$key] → local (conflict, local wins)")
-					localVal
-				}
-				else -> localVal
-			}
 			merged[key] = chosen
 		}
 		return merged
@@ -593,9 +623,7 @@ class PluginSyncService(
 	 * (e.g. Int 1 vs String "1", Boolean true vs String "true") don't cause
 	 * false "changed" detections during three-way merge.
 	 */
-	private fun normalizeForComparison(value: Any?): String {
-		return value?.toString() ?: ""
-	}
+	private fun normalizeForComparison(value: Any?): String = value?.toString() ?: ""
 
 	/**
 	 * Register [SharedPreferences.OnSharedPreferenceChangeListener] on each preference store.
@@ -606,14 +634,14 @@ class PluginSyncService(
 
 		pushScope = CoroutineScope(Dispatchers.IO)
 
-		val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-			if (key == null || key !in PluginSyncConstants.ALL_LOCAL_KEYS) return@OnSharedPreferenceChangeListener
-			if (!userPreferences[UserPreferences.pluginSyncEnabled]) return@OnSharedPreferenceChangeListener
-			if (!serverAvailable) return@OnSharedPreferenceChangeListener
+		val listener =
+			SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+				if (key == null || key !in PluginSyncConstants.ALL_LOCAL_KEYS) return@OnSharedPreferenceChangeListener
+				if (!userPreferences[UserPreferences.pluginSyncEnabled]) return@OnSharedPreferenceChangeListener
+				if (!serverAvailable) return@OnSharedPreferenceChangeListener
 
-			Timber.d("$TAG: Syncable preference changed: $key — scheduling push")
-			scheduleDebouncedPush()
-		}
+				scheduleDebouncedPush()
+			}
 
 		registerListenerOnStore(userPreferences, listener)
 		registerListenerOnStore(userSettingPreferences, listener)
@@ -622,8 +650,6 @@ class PluginSyncService(
 		if (jellyseerrPrefs != null) {
 			registerListenerOnStore(jellyseerrPrefs, listener)
 		}
-
-		Timber.d("$TAG: Change listeners registered")
 	}
 
 	private fun registerListenerOnStore(
@@ -640,24 +666,27 @@ class PluginSyncService(
 	 */
 	private fun scheduleDebouncedPush() {
 		pushJob?.cancel()
-		pushJob = pushScope?.launch {
-			delay(DEBOUNCE_MS)
+		pushJob =
+			pushScope?.launch {
+				delay(DEBOUNCE_MS)
 
-			val baseUrl = api.baseUrl ?: return@launch
-			val token = api.accessToken ?: return@launch
-			val settings = collectLocalSettings()
-			pushSettings(baseUrl, token, settings)
-			saveSnapshot(settings)
-			Timber.d("$TAG: Debounced push complete")
-		}
+				val baseUrl = api.baseUrl ?: return@launch
+				val token = api.accessToken ?: return@launch
+				val settings = collectLocalSettings()
+				pushSettings(baseUrl, token, settings)
+				saveSnapshot(settings)
+			}
 	}
 
 	/**
 	 * Read a single preference value from a store, returning a serializable type.
 	 */
 	@Suppress("UNCHECKED_CAST")
-	private fun readPreference(store: SharedPreferenceStore, sp: SyncablePreference<*>): Any? {
-		return when (sp.type) {
+	private fun readPreference(
+		store: SharedPreferenceStore,
+		sp: SyncablePreference<*>,
+	): Any? =
+		when (sp.type) {
 			SyncType.BOOLEAN -> store[sp.preference as Preference<Boolean>]
 			SyncType.INT -> store[sp.preference as Preference<Int>]
 			SyncType.LONG -> store[sp.preference as Preference<Long>]
@@ -677,44 +706,51 @@ class PluginSyncService(
 				}
 			}
 		}
-	}
 
 	/**
 	 * Write a single preference value to a store from a deserialized value.
 	 */
 	@Suppress("UNCHECKED_CAST")
-	private fun writePreference(store: SharedPreferenceStore, sp: SyncablePreference<*>, value: Any) {
+	private fun writePreference(
+		store: SharedPreferenceStore,
+		sp: SyncablePreference<*>,
+		value: Any,
+	) {
 		when (sp.type) {
 			SyncType.BOOLEAN -> {
-				val boolVal = when (value) {
-					is Boolean -> value
-					is String -> value.toBooleanStrictOrNull() ?: return
-					else -> return
-				}
+				val boolVal =
+					when (value) {
+						is Boolean -> value
+						is String -> value.toBooleanStrictOrNull() ?: return
+						else -> return
+					}
 				store[sp.preference as Preference<Boolean>] = boolVal
 			}
 			SyncType.INT -> {
-				val intVal = when (value) {
-					is Number -> value.toInt()
-					is String -> value.toIntOrNull() ?: return
-					else -> return
-				}
+				val intVal =
+					when (value) {
+						is Number -> value.toInt()
+						is String -> value.toIntOrNull() ?: return
+						else -> return
+					}
 				store[sp.preference as Preference<Int>] = intVal
 			}
 			SyncType.LONG -> {
-				val longVal = when (value) {
-					is Number -> value.toLong()
-					is String -> value.toLongOrNull() ?: return
-					else -> return
-				}
+				val longVal =
+					when (value) {
+						is Number -> value.toLong()
+						is String -> value.toLongOrNull() ?: return
+						else -> return
+					}
 				store[sp.preference as Preference<Long>] = longVal
 			}
 			SyncType.FLOAT -> {
-				val floatVal = when (value) {
-					is Number -> value.toFloat()
-					is String -> value.toFloatOrNull() ?: return
-					else -> return
-				}
+				val floatVal =
+					when (value) {
+						is Number -> value.toFloat()
+						is String -> value.toFloatOrNull() ?: return
+						else -> return
+					}
 				store[sp.preference as Preference<Float>] = floatVal
 			}
 			SyncType.STRING -> {
@@ -725,17 +761,19 @@ class PluginSyncService(
 				// Match case-insensitively against the enum constants and write the canonical name.
 				val strVal = value.toString()
 				val enumConstants = sp.preference.type.java.enumConstants
-				val matched = enumConstants?.find { constant ->
-					val enum = constant as? Enum<*> ?: return@find false
-					val prefEnum = constant as? PreferenceEnum
-					prefEnum?.serializedName?.equals(strVal, ignoreCase = true) == true ||
-						enum.name.equals(strVal, ignoreCase = true)
-				}
-				val finalValue = when {
-					matched is PreferenceEnum -> matched.serializedName ?: (matched as Enum<*>).name
-					matched is Enum<*> -> matched.name
-					else -> strVal
-				}
+				val matched =
+					enumConstants?.find { constant ->
+						val enum = constant as? Enum<*> ?: return@find false
+						val prefEnum = constant as? PreferenceEnum
+						prefEnum?.serializedName?.equals(strVal, ignoreCase = true) == true ||
+							enum.name.equals(strVal, ignoreCase = true)
+					}
+				val finalValue =
+					when {
+						matched is PreferenceEnum -> matched.serializedName ?: (matched as Enum<*>).name
+						matched is Enum<*> -> matched.name
+						else -> strVal
+					}
 				store.putRawString(sp.preference.key, finalValue)
 			}
 		}
@@ -755,8 +793,8 @@ class PluginSyncService(
 	/**
 	 * Convert a [JsonElement] to a Kotlin value.
 	 */
-	private fun jsonElementToValue(element: JsonElement): Any? {
-		return when (element) {
+	private fun jsonElementToValue(element: JsonElement): Any? =
+		when (element) {
 			is JsonNull -> null
 			is JsonPrimitive -> {
 				when {
@@ -770,24 +808,24 @@ class PluginSyncService(
 			}
 			else -> element.toString()
 		}
-	}
 
 	/**
 	 * Convert a settings map to a [JsonObject] for the POST body.
 	 */
 	private fun settingsToJsonObject(settings: Map<String, Any?>): JsonObject {
-		val elements = settings.mapValues { (_, value) ->
-			when (value) {
-				null -> JsonNull
-				is Boolean -> JsonPrimitive(value)
-				is Int -> JsonPrimitive(value)
-				is Long -> JsonPrimitive(value)
-				is Float -> JsonPrimitive(value)
-				is Double -> JsonPrimitive(value)
-				is String -> JsonPrimitive(value)
-				else -> JsonPrimitive(value.toString())
+		val elements =
+			settings.mapValues { (_, value) ->
+				when (value) {
+					null -> JsonNull
+					is Boolean -> JsonPrimitive(value)
+					is Int -> JsonPrimitive(value)
+					is Long -> JsonPrimitive(value)
+					is Float -> JsonPrimitive(value)
+					is Double -> JsonPrimitive(value)
+					is String -> JsonPrimitive(value)
+					else -> JsonPrimitive(value.toString())
+				}
 			}
-		}
 		return JsonObject(elements)
 	}
 
@@ -844,14 +882,16 @@ class PluginSyncService(
 			}
 		}
 		editor.apply()
-		Timber.d("$TAG: Snapshot saved (${settings.size} keys)")
 	}
 
 	/**
 	 * Get the per-user JellyseerrPreferences for the current user.
 	 */
 	private fun getJellyseerrPrefs(): JellyseerrPreferences? {
-		val userId = userRepository.currentUser.value?.id?.toString() ?: return null
+		val userId =
+			userRepository.currentUser.value
+				?.id
+				?.toString() ?: return null
 		return JellyseerrPreferences.migrateToUserPreferences(context, userId)
 	}
 }

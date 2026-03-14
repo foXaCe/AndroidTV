@@ -18,24 +18,25 @@ class StartupToolbarFragment : Fragment() {
 	override fun onCreateView(
 		inflater: LayoutInflater,
 		container: ViewGroup?,
-		savedInstanceState: Bundle?
-	): View = ComposeView(requireContext()).apply {
-		setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-		setContent {
-			JellyfinTheme {
-				StartupToolbar(
-					openHelp = {
-						parentFragmentManager.commit {
-							addToBackStack(null)
-							replace<ConnectHelpAlertFragment>(R.id.content_view)
-						}
-					},
-					openSettings = {
-						// Settings are accessible from the main app toolbar after login
-						Toast.makeText(requireContext(), R.string.settings_available_after_login, Toast.LENGTH_SHORT).show()
-					}
-				)
+		savedInstanceState: Bundle?,
+	): View =
+		ComposeView(requireContext()).apply {
+			setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+			setContent {
+				JellyfinTheme {
+					StartupToolbar(
+						openHelp = {
+							parentFragmentManager.commit {
+								addToBackStack(null)
+								replace<ConnectHelpAlertFragment>(R.id.content_view)
+							}
+						},
+						openSettings = {
+							// Settings are accessible from the main app toolbar after login
+							Toast.makeText(requireContext(), R.string.settings_available_after_login, Toast.LENGTH_SHORT).show()
+						},
+					)
+				}
 			}
 		}
-	}
 }

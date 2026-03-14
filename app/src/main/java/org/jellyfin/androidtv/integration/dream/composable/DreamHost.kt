@@ -17,9 +17,10 @@ fun DreamHost() {
 
 	DreamView(
 		content = content,
-		showClock = when (userPreferences[UserPreferences.clockBehavior]) {
-			ClockBehavior.ALWAYS, ClockBehavior.IN_MENUS -> userPreferences[UserPreferences.screensaverShowClock]
-			else -> false
-		}
+		showClock =
+			when (userPreferences[UserPreferences.clockBehavior]) {
+				ClockBehavior.ALWAYS, ClockBehavior.IN_MENUS -> userPreferences[UserPreferences.screensaverShowClock]
+				else -> false
+			},
 	)
 }

@@ -12,22 +12,19 @@ object StreamHelper {
 	 * Get all subtitle streams from a media source.
 	 */
 	@JvmStatic
-	fun getSubtitleStreams(mediaSource: MediaSourceInfo?): List<MediaStream> {
-		return getStreams(mediaSource, MediaStreamType.SUBTITLE)
-	}
-	
+	fun getSubtitleStreams(mediaSource: MediaSourceInfo?): List<MediaStream> = getStreams(mediaSource, MediaStreamType.SUBTITLE)
+
 	/**
 	 * Get all audio streams from a media source.
 	 */
 	@JvmStatic
-	fun getAudioStreams(mediaSource: MediaSourceInfo?): List<MediaStream> {
-		return getStreams(mediaSource, MediaStreamType.AUDIO)
-	}
-	
+	fun getAudioStreams(mediaSource: MediaSourceInfo?): List<MediaStream> = getStreams(mediaSource, MediaStreamType.AUDIO)
+
 	/**
 	 * Get all streams of a specific type from a media source.
 	 */
-	private fun getStreams(mediaSource: MediaSourceInfo?, type: MediaStreamType): List<MediaStream> {
-		return mediaSource?.mediaStreams?.filter { it.type == type } ?: emptyList()
-	}
+	private fun getStreams(
+		mediaSource: MediaSourceInfo?,
+		type: MediaStreamType,
+	): List<MediaStream> = mediaSource?.mediaStreams?.filter { it.type == type } ?: emptyList()
 }

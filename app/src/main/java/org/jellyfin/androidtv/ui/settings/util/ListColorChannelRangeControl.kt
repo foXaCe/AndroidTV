@@ -32,26 +32,29 @@ fun ListColorChannelRangeControl(
 ) {
 	val interactionSource = remember { MutableInteractionSource() }
 
-	val channelValue = when (channel) {
-		Color.Red -> value.red
-		Color.Green -> value.green
-		Color.Blue -> value.blue
-		Color.Transparent -> value.alpha
-		else -> error("Unknown color channel $channel")
-	}
+	val channelValue =
+		when (channel) {
+			Color.Red -> value.red
+			Color.Green -> value.green
+			Color.Blue -> value.blue
+			Color.Transparent -> value.alpha
+			else -> error("Unknown color channel $channel")
+		}
 
-	val backgroundStart = Color(
-		red = if (channel == Color.Red) 0f else value.red,
-		green = if (channel == Color.Green) 0f else value.green,
-		blue = if (channel == Color.Blue) 0f else value.blue,
-		alpha = if (channel == Color.Transparent) 0f else 1f,
-	)
-	val backgroundEnd = Color(
-		red = if (channel == Color.Red) 1f else value.red,
-		green = if (channel == Color.Green) 1f else value.green,
-		blue = if (channel == Color.Blue) 1f else value.blue,
-		alpha = 1f,
-	)
+	val backgroundStart =
+		Color(
+			red = if (channel == Color.Red) 0f else value.red,
+			green = if (channel == Color.Green) 0f else value.green,
+			blue = if (channel == Color.Blue) 0f else value.blue,
+			alpha = if (channel == Color.Transparent) 0f else 1f,
+		)
+	val backgroundEnd =
+		Color(
+			red = if (channel == Color.Red) 1f else value.red,
+			green = if (channel == Color.Green) 1f else value.green,
+			blue = if (channel == Color.Blue) 1f else value.blue,
+			alpha = 1f,
+		)
 	val backgroundBrush = Brush.horizontalGradient(listOf(backgroundStart, backgroundEnd))
 
 	ListControl(
@@ -62,36 +65,39 @@ fun ListColorChannelRangeControl(
 			verticalAlignment = Alignment.CenterVertically,
 		) {
 			RangeControl(
-				modifier = Modifier
-					.height(4.dp)
-					.weight(1f)
-					// Using extraSmall (4dp) — closest design system token to the original 2dp
-				.background(backgroundBrush, JellyfinTheme.shapes.extraSmall),
+				modifier =
+					Modifier
+						.height(4.dp)
+						.weight(1f)
+						// Using extraSmall (4dp) — closest design system token to the original 2dp
+						.background(backgroundBrush, JellyfinTheme.shapes.extraSmall),
 				interactionSource = interactionSource,
 				min = 0f,
 				max = 1f,
 				stepForward = 0.01f,
 				value = channelValue,
 				onValueChange = {
-					val newValue = Color(
-						red = if (channel == Color.Red) it else value.red,
-						green = if (channel == Color.Green) it else value.green,
-						blue = if (channel == Color.Blue) it else value.blue,
-						alpha = if (channel == Color.Transparent) it else value.alpha,
-					)
+					val newValue =
+						Color(
+							red = if (channel == Color.Red) it else value.red,
+							green = if (channel == Color.Green) it else value.green,
+							blue = if (channel == Color.Blue) it else value.blue,
+							alpha = if (channel == Color.Transparent) it else value.alpha,
+						)
 					onValueChange(newValue)
 				},
-				colors = RangeControlDefaults.colors(
-					backgroundColor = Color.Transparent,
-					fillColor = Color.Transparent
-				)
+				colors =
+					RangeControlDefaults.colors(
+						backgroundColor = Color.Transparent,
+						fillColor = Color.Transparent,
+					),
 			)
 
 			Spacer(Modifier.width(Tokens.Space.spaceSm))
 
 			Box(
 				modifier = Modifier.sizeIn(minWidth = 32.dp),
-				contentAlignment = Alignment.CenterEnd
+				contentAlignment = Alignment.CenterEnd,
 			) {
 				Text("${(channelValue * 100f).roundToInt()}%")
 			}

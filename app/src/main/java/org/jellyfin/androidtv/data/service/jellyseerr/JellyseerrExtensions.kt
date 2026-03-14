@@ -14,10 +14,10 @@ import java.util.UUID
 /**
  * Convert a JellyseerrDiscoverItemDto to a BaseItemDto for display in search results
  * This creates a virtual item that can be displayed in the UI and opened in Jellyseerr details
- * 
+ *
  * The poster URL is stored in imageTags with a special "jellyseerr://" prefix
  * which will be detected and used directly by the image loading system
- * 
+ *
  * The original Jellyseerr data is stored in taglines as JSON for later retrieval
  */
 fun JellyseerrDiscoverItemDto.toBaseItemDto(): BaseItemDto {
@@ -25,10 +25,11 @@ fun JellyseerrDiscoverItemDto.toBaseItemDto(): BaseItemDto {
 	
 	// Store TMDB poster URL with a special prefix in imageTags
 	// The URL will be used directly when rendering
-	val imageTags = posterPath?.let {
-		val tmdbUrl = "https://image.tmdb.org/t/p/w500$it"
-		mapOf(ImageType.PRIMARY to tmdbUrl)
-	}
+	val imageTags =
+		posterPath?.let {
+			val tmdbUrl = "https://image.tmdb.org/t/p/w500$it"
+			mapOf(ImageType.PRIMARY to tmdbUrl)
+		}
 	
 	// Extract year from release date
 	val year = releaseDate?.substringBefore("-")?.toIntOrNull()
@@ -39,11 +40,12 @@ fun JellyseerrDiscoverItemDto.toBaseItemDto(): BaseItemDto {
 	return BaseItemDto(
 		id = UUID.randomUUID(),
 		name = displayTitle,
-		type = when (mediaType) {
-			"movie" -> BaseItemKind.MOVIE
-			"tv" -> BaseItemKind.SERIES
-			else -> BaseItemKind.MOVIE
-		},
+		type =
+			when (mediaType) {
+				"movie" -> BaseItemKind.MOVIE
+				"tv" -> BaseItemKind.SERIES
+				else -> BaseItemKind.MOVIE
+			},
 		overview = overview,
 		communityRating = voteAverage?.toFloat(),
 		imageTags = imageTags,

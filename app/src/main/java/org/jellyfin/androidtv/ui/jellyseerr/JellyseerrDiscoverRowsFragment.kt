@@ -43,20 +43,21 @@ class JellyseerrDiscoverRowsFragment : Fragment() {
 		inflater: LayoutInflater,
 		container: ViewGroup?,
 		savedInstanceState: Bundle?,
-	): View = ComposeView(requireContext()).apply {
-		setContent {
-			JellyseerrDiscoverRows(
-				discoverViewModel = viewModel,
-				detailsViewModel = detailsViewModel,
-				activeRows = jellyseerrPreferences.activeRows,
-				onItemClick = { item -> onContentSelected(item) },
-				onItemFocused = { item -> _selectedItemStateFlow.value = item },
-				onGenreClick = { genre, mediaType -> onGenreSelected(genre, mediaType) },
-				onStudioClick = { studio -> onStudioSelected(studio) },
-				onNetworkClick = { network -> onNetworkSelected(network) },
-			)
+	): View =
+		ComposeView(requireContext()).apply {
+			setContent {
+				JellyseerrDiscoverRows(
+					discoverViewModel = viewModel,
+					detailsViewModel = detailsViewModel,
+					activeRows = jellyseerrPreferences.activeRows,
+					onItemClick = { item -> onContentSelected(item) },
+					onItemFocused = { item -> _selectedItemStateFlow.value = item },
+					onGenreClick = { genre, mediaType -> onGenreSelected(genre, mediaType) },
+					onStudioClick = { studio -> onStudioSelected(studio) },
+					onNetworkClick = { network -> onNetworkSelected(network) },
+				)
+			}
 		}
-	}
 
 	override fun onResume() {
 		super.onResume()
@@ -70,7 +71,6 @@ class JellyseerrDiscoverRowsFragment : Fragment() {
 		lifecycleScope.launch {
 			viewModel.isAvailable.collect { available ->
 				if (available && !viewModel.hasContent()) {
-					Timber.d("JellyseerrDiscoverRowsFragment: isAvailable became true, loading content")
 					loadContent()
 				}
 			}
@@ -98,7 +98,10 @@ class JellyseerrDiscoverRowsFragment : Fragment() {
 		navigationRepository.navigate(Destinations.jellyseerrMediaDetails(itemJson))
 	}
 
-	private fun onGenreSelected(genre: org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrGenreDto, mediaType: String) {
+	private fun onGenreSelected(
+		genre: org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrGenreDto,
+		mediaType: String,
+	) {
 		navigationRepository.navigate(Destinations.jellyseerrBrowseByGenre(genre.id, genre.name, mediaType))
 	}
 

@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
@@ -35,17 +36,21 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.tv.material3.Text
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrQualityProfileDto
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrRootFolderDto
-import org.jellyfin.androidtv.ui.base.JellyfinTheme
-import org.jellyfin.androidtv.ui.base.Text
-import org.jellyfin.androidtv.ui.base.focusBorderColor
+import org.jellyfin.androidtv.ui.base.components.VegafoXButton
+import org.jellyfin.androidtv.ui.base.components.VegafoXButtonVariant
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.jellyseerr.AdvancedRequestOptions
 
 data class ServerDetailsData(
@@ -65,7 +70,7 @@ fun AdvancedRequestOptionsDialog(
 	onConfirm: (AdvancedRequestOptions) -> Unit,
 	onDismiss: () -> Unit,
 ) {
-	val accentColor = focusBorderColor()
+	val accentColor = VegafoXColors.OrangePrimary
 	val firstOptionFocusRequester = remember { FocusRequester() }
 
 	var isLoading by remember { mutableStateOf(true) }
@@ -108,19 +113,26 @@ fun AdvancedRequestOptionsDialog(
 			modifier = Modifier.fillMaxSize(),
 			contentAlignment = Alignment.Center,
 		) {
+			val dialogShape = RoundedCornerShape(16.dp)
 			Column(
-				modifier = Modifier
-					.widthIn(min = 450.dp, max = 650.dp)
-					.clip(JellyfinTheme.shapes.dialog)
-					.background(JellyfinTheme.colorScheme.surface)
-					.border(1.dp, JellyfinTheme.colorScheme.outlineVariant, JellyfinTheme.shapes.dialog)
-					.padding(24.dp),
+				modifier =
+					Modifier
+						.widthIn(min = 450.dp, max = 650.dp)
+						.clip(dialogShape)
+						.background(VegafoXColors.Surface)
+						.border(1.dp, Color.White.copy(alpha = 0.10f), dialogShape)
+						.padding(24.dp),
 			) {
 				// Title
 				Text(
 					text = stringResource(R.string.jellyseerr_request_options),
-					style = JellyfinTheme.typography.titleLarge,
-					color = JellyfinTheme.colorScheme.textPrimary,
+					style =
+						TextStyle(
+							fontFamily = BebasNeue,
+							fontSize = 22.sp,
+							letterSpacing = 2.sp,
+							color = VegafoXColors.TextPrimary,
+						),
 					modifier = Modifier.padding(bottom = 6.dp),
 				)
 
@@ -129,8 +141,11 @@ fun AdvancedRequestOptionsDialog(
 				val quality = if (is4k) "4K" else "HD"
 				Text(
 					text = "$title ($quality $mediaType)",
-					style = JellyfinTheme.typography.bodyMedium,
-					color = JellyfinTheme.colorScheme.textSecondary,
+					style =
+						TextStyle(
+							fontSize = 14.sp,
+							color = VegafoXColors.TextSecondary,
+						),
 					modifier = Modifier.padding(bottom = 16.dp),
 				)
 
@@ -138,14 +153,15 @@ fun AdvancedRequestOptionsDialog(
 				when {
 					isLoading -> {
 						Box(
-							modifier = Modifier
-								.fillMaxWidth()
-								.padding(vertical = 24.dp),
+							modifier =
+								Modifier
+									.fillMaxWidth()
+									.padding(vertical = 24.dp),
 							contentAlignment = Alignment.Center,
 						) {
 							CircularProgressIndicator(
 								strokeWidth = 2.dp,
-								color = JellyfinTheme.colorScheme.secondary,
+								color = VegafoXColors.OrangePrimary,
 								modifier = Modifier.size(32.dp),
 							)
 						}
@@ -153,11 +169,11 @@ fun AdvancedRequestOptionsDialog(
 					errorMessage != null -> {
 						Text(
 							text = errorMessage!!,
-							style = JellyfinTheme.typography.bodyMedium,
-							color = JellyfinTheme.colorScheme.error,
-							modifier = Modifier
-								.fillMaxWidth()
-								.padding(vertical = 16.dp),
+							style = TextStyle(fontSize = 14.sp, color = VegafoXColors.Error),
+							modifier =
+								Modifier
+									.fillMaxWidth()
+									.padding(vertical = 16.dp),
 						)
 					}
 					serverData != null -> {
@@ -165,9 +181,10 @@ fun AdvancedRequestOptionsDialog(
 						val scrollState = rememberScrollState()
 
 						Column(
-							modifier = Modifier
-								.height(320.dp)
-								.verticalScroll(scrollState),
+							modifier =
+								Modifier
+									.height(320.dp)
+									.verticalScroll(scrollState),
 						) {
 							// Quality Profile section
 							SectionHeader(stringResource(R.string.jellyseerr_quality_profile))
@@ -190,22 +207,24 @@ fun AdvancedRequestOptionsDialog(
 
 							// Separator
 							Box(
-								modifier = Modifier
-									.fillMaxWidth()
-									.padding(vertical = 8.dp)
-									.height(1.dp)
-									.background(JellyfinTheme.colorScheme.outlineVariant),
+								modifier =
+									Modifier
+										.fillMaxWidth()
+										.padding(vertical = 8.dp)
+										.height(1.dp)
+										.background(Color.White.copy(alpha = 0.10f)),
 							)
 
 							// Root Folder section
 							SectionHeader(stringResource(R.string.jellyseerr_root_folder))
 
 							val defaultFolder = data.rootFolders.find { it.path == data.defaultRootFolder }
-							val defaultLabel = if (defaultFolder != null) {
-								stringResource(R.string.jellyseerr_server_default_path, getDisplayPath(defaultFolder.path))
-							} else {
-								stringResource(R.string.jellyseerr_server_default)
-							}
+							val defaultLabel =
+								if (defaultFolder != null) {
+									stringResource(R.string.jellyseerr_server_default_path, getDisplayPath(defaultFolder.path))
+								} else {
+									stringResource(R.string.jellyseerr_server_default)
+								}
 
 							OptionRadioButton(
 								text = defaultLabel,
@@ -238,28 +257,26 @@ fun AdvancedRequestOptionsDialog(
 					modifier = Modifier.fillMaxWidth(),
 					horizontalArrangement = Arrangement.Center,
 				) {
-					DialogActionButton(
+					VegafoXButton(
 						text = stringResource(R.string.btn_cancel),
-						backgroundColor = JellyfinTheme.colorScheme.surfaceBright,
-						focusedBackgroundColor = JellyfinTheme.colorScheme.surfaceContainer,
-						accentColor = accentColor,
+						variant = VegafoXButtonVariant.Ghost,
+						compact = true,
 						onClick = onDismiss,
 					)
 
 					Spacer(modifier = Modifier.width(16.dp))
 
-					DialogActionButton(
+					VegafoXButton(
 						text = stringResource(R.string.btn_request),
-						backgroundColor = JellyfinTheme.colorScheme.secondary,
-						focusedBackgroundColor = JellyfinTheme.colorScheme.secondaryContainer,
-						accentColor = accentColor,
+						variant = VegafoXButtonVariant.Primary,
+						compact = true,
 						onClick = {
 							onConfirm(
 								AdvancedRequestOptions(
 									profileId = selectedProfileId,
 									rootFolderId = if (selectedRootFolderId == -1) null else selectedRootFolderId,
 									serverId = serverId,
-								)
+								),
 							)
 							onDismiss()
 						},
@@ -274,8 +291,13 @@ fun AdvancedRequestOptionsDialog(
 private fun SectionHeader(text: String) {
 	Text(
 		text = text,
-		style = JellyfinTheme.typography.titleMedium,
-		color = JellyfinTheme.colorScheme.textPrimary,
+		style =
+			TextStyle(
+				fontFamily = BebasNeue,
+				fontSize = 18.sp,
+				letterSpacing = 2.sp,
+				color = VegafoXColors.TextPrimary,
+			),
 		modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
 	)
 }
@@ -290,33 +312,51 @@ private fun OptionRadioButton(
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
 
-	val focusModifier = if (focusRequester != null) {
-		Modifier.focusRequester(focusRequester)
-	} else {
-		Modifier
-	}
+	val focusModifier =
+		if (focusRequester != null) {
+			Modifier.focusRequester(focusRequester)
+		} else {
+			Modifier
+		}
 
 	Row(
-		modifier = focusModifier
-			.fillMaxWidth()
-			.clickable(interactionSource = interactionSource, indication = null) { onClick() }
-			.focusable(interactionSource = interactionSource)
-			.background(if (isFocused) JellyfinTheme.colorScheme.surfaceBright else Color.Transparent)
-			.padding(horizontal = 16.dp, vertical = 10.dp),
+		modifier =
+			focusModifier
+				.fillMaxWidth()
+				.clickable(interactionSource = interactionSource, indication = null) { onClick() }
+				.focusable(interactionSource = interactionSource)
+				.background(if (isFocused) Color.White.copy(alpha = 0.05f) else Color.Transparent)
+				.then(
+					if (isFocused) {
+						Modifier.border(
+							width = 3.dp,
+							color = VegafoXColors.OrangePrimary,
+							shape = RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 4.dp, bottomEnd = 4.dp),
+						)
+					} else {
+						Modifier
+					},
+				).padding(horizontal = 16.dp, vertical = 10.dp),
 		verticalAlignment = Alignment.CenterVertically,
 	) {
 		Text(
 			text = if (isSelected) "\u25CF" else "\u25CB",
-			style = JellyfinTheme.typography.bodyLarge,
-			color = if (isSelected) JellyfinTheme.colorScheme.secondary else JellyfinTheme.colorScheme.textPrimary,
+			style =
+				TextStyle(
+					fontSize = 16.sp,
+					color = if (isSelected) VegafoXColors.OrangePrimary else VegafoXColors.TextPrimary,
+				),
 		)
 
 		Spacer(modifier = Modifier.width(12.dp))
 
 		Text(
 			text = text,
-			style = JellyfinTheme.typography.bodyMedium,
-			color = if (isSelected) JellyfinTheme.colorScheme.secondary else JellyfinTheme.colorScheme.textPrimary,
+			style =
+				TextStyle(
+					fontSize = 16.sp,
+					color = if (isSelected) VegafoXColors.OrangePrimary else VegafoXColors.TextPrimary,
+				),
 		)
 	}
 }

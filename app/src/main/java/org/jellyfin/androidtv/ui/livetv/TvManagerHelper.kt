@@ -20,15 +20,18 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
-fun BaseItemDto.copyWithLastPlayedDate(
-	lastPlayedDate: LocalDateTime,
-) = copy(
-	userData = userData?.copy(
-		lastPlayedDate = lastPlayedDate,
+fun BaseItemDto.copyWithLastPlayedDate(lastPlayedDate: LocalDateTime) =
+	copy(
+		userData =
+			userData?.copy(
+				lastPlayedDate = lastPlayedDate,
+			),
 	)
-)
 
-fun loadLiveTvChannels(fragment: Fragment, callback: (channels: Collection<BaseItemDto>?) -> Unit) {
+fun loadLiveTvChannels(
+	fragment: Fragment,
+	callback: (channels: Collection<BaseItemDto>?) -> Unit,
+) {
 	val liveTvPreferences by fragment.inject<LiveTvPreferences>()
 	val api by fragment.inject<ApiClient>()
 
@@ -38,17 +41,37 @@ fun loadLiveTvChannels(fragment: Fragment, callback: (channels: Collection<BaseI
 
 		runCatching {
 			withContext(Dispatchers.IO) {
-				api.liveTvApi.getLiveTvChannels(
-					addCurrentProgram = true,
-					enableFavoriteSorting = liveTvPreferences[LiveTvPreferences.favsAtTop],
-					sortBy = if (sortDatePlayed) setOf(ItemSortBy.DATE_PLAYED) else setOf(ItemSortBy.SORT_NAME),
-					sortOrder = if (sortDatePlayed) SortOrder.DESCENDING else SortOrder.ASCENDING,
-				).content.items
+				api.liveTvApi
+					.getLiveTvChannels(
+						addCurrentProgram = true,
+						enableFavoriteSorting = liveTvPreferences[LiveTvPreferences.favsAtTop],
+						sortBy = if (sortDatePlayed) setOf(ItemSortBy.DATE_PLAYED) else setOf(ItemSortBy.SORT_NAME),
+						sortOrder = if (sortDatePlayed) SortOrder.DESCENDING else SortOrder.ASCENDING,
+					).content.items
 			}
 		}.fold(
 			onSuccess = { channels -> callback(channels) },
 			onFailure = { callback(null) },
 		)
+	}
+}
+
+suspend fun loadLiveTvChannelsSuspend(
+	api: ApiClient,
+	liveTvPreferences: LiveTvPreferences,
+): List<BaseItemDto> {
+	val sortDatePlayed =
+		liveTvPreferences[LiveTvPreferences.channelOrder] == ItemSortBy.DATE_PLAYED.serialName
+
+	return withContext(Dispatchers.IO) {
+		api.liveTvApi
+			.getLiveTvChannels(
+				addCurrentProgram = true,
+				enableFavoriteSorting = liveTvPreferences[LiveTvPreferences.favsAtTop],
+				sortBy = if (sortDatePlayed) setOf(ItemSortBy.DATE_PLAYED) else setOf(ItemSortBy.SORT_NAME),
+				sortOrder = if (sortDatePlayed) SortOrder.DESCENDING else SortOrder.ASCENDING,
+			).content.items
+			.orEmpty()
 	}
 }
 
@@ -64,13 +87,14 @@ fun getPrograms(
 	fragment.lifecycleScope.launch {
 		runCatching {
 			withContext(Dispatchers.IO) {
-				api.liveTvApi.getLiveTvPrograms(
-					channelIds = channelIds.toList(),
-					enableImages = false,
-					sortBy = setOf(ItemSortBy.START_DATE),
-					maxStartDate = endTime,
-					minEndDate = startTime,
-				).content.items
+				api.liveTvApi
+					.getLiveTvPrograms(
+						channelIds = channelIds.toList(),
+						enableImages = false,
+						sortBy = setOf(ItemSortBy.START_DATE),
+						maxStartDate = endTime,
+						minEndDate = startTime,
+					).content.items
 			}
 		}.fold(
 			onSuccess = { programs -> callback(programs) },
@@ -78,6 +102,24 @@ fun getPrograms(
 		)
 	}
 }
+
+suspend fun getProgramsSuspend(
+	api: ApiClient,
+	channelIds: List<UUID>,
+	startTime: LocalDateTime,
+	endTime: LocalDateTime,
+): List<BaseItemDto> =
+	withContext(Dispatchers.IO) {
+		api.liveTvApi
+			.getLiveTvPrograms(
+				channelIds = channelIds,
+				enableImages = false,
+				sortBy = setOf(ItemSortBy.START_DATE),
+				maxStartDate = endTime,
+				minEndDate = startTime,
+			).content.items
+			.orEmpty()
+	}
 
 fun getScheduleRows(
 	fragment: Fragment,
@@ -89,29 +131,30 @@ fun getScheduleRows(
 	fragment.lifecycleScope.launch {
 		runCatching {
 			withContext(Dispatchers.IO) {
-				api.liveTvApi.getTimers(
-					seriesTimerId = seriesTimerId,
-				).content.items
+				api.liveTvApi
+					.getTimers(
+						seriesTimerId = seriesTimerId,
+					).content.items
 			}
 		}.fold(
 			onSuccess = { timers ->
-				val groupedTimers = timers
-					.filterNot { it.startDate == null }
-					.map { timer ->
-						timer.programInfo ?: BaseItemDto(
-							id = requireNotNull(timer.id?.toUUIDOrNull()),
-							channelName = timer.channelName,
-							name = timer.name.orEmpty(),
-							type = BaseItemKind.PROGRAM,
-							mediaType = MediaType.UNKNOWN,
-							timerId = timer.id,
-							seriesTimerId = timer.seriesTimerId,
-							startDate = timer.startDate,
-							endDate = timer.endDate,
-						)
-					}
-					.map { it.copy(locationType = LocationType.VIRTUAL) }
-					.groupBy { it.startDate!!.toLocalDate() }
+				val groupedTimers =
+					timers
+						.filterNot { it.startDate == null }
+						.map { timer ->
+							timer.programInfo ?: BaseItemDto(
+								id = requireNotNull(timer.id?.toUUIDOrNull()),
+								channelName = timer.channelName,
+								name = timer.name.orEmpty(),
+								type = BaseItemKind.PROGRAM,
+								mediaType = MediaType.UNKNOWN,
+								timerId = timer.id,
+								seriesTimerId = timer.seriesTimerId,
+								startDate = timer.startDate,
+								endDate = timer.endDate,
+							)
+						}.map { it.copy(locationType = LocationType.VIRTUAL) }
+						.groupBy { it.startDate!!.toLocalDate() }
 
 				callback(groupedTimers)
 			},

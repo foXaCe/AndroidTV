@@ -39,7 +39,7 @@ fun SettingsLibrariesDisplayScreen(
 	itemId: UUID,
 	displayPreferencesId: String,
 	serverId: UUID,
-	userId: UUID
+	userId: UUID,
 ) {
 	val router = LocalRouter.current
 	val userView = rememberUserView(itemId)
@@ -66,10 +66,10 @@ fun SettingsLibrariesDisplayScreen(
 							"itemId" to itemId.toString(),
 							"displayPreferencesId" to displayPreferencesId,
 							"serverId" to serverId.toString(),
-							"userId" to userId.toString()
-						)
+							"userId" to userId.toString(),
+						),
 					)
-				}
+				},
 			)
 		}
 
@@ -86,10 +86,10 @@ fun SettingsLibrariesDisplayScreen(
 							"itemId" to itemId.toString(),
 							"displayPreferencesId" to displayPreferencesId,
 							"serverId" to serverId.toString(),
-							"userId" to userId.toString()
-						)
+							"userId" to userId.toString(),
+						),
 					)
-				}
+				},
 			)
 		}
 
@@ -106,10 +106,10 @@ fun SettingsLibrariesDisplayScreen(
 							"itemId" to itemId.toString(),
 							"displayPreferencesId" to displayPreferencesId,
 							"serverId" to serverId.toString(),
-							"userId" to userId.toString()
-						)
+							"userId" to userId.toString(),
+						),
 					)
-				}
+				},
 			)
 		}
 
@@ -132,16 +132,17 @@ fun SettingsLibrariesDisplayScreen(
 				val serverStore = authenticationStore.getServer(serverId)
 				val userInfo = serverStore?.users?.get(userId)
 
-				val api = if (server != null && userInfo != null && !userInfo.accessToken.isNullOrBlank()) {
-					val userDeviceInfo = deviceInfo.forUser(userId)
-					jellyfin.createApi(
-						baseUrl = server.address,
-						accessToken = userInfo.accessToken,
-						deviceInfo = userDeviceInfo
-					)
-				} else {
-					currentApi
-				}
+				val api =
+					if (server != null && userInfo != null && !userInfo.accessToken.isNullOrBlank()) {
+						val userDeviceInfo = deviceInfo.forUser(userId)
+						jellyfin.createApi(
+							baseUrl = server.address,
+							accessToken = userInfo.accessToken,
+							deviceInfo = userDeviceInfo,
+						)
+					} else {
+						currentApi
+					}
 
 				serverApi = api
 				val user = withContext(Dispatchers.IO) { api.userApi.getCurrentUser() }.content
@@ -158,11 +159,12 @@ fun SettingsLibrariesDisplayScreen(
 					val config = userConfig ?: return@ListButton
 					hidden = !hidden
 					scope.launch(Dispatchers.IO) {
-						val updatedExcludes = if (hidden) {
-							config.myMediaExcludes + itemId
-						} else {
-							config.myMediaExcludes - itemId
-						}
+						val updatedExcludes =
+							if (hidden) {
+								config.myMediaExcludes + itemId
+							} else {
+								config.myMediaExcludes - itemId
+							}
 						val updatedConfig = config.copy(myMediaExcludes = updatedExcludes)
 						api.userApi.updateUserConfiguration(data = updatedConfig)
 						userConfig = updatedConfig
@@ -173,7 +175,7 @@ fun SettingsLibrariesDisplayScreen(
 							userRepository.setCurrentUser(currentUser.copy(configuration = updatedConfig))
 						}
 					}
-				}
+				},
 			)
 		}
 	}

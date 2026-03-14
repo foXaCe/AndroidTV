@@ -11,9 +11,11 @@ import org.jellyfin.preference.stringPreference
  *
  * @param context Context to get the SharedPreferences from
  */
-class SystemPreferences(context: Context) : SharedPreferenceStore(
-	sharedPreferences = context.getSharedPreferences("systemprefs", Context.MODE_PRIVATE)
-) {
+class SystemPreferences(
+	context: Context,
+) : SharedPreferenceStore(
+		sharedPreferences = context.getSharedPreferences("systemprefs", Context.MODE_PRIVATE),
+	) {
 	companion object {
 		// Live TV - Channel history
 		/**

@@ -47,7 +47,7 @@ fun SettingsSubtitlesTextColorScreen() {
 			SubtitleColorPresetsControl(
 				presets = SubtitleTextColorPresets,
 				value = colorValue,
-				onValueChange = { subtitlesTextColor = it.toArgb().toLong() }
+				onValueChange = { subtitlesTextColor = it.toArgb().toLong() },
 			)
 		}
 
@@ -60,7 +60,7 @@ fun SettingsSubtitlesTextColorScreen() {
 				headingContent = { Text(stringResource(R.string.color_red)) },
 				channel = Color.Red,
 				value = colorValue,
-				onValueChange = { subtitlesTextColor = it.toArgb().toLong() }
+				onValueChange = { subtitlesTextColor = it.toArgb().toLong() },
 			)
 		}
 
@@ -69,7 +69,7 @@ fun SettingsSubtitlesTextColorScreen() {
 				headingContent = { Text(stringResource(R.string.color_green)) },
 				channel = Color.Green,
 				value = colorValue,
-				onValueChange = { subtitlesTextColor = it.toArgb().toLong() }
+				onValueChange = { subtitlesTextColor = it.toArgb().toLong() },
 			)
 		}
 
@@ -78,7 +78,7 @@ fun SettingsSubtitlesTextColorScreen() {
 				headingContent = { Text(stringResource(R.string.color_blue)) },
 				channel = Color.Blue,
 				value = colorValue,
-				onValueChange = { subtitlesTextColor = it.toArgb().toLong() }
+				onValueChange = { subtitlesTextColor = it.toArgb().toLong() },
 			)
 		}
 	}

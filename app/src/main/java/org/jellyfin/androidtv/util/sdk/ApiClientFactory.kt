@@ -16,7 +16,10 @@ class ApiClientFactory(
 	private val defaultDeviceInfo: DeviceInfo,
 	private val sessionRepository: SessionRepository,
 ) {
-	fun getApiClient(serverId: UUID, userId: UUID? = null): ApiClient? {
+	fun getApiClient(
+		serverId: UUID,
+		userId: UUID? = null,
+	): ApiClient? {
 		val server = authenticationStore.getServer(serverId)
 		if (server == null) {
 			Timber.w("ApiClientFactory: Server $serverId not found")
@@ -37,12 +40,17 @@ class ApiClientFactory(
 		} else {
 			// Prefer the current session's user for the current server
 			val currentSession = sessionRepository.currentSession.value
-			val preferredEntry = if (currentSession != null && currentSession.serverId == serverId) {
-				val currentUser = authenticationStore.getUser(serverId, currentSession.userId)
-				if (currentUser?.accessToken != null) {
-					currentSession.userId to currentUser.accessToken
-				} else null
-			} else null
+			val preferredEntry =
+				if (currentSession != null && currentSession.serverId == serverId) {
+					val currentUser = authenticationStore.getUser(serverId, currentSession.userId)
+					if (currentUser?.accessToken != null) {
+						currentSession.userId to currentUser.accessToken
+					} else {
+						null
+					}
+				} else {
+					null
+				}
 
 			if (preferredEntry != null) {
 				resolvedUserId = preferredEntry.first
@@ -55,9 +63,10 @@ class ApiClientFactory(
 					return null
 				}
 
-				val userWithToken = users.entries.firstOrNull { (_, user) ->
-					!user.accessToken.isNullOrBlank()
-				}
+				val userWithToken =
+					users.entries.firstOrNull { (_, user) ->
+						!user.accessToken.isNullOrBlank()
+					}
 
 				if (userWithToken == null) {
 					Timber.w("ApiClientFactory: Server $serverId has no users with access tokens")
@@ -69,16 +78,17 @@ class ApiClientFactory(
 			}
 		}
 
-		val deviceInfo = if (resolvedUserId != null) {
-			defaultDeviceInfo.forUser(resolvedUserId)
-		} else {
-			defaultDeviceInfo
-		}
+		val deviceInfo =
+			if (resolvedUserId != null) {
+				defaultDeviceInfo.forUser(resolvedUserId)
+			} else {
+				defaultDeviceInfo
+			}
 
 		return jellyfin.createApi(
 			baseUrl = server.address,
 			accessToken = accessToken,
-			deviceInfo = deviceInfo
+			deviceInfo = deviceInfo,
 		)
 	}
 
@@ -89,7 +99,8 @@ class ApiClientFactory(
 		return getApiClientForServer(uuid)
 	}
 
-	fun getApiClientForItemOrFallback(item: BaseItemDto, fallback: ApiClient): ApiClient {
-		return getApiClientForItem(item) ?: fallback
-	}
+	fun getApiClientForItemOrFallback(
+		item: BaseItemDto,
+		fallback: ApiClient,
+	): ApiClient = getApiClientForItem(item) ?: fallback
 }

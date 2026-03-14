@@ -50,47 +50,48 @@ class DreamViewModel(
 	private val userPreferences: UserPreferences,
 ) : ViewModel() {
 	@OptIn(ExperimentalCoroutinesApi::class)
-	private val _mediaContent = playbackManager.queue.entry
-		.map { entry ->
-			entry
-				?.takeIf { it.visibleInScreensaver }
-				?.baseItem
-				?.let { baseItem -> DreamContent.NowPlaying(entry, baseItem) }
-		}
-		.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+	private val _mediaContent =
+		playbackManager.queue.entry
+			.map { entry ->
+				entry
+					?.takeIf { it.visibleInScreensaver }
+					?.baseItem
+					?.let { baseItem -> DreamContent.NowPlaying(entry, baseItem) }
+			}.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
-	private val _libraryContent = flow {
-		// Load first library item after 2 seconds
-		// to force the logo at the start of the screensaver
-		emit(null)
-		delay(2.seconds)
+	private val _libraryContent =
+		flow {
+			// Load first library item after 2 seconds
+			// to force the logo at the start of the screensaver
+			emit(null)
+			delay(2.seconds)
 
-		val requireParentalRating = userPreferences[UserPreferences.screensaverAgeRatingRequired]
-		val maxParentalRating = userPreferences[UserPreferences.screensaverAgeRatingMax]
-		emitAll(
-			getRandomLibraryShowcaseItems(
-				requireParentalRating = requireParentalRating,
-				maxParentalRating = maxParentalRating,
-				// A batch size of 60 should be equal to 30 minutes of items
-				batchSize = 60,
-				emitDelay = 30.seconds,
-				noItemsDelay = 2.minutes,
-				errorDelay = 3.seconds,
+			val requireParentalRating = userPreferences[UserPreferences.screensaverAgeRatingRequired]
+			val maxParentalRating = userPreferences[UserPreferences.screensaverAgeRatingMax]
+			emitAll(
+				getRandomLibraryShowcaseItems(
+					requireParentalRating = requireParentalRating,
+					maxParentalRating = maxParentalRating,
+					// A batch size of 60 should be equal to 30 minutes of items
+					batchSize = 60,
+					emitDelay = 30.seconds,
+					noItemsDelay = 2.minutes,
+					errorDelay = 3.seconds,
+				),
 			)
-		)
-	}
-		.distinctUntilChanged()
-		.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+		}.distinctUntilChanged()
+			.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
-	val content = combine(_mediaContent, _libraryContent) { mediaContent, libraryContent ->
-		val screensaverMode = userPreferences[UserPreferences.screensaverMode]
-		val fallbackContent = if (screensaverMode == "logo") DreamContent.Logo else libraryContent ?: DreamContent.Logo
-		mediaContent ?: fallbackContent
-	}.stateIn(
-		scope = viewModelScope,
-		started = SharingStarted.WhileSubscribed(),
-		initialValue = _mediaContent.value ?: _libraryContent.value ?: DreamContent.Logo,
-	)
+	val content =
+		combine(_mediaContent, _libraryContent) { mediaContent, libraryContent ->
+			val screensaverMode = userPreferences[UserPreferences.screensaverMode]
+			val fallbackContent = if (screensaverMode == "logo") DreamContent.Logo else libraryContent ?: DreamContent.Logo
+			mediaContent ?: fallbackContent
+		}.stateIn(
+			scope = viewModelScope,
+			started = SharingStarted.WhileSubscribed(),
+			initialValue = _mediaContent.value ?: _libraryContent.value ?: DreamContent.Logo,
+		)
 
 	private fun getRandomLibraryShowcaseItems(
 		requireParentalRating: Boolean,
@@ -99,64 +100,76 @@ class DreamViewModel(
 		emitDelay: Duration,
 		noItemsDelay: Duration,
 		errorDelay: Duration,
-	): Flow<DreamContent.LibraryShowcase?> = flow {
-		while (true) {
-			val items = try {
-				withContext(Dispatchers.IO) {
-					val response by api.itemsApi.getItems(
-						includeItemTypes = listOf(BaseItemKind.MOVIE, BaseItemKind.SERIES),
-						recursive = true,
-						sortBy = listOf(ItemSortBy.RANDOM),
-						limit = batchSize,
-						imageTypes = listOf(ImageType.BACKDROP),
-						maxOfficialRating = if (maxParentalRating == -1) null else maxParentalRating.toString(),
-						hasParentalRating = if (requireParentalRating) true else null,
-					)
-					response.items
+	): Flow<DreamContent.LibraryShowcase?> =
+		flow {
+			while (true) {
+				val items =
+					try {
+						withContext(Dispatchers.IO) {
+							val response by api.itemsApi.getItems(
+								includeItemTypes = listOf(BaseItemKind.MOVIE, BaseItemKind.SERIES),
+								recursive = true,
+								sortBy = listOf(ItemSortBy.RANDOM),
+								limit = batchSize,
+								imageTypes = listOf(ImageType.BACKDROP),
+								maxOfficialRating = if (maxParentalRating == -1) null else maxParentalRating.toString(),
+								hasParentalRating = if (requireParentalRating) true else null,
+							)
+							response.items
+						}
+					} catch (err: ApiClientException) {
+						Timber.e(err)
+						null
+					}
+
+				if (items == null) {
+					emit(null)
+					delay(errorDelay)
+				} else if (items.isEmpty()) {
+					emit(null)
+					delay(noItemsDelay)
+				} else {
+					for (item in items) {
+						if (item.itemBackdropImages.isEmpty()) continue
+						val showcase = item.asLibraryShowcase() ?: continue
+						emit(showcase)
+						delay(emitDelay)
+					}
 				}
-			} catch (err: ApiClientException) {
-				Timber.e(err)
+			}
+		}.cancellable()
+
+	private suspend fun BaseItemDto.asLibraryShowcase(): DreamContent.LibraryShowcase? =
+		withContext(Dispatchers.IO) {
+			val logoUrl = itemImages[ImageType.LOGO]?.getUrl(api)
+			val backdropUrl = itemBackdropImages.randomOrNull()?.getUrl(api)
+
+			// Require a backdrop
+			if (backdropUrl == null) return@withContext null
+
+			// Only attempt to load logo if there is one, wrap in async {} to load it parallel with the backdrop
+			val logo =
+				logoUrl?.let { url ->
+					async {
+						imageLoader
+							.execute(
+								request = ImageRequest.Builder(context).data(url).build(),
+							).image
+							?.toBitmap()
+					}
+				}
+
+			val backdrop =
+				imageLoader
+					.execute(
+						request = ImageRequest.Builder(context).data(backdropUrl).build(),
+					).image
+					?.toBitmap()
+
+			if (backdrop == null) {
 				null
-			}
-
-			if (items == null) {
-				emit(null)
-				delay(errorDelay)
-			} else if (items.isEmpty()) {
-				emit(null)
-				delay(noItemsDelay)
 			} else {
-				for (item in items) {
-					if (item.itemBackdropImages.isEmpty()) continue
-					val showcase = item.asLibraryShowcase() ?: continue
-					emit(showcase)
-					delay(emitDelay)
-				}
+				DreamContent.LibraryShowcase(this@asLibraryShowcase, backdrop, logo?.await())
 			}
 		}
-	}.cancellable()
-
-	private suspend fun BaseItemDto.asLibraryShowcase(): DreamContent.LibraryShowcase? = withContext(Dispatchers.IO) {
-		val logoUrl = itemImages[ImageType.LOGO]?.getUrl(api)
-		val backdropUrl = itemBackdropImages.randomOrNull()?.getUrl(api)
-
-		// Require a backdrop
-		if (backdropUrl == null) return@withContext null
-
-		// Only attempt to load logo if there is one, wrap in async {} to load it parallel with the backdrop
-		val logo = logoUrl?.let { url ->
-			async {
-				imageLoader.execute(
-					request = ImageRequest.Builder(context).data(url).build()
-				).image?.toBitmap()
-			}
-		}
-
-		val backdrop = imageLoader.execute(
-			request = ImageRequest.Builder(context).data(backdropUrl).build()
-		).image?.toBitmap()
-
-		if (backdrop == null) null
-		else DreamContent.LibraryShowcase(this@asLibraryShowcase, backdrop, logo?.await())
-	}
 }

@@ -56,12 +56,13 @@ fun TvFocusCard(
 	val isPressed by interactionSource.collectIsPressedAsState()
 
 	// Expose target scale for testing
-	val targetScale = when {
-		reducedMotion -> 1f
-		isPressed -> AnimationDefaults.PRESS_SCALE
-		isFocused -> focusedScale
-		else -> 1f
-	}
+	val targetScale =
+		when {
+			reducedMotion -> 1f
+			isPressed -> AnimationDefaults.PRESS_SCALE
+			isFocused -> focusedScale
+			else -> 1f
+		}
 
 	val effectiveFocusedScale = if (reducedMotion) 1f else focusedScale
 	val effectivePressedScale = if (reducedMotion) 1f else AnimationDefaults.PRESS_SCALE
@@ -69,22 +70,26 @@ fun TvFocusCard(
 	Surface(
 		onClick = onClick,
 		modifier = modifier.semantics { tvFocusCardScale = targetScale },
-		scale = ClickableSurfaceDefaults.scale(
-			focusedScale = effectiveFocusedScale,
-			pressedScale = effectivePressedScale,
-		),
-		border = ClickableSurfaceDefaults.border(
-			focusedBorder = Border(
-				border = BorderStroke(2.dp, focusColor),
-				shape = shape,
+		scale =
+			ClickableSurfaceDefaults.scale(
+				focusedScale = effectiveFocusedScale,
+				pressedScale = effectivePressedScale,
 			),
-		),
+		border =
+			ClickableSurfaceDefaults.border(
+				focusedBorder =
+					Border(
+						border = BorderStroke(2.dp, focusColor),
+						shape = shape,
+					),
+			),
 		shape = ClickableSurfaceDefaults.shape(shape = shape),
-		colors = ClickableSurfaceDefaults.colors(
-			containerColor = Color.Transparent,
-			focusedContainerColor = Color.Transparent,
-			pressedContainerColor = Color.Transparent,
-		),
+		colors =
+			ClickableSurfaceDefaults.colors(
+				containerColor = Color.Transparent,
+				focusedContainerColor = Color.Transparent,
+				pressedContainerColor = Color.Transparent,
+			),
 		interactionSource = interactionSource,
 	) {
 		content()

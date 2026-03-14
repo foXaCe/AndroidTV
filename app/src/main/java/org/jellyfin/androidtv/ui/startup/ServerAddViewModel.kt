@@ -16,8 +16,10 @@ class ServerAddViewModel(
 	val state = _state.asStateFlow()
 
 	fun addServer(address: String) {
-		serverRepository.addServer(address).onEach { state ->
-			_state.value = state
-		}.launchIn(viewModelScope)
+		serverRepository
+			.addServer(address)
+			.onEach { state ->
+				_state.value = state
+			}.launchIn(viewModelScope)
 	}
 }

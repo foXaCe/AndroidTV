@@ -1,11 +1,16 @@
 package org.jellyfin.androidtv.ui.settings.screen.vegafox
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.service.pluginsync.PluginSyncService
@@ -14,8 +19,11 @@ import org.jellyfin.androidtv.preference.UserSettingPreferences
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.form.Checkbox
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.list.ListButton
 import org.jellyfin.androidtv.ui.base.list.ListSection
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.navigation.LocalRouter
 import org.jellyfin.androidtv.ui.settings.Routes
 import org.jellyfin.androidtv.ui.settings.compat.rememberPreference
@@ -32,10 +40,12 @@ fun SettingsPluginScreen() {
 
 	SettingsColumn {
 		item {
-			ListSection(
-				overlineContent = { Text(stringResource(R.string.settings).uppercase()) },
-				headingContent = { Text(stringResource(R.string.pref_plugin_settings)) },
-				captionContent = { Text(stringResource(R.string.pref_plugin_description)) },
+			Text(
+				text = stringResource(R.string.pref_plugin_settings),
+				fontFamily = BebasNeue,
+				fontSize = 22.sp,
+				color = VegafoXColors.TextPrimary,
+				modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp),
 			)
 		}
 
@@ -44,7 +54,7 @@ fun SettingsPluginScreen() {
 		item {
 			var pluginSyncEnabled by rememberPreference(userPreferences, UserPreferences.pluginSyncEnabled)
 			ListButton(
-				leadingContent = { Icon(painterResource(R.drawable.ic_vegafox), contentDescription = null) },
+				leadingContent = { Icon(painterResource(R.drawable.ic_vegafox_fox), contentDescription = null) },
 				headingContent = { Text(stringResource(R.string.pref_plugin_sync_enable)) },
 				captionContent = { Text(stringResource(R.string.pref_plugin_sync_description)) },
 				trailingContent = { Checkbox(checked = pluginSyncEnabled) },
@@ -58,7 +68,7 @@ fun SettingsPluginScreen() {
 					} else {
 						pluginSyncService.unregisterChangeListeners()
 					}
-				}
+				},
 			)
 		}
 
@@ -72,7 +82,7 @@ fun SettingsPluginScreen() {
 				headingContent = { Text(stringResource(R.string.pref_media_bar_enable)) },
 				captionContent = { Text(stringResource(R.string.pref_media_bar_enable_summary)) },
 				trailingContent = { Checkbox(checked = mediaBarEnabled) },
-				onClick = { mediaBarEnabled = !mediaBarEnabled }
+				onClick = { mediaBarEnabled = !mediaBarEnabled },
 			)
 		}
 
@@ -83,7 +93,7 @@ fun SettingsPluginScreen() {
 				headingContent = { Text(stringResource(R.string.pref_media_bar_content_type)) },
 				captionContent = { Text(getShuffleContentTypeLabel(mediaBarContentType)) },
 				enabled = mediaBarEnabled,
-				onClick = { router.push(Routes.VEGAFOX_MEDIA_BAR_CONTENT_TYPE) }
+				onClick = { router.push(Routes.VEGAFOX_MEDIA_BAR_CONTENT_TYPE) },
 			)
 		}
 
@@ -94,7 +104,7 @@ fun SettingsPluginScreen() {
 				headingContent = { Text(stringResource(R.string.pref_media_bar_item_count)) },
 				captionContent = { Text(getMediaBarItemCountLabel(mediaBarItemCount)) },
 				enabled = mediaBarEnabled,
-				onClick = { router.push(Routes.VEGAFOX_MEDIA_BAR_ITEM_COUNT) }
+				onClick = { router.push(Routes.VEGAFOX_MEDIA_BAR_ITEM_COUNT) },
 			)
 		}
 
@@ -105,7 +115,7 @@ fun SettingsPluginScreen() {
 				headingContent = { Text(stringResource(R.string.pref_media_bar_overlay_opacity)) },
 				captionContent = { Text("$mediaBarOverlayOpacity%") },
 				enabled = mediaBarEnabled,
-				onClick = { router.push(Routes.VEGAFOX_MEDIA_BAR_OPACITY) }
+				onClick = { router.push(Routes.VEGAFOX_MEDIA_BAR_OPACITY) },
 			)
 		}
 
@@ -116,7 +126,7 @@ fun SettingsPluginScreen() {
 				headingContent = { Text(stringResource(R.string.pref_media_bar_overlay_color)) },
 				captionContent = { Text(getOverlayColorLabel(mediaBarOverlayColor)) },
 				enabled = mediaBarEnabled,
-				onClick = { router.push(Routes.VEGAFOX_MEDIA_BAR_COLOR) }
+				onClick = { router.push(Routes.VEGAFOX_MEDIA_BAR_COLOR) },
 			)
 		}
 
@@ -128,7 +138,7 @@ fun SettingsPluginScreen() {
 				captionContent = { Text(stringResource(R.string.pref_media_bar_trailer_preview_summary)) },
 				trailingContent = { Checkbox(checked = trailerPreview) },
 				enabled = mediaBarEnabled,
-				onClick = { trailerPreview = !trailerPreview }
+				onClick = { trailerPreview = !trailerPreview },
 			)
 		}
 
@@ -138,7 +148,7 @@ fun SettingsPluginScreen() {
 				headingContent = { Text(stringResource(R.string.pref_episode_preview)) },
 				captionContent = { Text(stringResource(R.string.pref_episode_preview_summary)) },
 				trailingContent = { Checkbox(checked = episodePreview) },
-				onClick = { episodePreview = !episodePreview }
+				onClick = { episodePreview = !episodePreview },
 			)
 		}
 
@@ -148,7 +158,7 @@ fun SettingsPluginScreen() {
 				headingContent = { Text(stringResource(R.string.pref_preview_audio)) },
 				captionContent = { Text(stringResource(R.string.pref_preview_audio_summary)) },
 				trailingContent = { Checkbox(checked = previewAudio) },
-				onClick = { previewAudio = !previewAudio }
+				onClick = { previewAudio = !previewAudio },
 			)
 		}
 
@@ -162,7 +172,7 @@ fun SettingsPluginScreen() {
 				headingContent = { Text(stringResource(R.string.pref_theme_music_enable)) },
 				captionContent = { Text(stringResource(R.string.pref_theme_music_enable_summary)) },
 				trailingContent = { Checkbox(checked = themeMusicEnabled) },
-				onClick = { themeMusicEnabled = !themeMusicEnabled }
+				onClick = { themeMusicEnabled = !themeMusicEnabled },
 			)
 		}
 
@@ -174,7 +184,7 @@ fun SettingsPluginScreen() {
 				captionContent = { Text(stringResource(R.string.pref_theme_music_on_home_rows_summary)) },
 				trailingContent = { Checkbox(checked = themeMusicOnHomeRows) },
 				enabled = themeMusicEnabled,
-				onClick = { themeMusicOnHomeRows = !themeMusicOnHomeRows }
+				onClick = { themeMusicOnHomeRows = !themeMusicOnHomeRows },
 			)
 		}
 
@@ -185,7 +195,7 @@ fun SettingsPluginScreen() {
 				headingContent = { Text(stringResource(R.string.pref_theme_music_volume)) },
 				captionContent = { Text("$themeMusicVolume%") },
 				enabled = themeMusicEnabled,
-				onClick = { router.push(Routes.VEGAFOX_THEME_MUSIC_VOLUME) }
+				onClick = { router.push(Routes.VEGAFOX_THEME_MUSIC_VOLUME) },
 			)
 		}
 
@@ -196,11 +206,11 @@ fun SettingsPluginScreen() {
 		item {
 			var enableAdditionalRatings by rememberPreference(userSettingPreferences, UserSettingPreferences.enableAdditionalRatings)
 			ListButton(
-				leadingContent = { Icon(painterResource(R.drawable.ic_star), contentDescription = null) },
+				leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Star), contentDescription = null) },
 				headingContent = { Text(stringResource(R.string.pref_enable_additional_ratings)) },
 				captionContent = { Text(stringResource(R.string.pref_enable_additional_ratings_description)) },
 				trailingContent = { Checkbox(checked = enableAdditionalRatings) },
-				onClick = { enableAdditionalRatings = !enableAdditionalRatings }
+				onClick = { enableAdditionalRatings = !enableAdditionalRatings },
 			)
 		}
 
@@ -210,7 +220,7 @@ fun SettingsPluginScreen() {
 				headingContent = { Text(stringResource(R.string.pref_show_rating_labels)) },
 				captionContent = { Text(stringResource(R.string.pref_show_rating_labels_description)) },
 				trailingContent = { Checkbox(checked = showRatingLabels) },
-				onClick = { showRatingLabels = !showRatingLabels }
+				onClick = { showRatingLabels = !showRatingLabels },
 			)
 		}
 
@@ -219,11 +229,11 @@ fun SettingsPluginScreen() {
 		item {
 			var enableEpisodeRatings by rememberPreference(userSettingPreferences, UserSettingPreferences.enableEpisodeRatings)
 			ListButton(
-				leadingContent = { Icon(painterResource(R.drawable.ic_star), contentDescription = null) },
+				leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Star), contentDescription = null) },
 				headingContent = { Text(stringResource(R.string.pref_episode_ratings)) },
 				captionContent = { Text(stringResource(R.string.pref_episode_ratings_description)) },
 				trailingContent = { Checkbox(checked = enableEpisodeRatings) },
-				onClick = { enableEpisodeRatings = !enableEpisodeRatings }
+				onClick = { enableEpisodeRatings = !enableEpisodeRatings },
 			)
 		}
 
@@ -236,7 +246,7 @@ fun SettingsPluginScreen() {
 				leadingContent = { Icon(painterResource(R.drawable.ic_jellyseerr_jellyfish), contentDescription = null) },
 				headingContent = { Text(stringResource(R.string.jellyseerr_settings)) },
 				captionContent = { Text(stringResource(R.string.jellyseerr_settings_description)) },
-				onClick = { router.push(Routes.JELLYSEERR) }
+				onClick = { router.push(Routes.JELLYSEERR) },
 			)
 		}
 
@@ -246,10 +256,10 @@ fun SettingsPluginScreen() {
 
 		item {
 			ListButton(
-				leadingContent = { Icon(painterResource(R.drawable.ic_lock), contentDescription = null) },
+				leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Lock), contentDescription = null) },
 				headingContent = { Text(stringResource(R.string.pref_parental_controls)) },
 				captionContent = { Text(stringResource(R.string.pref_parental_controls_description)) },
-				onClick = { router.push(Routes.VEGAFOX_PARENTAL_CONTROLS) }
+				onClick = { router.push(Routes.VEGAFOX_PARENTAL_CONTROLS) },
 			)
 		}
 	}

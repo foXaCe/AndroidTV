@@ -30,30 +30,33 @@ fun ListItemContent(
 	headingStyle: TextStyle,
 ) {
 	Column(
-		modifier = modifier
-			// TODO: Add suitable space token for this padding
-			.padding(12.dp),
+		modifier =
+			modifier
+				// TODO: Add suitable space token for this padding
+				.padding(12.dp),
 	) {
 		Row(
 			verticalAlignment = Alignment.CenterVertically,
 		) {
 			leadingContent?.let { content ->
 				Box(
-					modifier = Modifier
-						.sizeIn(minWidth = 24.dp),
+					modifier =
+						Modifier
+							.sizeIn(minWidth = 24.dp),
 					contentAlignment = Alignment.Center,
 					content = {
 						ProvideTextStyle(LocalTextStyle.current.copy(color = JellyfinTheme.colorScheme.listCaption)) {
 							content()
 						}
-					}
+					},
 				)
 				Spacer(Modifier.width(Tokens.Space.spaceMd))
 			}
 
 			Column(
-				modifier = Modifier
-					.weight(1f),
+				modifier =
+					Modifier
+						.weight(1f),
 			) {
 				overlineContent?.let { content ->
 					ProvideTextStyle(JellyfinTheme.typography.listOverline.copy(color = JellyfinTheme.colorScheme.listOverline)) {
@@ -78,10 +81,11 @@ fun ListItemContent(
 				Spacer(Modifier.width(Tokens.Space.spaceMd))
 
 				Box(
-					modifier = Modifier
-						.sizeIn(minWidth = 24.dp),
+					modifier =
+						Modifier
+							.sizeIn(minWidth = 24.dp),
 					contentAlignment = Alignment.Center,
-					content = { content() }
+					content = { content() },
 				)
 			}
 		}

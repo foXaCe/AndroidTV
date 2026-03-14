@@ -30,14 +30,15 @@ fun InAppScreensaver() {
 		scrimColor = Color.Black,
 		enterTransition = fadeIn(tween(1_000)),
 		exitTransition = fadeOut(tween(1_000)),
-		modifier = Modifier
-			.fillMaxSize()
-			.clickable(
-				interactionSource = remember { MutableInteractionSource() },
-				indication = null,
-			) {
-				interactionTrackerViewModel.notifyInteraction(canCancel = true, userInitiated = false)
-			}
+		modifier =
+			Modifier
+				.fillMaxSize()
+				.clickable(
+					interactionSource = remember { MutableInteractionSource() },
+					indication = null,
+				) {
+					interactionTrackerViewModel.notifyInteraction(canCancel = true, userInitiated = false)
+				},
 	) {
 		DreamHost()
 	}

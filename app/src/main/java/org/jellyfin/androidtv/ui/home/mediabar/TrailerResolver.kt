@@ -21,7 +21,6 @@ data class TrailerPreviewInfo(
  * SponsorBlock segments for intelligent start-time calculation.
  */
 object TrailerResolver {
-
 	private const val YOUTUBE_HOST = "youtube.com"
 	private const val YOUTUBE_SHORT_HOST = "youtu.be"
 	private const val YOUTUBE_ID_PARAMETER = "v"
@@ -35,13 +34,17 @@ object TrailerResolver {
 			when {
 				host.endsWith(YOUTUBE_HOST) -> {
 					val id = uri.getQueryParameter(YOUTUBE_ID_PARAMETER)
-					if (id != null && id.length == YOUTUBE_ID_LENGTH) id else {
+					if (id != null && id.length == YOUTUBE_ID_LENGTH) {
+						id
+					} else {
 						val pathSegments = uri.pathSegments
 						val embedIndex = pathSegments.indexOf("embed")
 						if (embedIndex >= 0 && embedIndex + 1 < pathSegments.size) {
 							val embedId = pathSegments[embedIndex + 1]
 							if (embedId.length == YOUTUBE_ID_LENGTH) embedId else null
-						} else null
+						} else {
+							null
+						}
 					}
 				}
 				host.endsWith(YOUTUBE_SHORT_HOST) -> {
@@ -51,7 +54,6 @@ object TrailerResolver {
 				else -> null
 			}
 		} catch (e: Exception) {
-			Timber.d("TrailerResolver: Failed to parse URL: $url")
 			null
 		}
 	}
@@ -60,38 +62,36 @@ object TrailerResolver {
 		apiClient: ApiClient,
 		itemId: UUID,
 		userId: UUID,
-	): TrailerPreviewInfo? = withContext(Dispatchers.IO) {
-		try {
-			val item by apiClient.userLibraryApi.getItem(
-				itemId = itemId,
-				userId = userId,
-			)
+	): TrailerPreviewInfo? =
+		withContext(Dispatchers.IO) {
+			try {
+				val item by apiClient.userLibraryApi.getItem(
+					itemId = itemId,
+					userId = userId,
+				)
 
-			resolveTrailerFromItem(item)
-		} catch (e: Throwable) {
-			Timber.w(e, "TrailerResolver: Failed to fetch item $itemId for trailer resolution")
-			null
+				resolveTrailerFromItem(item)
+			} catch (e: Throwable) {
+				Timber.w(e, "TrailerResolver: Failed to fetch item $itemId for trailer resolution")
+				null
+			}
 		}
-	}
 
 	suspend fun resolveTrailerFromItem(item: BaseItemDto): TrailerPreviewInfo? =
 		withContext(Dispatchers.IO) {
 			val trailers = item.remoteTrailers.orEmpty()
 			if (trailers.isEmpty()) {
-				Timber.d("TrailerResolver: No remote trailers for ${item.name}")
 				return@withContext null
 			}
 
-			val youtubeVideoId = trailers
-				.mapNotNull { trailer -> trailer.url?.let { extractYoutubeVideoId(it) } }
-				.firstOrNull()
+			val youtubeVideoId =
+				trailers
+					.mapNotNull { trailer -> trailer.url?.let { extractYoutubeVideoId(it) } }
+					.firstOrNull()
 
 			if (youtubeVideoId == null) {
-				Timber.d("TrailerResolver: No YouTube trailers found for ${item.name}")
 				return@withContext null
 			}
-
-			Timber.d("TrailerResolver: Found YouTube trailer $youtubeVideoId for ${item.name}")
 
 			val segments = SponsorBlockApi.getSkipSegments(youtubeVideoId)
 			val startSeconds = SponsorBlockApi.calculateStartTime(segments)

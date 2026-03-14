@@ -32,8 +32,30 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import org.jellyfin.androidtv.preference.constant.ZoomMode
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
+
+data class TrackOption(
+	val index: Int,
+	val title: String,
+)
+
+data class QualityOption(
+	val key: String,
+	val label: String,
+)
+
+data class SpeedOption(
+	val speed: Float,
+	val label: String,
+)
+
+data class ZoomOption(
+	val mode: ZoomMode,
+	val label: String,
+)
 
 @Composable
 fun PlayerDialog(
@@ -51,21 +73,23 @@ fun PlayerDialog(
 			contentAlignment = Alignment.Center,
 		) {
 			Column(
-				modifier = modifier
-					.widthIn(min = 380.dp, max = 500.dp)
-					.clip(JellyfinTheme.shapes.dialog)
-					.background(JellyfinTheme.colorScheme.dialogSurface)
-					.border(1.dp, JellyfinTheme.colorScheme.outlineVariant, JellyfinTheme.shapes.dialog)
-					.padding(vertical = 24.dp),
+				modifier =
+					modifier
+						.widthIn(min = 380.dp, max = 500.dp)
+						.clip(JellyfinTheme.shapes.dialog)
+						.background(VegafoXColors.DialogSurface)
+						.border(1.dp, VegafoXColors.OutlineVariant, JellyfinTheme.shapes.dialog)
+						.padding(vertical = 24.dp),
 			) {
 				Text(
 					text = title,
 					style = JellyfinTheme.typography.titleLarge,
-					color = JellyfinTheme.colorScheme.textPrimary,
+					color = VegafoXColors.TextPrimary,
 					textAlign = TextAlign.Center,
-					modifier = Modifier
-						.fillMaxWidth()
-						.padding(start = 32.dp, end = 32.dp, bottom = 16.dp),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.padding(start = 32.dp, end = 32.dp, bottom = 16.dp),
 				)
 
 				content()
@@ -85,35 +109,41 @@ fun PlayerDialogItem(
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
 
-	val backgroundColor = when {
-		isFocused -> JellyfinTheme.colorScheme.surfaceContainer
-		else -> JellyfinTheme.colorScheme.dialogSurface
-	}
+	val backgroundColor =
+		when {
+			isFocused -> VegafoXColors.SurfaceContainer
+			else -> VegafoXColors.DialogSurface
+		}
 
-	val textColor = when {
-		isSelected -> JellyfinTheme.colorScheme.primary
-		else -> JellyfinTheme.colorScheme.textPrimary
-	}
+	val textColor =
+		when {
+			isSelected -> VegafoXColors.OrangePrimary
+			else -> VegafoXColors.TextPrimary
+		}
 
 	val scale = if (isFocused) 1.04f else 1f
 
 	Row(
-		modifier = modifier
-			.fillMaxWidth()
-			.height(56.dp)
-			.scale(scale)
-			.background(backgroundColor)
-			.then(
-				if (isFocused) Modifier.border(
-					2.dp,
-					JellyfinTheme.colorScheme.focusRing,
-					JellyfinTheme.shapes.small,
-				) else Modifier
-			)
-			.clip(JellyfinTheme.shapes.small)
-			.clickable(interactionSource = interactionSource, indication = null) { onClick() }
-			.focusable(interactionSource = interactionSource)
-			.padding(horizontal = 32.dp),
+		modifier =
+			modifier
+				.fillMaxWidth()
+				.height(56.dp)
+				.scale(scale)
+				.background(backgroundColor)
+				.then(
+					if (isFocused) {
+						Modifier.border(
+							2.dp,
+							VegafoXColors.FocusRing,
+							JellyfinTheme.shapes.small,
+						)
+					} else {
+						Modifier
+					},
+				).clip(JellyfinTheme.shapes.small)
+				.clickable(interactionSource = interactionSource, indication = null) { onClick() }
+				.focusable(interactionSource = interactionSource)
+				.padding(horizontal = 32.dp),
 		verticalAlignment = Alignment.CenterVertically,
 	) {
 		Column(modifier = Modifier.weight(1f)) {
@@ -128,7 +158,7 @@ fun PlayerDialogItem(
 				Text(
 					text = subtitle,
 					style = JellyfinTheme.typography.bodySmall,
-					color = JellyfinTheme.colorScheme.textSecondary,
+					color = VegafoXColors.TextSecondary,
 					maxLines = 1,
 					overflow = TextOverflow.Ellipsis,
 				)
@@ -140,7 +170,7 @@ fun PlayerDialogItem(
 			Text(
 				text = "\u2713",
 				style = JellyfinTheme.typography.titleMedium,
-				color = JellyfinTheme.colorScheme.primary,
+				color = VegafoXColors.OrangePrimary,
 			)
 		}
 	}
@@ -156,15 +186,16 @@ fun PlayerDialogStepper(
 	modifier: Modifier = Modifier,
 ) {
 	Column(
-		modifier = modifier
-			.fillMaxWidth()
-			.padding(horizontal = 32.dp),
+		modifier =
+			modifier
+				.fillMaxWidth()
+				.padding(horizontal = 32.dp),
 		horizontalAlignment = Alignment.CenterHorizontally,
 	) {
 		Text(
 			text = value,
 			style = JellyfinTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-			color = JellyfinTheme.colorScheme.primary,
+			color = VegafoXColors.OrangePrimary,
 			textAlign = TextAlign.Center,
 			modifier = Modifier.padding(vertical = 24.dp),
 		)
@@ -183,9 +214,10 @@ fun PlayerDialogStepper(
 			StepperButton(
 				text = "Reset",
 				onClick = onReset,
-				modifier = Modifier
-					.height(48.dp)
-					.widthIn(min = 80.dp),
+				modifier =
+					Modifier
+						.height(48.dp)
+						.widthIn(min = 80.dp),
 			)
 
 			StepperButton(
@@ -206,30 +238,35 @@ private fun StepperButton(
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
 
-	val backgroundColor = when {
-		isFocused -> JellyfinTheme.colorScheme.surfaceContainer
-		else -> JellyfinTheme.colorScheme.surfaceBright
-	}
+	val backgroundColor =
+		when {
+			isFocused -> VegafoXColors.SurfaceContainer
+			else -> VegafoXColors.SurfaceBright
+		}
 
 	Box(
-		modifier = modifier
-			.clip(JellyfinTheme.shapes.small)
-			.background(backgroundColor)
-			.then(
-				if (isFocused) Modifier.border(
-					2.dp,
-					JellyfinTheme.colorScheme.focusRing,
-					JellyfinTheme.shapes.small,
-				) else Modifier
-			)
-			.clickable(interactionSource = interactionSource, indication = null) { onClick() }
-			.focusable(interactionSource = interactionSource),
+		modifier =
+			modifier
+				.clip(JellyfinTheme.shapes.small)
+				.background(backgroundColor)
+				.then(
+					if (isFocused) {
+						Modifier.border(
+							2.dp,
+							VegafoXColors.FocusRing,
+							JellyfinTheme.shapes.small,
+						)
+					} else {
+						Modifier
+					},
+				).clickable(interactionSource = interactionSource, indication = null) { onClick() }
+				.focusable(interactionSource = interactionSource),
 		contentAlignment = Alignment.Center,
 	) {
 		Text(
 			text = text,
 			style = JellyfinTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-			color = JellyfinTheme.colorScheme.textPrimary,
+			color = VegafoXColors.TextPrimary,
 		)
 	}
 }

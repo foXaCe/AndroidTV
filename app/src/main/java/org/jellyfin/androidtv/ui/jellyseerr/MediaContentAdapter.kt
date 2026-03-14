@@ -5,26 +5,31 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import coil3.load
 import org.jellyfin.androidtv.R
-import org.jellyfin.androidtv.databinding.ItemJellyseerrContentBinding
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrDiscoverItemDto
+import org.jellyfin.androidtv.databinding.ItemJellyseerrContentBinding
 import org.jellyfin.androidtv.util.toHtmlSpanned
 
 class MediaContentAdapter(
-	private val onItemClicked: (JellyseerrDiscoverItemDto) -> Unit
+	private val onItemClicked: (JellyseerrDiscoverItemDto) -> Unit,
 ) : ListAdapter<JellyseerrDiscoverItemDto, MediaContentAdapter.ViewHolder>(DiffCallback()) {
-
-	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-		val binding = ItemJellyseerrContentBinding.inflate(
-			LayoutInflater.from(parent.context),
-			parent,
-			false
-		)
+	override fun onCreateViewHolder(
+		parent: ViewGroup,
+		viewType: Int,
+	): ViewHolder {
+		val binding =
+			ItemJellyseerrContentBinding.inflate(
+				LayoutInflater.from(parent.context),
+				parent,
+				false,
+			)
 		return ViewHolder(binding, onItemClicked)
 	}
 
-	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+	override fun onBindViewHolder(
+		holder: ViewHolder,
+		position: Int,
+	) {
 		holder.bind(getItem(position))
 	}
 
@@ -32,10 +37,8 @@ class MediaContentAdapter(
 		private val binding: ItemJellyseerrContentBinding,
 		private val onItemClick: (JellyseerrDiscoverItemDto) -> Unit,
 	) : RecyclerView.ViewHolder(binding.root) {
-
 		fun bind(item: JellyseerrDiscoverItemDto) {
 			binding.apply {
-
 				titleText.text = item.title ?: item.name ?: itemView.context.getString(R.string.lbl_unknown)
 
 				if (item.voteAverage != null) {

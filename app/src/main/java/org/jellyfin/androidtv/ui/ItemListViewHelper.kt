@@ -6,20 +6,21 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jellyfin.androidtv.data.repository.ItemRepository
-import org.jellyfin.sdk.api.client.ApiClient
+import org.jellyfin.androidtv.ui.itemhandling.ItemLauncherHelper
 import org.jellyfin.sdk.api.client.extensions.itemsApi
-import org.koin.java.KoinJavaComponent
 
 fun ItemListView.refresh() {
-	val api by KoinJavaComponent.inject<ApiClient>(ApiClient::class.java)
+	val api = ItemLauncherHelper.defaultApi
 
 	findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
-		val response = withContext(Dispatchers.IO) {
-			api.itemsApi.getItems(
-				ids = mItemIds,
-				fields = ItemRepository.itemFields
-			).content
-		}
+		val response =
+			withContext(Dispatchers.IO) {
+				api.itemsApi
+					.getItems(
+						ids = mItemIds,
+						fields = ItemRepository.itemFields,
+					).content
+			}
 
 		response.items?.forEachIndexed { index, item ->
 			val view = mList.getChildAt(index)

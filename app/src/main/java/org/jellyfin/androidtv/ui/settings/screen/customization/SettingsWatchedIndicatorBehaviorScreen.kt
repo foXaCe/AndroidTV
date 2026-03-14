@@ -38,7 +38,7 @@ fun SettingsWatchedIndicatorBehaviorScreen() {
 				onClick = {
 					watchedIndicatorBehavior = entry
 					router.back()
-				}
+				},
 			)
 		}
 	}

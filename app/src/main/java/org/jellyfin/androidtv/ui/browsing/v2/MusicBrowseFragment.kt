@@ -38,33 +38,35 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import coil3.compose.AsyncImage
 import org.jellyfin.androidtv.R
-import org.jellyfin.androidtv.ui.composable.rememberErrorPlaceholder
-import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
-import org.jellyfin.androidtv.constant.Extras
 import org.jellyfin.androidtv.data.service.BackgroundService
 import org.jellyfin.androidtv.data.service.BlurContext
 import org.jellyfin.androidtv.ui.background.AppBackground
+import org.jellyfin.androidtv.ui.base.Icon
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
+import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.debug.ScreenIdOverlay
+import org.jellyfin.androidtv.ui.base.debug.ScreenIds
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.skeleton.SkeletonCardRow
 import org.jellyfin.androidtv.ui.base.state.DisplayState
 import org.jellyfin.androidtv.ui.base.state.EmptyState
 import org.jellyfin.androidtv.ui.base.state.ErrorState
 import org.jellyfin.androidtv.ui.base.state.StateContainer
-import org.jellyfin.androidtv.ui.base.Icon
-import org.jellyfin.androidtv.ui.base.JellyfinTheme
-import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.theme.BrowseDimensions
 import org.jellyfin.androidtv.ui.browsing.BrowsingUtils
+import org.jellyfin.androidtv.ui.composable.rememberErrorPlaceholder
+import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
 import org.jellyfin.androidtv.ui.itemhandling.BaseItemDtoBaseRowItem
 import org.jellyfin.androidtv.ui.itemhandling.ItemLauncher
 import org.jellyfin.androidtv.ui.navigation.Destinations
 import org.jellyfin.androidtv.ui.navigation.NavigationRepository
-import org.jellyfin.androidtv.util.Utils
 import org.jellyfin.androidtv.util.apiclient.albumPrimaryImage
 import org.jellyfin.androidtv.util.apiclient.getUrl
 import org.jellyfin.androidtv.util.apiclient.itemImages
@@ -72,11 +74,41 @@ import org.jellyfin.androidtv.util.apiclient.parentImages
 import org.jellyfin.androidtv.util.sdk.compat.copyWithDisplayPreferencesId
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.BaseItemKind
-import org.jellyfin.sdk.model.api.ImageType as JellyfinImageType
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.util.UUID
+import org.jellyfin.sdk.model.api.ImageType as JellyfinImageType
 
 class MusicBrowseFragment : Fragment() {
+	data class Args(
+		val folderJson: String,
+		val serverId: UUID? = null,
+		val userId: UUID? = null,
+	) {
+		fun toBundle() =
+			bundleOf(
+				KEY_FOLDER to folderJson,
+				KEY_SERVER_ID to serverId?.toString(),
+				KEY_USER_ID to userId?.toString(),
+			)
+
+		companion object {
+			fun fromBundle(bundle: Bundle?): Args? {
+				val folderJson = bundle?.getString(KEY_FOLDER) ?: return null
+				return Args(
+					folderJson = folderJson,
+					serverId = bundle.getString(KEY_SERVER_ID)?.let(UUID::fromString),
+					userId = bundle.getString(KEY_USER_ID)?.let(UUID::fromString),
+				)
+			}
+		}
+	}
+
+	companion object {
+		internal const val KEY_FOLDER = "folder"
+		internal const val KEY_SERVER_ID = "ServerId"
+		internal const val KEY_USER_ID = "UserId"
+	}
 
 	private val viewModel: MusicBrowseViewModel by viewModel()
 	private val navigationRepository: NavigationRepository by inject()
@@ -88,32 +120,37 @@ class MusicBrowseFragment : Fragment() {
 		container: ViewGroup?,
 		savedInstanceState: Bundle?,
 	): View {
-		val mainContainer = FrameLayout(requireContext()).apply {
-			layoutParams = ViewGroup.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.MATCH_PARENT,
-			)
-		}
+		val mainContainer =
+			FrameLayout(requireContext()).apply {
+				layoutParams =
+					ViewGroup.LayoutParams(
+						ViewGroup.LayoutParams.MATCH_PARENT,
+						ViewGroup.LayoutParams.MATCH_PARENT,
+					)
+			}
 
-		val contentView = ComposeView(requireContext()).apply {
-			layoutParams = FrameLayout.LayoutParams(
-				FrameLayout.LayoutParams.MATCH_PARENT,
-				FrameLayout.LayoutParams.MATCH_PARENT,
-			)
-			setContent { JellyfinTheme { MusicBrowseContent() } }
-		}
+		val contentView =
+			ComposeView(requireContext()).apply {
+				layoutParams =
+					FrameLayout.LayoutParams(
+						FrameLayout.LayoutParams.MATCH_PARENT,
+						FrameLayout.LayoutParams.MATCH_PARENT,
+					)
+				setContent { JellyfinTheme { ScreenIdOverlay(ScreenIds.MUSIC_BROWSE_ID, ScreenIds.MUSIC_BROWSE_NAME) { MusicBrowseContent() } } }
+			}
 		mainContainer.addView(contentView)
 
 		return mainContainer
 	}
 
-	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+	override fun onViewCreated(
+		view: View,
+		savedInstanceState: Bundle?,
+	) {
 		super.onViewCreated(view, savedInstanceState)
 
-		val folderJson = arguments?.getString(Extras.Folder) ?: return
-		val serverId = Utils.uuidOrNull(arguments?.getString("ServerId"))
-		val userId = Utils.uuidOrNull(arguments?.getString("UserId"))
-		viewModel.initialize(folderJson, serverId, userId)
+		val args = Args.fromBundle(arguments) ?: return
+		viewModel.initialize(args.folderJson, args.serverId, args.userId)
 	}
 
 	// ──────────────────────────────────────────────
@@ -124,12 +161,14 @@ class MusicBrowseFragment : Fragment() {
 	private fun MusicBrowseContent() {
 		val uiState by viewModel.uiState.collectAsState()
 
-		val folderJson = arguments?.getString(Extras.Folder)
-		val folder = remember(folderJson) {
-			folderJson?.let {
-				kotlinx.serialization.json.Json.decodeFromString(BaseItemDto.serializer(), it)
+		val folderJson = Args.fromBundle(arguments)?.folderJson
+		val folder =
+			remember(folderJson) {
+				folderJson?.let {
+					kotlinx.serialization.json.Json
+						.decodeFromString(BaseItemDto.serializer(), it)
+				}
 			}
-		}
 
 		Box(modifier = Modifier.fillMaxSize()) {
 			// Activity background
@@ -139,9 +178,10 @@ class MusicBrowseFragment : Fragment() {
 			val currentBg by backgroundService.currentBackground.collectAsState()
 			val overlayAlpha = if (currentBg != null) 0.45f else 0.75f
 			Box(
-				modifier = Modifier
-					.fillMaxSize()
-					.background(JellyfinTheme.colorScheme.surfaceDim.copy(alpha = overlayAlpha)),
+				modifier =
+					Modifier
+						.fillMaxSize()
+						.background(JellyfinTheme.colorScheme.surfaceDim.copy(alpha = overlayAlpha)),
 			)
 
 			Column(modifier = Modifier.fillMaxSize()) {
@@ -149,11 +189,12 @@ class MusicBrowseFragment : Fragment() {
 				MusicHeader(uiState = uiState, folder = folder)
 
 				// ── Content ──
-				val displayState = when {
-					uiState.isLoading -> DisplayState.LOADING
-					uiState.error != null -> DisplayState.ERROR
-					else -> DisplayState.CONTENT
-				}
+				val displayState =
+					when {
+						uiState.isLoading -> DisplayState.LOADING
+						uiState.error != null -> DisplayState.ERROR
+						else -> DisplayState.CONTENT
+					}
 				StateContainer(
 					state = displayState,
 					modifier = Modifier.weight(1f),
@@ -203,9 +244,15 @@ class MusicBrowseFragment : Fragment() {
 		folder: BaseItemDto?,
 	) {
 		Column(
-			modifier = Modifier
-				.fillMaxWidth()
-				.padding(start = 60.dp, end = 60.dp, top = 12.dp, bottom = 4.dp),
+			modifier =
+				Modifier
+					.fillMaxWidth()
+					.padding(
+						start = BrowseDimensions.contentPaddingHorizontal,
+						end = BrowseDimensions.contentPaddingHorizontal,
+						top = 12.dp,
+						bottom = 4.dp,
+					),
 		) {
 			// Row 0: Centered library name
 			Box(
@@ -236,7 +283,7 @@ class MusicBrowseFragment : Fragment() {
 				verticalAlignment = Alignment.CenterVertically,
 			) {
 				LibraryToolbarButton(
-					iconRes = R.drawable.ic_house,
+					icon = VegafoXIcons.Home,
 					contentDescription = stringResource(R.string.home),
 					onClick = { navigationRepository.navigate(Destinations.home) },
 				)
@@ -257,10 +304,11 @@ class MusicBrowseFragment : Fragment() {
 		val scrollState = rememberScrollState()
 
 		Column(
-			modifier = modifier
-				.fillMaxWidth()
-				.verticalScroll(scrollState)
-				.padding(bottom = 16.dp),
+			modifier =
+				modifier
+					.fillMaxWidth()
+					.verticalScroll(scrollState)
+					.padding(bottom = 16.dp),
 		) {
 			// Navigation buttons row (at the top)
 			if (folder != null) {
@@ -311,22 +359,23 @@ class MusicBrowseFragment : Fragment() {
 		items: List<BaseItemDto>,
 	) {
 		Column(
-			modifier = Modifier
-				.fillMaxWidth()
-				.padding(top = 12.dp),
+			modifier =
+				Modifier
+					.fillMaxWidth()
+					.padding(top = 12.dp),
 		) {
 			// Row title
 			Text(
 				text = title,
 				style = JellyfinTheme.typography.titleLarge,
 				color = JellyfinTheme.colorScheme.onSurface,
-				modifier = Modifier.padding(start = 60.dp, bottom = 8.dp),
+				modifier = Modifier.padding(start = BrowseDimensions.contentPaddingHorizontal, bottom = 8.dp),
 			)
 
 			// Horizontal list of square cards
 			LazyRow(
 				horizontalArrangement = Arrangement.spacedBy(12.dp),
-				contentPadding = PaddingValues(horizontal = 60.dp),
+				contentPadding = PaddingValues(horizontal = BrowseDimensions.contentPaddingHorizontal),
 			) {
 				items(items, key = { it.id }) { item ->
 					MusicSquareCard(
@@ -364,30 +413,33 @@ class MusicBrowseFragment : Fragment() {
 		val alpha = if (isFocused) 1.0f else 0.75f
 
 		Column(
-			modifier = Modifier
-				.width(cardSize.dp)
-				.graphicsLayer {
-					scaleX = scale
-					scaleY = scale
-					this.alpha = alpha
-				}
-				.clickable(
-					interactionSource = interactionSource,
-					indication = null,
-					onClick = onClick,
-				),
+			modifier =
+				Modifier
+					.width(cardSize.dp)
+					.graphicsLayer {
+						scaleX = scale
+						scaleY = scale
+						this.alpha = alpha
+					}.clickable(
+						interactionSource = interactionSource,
+						indication = null,
+						onClick = onClick,
+					),
 			horizontalAlignment = Alignment.Start,
 		) {
 			// Square image
 			Box(
-				modifier = Modifier
-					.size(cardSize.dp)
-					.clip(JellyfinTheme.shapes.extraSmall)
-					.then(
-						if (isFocused) Modifier.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.08f))
-						else Modifier
-					)
-					.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.06f)),
+				modifier =
+					Modifier
+						.size(cardSize.dp)
+						.clip(JellyfinTheme.shapes.extraSmall)
+						.then(
+							if (isFocused) {
+								Modifier.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+							} else {
+								Modifier
+							},
+						).background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.06f)),
 			) {
 				val imageUrl = getMusicImageUrl(item)
 				if (imageUrl != null) {
@@ -408,7 +460,7 @@ class MusicBrowseFragment : Fragment() {
 						contentAlignment = Alignment.Center,
 					) {
 						Icon(
-							imageVector = ImageVector.vectorResource(R.drawable.ic_album),
+							imageVector = VegafoXIcons.Album,
 							contentDescription = null,
 							modifier = Modifier.size(48.dp),
 							tint = JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.2f),
@@ -451,29 +503,30 @@ class MusicBrowseFragment : Fragment() {
 	@Composable
 	private fun MusicViewsRow(folder: BaseItemDto) {
 		Column(
-			modifier = Modifier
-				.fillMaxWidth()
-				.padding(top = 4.dp),
+			modifier =
+				Modifier
+					.fillMaxWidth()
+					.padding(top = 4.dp),
 		) {
 			Text(
 				text = stringResource(R.string.lbl_views),
 				style = JellyfinTheme.typography.titleLarge,
 				color = JellyfinTheme.colorScheme.onSurface,
-				modifier = Modifier.padding(start = 60.dp, bottom = 8.dp),
+				modifier = Modifier.padding(start = BrowseDimensions.contentPaddingHorizontal, bottom = 8.dp),
 			)
 
 			LazyRow(
 				horizontalArrangement = Arrangement.spacedBy(12.dp),
-				contentPadding = PaddingValues(horizontal = 60.dp),
+				contentPadding = PaddingValues(horizontal = BrowseDimensions.contentPaddingHorizontal),
 			) {
 				item {
 					MusicNavButton(
 						label = stringResource(R.string.lbl_albums),
-						iconRes = R.drawable.ic_album,
+						icon = VegafoXIcons.Album,
 						onClick = {
 							val navFolder = folder.copyWithDisplayPreferencesId(folder.id.toString() + "AL")
 							navigationRepository.navigate(
-								Destinations.libraryBrowser(navFolder, BaseItemKind.MUSIC_ALBUM.serialName)
+								Destinations.libraryBrowser(navFolder, BaseItemKind.MUSIC_ALBUM.serialName),
 							)
 						},
 					)
@@ -481,11 +534,11 @@ class MusicBrowseFragment : Fragment() {
 				item {
 					MusicNavButton(
 						label = stringResource(R.string.lbl_album_artists),
-						iconRes = R.drawable.ic_artist,
+						icon = VegafoXIcons.Artist,
 						onClick = {
 							val navFolder = folder.copyWithDisplayPreferencesId(folder.id.toString() + "AR")
 							navigationRepository.navigate(
-								Destinations.libraryBrowser(navFolder, "AlbumArtist")
+								Destinations.libraryBrowser(navFolder, "AlbumArtist"),
 							)
 						},
 					)
@@ -493,11 +546,11 @@ class MusicBrowseFragment : Fragment() {
 				item {
 					MusicNavButton(
 						label = stringResource(R.string.lbl_artists),
-						iconRes = R.drawable.ic_artist,
+						icon = VegafoXIcons.Artist,
 						onClick = {
 							val navFolder = folder.copyWithDisplayPreferencesId(folder.id.toString() + "AR")
 							navigationRepository.navigate(
-								Destinations.libraryBrowser(navFolder, "Artist")
+								Destinations.libraryBrowser(navFolder, "Artist"),
 							)
 						},
 					)
@@ -505,10 +558,10 @@ class MusicBrowseFragment : Fragment() {
 				item {
 					MusicNavButton(
 						label = stringResource(R.string.lbl_genres),
-						iconRes = R.drawable.ic_masks,
+						icon = VegafoXIcons.Genres,
 						onClick = {
 							navigationRepository.navigate(
-								Destinations.libraryByGenres(folder, BaseItemKind.MUSIC_ALBUM.serialName)
+								Destinations.libraryByGenres(folder, BaseItemKind.MUSIC_ALBUM.serialName),
 							)
 						},
 					)
@@ -516,7 +569,7 @@ class MusicBrowseFragment : Fragment() {
 				item {
 					MusicNavButton(
 						label = stringResource(R.string.random),
-						iconRes = R.drawable.ic_shuffle,
+						icon = VegafoXIcons.Shuffle,
 						onClick = {
 							BrowsingUtils.getRandomItem(
 								viewModel.effectiveApi,
@@ -526,7 +579,7 @@ class MusicBrowseFragment : Fragment() {
 							) { randomItem ->
 								if (randomItem != null) {
 									navigationRepository.navigate(
-										Destinations.itemList(randomItem.id)
+										Destinations.itemList(randomItem.id),
 									)
 								}
 							}
@@ -544,37 +597,39 @@ class MusicBrowseFragment : Fragment() {
 	@Composable
 	private fun MusicNavButton(
 		label: String,
-		iconRes: Int,
+		icon: ImageVector,
 		onClick: () -> Unit,
 	) {
 		val interactionSource = remember { MutableInteractionSource() }
 		val isFocused by interactionSource.collectIsFocusedAsState()
 
-		val bgColor = when {
-			isFocused -> JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.20f)
-			else -> JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.08f)
-		}
+		val bgColor =
+			when {
+				isFocused -> JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.20f)
+				else -> JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+			}
 
-		val borderColor = when {
-			isFocused -> JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-			else -> JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-		}
+		val borderColor =
+			when {
+				isFocused -> JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+				else -> JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+			}
 
 		Column(
-			modifier = Modifier
-				.width(140.dp)
-				.clip(JellyfinTheme.shapes.small)
-				.background(bgColor)
-				.clickable(
-					interactionSource = interactionSource,
-					indication = null,
-					onClick = onClick,
-				)
-				.padding(vertical = 20.dp),
+			modifier =
+				Modifier
+					.width(140.dp)
+					.clip(JellyfinTheme.shapes.small)
+					.background(bgColor)
+					.clickable(
+						interactionSource = interactionSource,
+						indication = null,
+						onClick = onClick,
+					).padding(vertical = 20.dp),
 			horizontalAlignment = Alignment.CenterHorizontally,
 		) {
 			Icon(
-				imageVector = ImageVector.vectorResource(iconRes),
+				imageVector = icon,
 				contentDescription = label,
 				modifier = Modifier.size(32.dp),
 				tint = if (isFocused) JellyfinTheme.colorScheme.onSurface else JellyfinTheme.colorScheme.textSecondary,
@@ -621,10 +676,11 @@ class MusicBrowseFragment : Fragment() {
 	/**
 	 * Build a subtitle string for music items.
 	 */
-	private fun getMusicSubtitle(item: BaseItemDto): String {
-		return when (item.type) {
+	private fun getMusicSubtitle(item: BaseItemDto): String =
+		when (item.type) {
 			BaseItemKind.AUDIO,
-			BaseItemKind.MUSIC_ALBUM -> {
+			BaseItemKind.MUSIC_ALBUM,
+			-> {
 				item.artists?.joinToString(", ")
 					?: item.albumArtists?.joinToString(", ") { it.name ?: "" }
 					?: item.albumArtist
@@ -640,7 +696,6 @@ class MusicBrowseFragment : Fragment() {
 			}
 			else -> ""
 		}
-	}
 
 	private fun launchItem(item: BaseItemDto) {
 		val rowItem = BaseItemDtoBaseRowItem(item)

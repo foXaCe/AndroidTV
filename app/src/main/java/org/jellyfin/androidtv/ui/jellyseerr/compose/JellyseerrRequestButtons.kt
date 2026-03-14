@@ -4,15 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrMediaInfoDto
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrRequestDto
-import org.jellyfin.androidtv.ui.itemdetail.v2.DetailActionButton
+import org.jellyfin.androidtv.ui.base.components.VegafoXButton
+import org.jellyfin.androidtv.ui.base.components.VegafoXButtonVariant
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 
 @Composable
 fun JellyseerrRequestButtons(
@@ -45,35 +44,59 @@ fun JellyseerrRequestButtons(
 		horizontalArrangement = Arrangement.spacedBy(12.dp),
 		modifier = modifier,
 	) {
-		DetailActionButton(
-			label = requestLabel,
-			icon = ImageVector.vectorResource(R.drawable.ic_select_quality),
-			onClick = {
-				if (canRequestAny) {
-					onRequestClick(canRequestHd, canRequest4k, hdStatus, status4k)
-				}
-			},
-			modifier = if (!canRequestAny) Modifier.alpha(0.5f) else Modifier,
-		)
+		// Request button — Primary if requestable, Secondary disabled otherwise
+		if (canRequestAny) {
+			VegafoXButton(
+				text = requestLabel,
+				variant = VegafoXButtonVariant.Primary,
+				icon = VegafoXIcons.HighQuality,
+				iconEnd = false,
+				autoFocus = true,
+				compact = true,
+				onClick = { onRequestClick(canRequestHd, canRequest4k, hdStatus, status4k) },
+			)
+		} else {
+			VegafoXButton(
+				text = requestLabel,
+				variant = VegafoXButtonVariant.Secondary,
+				icon = VegafoXIcons.HighQuality,
+				iconEnd = false,
+				enabled = false,
+				compact = true,
+				onClick = {},
+			)
+		}
 
+		// Cancel pending requests
 		if (pendingRequests.isNotEmpty()) {
-			DetailActionButton(
-				label = stringResource(R.string.lbl_cancel),
-				icon = ImageVector.vectorResource(R.drawable.ic_delete),
+			VegafoXButton(
+				text = stringResource(R.string.lbl_cancel),
+				variant = VegafoXButtonVariant.Outlined,
+				icon = VegafoXIcons.Delete,
+				iconEnd = false,
+				compact = true,
 				onClick = { onCancelClick(pendingRequests) },
 			)
 		}
 
-		DetailActionButton(
-			label = stringResource(R.string.lbl_trailers),
-			icon = ImageVector.vectorResource(R.drawable.ic_trailer),
+		// Trailer
+		VegafoXButton(
+			text = stringResource(R.string.lbl_trailers),
+			variant = VegafoXButtonVariant.Ghost,
+			icon = VegafoXIcons.Trailer,
+			iconEnd = false,
+			compact = true,
 			onClick = onTrailerClick,
 		)
 
+		// Play on Jellyfin
 		if (showPlayButton) {
-			DetailActionButton(
-				label = stringResource(R.string.lbl_play),
-				icon = ImageVector.vectorResource(R.drawable.ic_play),
+			VegafoXButton(
+				text = stringResource(R.string.lbl_play),
+				variant = VegafoXButtonVariant.Secondary,
+				icon = VegafoXIcons.Play,
+				iconEnd = false,
+				compact = true,
 				onClick = onPlayClick,
 			)
 		}

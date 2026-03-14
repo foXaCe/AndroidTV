@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
@@ -50,7 +51,7 @@ fun Button(
 	colors: ButtonColors = ButtonDefaults.colors(),
 	contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
 	interactionSource: MutableInteractionSource? = null,
-	content: @Composable RowScope.() -> Unit
+	content: @Composable RowScope.() -> Unit,
 ) {
 	ButtonBase(
 		onClick = onClick,
@@ -77,9 +78,10 @@ fun ProgressButton(
 	enabled: Boolean = true,
 	shape: Shape = ButtonDefaults.Shape,
 	colors: ButtonColors = ButtonDefaults.colors(),
+	progressColor: Color? = null,
 	contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
 	interactionSource: MutableInteractionSource? = null,
-	content: @Composable RowScope.() -> Unit
+	content: @Composable RowScope.() -> Unit,
 ) {
 	ProgressButtonBase(
 		progress = progress,
@@ -89,6 +91,7 @@ fun ProgressButton(
 		enabled = enabled,
 		shape = shape,
 		colors = colors,
+		progressColor = progressColor,
 		interactionSource = interactionSource,
 	) {
 		ButtonRow(
@@ -103,13 +106,14 @@ private fun ButtonRow(
 	contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
 	content: @Composable RowScope.() -> Unit,
 ) = Row(
-	modifier = Modifier
-		.defaultMinSize(
-			minWidth = 58.dp,
-			minHeight = 40.dp
-		)
-		.padding(contentPadding),
+	modifier =
+		Modifier
+			.fillMaxWidth()
+			.defaultMinSize(
+				minWidth = 58.dp,
+				minHeight = 40.dp,
+			).padding(contentPadding),
 	horizontalArrangement = Arrangement.Center,
 	verticalAlignment = Alignment.CenterVertically,
-	content = content
+	content = content,
 )

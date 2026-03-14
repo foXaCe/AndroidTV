@@ -2,27 +2,22 @@ package org.jellyfin.androidtv.ui.browsing.composable.inforow
 
 import android.content.Context
 import android.util.AttributeSet
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
-import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jellyfin.androidtv.R
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.composable.getResolutionName
 import org.jellyfin.androidtv.util.TimeUtils
 import org.jellyfin.androidtv.util.sdk.getProgramSubText
@@ -36,7 +31,6 @@ import org.jellyfin.sdk.model.api.MediaStreamType
 import org.jellyfin.sdk.model.api.SeriesStatus
 import org.jellyfin.sdk.model.api.VideoRangeType
 import org.jellyfin.sdk.model.extensions.ticks
-import org.koin.compose.koinInject
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -44,39 +38,43 @@ import java.time.temporal.ChronoUnit
 import kotlin.time.Duration
 
 @Composable
-fun InfoRowDate(
-	item: BaseItemDto,
-) {
-	val date = when (item.type) {
-		BaseItemKind.PERSON -> {
-			val birthDate = item.premiereDate
+fun InfoRowDate(item: BaseItemDto) {
+	val date =
+		when (item.type) {
+			BaseItemKind.PERSON -> {
+				val birthDate = item.premiereDate
 
-			if (birthDate != null) {
-				val age = ChronoUnit.YEARS.between(birthDate, item.endDate ?: LocalDateTime.now())
-				val birthDateStr = birthDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
-				stringResource(R.string.person_birthday_and_age, birthDateStr, age)
-			} else null
-		}
-
-		BaseItemKind.PROGRAM, BaseItemKind.TV_CHANNEL -> when {
-			item.startDate != null && item.endDate != null -> buildString {
-				// Format: 20:00 - 21:30
-				append(item.startDate?.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)))
-				append(" - ")
-				append(item.endDate?.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)))
+				if (birthDate != null) {
+					val age = ChronoUnit.YEARS.between(birthDate, item.endDate ?: LocalDateTime.now())
+					val birthDateStr = birthDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
+					stringResource(R.string.person_birthday_and_age, birthDateStr, age)
+				} else {
+					null
+				}
 			}
 
-			else -> null
-		}
+			BaseItemKind.PROGRAM, BaseItemKind.TV_CHANNEL ->
+				when {
+					item.startDate != null && item.endDate != null ->
+						buildString {
+							// Format: 20:00 - 21:30
+							append(item.startDate?.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)))
+							append(" - ")
+							append(item.endDate?.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)))
+						}
 
-		BaseItemKind.SERIES -> item.productionYear?.toString()
+					else -> null
+				}
 
-		else -> when {
-			item.premiereDate != null -> item.premiereDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
-			item.productionYear != null -> item.productionYear?.toString()
-			else -> null
+			BaseItemKind.SERIES -> item.productionYear?.toString()
+
+			else ->
+				when {
+					item.premiereDate != null -> item.premiereDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
+					item.productionYear != null -> item.productionYear?.toString()
+					else -> null
+				}
 		}
-	}
 
 	if (date != null) {
 		InfoRowItem(contentDescription = null) {
@@ -86,44 +84,43 @@ fun InfoRowDate(
 }
 
 @Composable
-fun InfoRowSeriesStatus(
-	item: BaseItemDto,
-) {
+fun InfoRowSeriesStatus(item: BaseItemDto) {
 	val seriesStatus = item.status?.let(SeriesStatus::fromNameOrNull)
 
 	if (seriesStatus != null) {
 		when (seriesStatus) {
-			SeriesStatus.CONTINUING -> InfoRowItem(
-				contentDescription = stringResource(R.string.lbl__continuing),
-				colors = InfoRowColors.Green,
-			) {
-				Text(stringResource(R.string.lbl__continuing))
-			}
+			SeriesStatus.CONTINUING ->
+				InfoRowItem(
+					contentDescription = stringResource(R.string.lbl__continuing),
+					colors = InfoRowColors.Green,
+				) {
+					Text(stringResource(R.string.lbl__continuing))
+				}
 
-			SeriesStatus.ENDED -> InfoRowItem(
-				contentDescription = stringResource(R.string.lbl_ended),
-				colors = InfoRowColors.Red,
-			) {
-				Text(stringResource(R.string.lbl_ended))
-			}
+			SeriesStatus.ENDED ->
+				InfoRowItem(
+					contentDescription = stringResource(R.string.lbl_ended),
+					colors = InfoRowColors.Red,
+				) {
+					Text(stringResource(R.string.lbl_ended))
+				}
 
-			SeriesStatus.UNRELEASED -> InfoRowItem(
-				contentDescription = stringResource(R.string.unreleased),
-				colors = InfoRowColors.Default,
-			) {
-				Text(stringResource(R.string.unreleased))
-			}
+			SeriesStatus.UNRELEASED ->
+				InfoRowItem(
+					contentDescription = stringResource(R.string.unreleased),
+					colors = InfoRowColors.Default,
+				) {
+					Text(stringResource(R.string.unreleased))
+				}
 		}
 	}
 }
 
 @Composable
-fun BaseItemInfoRowRuntime(
-	runTime: Duration,
-) {
+fun BaseItemInfoRowRuntime(runTime: Duration) {
 	val context = LocalContext.current
 	InfoRowItem(
-		icon = ImageVector.vectorResource(id = R.drawable.ic_time),
+		icon = VegafoXIcons.Schedule,
 		contentDescription = null,
 	) {
 		Text(TimeUtils.formatRuntimeHoursMinutes(context, runTime.inWholeMilliseconds))
@@ -142,7 +139,10 @@ fun InfoRowSeasonEpisode(item: BaseItemDto) {
 	}
 }
 
-private fun List<MediaStream>.getDefault(type: MediaStreamType, defaultIndex: Int? = null): MediaStream? {
+private fun List<MediaStream>.getDefault(
+	type: MediaStreamType,
+	defaultIndex: Int? = null,
+): MediaStream? {
 	if (defaultIndex != null) {
 		val byIndex = getOrNull(defaultIndex)
 		if (byIndex?.type == type) return byIndex
@@ -179,11 +179,12 @@ fun InfoRowMediaDetails(mediaSource: MediaSourceInfo) {
 
 	// Video resolution
 	if (videoStream?.width != null && videoStream.height != null) {
-		val resolution = getResolutionName(
-			width = videoStream.width ?: 0,
-			height = videoStream.height ?: 0,
-			interlaced = videoStream.isInterlaced,
-		)
+		val resolution =
+			getResolutionName(
+				width = videoStream.width ?: 0,
+				height = videoStream.height ?: 0,
+				interlaced = videoStream.isInterlaced,
+			)
 
 		InfoRowItem(
 			contentDescription = null,
@@ -194,13 +195,16 @@ fun InfoRowMediaDetails(mediaSource: MediaSourceInfo) {
 	}
 
 	// Video stream
-	val videoCodecName = when {
-		!videoStream?.videoDoViTitle.isNullOrBlank() -> stringResource(R.string.dolby_vision)
-		videoStream?.videoRangeType != null && videoStream.videoRangeType != VideoRangeType.SDR && videoStream.videoRangeType != VideoRangeType.UNKNOWN ->
-			videoStream.videoRangeType.serialName.uppercase()
+	val videoCodecName =
+		when {
+			!videoStream?.videoDoViTitle.isNullOrBlank() -> stringResource(R.string.dolby_vision)
+			videoStream?.videoRangeType != null &&
+				videoStream.videoRangeType != VideoRangeType.SDR &&
+				videoStream.videoRangeType != VideoRangeType.UNKNOWN ->
+				videoStream.videoRangeType.serialName.uppercase()
 
-		else -> videoStream?.codec?.uppercase()
-	}
+			else -> videoStream?.codec?.uppercase()
+		}
 	if (!videoCodecName.isNullOrBlank()) {
 		InfoRowItem(
 			contentDescription = null,
@@ -211,17 +215,19 @@ fun InfoRowMediaDetails(mediaSource: MediaSourceInfo) {
 	}
 
 	// Audio stream
-	val audioCodecName = when {
-		audioStream?.profile?.contains("Dolby Atmos", ignoreCase = true) == true -> stringResource(R.string.dolby_atmos)
-		audioStream?.profile?.contains("DTS:X", ignoreCase = true) == true -> stringResource(R.string.dts_x)
-		audioStream?.profile?.contains("DTS:HD", ignoreCase = true) == true -> stringResource(R.string.dts_hd)
-		else -> when (audioStream?.codec?.uppercase()) {
-			"DCA" -> stringResource(R.string.dca)
-			"AC3" -> stringResource(R.string.ac3)
-			"EAC3" -> stringResource(R.string.eac3)
-			else -> audioStream?.codec?.uppercase()
+	val audioCodecName =
+		when {
+			audioStream?.profile?.contains("Dolby Atmos", ignoreCase = true) == true -> stringResource(R.string.dolby_atmos)
+			audioStream?.profile?.contains("DTS:X", ignoreCase = true) == true -> stringResource(R.string.dts_x)
+			audioStream?.profile?.contains("DTS:HD", ignoreCase = true) == true -> stringResource(R.string.dts_hd)
+			else ->
+				when (audioStream?.codec?.uppercase()) {
+					"DCA" -> stringResource(R.string.dca)
+					"AC3" -> stringResource(R.string.ac3)
+					"EAC3" -> stringResource(R.string.eac3)
+					else -> audioStream?.codec?.uppercase()
+				}
 		}
-	}
 	if (!audioCodecName.isNullOrBlank()) {
 		InfoRowItem(
 			contentDescription = null,
@@ -244,28 +250,31 @@ fun InfoRowMediaDetails(mediaSource: MediaSourceInfo) {
 }
 
 @Composable
-private fun BulletSeparatedRow(
-	content: @Composable () -> Unit,
-) {
+private fun BulletSeparatedRow(content: @Composable () -> Unit) {
 	SubcomposeLayout { constraints ->
-		val contentPlaceables = subcompose("content", content)
-			.map { it.measure(constraints.copy(minWidth = 0)) }
-			.filter { it.width > 0 }
+		val contentPlaceables =
+			subcompose("content", content)
+				.map { it.measure(constraints.copy(minWidth = 0)) }
+				.filter { it.width > 0 }
 
 		val spacingPx = 4.dp.roundToPx()
 
-		val bulletPlaceables = if (contentPlaceables.size > 1) {
-			subcompose("bullets") {
-				repeat(contentPlaceables.size - 1) {
-					BasicText(
-						text = "\u2022",
-						style = JellyfinTheme.typography.bodyMedium.copy(
-							color = Color.White.copy(alpha = 0.6f),
+		val bulletPlaceables =
+			if (contentPlaceables.size > 1) {
+				subcompose("bullets") {
+					repeat(contentPlaceables.size - 1) {
+						BasicText(
+							text = "\u2022",
+							style =
+								JellyfinTheme.typography.bodyMedium.copy(
+									color = Color.White.copy(alpha = 0.6f),
+								),
 						)
-					)
-				}
-			}.map { it.measure(constraints.copy(minWidth = 0)) }
-		} else emptyList()
+					}
+				}.map { it.measure(constraints.copy(minWidth = 0)) }
+			} else {
+				emptyList()
+			}
 
 		val height = contentPlaceables.maxOfOrNull { it.height } ?: 0
 		var totalWidth = 0
@@ -309,12 +318,13 @@ fun BaseItemInfoRow(
 			}
 
 			BaseItemKind.BOX_SET -> {
-				val countText = when {
-					item.movieCount != null -> pluralStringResource(R.plurals.items, item.movieCount!!, item.movieCount!!)
-					item.seriesCount != null -> pluralStringResource(R.plurals.items, item.seriesCount!!, item.seriesCount!!)
-					item.childCount != null -> pluralStringResource(R.plurals.items, item.childCount!!, item.childCount!!)
-					else -> null
-				}
+				val countText =
+					when {
+						item.movieCount != null -> pluralStringResource(R.plurals.items, item.movieCount!!, item.movieCount!!)
+						item.seriesCount != null -> pluralStringResource(R.plurals.items, item.seriesCount!!, item.seriesCount!!)
+						item.childCount != null -> pluralStringResource(R.plurals.items, item.childCount!!, item.childCount!!)
+						else -> null
+					}
 				if (countText != null) {
 					InfoRowItem(contentDescription = null) {
 						Text(countText)
@@ -422,68 +432,72 @@ fun BaseItemInfoRow(
 	}
 }
 
-class BaseItemInfoRowView @JvmOverloads constructor(
-	context: Context,
-	attrs: AttributeSet? = null,
-) : AbstractComposeView(context, attrs) {
-	private val _item = MutableStateFlow<BaseItemDto?>(null)
-	private val _mediaSource = MutableStateFlow<MediaSourceInfo?>(null)
-	private val _includeRuntime = MutableStateFlow(false)
+class BaseItemInfoRowView
+	@JvmOverloads
+	constructor(
+		context: Context,
+		attrs: AttributeSet? = null,
+	) : AbstractComposeView(context, attrs) {
+		private val _item = MutableStateFlow<BaseItemDto?>(null)
+		private val _mediaSource = MutableStateFlow<MediaSourceInfo?>(null)
+		private val _includeRuntime = MutableStateFlow(false)
 
-	var item: BaseItemDto?
-		get() = _item.value
-		set(value) {
-			_item.value = value
+		var item: BaseItemDto?
+			get() = _item.value
+			set(value) {
+				_item.value = value
+			}
+
+		var mediaSource: MediaSourceInfo?
+			get() = _mediaSource.value
+			set(value) {
+				_mediaSource.value = value
+			}
+
+		var includeRuntime: Boolean
+			get() = _includeRuntime.value
+			set(value) {
+				_includeRuntime.value = value
+			}
+
+		init {
+			isFocusable = false
+			descendantFocusability = FOCUS_BLOCK_DESCENDANTS
 		}
 
-	var mediaSource: MediaSourceInfo?
-		get() = _mediaSource.value
-		set(value) {
-			_mediaSource.value = value
+		@Composable
+		override fun Content() {
+			val item by _item.collectAsState()
+			val mediaSource by _mediaSource.collectAsState()
+			val includeRuntime by _includeRuntime.collectAsState()
+
+			item?.let { BaseItemInfoRow(it, mediaSource, includeRuntime) }
+		}
+	}
+
+class RatingsRowView
+	@JvmOverloads
+	constructor(
+		context: Context,
+		attrs: AttributeSet? = null,
+	) : AbstractComposeView(context, attrs) {
+		private val _item = MutableStateFlow<BaseItemDto?>(null)
+
+		var item: BaseItemDto?
+			get() = _item.value
+			set(value) {
+				_item.value = value
+			}
+
+		init {
+			isFocusable = false
+			descendantFocusability = FOCUS_BLOCK_DESCENDANTS
+			setPadding(0, 4, 0, 0)
 		}
 
-	var includeRuntime: Boolean
-		get() = _includeRuntime.value
-		set(value) {
-			_includeRuntime.value = value
+		@Composable
+		override fun Content() {
+			val item by _item.collectAsState()
+			item?.let { InfoRowMultipleRatings(it) }
 		}
-
-	init {
-		isFocusable = false
-		descendantFocusability = FOCUS_BLOCK_DESCENDANTS
 	}
-
-	@Composable
-	override fun Content() {
-		val item by _item.collectAsState()
-		val mediaSource by _mediaSource.collectAsState()
-		val includeRuntime by _includeRuntime.collectAsState()
-
-		item?.let { BaseItemInfoRow(it, mediaSource, includeRuntime) }
-	}
-}
-
-class RatingsRowView @JvmOverloads constructor(
-	context: Context,
-	attrs: AttributeSet? = null,
-) : AbstractComposeView(context, attrs) {
-	private val _item = MutableStateFlow<BaseItemDto?>(null)
-
-	var item: BaseItemDto?
-		get() = _item.value
-		set(value) {
-			_item.value = value
-		}
-
-	init {
-		isFocusable = false
-		descendantFocusability = FOCUS_BLOCK_DESCENDANTS
-		setPadding(0, 4, 0, 0)
-	}
-
-	@Composable
-	override fun Content() {
-		val item by _item.collectAsState()
-		item?.let { InfoRowMultipleRatings(it) }
-	}
-}

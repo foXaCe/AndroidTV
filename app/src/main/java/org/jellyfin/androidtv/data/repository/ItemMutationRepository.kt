@@ -10,15 +10,25 @@ import org.jellyfin.sdk.model.api.UserItemDataDto
 import java.time.Instant
 
 interface ItemMutationRepository {
-	suspend fun setFavorite(item: UUID, favorite: Boolean): UserItemDataDto
-	suspend fun setPlayed(item: UUID, played: Boolean): UserItemDataDto
+	suspend fun setFavorite(
+		item: UUID,
+		favorite: Boolean,
+	): UserItemDataDto
+
+	suspend fun setPlayed(
+		item: UUID,
+		played: Boolean,
+	): UserItemDataDto
 }
 
 class ItemMutationRepositoryImpl(
 	private val api: ApiClient,
 	private val dataRefreshService: DataRefreshService,
 ) : ItemMutationRepository {
-	override suspend fun setFavorite(item: UUID, favorite: Boolean): UserItemDataDto {
+	override suspend fun setFavorite(
+		item: UUID,
+		favorite: Boolean,
+	): UserItemDataDto {
 		val response by when {
 			favorite -> api.ioCall { userLibraryApi.markFavoriteItem(itemId = item) }
 			else -> api.ioCall { userLibraryApi.unmarkFavoriteItem(itemId = item) }
@@ -28,7 +38,10 @@ class ItemMutationRepositoryImpl(
 		return response
 	}
 
-	override suspend fun setPlayed(item: UUID, played: Boolean): UserItemDataDto {
+	override suspend fun setPlayed(
+		item: UUID,
+		played: Boolean,
+	): UserItemDataDto {
 		val response by when {
 			played -> api.ioCall { playStateApi.markPlayedItem(itemId = item) }
 			else -> api.ioCall { playStateApi.markUnplayedItem(itemId = item) }

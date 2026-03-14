@@ -4,7 +4,6 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +23,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -35,20 +35,24 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.model.DataRefreshService
 import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.preference.UserSettingPreferences
-import org.jellyfin.androidtv.preference.constant.NavbarPosition
 import org.jellyfin.androidtv.ui.base.CircularProgressIndicator
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
+import org.jellyfin.androidtv.ui.base.debug.ScreenIdOverlay
+import org.jellyfin.androidtv.ui.base.debug.ScreenIds
 import org.jellyfin.androidtv.ui.base.state.ErrorState
 import org.jellyfin.androidtv.ui.home.mediabar.TrailerResolver
+import org.jellyfin.androidtv.ui.itemdetail.v2.content.LiveTvDetailsContent
 import org.jellyfin.androidtv.ui.itemdetail.v2.content.MovieDetailsContent
 import org.jellyfin.androidtv.ui.itemdetail.v2.content.MusicDetailsContent
 import org.jellyfin.androidtv.ui.itemdetail.v2.content.PersonDetailsContent
 import org.jellyfin.androidtv.ui.itemdetail.v2.content.SeasonDetailsContent
 import org.jellyfin.androidtv.ui.itemdetail.v2.content.SeriesDetailsContent
+import org.jellyfin.androidtv.ui.itemdetail.v2.content.SeriesTimerDetailsContent
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailActionCallbacks
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.getBackdropUrl
 import org.jellyfin.androidtv.ui.navigation.Destinations
@@ -58,12 +62,8 @@ import org.jellyfin.androidtv.ui.playback.PlaybackLauncher
 import org.jellyfin.androidtv.ui.playback.PrePlaybackTrackSelector
 import org.jellyfin.androidtv.ui.playback.ThemeMusicPlayer
 import org.jellyfin.androidtv.ui.playlist.showAddToPlaylistDialog
-import org.jellyfin.androidtv.ui.shared.toolbar.LeftSidebarNavigation
-import org.jellyfin.androidtv.ui.shared.toolbar.MainToolbar
-import org.jellyfin.androidtv.ui.shared.toolbar.MainToolbarActiveButton
 import org.jellyfin.androidtv.util.BitmapBlur
 import org.jellyfin.androidtv.util.PlaybackHelper
-import org.jellyfin.androidtv.util.Utils
 import org.jellyfin.androidtv.util.apiclient.Response
 import org.jellyfin.androidtv.util.sdk.TrailerUtils.getExternalTrailerIntent
 import org.jellyfin.androidtv.util.sdk.TrailerUtils.hasPlayableTrailers
@@ -72,12 +72,53 @@ import org.jellyfin.sdk.api.client.extensions.libraryApi
 import org.jellyfin.sdk.api.client.extensions.userLibraryApi
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.BaseItemKind
+import org.jellyfin.sdk.model.api.SeriesTimerInfoDto
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
 import java.util.UUID
 
 class ItemDetailsFragment : Fragment() {
+	data class Args(
+		val itemId: UUID,
+		val serverId: UUID? = null,
+		val channelId: UUID? = null,
+		val programInfoJson: String? = null,
+		val seriesTimerJson: String? = null,
+	) {
+		fun toBundle() =
+			bundleOf(
+				KEY_ITEM_ID to itemId.toString(),
+				KEY_SERVER_ID to serverId?.toString(),
+				KEY_CHANNEL_ID to channelId?.toString(),
+				KEY_PROGRAM_INFO to programInfoJson,
+				KEY_SERIES_TIMER to seriesTimerJson,
+			)
+
+		companion object {
+			fun fromBundle(bundle: Bundle?): Args? {
+				val itemId =
+					bundle
+						?.getString(KEY_ITEM_ID)
+						?.let(UUID::fromString) ?: return null
+				return Args(
+					itemId = itemId,
+					serverId = bundle.getString(KEY_SERVER_ID)?.let(UUID::fromString),
+					channelId = bundle.getString(KEY_CHANNEL_ID)?.let(UUID::fromString),
+					programInfoJson = bundle.getString(KEY_PROGRAM_INFO),
+					seriesTimerJson = bundle.getString(KEY_SERIES_TIMER),
+				)
+			}
+		}
+	}
+
+	companion object {
+		internal const val KEY_ITEM_ID = "ItemId"
+		internal const val KEY_SERVER_ID = "ServerId"
+		internal const val KEY_CHANNEL_ID = "ChannelId"
+		internal const val KEY_PROGRAM_INFO = "ProgramInfo"
+		internal const val KEY_SERIES_TIMER = "SeriesTimer"
+	}
 
 	private val viewModel: ItemDetailsViewModel by viewModel()
 	private val navigationRepository: NavigationRepository by inject()
@@ -92,210 +133,99 @@ class ItemDetailsFragment : Fragment() {
 
 	private var backdropImage: ImageView? = null
 	private var gradientView: View? = null
-	private var sidebarId: Int = View.NO_ID
-	private var contentId: Int = View.NO_ID
-	private var toolbarId: Int = View.NO_ID
-	private var lastFocusedBeforeSidebar: View? = null
 
 	override fun onCreateView(
 		inflater: LayoutInflater,
 		container: ViewGroup?,
 		savedInstanceState: Bundle?,
 	): View {
-		sidebarId = View.generateViewId()
-		contentId = View.generateViewId()
-		toolbarId = View.generateViewId()
-
-		val mainContainer = object : FrameLayout(requireContext()) {
-			override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-				if (event.action == KeyEvent.ACTION_DOWN) {
-					// Intercept RIGHT when focus is in sidebar to redirect to content
-					if (event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-						val sidebar = findViewById<View>(sidebarId)
-						val focused = findFocus()
-						if (sidebar != null && focused != null && isDescendantOf(focused, sidebar)) {
-							// Restore focus to where the user was before entering the sidebar
-							val restoreTarget = lastFocusedBeforeSidebar
-							if (restoreTarget != null && restoreTarget.isAttachedToWindow && restoreTarget.isFocusable) {
-								restoreTarget.requestFocus()
-								return true
-							}
-							// Fallback to content ComposeView
-							val content = findViewById<View>(contentId)
-							if (content != null) {
-								content.requestFocus()
-								return true
-							}
-						}
-					}
-
-					// Intercept DOWN when focus is in top toolbar to redirect to content
-					if (event.keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-						val toolbar = findViewById<View>(toolbarId)
-						val focused = findFocus()
-						if (toolbar != null && focused != null && isDescendantOf(focused, toolbar)) {
-							val restoreTarget = lastFocusedBeforeSidebar
-							if (restoreTarget != null && restoreTarget.isAttachedToWindow && restoreTarget.isFocusable) {
-								restoreTarget.requestFocus()
-								return true
-							}
-							val content = findViewById<View>(contentId)
-							if (content != null) {
-								content.requestFocus()
-								return true
-							}
-						}
-					}
-				}
-
-				// Consume LEFT when already in sidebar so focus doesn't get trapped
-				if (event.action == KeyEvent.ACTION_DOWN &&
-					event.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-					val sidebar = findViewById<View>(sidebarId)
-					val focused = findFocus()
-					if (sidebar != null && focused != null && isDescendantOf(focused, sidebar)) {
-						return true
-					}
-				}
-
-				// Consume UP when already in toolbar so focus doesn't get trapped
-				if (event.action == KeyEvent.ACTION_DOWN &&
-					event.keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-					val toolbar = findViewById<View>(toolbarId)
-					val focused = findFocus()
-					if (toolbar != null && focused != null && isDescendantOf(focused, toolbar)) {
-						return true
-					}
-				}
-
-				// Let children (Compose) process the event first
-				val handled = super.dispatchKeyEvent(event)
-
-				// If LEFT wasn't handled by Compose (focus is at left edge), redirect to sidebar
-				// Only on fresh press (repeatCount == 0) to avoid triggering when holding left to fast-scroll
-				if (!handled && event.action == KeyEvent.ACTION_DOWN &&
-					event.keyCode == KeyEvent.KEYCODE_DPAD_LEFT && event.repeatCount == 0) {
-					val sidebar = findViewById<View>(sidebarId)
-					if (sidebar != null && sidebar.isVisible) {
-						// Save current focus before entering sidebar
-						lastFocusedBeforeSidebar = findFocus()
-						sidebar.requestFocus()
-						return true
-					}
-				}
-
-				// If UP wasn't handled by Compose (focus is at top edge), redirect to toolbar
-				// Only on fresh press (repeatCount == 0) to avoid triggering when holding up
-				if (!handled && event.action == KeyEvent.ACTION_DOWN &&
-					event.keyCode == KeyEvent.KEYCODE_DPAD_UP && event.repeatCount == 0) {
-					val toolbar = findViewById<View>(toolbarId)
-					if (toolbar != null && toolbar.isVisible) {
-						lastFocusedBeforeSidebar = findFocus()
-						toolbar.requestFocus()
-						return true
-					}
-				}
-
-				return handled
+		val mainContainer =
+			FrameLayout(requireContext()).apply {
+				layoutParams =
+					ViewGroup.LayoutParams(
+						ViewGroup.LayoutParams.MATCH_PARENT,
+						ViewGroup.LayoutParams.MATCH_PARENT,
+					)
+				setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.ds_background))
 			}
-		}.apply {
-			layoutParams = ViewGroup.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.MATCH_PARENT
-			)
-			setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.ds_background))
-		}
 
-		backdropImage = ImageView(requireContext()).apply {
-			layoutParams = FrameLayout.LayoutParams(
-				FrameLayout.LayoutParams.MATCH_PARENT,
-				FrameLayout.LayoutParams.MATCH_PARENT
-			)
-			scaleType = ImageView.ScaleType.CENTER_CROP
-			alpha = 0.8f
-		}
+		backdropImage =
+			ImageView(requireContext()).apply {
+				layoutParams =
+					FrameLayout.LayoutParams(
+						FrameLayout.LayoutParams.MATCH_PARENT,
+						FrameLayout.LayoutParams.MATCH_PARENT,
+					)
+				scaleType = ImageView.ScaleType.CENTER_CROP
+				alpha = 0.55f
+			}
 		mainContainer.addView(backdropImage)
 
-		gradientView = View(requireContext()).apply {
-			layoutParams = FrameLayout.LayoutParams(
-				FrameLayout.LayoutParams.MATCH_PARENT,
-				FrameLayout.LayoutParams.MATCH_PARENT
-			)
-			setBackgroundResource(R.drawable.detail_backdrop_gradient)
-		}
+		gradientView =
+			View(requireContext()).apply {
+				layoutParams =
+					FrameLayout.LayoutParams(
+						FrameLayout.LayoutParams.MATCH_PARENT,
+						FrameLayout.LayoutParams.MATCH_PARENT,
+					)
+				setBackgroundResource(R.drawable.detail_backdrop_gradient)
+			}
 		mainContainer.addView(gradientView)
 
-		val contentView = ComposeView(requireContext()).apply {
-			id = contentId
-			layoutParams = FrameLayout.LayoutParams(
-				FrameLayout.LayoutParams.MATCH_PARENT,
-				FrameLayout.LayoutParams.MATCH_PARENT
-			)
-			setContent {
-				JellyfinTheme {
-					ItemDetailsContent()
-				}
-			}
-		}
-		mainContainer.addView(contentView)
-
-		val navbarPosition = userPreferences[UserPreferences.navbarPosition]
-
-		when (navbarPosition) {
-			NavbarPosition.LEFT -> {
-				val sidebarOverlay = ComposeView(requireContext()).apply {
-					id = sidebarId
-					layoutParams = FrameLayout.LayoutParams(
-						FrameLayout.LayoutParams.WRAP_CONTENT,
-						FrameLayout.LayoutParams.MATCH_PARENT
-					)
-					setContent {
-						LeftSidebarNavigation(
-							activeButton = MainToolbarActiveButton.None,
-						)
-					}
-				}
-				mainContainer.addView(sidebarOverlay)
-			}
-			NavbarPosition.TOP -> {
-				val toolbarOverlay = ComposeView(requireContext()).apply {
-					id = toolbarId
-					layoutParams = FrameLayout.LayoutParams(
+		val contentView =
+			ComposeView(requireContext()).apply {
+				layoutParams =
+					FrameLayout.LayoutParams(
 						FrameLayout.LayoutParams.MATCH_PARENT,
-						FrameLayout.LayoutParams.WRAP_CONTENT
+						FrameLayout.LayoutParams.MATCH_PARENT,
 					)
-					setContent {
-						MainToolbar(
-							activeButton = MainToolbarActiveButton.None,
-						)
+				setContent {
+					JellyfinTheme {
+						ScreenIdOverlay(ScreenIds.ITEM_DETAIL_ID, ScreenIds.ITEM_DETAIL_NAME) {
+							ItemDetailsContent()
+						}
 					}
 				}
-				mainContainer.addView(toolbarOverlay)
 			}
-		}
+		mainContainer.addView(contentView)
 
 		return mainContainer
 	}
 
-	private fun isDescendantOf(view: View, ancestor: View): Boolean {
-		var current: android.view.ViewParent? = view.parent
-		while (current != null) {
-			if (current === ancestor) return true
-			current = current.parent
-		}
-		return false
-	}
-
-	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+	override fun onViewCreated(
+		view: View,
+		savedInstanceState: Bundle?,
+	) {
 		super.onViewCreated(view, savedInstanceState)
 
-		val itemIdStr = arguments?.getString("ItemId")
-		val serverIdStr = arguments?.getString("ServerId")
+		val args = Args.fromBundle(arguments) ?: return
 
-		val itemId = Utils.uuidOrNull(itemIdStr) ?: return
-		val serverId = Utils.uuidOrNull(serverIdStr)
-
-		viewModel.loadItem(itemId, serverId)
+		when {
+			// Channel/Program details (Live TV)
+			args.channelId != null && args.programInfoJson != null -> {
+				val programInfo =
+					try {
+						Json.Default.decodeFromString<BaseItemDto>(args.programInfoJson)
+					} catch (e: Exception) {
+						Timber.e(e, "Failed to parse ProgramInfo JSON")
+						return
+					}
+				viewModel.loadChannelProgram(args.channelId, programInfo)
+			}
+			// Series timer details (Live TV)
+			args.seriesTimerJson != null -> {
+				val seriesTimer =
+					try {
+						Json.Default.decodeFromString<SeriesTimerInfoDto>(args.seriesTimerJson)
+					} catch (e: Exception) {
+						Timber.e(e, "Failed to parse SeriesTimer JSON")
+						return
+					}
+				viewModel.loadSeriesTimer(seriesTimer)
+			}
+			// Standard item details
+			else -> viewModel.loadItem(args.itemId, args.serverId)
+		}
 
 		viewModel.uiState
 			.flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
@@ -313,40 +243,43 @@ class ItemDetailsFragment : Fragment() {
 						gradientView?.isVisible = true
 						val backdropUrl = getBackdropUrl(item, viewModel.effectiveApi)
 						if (backdropUrl != null) {
-						val blurAmount = userSettingPreferences[UserSettingPreferences.detailsBackgroundBlurAmount]
-						val imageLoader = coil3.SingletonImageLoader.get(requireContext())
-						lifecycleScope.launch {
-							val result = imageLoader.execute(
-								coil3.request.ImageRequest.Builder(requireContext())
-									.data(backdropUrl)
-									.build()
-							)
-							val bitmap = result.image?.toBitmap()
-							if (bitmap != null) {
-								val useComposeBlur = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-								val finalBitmap: android.graphics.Bitmap = if (!useComposeBlur && blurAmount > 0) {
-									BitmapBlur.blur(bitmap, blurAmount)
-								} else {
-									if (useComposeBlur && blurAmount > 0) {
-										// On Android 12+, apply RenderEffect blur
-										backdropImage?.setRenderEffect(
-											android.graphics.RenderEffect.createBlurEffect(
-												blurAmount.toFloat(), blurAmount.toFloat(),
-												android.graphics.Shader.TileMode.CLAMP
-											)
-										)
-									}
-									bitmap
+							val blurAmount = userSettingPreferences[UserSettingPreferences.detailsBackgroundBlurAmount]
+							val imageLoader = coil3.SingletonImageLoader.get(requireContext())
+							lifecycleScope.launch {
+								val result =
+									imageLoader.execute(
+										coil3.request.ImageRequest
+											.Builder(requireContext())
+											.data(backdropUrl)
+											.build(),
+									)
+								val bitmap = result.image?.toBitmap()
+								if (bitmap != null) {
+									val useComposeBlur = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+									val finalBitmap: android.graphics.Bitmap =
+										if (!useComposeBlur && blurAmount > 0) {
+											BitmapBlur.blur(bitmap, blurAmount)
+										} else {
+											if (useComposeBlur && blurAmount > 0) {
+												// On Android 12+, apply RenderEffect blur
+												backdropImage?.setRenderEffect(
+													android.graphics.RenderEffect.createBlurEffect(
+														blurAmount.toFloat(),
+														blurAmount.toFloat(),
+														android.graphics.Shader.TileMode.CLAMP,
+													),
+												)
+											}
+											bitmap
+										}
+									backdropImage?.setImageBitmap(finalBitmap)
+									backdropImage?.alpha = 0.55f
 								}
-								backdropImage?.setImageBitmap(finalBitmap)
-								backdropImage?.alpha = 0.8f
 							}
 						}
 					}
-					}
 				}
-			}
-			.launchIn(lifecycleScope)
+			}.launchIn(lifecycleScope)
 	}
 
 	override fun onDestroyView() {
@@ -384,25 +317,27 @@ class ItemDetailsFragment : Fragment() {
 			}
 
 			when (item.type) {
-				BaseItemKind.PERSON -> PersonDetailsContent(
-					uiState = uiState,
-					contentFocusRequester = contentFocusRequester,
-					showBackdrop = true,
-					api = api,
-					onNavigateToItem = onNavigateToItem,
-				)
+				BaseItemKind.PERSON ->
+					PersonDetailsContent(
+						uiState = uiState,
+						contentFocusRequester = contentFocusRequester,
+						showBackdrop = true,
+						api = api,
+						onNavigateToItem = onNavigateToItem,
+					)
 
-				BaseItemKind.SEASON -> SeasonDetailsContent(
-					uiState = uiState,
-					contentFocusRequester = contentFocusRequester,
-					showBackdrop = false,
-					api = api,
-					blurAmount = blurAmount,
-					onNavigateToItem = onNavigateToItem,
-					onPlayEpisode = { episode -> play(episode, 0, false) },
-					onToggleWatched = { viewModel.toggleWatched() },
-					onToggleFavorite = { viewModel.toggleFavorite() },
-				)
+				BaseItemKind.SEASON ->
+					SeasonDetailsContent(
+						uiState = uiState,
+						contentFocusRequester = contentFocusRequester,
+						showBackdrop = false,
+						api = api,
+						blurAmount = blurAmount,
+						onNavigateToItem = onNavigateToItem,
+						onPlayEpisode = { episode -> play(episode, 0, false) },
+						onToggleWatched = { viewModel.toggleWatched() },
+						onToggleFavorite = { viewModel.toggleFavorite() },
+					)
 
 				BaseItemKind.SERIES -> {
 					val actionCallbacks = createActionCallbacks(item, uiState, context)
@@ -444,16 +379,39 @@ class ItemDetailsFragment : Fragment() {
 					)
 				}
 
-				else -> {
-					val actionCallbacks = createActionCallbacks(item, uiState, context)
-					MovieDetailsContent(
-						uiState = uiState,
-						contentFocusRequester = contentFocusRequester,
-						api = api,
-						actionCallbacks = actionCallbacks,
-						onNavigateToItem = onNavigateToItem,
-					)
-				}
+				else ->
+					when {
+						// Series timer details (detected by presence of seriesTimerInfo)
+						uiState.seriesTimerInfo != null ->
+							SeriesTimerDetailsContent(
+								uiState = uiState,
+								contentFocusRequester = contentFocusRequester,
+								api = api,
+								onCancelSeriesTimer = { viewModel.cancelSeriesTimer() },
+								onNavigateToItem = onNavigateToItem,
+							)
+						// Live TV program details
+						item.type == BaseItemKind.PROGRAM ->
+							LiveTvDetailsContent(
+								uiState = uiState,
+								contentFocusRequester = contentFocusRequester,
+								api = api,
+								onPlay = { play(item, 0, false) },
+								onToggleRecord = { viewModel.toggleRecord() },
+								onToggleRecordSeries = { viewModel.toggleRecordSeries() },
+								onNavigateToItem = onNavigateToItem,
+							)
+						else -> {
+							val actionCallbacks = createActionCallbacks(item, uiState, context)
+							MovieDetailsContent(
+								uiState = uiState,
+								contentFocusRequester = contentFocusRequester,
+								api = api,
+								actionCallbacks = actionCallbacks,
+								onNavigateToItem = onNavigateToItem,
+							)
+						}
+					}
 			}
 		}
 	}
@@ -462,27 +420,35 @@ class ItemDetailsFragment : Fragment() {
 		item: BaseItemDto,
 		uiState: ItemDetailsUiState,
 		context: android.content.Context,
-	): DetailActionCallbacks = DetailActionCallbacks(
-		trackSelector = trackSelector,
-		hasPlayableTrailers = hasPlayableTrailers(context, item),
-		onPlay = { handlePlay(item, uiState) },
-		onResume = { handleResume(item) },
-		onShuffle = { handleShuffle(item) },
-		onPlayTrailers = { playTrailers(item) },
-		onPlayInstantMix = { playbackHelper.playInstantMix(context, item) },
-		onToggleWatched = { viewModel.toggleWatched() },
-		onToggleFavorite = { viewModel.toggleFavorite() },
-		onConfirmDelete = { confirmDeleteItem(item) },
-		onAddToPlaylist = { showAddToPlaylistDialog(context, item.id) },
-		onGoToSeries = if (item.type == BaseItemKind.EPISODE && item.seriesId != null) {
-			{ item.seriesId?.let { seriesId -> navigationRepository.navigate(Destinations.itemDetails(seriesId, viewModel.serverId)) } }
-		} else null,
-		onLoadItem = { id -> viewModel.loadItem(id) },
-	)
+	): DetailActionCallbacks =
+		DetailActionCallbacks(
+			trackSelector = trackSelector,
+			hasPlayableTrailers = hasPlayableTrailers(context, item),
+			onPlay = { handlePlay(item, uiState) },
+			onResume = { handleResume(item) },
+			onShuffle = { handleShuffle(item) },
+			onPlayTrailers = { playTrailers(item) },
+			onPlayInstantMix = { playbackHelper.playInstantMix(context, item) },
+			onToggleWatched = { viewModel.toggleWatched() },
+			onToggleFavorite = { viewModel.toggleFavorite() },
+			onConfirmDelete = { confirmDeleteItem(item) },
+			onAddToPlaylist = { showAddToPlaylistDialog(context, item.id) },
+			onGoToSeries =
+				if (item.type == BaseItemKind.EPISODE && item.seriesId != null) {
+					{ item.seriesId?.let { seriesId -> navigationRepository.navigate(Destinations.itemDetails(seriesId, viewModel.serverId)) } }
+				} else {
+					null
+				},
+			onLoadItem = { id -> viewModel.loadItem(id) },
+		)
 
 	// ---- Playback helpers ----
 
-	private fun play(item: BaseItemDto, positionMs: Int, shuffle: Boolean) {
+	private fun play(
+		item: BaseItemDto,
+		positionMs: Int,
+		shuffle: Boolean,
+	) {
 		playbackHelper.getItemsToPlay(
 			requireContext(),
 			item,
@@ -497,11 +463,14 @@ class ItemDetailsFragment : Fragment() {
 					}
 					playbackLauncher.launch(requireContext(), response, positionMs, false, 0, shuffle)
 				}
-			}
+			},
 		)
 	}
 
-	private fun handlePlay(item: BaseItemDto, uiState: ItemDetailsUiState) {
+	private fun handlePlay(
+		item: BaseItemDto,
+		uiState: ItemDetailsUiState,
+	) {
 		when (item.type) {
 			BaseItemKind.SERIES -> {
 				if (uiState.nextUp.isNotEmpty()) {
@@ -541,19 +510,23 @@ class ItemDetailsFragment : Fragment() {
 			// External trailer — resolve YouTube video and play in-app WebView
 			lifecycleScope.launch {
 				try {
-					val trailerInfo = withContext(Dispatchers.IO) {
-						TrailerResolver.resolveTrailerFromItem(item)
-					}
+					val trailerInfo =
+						withContext(Dispatchers.IO) {
+							TrailerResolver.resolveTrailerFromItem(item)
+						}
 
 					if (trailerInfo != null) {
-						val segmentsJson = trailerInfo.segments.joinToString(",", "[", "]") { seg ->
-							"""{"start":${seg.startTime},"end":${seg.endTime},"category":"${seg.category}","action":"${seg.actionType}"}"""
-						}
-						navigationRepository.navigate(Destinations.trailerPlayer(
-							videoId = trailerInfo.youtubeVideoId,
-							startSeconds = trailerInfo.startSeconds,
-							segmentsJson = segmentsJson,
-						))
+						val segmentsJson =
+							trailerInfo.segments.joinToString(",", "[", "]") { seg ->
+								"""{"start":${seg.startTime},"end":${seg.endTime},"category":"${seg.category}","action":"${seg.actionType}"}"""
+							}
+						navigationRepository.navigate(
+							Destinations.trailerPlayer(
+								videoId = trailerInfo.youtubeVideoId,
+								startSeconds = trailerInfo.startSeconds,
+								segmentsJson = segmentsJson,
+							),
+						)
 					} else {
 						// No YouTube trailer found — fall back to external intent
 						val intent = getExternalTrailerIntent(requireContext(), item)
@@ -583,9 +556,12 @@ class ItemDetailsFragment : Fragment() {
 			// Local trailer
 			lifecycleScope.launch {
 				try {
-					val trailers = withContext(Dispatchers.IO) {
-						viewModel.effectiveApi.userLibraryApi.getLocalTrailers(itemId = item.id).content
-					}
+					val trailers =
+						withContext(Dispatchers.IO) {
+							viewModel.effectiveApi.userLibraryApi
+								.getLocalTrailers(itemId = item.id)
+								.content
+						}
 					if (trailers.isNotEmpty()) {
 						val trailerIds = trailers.map { it.id }
 						playbackHelper.retrieveAndPlay(trailerIds, false, null, null, requireContext())
@@ -599,14 +575,14 @@ class ItemDetailsFragment : Fragment() {
 	}
 
 	private fun confirmDeleteItem(item: BaseItemDto) {
-		android.app.AlertDialog.Builder(requireContext())
+		android.app.AlertDialog
+			.Builder(requireContext())
 			.setTitle(R.string.item_delete_confirm_title)
 			.setMessage(R.string.item_delete_confirm_message)
 			.setNegativeButton(R.string.lbl_no, null)
 			.setPositiveButton(R.string.lbl_delete) { _, _ ->
 				deleteItem(item)
-			}
-			.show()
+			}.show()
 	}
 
 	private fun deleteItem(item: BaseItemDto) {
@@ -621,8 +597,11 @@ class ItemDetailsFragment : Fragment() {
 				return@launch
 			}
 			dataRefreshService.lastDeletedItemId = item.id
-			if (navigationRepository.canGoBack) navigationRepository.goBack()
-			else navigationRepository.navigate(Destinations.home)
+			if (navigationRepository.canGoBack) {
+				navigationRepository.goBack()
+			} else {
+				navigationRepository.navigate(Destinations.home)
+			}
 			Toast.makeText(requireContext(), getString(R.string.item_deleted, item.name), Toast.LENGTH_LONG).show()
 		}
 	}

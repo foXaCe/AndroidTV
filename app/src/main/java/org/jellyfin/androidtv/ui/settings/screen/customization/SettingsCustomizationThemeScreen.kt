@@ -28,7 +28,11 @@ fun SettingsCustomizationThemeScreen() {
 	val activity = LocalActivity.current
 	val context = LocalContext.current
 	val userRepository = koinInject<UserRepository>()
-	val userId = userRepository.currentUser.collectAsState().value?.id
+	val userId =
+		userRepository.currentUser
+			.collectAsState()
+			.value
+			?.id
 	val userSettingPreferences = remember(userId) { UserSettingPreferences(context, userId) }
 	var focusColor by rememberPreference(userSettingPreferences, UserSettingPreferences.focusColor)
 
@@ -52,7 +56,7 @@ fun SettingsCustomizationThemeScreen() {
 					} else {
 						router.back()
 					}
-				}
+				},
 			)
 		}
 	}

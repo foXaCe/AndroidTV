@@ -38,7 +38,7 @@ fun SettingsPlaybackResumeSubtractDurationScreen() {
 				onClick = {
 					resumeSubtractDuration = value
 					router.back()
-				}
+				},
 			)
 		}
 	}

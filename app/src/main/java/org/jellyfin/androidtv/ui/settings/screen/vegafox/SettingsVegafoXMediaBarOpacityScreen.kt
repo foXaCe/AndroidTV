@@ -41,7 +41,7 @@ fun SettingsVegafoXMediaBarOpacityScreen() {
 				onClick = {
 					mediaBarOverlayOpacity = value
 					router.back()
-				}
+				},
 			)
 		}
 	}

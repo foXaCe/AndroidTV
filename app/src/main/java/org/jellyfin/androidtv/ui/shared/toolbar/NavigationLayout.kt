@@ -1,8 +1,8 @@
 package org.jellyfin.androidtv.ui.shared.toolbar
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -39,7 +39,7 @@ fun rememberNavbarPosition(): NavbarPosition {
 fun NavigationLayout(
 	activeButton: MainToolbarActiveButton,
 	activeLibraryId: UUID? = null,
-	content: @Composable () -> Unit
+	content: @Composable () -> Unit,
 ) {
 	when (rememberNavbarPosition()) {
 		NavbarPosition.LEFT -> {
@@ -48,17 +48,24 @@ fun NavigationLayout(
 				
 				LeftSidebarNavigation(
 					activeButton = activeButton,
-					activeLibraryId = activeLibraryId
+					activeLibraryId = activeLibraryId,
 				)
 			}
 		}
 		NavbarPosition.TOP -> {
-			Column(modifier = Modifier.fillMaxSize()) {
+			Box(modifier = Modifier.fillMaxSize()) {
+				Box(
+					modifier =
+						Modifier
+							.fillMaxSize()
+							.padding(start = SIDEBAR_WIDTH),
+				) {
+					content()
+				}
 				MainToolbar(
 					activeButton = activeButton,
-					activeLibraryId = activeLibraryId
+					activeLibraryId = activeLibraryId,
 				)
-				content()
 			}
 		}
 	}
@@ -71,19 +78,19 @@ fun NavigationLayout(
 @Composable
 fun NavigationOverlay(
 	activeButton: MainToolbarActiveButton,
-	activeLibraryId: UUID? = null
+	activeLibraryId: UUID? = null,
 ) {
 	when (rememberNavbarPosition()) {
 		NavbarPosition.LEFT -> {
 			LeftSidebarNavigation(
 				activeButton = activeButton,
-				activeLibraryId = activeLibraryId
+				activeLibraryId = activeLibraryId,
 			)
 		}
 		NavbarPosition.TOP -> {
 			MainToolbar(
 				activeButton = activeButton,
-				activeLibraryId = activeLibraryId
+				activeLibraryId = activeLibraryId,
 			)
 		}
 	}

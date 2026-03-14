@@ -12,5 +12,5 @@ data class AggregatedLibrary(
 	val library: BaseItemDto,
 	val server: Server,
 	val userId: UUID,
-	val displayName: String // e.g., "Movies (Server1)"
+	val displayName: String, // e.g., "Movies (Server1)"
 )

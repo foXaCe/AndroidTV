@@ -52,10 +52,11 @@ fun SeriesTrailerOverlay(
 
 	var trailerInfo by remember { mutableStateOf<TrailerPreviewInfo?>(null) }
 
-	val effectiveApi = remember(item.serverId) {
-		val serverId = UUIDUtils.parseUUID(item.serverId)
-		if (serverId != null) apiClientFactory.getApiClientForServer(serverId) ?: api else api
-	}
+	val effectiveApi =
+		remember(item.serverId) {
+			val serverId = UUIDUtils.parseUUID(item.serverId)
+			if (serverId != null) apiClientFactory.getApiClientForServer(serverId) ?: api else api
+		}
 
 	LaunchedEffect(focused, item.id) {
 		if (!focused) {
@@ -63,11 +64,7 @@ fun SeriesTrailerOverlay(
 			return@LaunchedEffect
 		}
 
-		Timber.d("SeriesTrailer: Card focused for ${item.name}, waiting ${TRAILER_START_DELAY_MS}ms")
-
 		delay(TRAILER_START_DELAY_MS)
-
-		Timber.d("SeriesTrailer: Resolving trailer for ${item.name}")
 
 		try {
 			val userId = userRepository.currentUser.value?.id
@@ -76,19 +73,17 @@ fun SeriesTrailerOverlay(
 				return@LaunchedEffect
 			}
 
-			val info = withContext(Dispatchers.IO) {
-				TrailerResolver.resolveTrailerPreview(
-					apiClient = effectiveApi,
-					itemId = item.id,
-					userId = userId,
-				)
-			}
+			val info =
+				withContext(Dispatchers.IO) {
+					TrailerResolver.resolveTrailerPreview(
+						apiClient = effectiveApi,
+						itemId = item.id,
+						userId = userId,
+					)
+				}
 
 			if (info != null) {
-				Timber.d("SeriesTrailer: Trailer resolved for ${item.name}: ${info.youtubeVideoId}")
 				trailerInfo = info
-			} else {
-				Timber.d("SeriesTrailer: No trailer available for ${item.name}")
 			}
 		} catch (e: Exception) {
 			Timber.w(e, "SeriesTrailer: Failed to resolve trailer for ${item.name}")
@@ -104,13 +99,13 @@ fun SeriesTrailerOverlay(
 			muted = muted,
 			isVisible = true,
 			onVideoEnded = { trailerInfo = null },
-			modifier = modifier
-				.fillMaxSize()
-				.clip(JellyfinTheme.shapes.medium),
+			modifier =
+				modifier
+					.fillMaxSize()
+					.clip(JellyfinTheme.shapes.medium),
 		)
 	}
 }
 
 /** Whether the given item type supports trailer preview. */
-fun isEligibleForTrailerPreview(item: BaseItemDto?): Boolean =
-	item?.type == BaseItemKind.SERIES
+fun isEligibleForTrailerPreview(item: BaseItemDto?): Boolean = item?.type == BaseItemKind.SERIES

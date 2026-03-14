@@ -18,10 +18,10 @@ import org.jellyfin.androidtv.databinding.DialogPinEntryBinding
  */
 object PinEntryDialog {
 	enum class Mode {
-		SET,      // Setting a new PIN (with confirmation)
-		VERIFY    // Verifying existing PIN
+		SET, // Setting a new PIN (with confirmation)
+		VERIFY, // Verifying existing PIN
 	}
-	
+
 	/**
 	 * Show PIN entry dialog for setting or verifying a PIN
 	 * @param context Android context
@@ -33,21 +33,21 @@ object PinEntryDialog {
 		context: Context,
 		mode: Mode,
 		onComplete: (String?) -> Unit,
-		onForgotPin: (() -> Unit)? = null
+		onForgotPin: (() -> Unit)? = null,
 	) {
 		when (mode) {
 			Mode.SET -> showSetPinDialog(context, onComplete)
 			Mode.VERIFY -> showVerifyPinDialog(context, onComplete, onForgotPin)
 		}
 	}
-	
+
 	/**
 	 * Simple verification dialog - just enter PIN once
 	 */
 	private fun showVerifyPinDialog(
 		context: Context,
 		onComplete: (String?) -> Unit,
-		onForgotPin: (() -> Unit)? = null
+		onForgotPin: (() -> Unit)? = null,
 	) {
 		showPinDialog(
 			context = context,
@@ -58,16 +58,16 @@ object PinEntryDialog {
 			onCancel = {
 				onComplete(null)
 			},
-			onForgotPin = onForgotPin
+			onForgotPin = onForgotPin,
 		)
 	}
-	
+
 	/**
 	 * Set PIN dialog - enter PIN twice for confirmation
 	 */
 	private fun showSetPinDialog(
 		context: Context,
-		onComplete: (String?) -> Unit
+		onComplete: (String?) -> Unit,
 	) {
 		var firstPin: String? = null
 		
@@ -101,17 +101,17 @@ object PinEntryDialog {
 							},
 							onCancel = {
 								onComplete(null)
-							}
+							},
 						)
 					}
 				}
 			},
 			onCancel = {
 				onComplete(null)
-			}
+			},
 		)
 	}
-	
+
 	/**
 	 * Low-level PIN dialog display
 	 */
@@ -120,7 +120,7 @@ object PinEntryDialog {
 		title: String? = null,
 		onPinEntered: (String) -> Unit,
 		onCancel: () -> Unit = {},
-		onForgotPin: (() -> Unit)? = null
+		onForgotPin: (() -> Unit)? = null,
 	) {
 		val binding = DialogPinEntryBinding.inflate(LayoutInflater.from(context))
 		
@@ -134,10 +134,12 @@ object PinEntryDialog {
 		binding.pinInput.isFocusable = true
 		binding.pinInput.isFocusableInTouchMode = false
 		
-		val dialog = AlertDialog.Builder(context)
-			.setView(binding.root)
-			.setCancelable(true)
-			.create()
+		val dialog =
+			AlertDialog
+				.Builder(context)
+				.setView(binding.root)
+				.setCancelable(true)
+				.create()
 		
 		// Hide keyboard when dialog window is created
 		dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
@@ -196,90 +198,91 @@ object PinEntryDialog {
 		}
 		
 		// Create a shared key listener for all PIN entry elements
-		val pinKeyListener = View.OnKeyListener { view, keyCode, event ->
-			if (event.action == KeyEvent.ACTION_DOWN) {
-				when (keyCode) {
-					KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_DPAD_CENTER -> {
-						// Let buttons handle their own click, only intercept for text field
-						if (view == binding.pinInput) {
-							val pin = binding.pinInput.text.toString()
-							if (pin.isNotEmpty()) {
-								dialog.dismiss()
-								onPinEntered(pin)
+		val pinKeyListener =
+			View.OnKeyListener { view, keyCode, event ->
+				if (event.action == KeyEvent.ACTION_DOWN) {
+					when (keyCode) {
+						KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_DPAD_CENTER -> {
+							// Let buttons handle their own click, only intercept for text field
+							if (view == binding.pinInput) {
+								val pin = binding.pinInput.text.toString()
+								if (pin.isNotEmpty()) {
+									dialog.dismiss()
+									onPinEntered(pin)
+								}
+								true
+							} else {
+								false // Let the button's click listener handle it
+							}
+						}
+						// Handle numeric key presses
+						KeyEvent.KEYCODE_0 -> {
+							appendPinDigit(binding, "0")
+							true
+						}
+						KeyEvent.KEYCODE_1 -> {
+							appendPinDigit(binding, "1")
+							true
+						}
+						KeyEvent.KEYCODE_2 -> {
+							appendPinDigit(binding, "2")
+							true
+						}
+						KeyEvent.KEYCODE_3 -> {
+							appendPinDigit(binding, "3")
+							true
+						}
+						KeyEvent.KEYCODE_4 -> {
+							appendPinDigit(binding, "4")
+							true
+						}
+						KeyEvent.KEYCODE_5 -> {
+							appendPinDigit(binding, "5")
+							true
+						}
+						KeyEvent.KEYCODE_6 -> {
+							appendPinDigit(binding, "6")
+							true
+						}
+						KeyEvent.KEYCODE_7 -> {
+							appendPinDigit(binding, "7")
+							true
+						}
+						KeyEvent.KEYCODE_8 -> {
+							appendPinDigit(binding, "8")
+							true
+						}
+						KeyEvent.KEYCODE_9 -> {
+							appendPinDigit(binding, "9")
+							true
+						}
+						KeyEvent.KEYCODE_DEL -> {
+							// Delete key removes last digit
+							val text = binding.pinInput.text
+							if (text != null && text.isNotEmpty()) {
+								text.delete(text.length - 1, text.length)
+								binding.pinError.isVisible = false
 							}
 							true
-						} else {
-							false // Let the button's click listener handle it
 						}
-					}
-					// Handle numeric key presses
-					KeyEvent.KEYCODE_0 -> {
-						appendPinDigit(binding, "0")
-						true
-					}
-					KeyEvent.KEYCODE_1 -> {
-						appendPinDigit(binding, "1")
-						true
-					}
-					KeyEvent.KEYCODE_2 -> {
-						appendPinDigit(binding, "2")
-						true
-					}
-					KeyEvent.KEYCODE_3 -> {
-						appendPinDigit(binding, "3")
-						true
-					}
-					KeyEvent.KEYCODE_4 -> {
-						appendPinDigit(binding, "4")
-						true
-					}
-					KeyEvent.KEYCODE_5 -> {
-						appendPinDigit(binding, "5")
-						true
-					}
-					KeyEvent.KEYCODE_6 -> {
-						appendPinDigit(binding, "6")
-						true
-					}
-					KeyEvent.KEYCODE_7 -> {
-						appendPinDigit(binding, "7")
-						true
-					}
-					KeyEvent.KEYCODE_8 -> {
-						appendPinDigit(binding, "8")
-						true
-					}
-					KeyEvent.KEYCODE_9 -> {
-						appendPinDigit(binding, "9")
-						true
-					}
-					KeyEvent.KEYCODE_DEL -> {
-						// Delete key removes last digit
-						val text = binding.pinInput.text
-						if (text != null && text.isNotEmpty()) {
-							text.delete(text.length - 1, text.length)
-							binding.pinError.isVisible = false
+						KeyEvent.KEYCODE_BACK -> {
+							// Back key deletes digit or closes dialog
+							val text = binding.pinInput.text
+							if (text != null && text.isNotEmpty()) {
+								text.delete(text.length - 1, text.length)
+								binding.pinError.isVisible = false
+							} else {
+								dialog.dismiss()
+								onCancel()
+							}
+							true
 						}
-						true
+						else -> false
 					}
-					KeyEvent.KEYCODE_BACK -> {
-						// Back key deletes digit or closes dialog
-						val text = binding.pinInput.text
-						if (text != null && text.isNotEmpty()) {
-							text.delete(text.length - 1, text.length)
-							binding.pinError.isVisible = false
-						} else {
-							dialog.dismiss()
-							onCancel()
-						}
-						true
-					}
-					else -> false
+				} else {
+					false
 				}
-			} else {
-				false
 			}
-		}
 		
 		// Apply key listener to all PIN entry elements
 		binding.pinInput.setOnKeyListener(pinKeyListener)
@@ -310,15 +313,18 @@ object PinEntryDialog {
 		// Focus on the first numeric button instead of the EditText to avoid keyboard
 		binding.pinButton1.requestFocus()
 	}
-	
-	private fun appendPinDigit(binding: DialogPinEntryBinding, digit: String) {
+
+	private fun appendPinDigit(
+		binding: DialogPinEntryBinding,
+		digit: String,
+	) {
 		val currentText = binding.pinInput.text?.toString() ?: ""
-		if (currentText.length < 10) {  // Match maxLength from XML
+		if (currentText.length < 10) { // Match maxLength from XML
 			binding.pinInput.append(digit)
 			binding.pinError.isVisible = false
 		}
 	}
-	
+
 	fun showIncorrectPin(binding: DialogPinEntryBinding) {
 		binding.pinError.isVisible = true
 		binding.pinInput.text?.clear()

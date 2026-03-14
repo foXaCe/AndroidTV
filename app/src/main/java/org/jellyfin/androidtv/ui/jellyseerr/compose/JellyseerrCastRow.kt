@@ -10,11 +10,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.tv.material3.Text
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrCastMemberDto
-import org.jellyfin.androidtv.ui.base.JellyfinTheme
-import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 
 @Composable
 fun JellyseerrCastRow(
@@ -25,8 +28,13 @@ fun JellyseerrCastRow(
 	Column(modifier = modifier.fillMaxWidth()) {
 		Text(
 			text = stringResource(R.string.lbl_cast_section),
-			style = JellyfinTheme.typography.titleLarge,
-			color = JellyfinTheme.colorScheme.textPrimary,
+			style =
+				TextStyle(
+					fontFamily = BebasNeue,
+					fontSize = 20.sp,
+					letterSpacing = 2.sp,
+					color = VegafoXColors.TextPrimary,
+				),
 			modifier = Modifier.padding(bottom = 16.dp),
 		)
 
@@ -45,8 +53,11 @@ fun JellyseerrCastRow(
 		} else {
 			Text(
 				text = stringResource(R.string.jellyseerr_cast_not_available),
-				style = JellyfinTheme.typography.bodyMedium,
-				color = JellyfinTheme.colorScheme.textSecondary,
+				style =
+					TextStyle(
+						fontSize = 14.sp,
+						color = VegafoXColors.TextSecondary,
+					),
 			)
 		}
 	}

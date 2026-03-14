@@ -69,9 +69,10 @@ private fun LyricsLine(
 		textAlign = TextAlign.Center,
 		fontSize = fontSize,
 		color = color,
-		modifier = Modifier
-			.padding(bottom = gap)
-			.scale(scale)
+		modifier =
+			Modifier
+				.padding(bottom = gap)
+				.scale(scale),
 	)
 }
 
@@ -84,9 +85,10 @@ private fun <T> LyricsBoxContent(
 ) = Layout(
 	modifier = modifier,
 	measurePolicy = { measurables, constraints ->
-		val placeables = measurables.map { measurable ->
-			measurable.measure(constraints.copy(minWidth = constraints.maxWidth))
-		}
+		val placeables =
+			measurables.map { measurable ->
+				measurable.measure(constraints.copy(minWidth = constraints.maxWidth))
+			}
 		if (onMeasured != null) {
 			val totalHeight = placeables.sumOf { it.height }.toFloat()
 			onMeasured(LyricsBoxContentMeasurements(Size(1f, totalHeight), placeables))
@@ -106,7 +108,6 @@ private fun <T> LyricsBoxContent(
 			}
 		}
 	},
-
 	content = {
 		items.forEachIndexed { index, item ->
 			itemContent(item, index)
@@ -140,10 +141,11 @@ fun LyricsBox(
 
 	LyricsBoxContent(
 		items = lines,
-		modifier = Modifier.graphicsLayer {
-			translationY = -activeLineOffsetAnimation.value
-		},
-		onMeasured = { measurements -> lineMeasurements = measurements.items }
+		modifier =
+			Modifier.graphicsLayer {
+				translationY = -activeLineOffsetAnimation.value
+			},
+		onMeasured = { measurements -> lineMeasurements = measurements.items },
 	) { line, index ->
 		LyricsLine(
 			text = line.text,
@@ -169,10 +171,11 @@ fun LyricsBox(
 
 	LyricsBoxContent(
 		items = lines,
-		modifier = Modifier.graphicsLayer {
-			translationY = -(progress * totalHeight)
-		},
-		onMeasured = { measurements -> totalHeight = measurements.size.height }
+		modifier =
+			Modifier.graphicsLayer {
+				translationY = -(progress * totalHeight)
+			},
+		onMeasured = { measurements -> totalHeight = measurements.size.height },
 	) { line, index ->
 		LyricsLine(
 			text = line,
@@ -196,9 +199,10 @@ fun LyricsDtoBox(
 	val isTimed = lyrics.firstOrNull()?.start != null
 	if (isTimed) {
 		LyricsBox(
-			lines = lyrics.map {
-				TimedLine(it.start?.ticks ?: Duration.ZERO, it.text)
-			},
+			lines =
+				lyrics.map {
+					TimedLine(it.start?.ticks ?: Duration.ZERO, it.text)
+				},
 			currentTimestamp = currentTimestamp,
 			fontSize = fontSize,
 			color = color,

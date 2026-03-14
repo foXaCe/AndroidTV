@@ -22,20 +22,21 @@ fun SettingsVegafoXMediaBarColorScreen() {
 	val userSettingPreferences = koinInject<UserSettingPreferences>()
 	var mediaBarOverlayColor by rememberPreference(userSettingPreferences, UserSettingPreferences.mediaBarOverlayColor)
 
-	val options = listOf(
-		"black" to stringResource(R.string.pref_media_bar_color_black),
-		"gray" to stringResource(R.string.pref_media_bar_color_gray),
-		"dark_blue" to stringResource(R.string.pref_media_bar_color_dark_blue),
-		"purple" to stringResource(R.string.pref_media_bar_color_purple),
-		"teal" to stringResource(R.string.pref_media_bar_color_teal),
-		"navy" to stringResource(R.string.pref_media_bar_color_navy),
-		"charcoal" to stringResource(R.string.pref_media_bar_color_charcoal),
-		"brown" to stringResource(R.string.pref_media_bar_color_brown),
-		"dark_red" to stringResource(R.string.pref_media_bar_color_dark_red),
-		"dark_green" to stringResource(R.string.pref_media_bar_color_dark_green),
-		"slate" to stringResource(R.string.pref_media_bar_color_slate),
-		"indigo" to stringResource(R.string.pref_media_bar_color_indigo)
-	)
+	val options =
+		listOf(
+			"black" to stringResource(R.string.pref_media_bar_color_black),
+			"gray" to stringResource(R.string.pref_media_bar_color_gray),
+			"dark_blue" to stringResource(R.string.pref_media_bar_color_dark_blue),
+			"purple" to stringResource(R.string.pref_media_bar_color_purple),
+			"teal" to stringResource(R.string.pref_media_bar_color_teal),
+			"navy" to stringResource(R.string.pref_media_bar_color_navy),
+			"charcoal" to stringResource(R.string.pref_media_bar_color_charcoal),
+			"brown" to stringResource(R.string.pref_media_bar_color_brown),
+			"dark_red" to stringResource(R.string.pref_media_bar_color_dark_red),
+			"dark_green" to stringResource(R.string.pref_media_bar_color_dark_green),
+			"slate" to stringResource(R.string.pref_media_bar_color_slate),
+			"indigo" to stringResource(R.string.pref_media_bar_color_indigo),
+		)
 
 	SettingsColumn {
 		item {
@@ -52,7 +53,7 @@ fun SettingsVegafoXMediaBarColorScreen() {
 				onClick = {
 					mediaBarOverlayColor = value
 					router.back()
-				}
+				},
 			)
 		}
 	}

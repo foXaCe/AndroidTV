@@ -31,7 +31,7 @@ abstract class SharedPreferenceStore(
 	/**
 	 * SharedPreferences to read from and write to
 	 */
-	protected val sharedPreferences: SharedPreferences
+	protected val sharedPreferences: SharedPreferences,
 ) : PreferenceStore<SharedPreferences.Editor, SharedPreferences>() {
 	// Internal helpers
 	private fun transaction(body: SharedPreferences.Editor.() -> Unit) {
@@ -40,60 +40,96 @@ abstract class SharedPreferenceStore(
 		editor.apply()
 	}
 
-	override fun getInt(key: String, defaultValue: Int) =
-		sharedPreferences.getInt(key, defaultValue)
+	override fun getInt(
+		key: String,
+		defaultValue: Int,
+	) = sharedPreferences.getInt(key, defaultValue)
 
-	override fun getLong(key: String, defaultValue: Long) =
-		sharedPreferences.getLong(key, defaultValue)
+	override fun getLong(
+		key: String,
+		defaultValue: Long,
+	) = sharedPreferences.getLong(key, defaultValue)
 
-	override fun getFloat(key: String, defaultValue: Float) =
-		sharedPreferences.getFloat(key, defaultValue)
+	override fun getFloat(
+		key: String,
+		defaultValue: Float,
+	) = sharedPreferences.getFloat(key, defaultValue)
 
-	override fun getBool(key: String, defaultValue: Boolean) =
-		sharedPreferences.getBoolean(key, defaultValue)
+	override fun getBool(
+		key: String,
+		defaultValue: Boolean,
+	) = sharedPreferences.getBoolean(key, defaultValue)
 
-	override fun getString(key: String, defaultValue: String) =
-		sharedPreferences.getString(key, defaultValue) ?: defaultValue
+	override fun getString(
+		key: String,
+		defaultValue: String,
+	) = sharedPreferences.getString(key, defaultValue) ?: defaultValue
 
-	override fun setInt(key: String, value: Int) = transaction { putInt(key, value) }
-	override fun setLong(key: String, value: Long) = transaction { putLong(key, value) }
-	override fun setFloat(key: String, value: Float) = transaction { putFloat(key, value) }
-	override fun setBool(key: String, value: Boolean) =
-		transaction { putBoolean(key, value) }
+	override fun setInt(
+		key: String,
+		value: Int,
+	) = transaction { putInt(key, value) }
 
-	override fun setString(key: String, value: String) =
-		transaction { putString(key, value) }
+	override fun setLong(
+		key: String,
+		value: Long,
+	) = transaction { putLong(key, value) }
+
+	override fun setFloat(
+		key: String,
+		value: Float,
+	) = transaction { putFloat(key, value) }
+
+	override fun setBool(
+		key: String,
+		value: Boolean,
+	) = transaction { putBoolean(key, value) }
+
+	override fun setString(
+		key: String,
+		value: String,
+	) = transaction { putString(key, value) }
 
 	override fun <T : Enum<T>> getEnum(preference: Preference<T>): T {
 		val stringValue = getString(preference.key, "")
-		return if (stringValue.isBlank()) preference.defaultValue
-		else preference.type.java.enumConstants?.find {
-			(it is PreferenceEnum && it.serializedName == stringValue) || it.name == stringValue
-		} ?: preference.defaultValue
+		return if (stringValue.isBlank()) {
+			preference.defaultValue
+		} else {
+			preference.type.java.enumConstants?.find {
+				(it is PreferenceEnum && it.serializedName == stringValue) || it.name == stringValue
+			} ?: preference.defaultValue
+		}
 	}
 
-	override fun <V : Enum<V>> setEnum(preference: Preference<*>, value: Enum<V>) =
-		setString(preference.key, when (value) {
-				is PreferenceEnum -> value.serializedName ?: value.name
-				else -> value.name
-			})
+	override fun <V : Enum<V>> setEnum(
+		preference: Preference<*>,
+		value: Enum<V>,
+	) = setString(
+		preference.key,
+		when (value) {
+			is PreferenceEnum -> value.serializedName ?: value.name
+			else -> value.name
+		},
+	)
 
 	// Additional mutations
-	override fun <T : Any> delete(preference: Preference<T>) = transaction {
-		remove(preference.key)
-	}
+	override fun <T : Any> delete(preference: Preference<T>) =
+		transaction {
+			remove(preference.key)
+		}
 
 	// Migrations
 	override fun runMigrations(body: MigrationContext<SharedPreferences.Editor, SharedPreferences>.() -> Unit) {
 		val context = MigrationContext<SharedPreferences.Editor, SharedPreferences>()
 		context.body()
 
-		this[VERSION] = context.applyMigrations(this[VERSION]) { migration ->
-			Timber.i("Migrating a preference store to version ${migration.toVersion}")
+		this[VERSION] =
+			context.applyMigrations(this[VERSION]) { migration ->
+				Timber.i("Migrating a preference store to version ${migration.toVersion}")
 
-			// Create a new transaction and execute the migration
-			transaction { migration.body(this, sharedPreferences) }
-		}
+				// Create a new transaction and execute the migration
+				transaction { migration.body(this, sharedPreferences) }
+			}
 	}
 
 	companion object {
@@ -122,14 +158,19 @@ abstract class SharedPreferenceStore(
 	 * Read a raw string value from the underlying SharedPreferences by key.
 	 * Useful for reading enum preferences as their serialized string form.
 	 */
-	fun getRawString(key: String, defaultValue: String): String =
-		sharedPreferences.getString(key, defaultValue) ?: defaultValue
+	fun getRawString(
+		key: String,
+		defaultValue: String,
+	): String = sharedPreferences.getString(key, defaultValue) ?: defaultValue
 
 	/**
 	 * Write a raw string value to the underlying SharedPreferences by key.
 	 * Useful for writing enum preferences from their serialized string form.
 	 */
-	fun putRawString(key: String, value: String) {
+	fun putRawString(
+		key: String,
+		value: String,
+	) {
 		sharedPreferences.edit().putString(key, value).apply()
 	}
 }

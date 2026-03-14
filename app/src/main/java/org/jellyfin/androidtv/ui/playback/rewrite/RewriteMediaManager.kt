@@ -49,14 +49,17 @@ class RewriteMediaManager(
 		get() = playbackManager.queue.estimatedSize.toString()
 
 	override val currentAudioItem: BaseItemDto?
-		get() = playbackManager.queue.entry.value?.baseItem
-			?.takeIf { it.mediaType == MediaType.AUDIO }
+		get() =
+			playbackManager.queue.entry.value
+				?.baseItem
+				?.takeIf { it.mediaType == MediaType.AUDIO }
 
 	override fun toggleRepeat(): Boolean {
-		val newMode = when (playbackManager.state.repeatMode.value) {
-			RepeatMode.NONE -> RepeatMode.REPEAT_ENTRY_INFINITE
-			else -> RepeatMode.NONE
-		}
+		val newMode =
+			when (playbackManager.state.repeatMode.value) {
+				RepeatMode.NONE -> RepeatMode.REPEAT_ENTRY_INFINITE
+				else -> RepeatMode.NONE
+			}
 		playbackManager.state.setRepeatMode(newMode)
 
 		return isRepeatMode
@@ -75,45 +78,57 @@ class RewriteMediaManager(
 		audioListeners.add(listener)
 
 		if (audioListenersJob == null) {
-			audioListenersJob = ProcessLifecycleOwner.get().lifecycleScope.launch {
-				watchPlaybackStateChanges()
-			}
-		}
-	}
-
-	private suspend fun watchPlaybackStateChanges() = coroutineScope {
-		playbackManager.state.playState.onEach { playState ->
-			notifyListeners {
-				onPlaybackStateChange(
-					when (playState) {
-						PlayState.STOPPED -> PlaybackController.PlaybackState.IDLE
-						PlayState.PLAYING -> PlaybackController.PlaybackState.PLAYING
-						PlayState.PAUSED -> PlaybackController.PlaybackState.PAUSED
-						PlayState.ERROR -> PlaybackController.PlaybackState.ERROR
-					}, currentAudioItem
-				)
-			}
-		}.launchIn(this)
-
-		launch {
-			while (true) {
-				notifyListeners {
-					onProgress(playbackManager.state.positionInfo.active.inWholeMilliseconds, playbackManager.state.positionInfo.duration.inWholeMilliseconds)
+			audioListenersJob =
+				ProcessLifecycleOwner.get().lifecycleScope.launch {
+					watchPlaybackStateChanges()
 				}
-				delay(@Suppress("MagicNumber") 100)
-			}
 		}
-
-		playbackManager.queue.entry.onEach { entry ->
-			val baseItem = entry?.baseItem
-			notifyListeners {
-				onQueueStatusChanged(baseItem?.mediaType == MediaType.AUDIO)
-			}
-		}.launchIn(this)
-
-		playbackManager.queue.entry.onEach { notifyListeners { onQueueReplaced() } }.launchIn(this)
-		playbackManager.state.playbackOrder.onEach { notifyListeners { onQueueReplaced() } }.launchIn(this)
 	}
+
+	private suspend fun watchPlaybackStateChanges() =
+		coroutineScope {
+			playbackManager.state.playState
+				.onEach { playState ->
+					notifyListeners {
+						onPlaybackStateChange(
+							when (playState) {
+								PlayState.STOPPED -> PlaybackController.PlaybackState.IDLE
+								PlayState.PLAYING -> PlaybackController.PlaybackState.PLAYING
+								PlayState.PAUSED -> PlaybackController.PlaybackState.PAUSED
+								PlayState.ERROR -> PlaybackController.PlaybackState.ERROR
+							},
+							currentAudioItem,
+						)
+					}
+				}.launchIn(this)
+
+			launch {
+				while (true) {
+					notifyListeners {
+						onProgress(
+							playbackManager.state.positionInfo.active.inWholeMilliseconds,
+							playbackManager.state.positionInfo.duration.inWholeMilliseconds,
+						)
+					}
+					delay(@Suppress("MagicNumber") 100)
+				}
+			}
+
+			playbackManager.queue.entry
+				.onEach { entry ->
+					val baseItem = entry?.baseItem
+					notifyListeners {
+						onQueueStatusChanged(baseItem?.mediaType == MediaType.AUDIO)
+					}
+				}.launchIn(this)
+
+			playbackManager.queue.entry
+				.onEach { notifyListeners { onQueueReplaced() } }
+				.launchIn(this)
+			playbackManager.state.playbackOrder
+				.onEach { notifyListeners { onQueueReplaced() } }
+				.launchIn(this)
+		}
 
 	private fun notifyListeners(body: AudioEventListener.() -> Unit) {
 		for (audioListener in audioListeners) {
@@ -156,7 +171,12 @@ class RewriteMediaManager(
 	override val isPlayingAudio: Boolean
 		get() = playbackManager.state.playState.value == PlayState.PLAYING
 
-	override fun playNow(context: Context, items: List<BaseItemDto>, position: Int, shuffle: Boolean) {
+	override fun playNow(
+		context: Context,
+		items: List<BaseItemDto>,
+		position: Int,
+		shuffle: Boolean,
+	) {
 		val filteredItems = items.drop(position)
 
 		playbackManager.state.setPlaybackOrder(if (shuffle) PlaybackOrder.SHUFFLE else PlaybackOrder.DEFAULT)
@@ -177,16 +197,16 @@ class RewriteMediaManager(
 	}
 
 	override fun shuffleAudioQueue() {
-		val newMode = when (playbackManager.state.playbackOrder.value) {
-			PlaybackOrder.DEFAULT -> PlaybackOrder.SHUFFLE
-			else -> PlaybackOrder.DEFAULT
-		}
+		val newMode =
+			when (playbackManager.state.playbackOrder.value) {
+				PlaybackOrder.DEFAULT -> PlaybackOrder.SHUFFLE
+				else -> PlaybackOrder.DEFAULT
+			}
 
 		playbackManager.state.setPlaybackOrder(newMode)
 	}
 
-	override fun hasNextAudioItem(): Boolean =
-		playbackManager.queue.entryIndex.value < playbackManager.queue.estimatedSize - 1
+	override fun hasNextAudioItem(): Boolean = playbackManager.queue.entryIndex.value < playbackManager.queue.estimatedSize - 1
 
 	override fun hasPrevAudioItem(): Boolean = playbackManager.queue.entryIndex.value > 0
 
@@ -216,8 +236,11 @@ class RewriteMediaManager(
 
 	override fun togglePlayPause() {
 		val playState = playbackManager.state.playState.value
-		if (playState == PlayState.PAUSED || playState == PlayState.STOPPED) playbackManager.state.unpause()
-		else if (playState == PlayState.PLAYING) playbackManager.state.pause()
+		if (playState == PlayState.PAUSED || playState == PlayState.STOPPED) {
+			playbackManager.state.unpause()
+		} else if (playState == PlayState.PLAYING) {
+			playbackManager.state.pause()
+		}
 	}
 
 	override fun fastForward() {

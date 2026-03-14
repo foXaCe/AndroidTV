@@ -49,9 +49,17 @@ import java.time.Instant
  * Repository to manage authentication of the user in the app.
  */
 interface AuthenticationRepository {
-	fun authenticate(server: Server, method: AuthenticateMethod): Flow<LoginState>
+	fun authenticate(
+		server: Server,
+		method: AuthenticateMethod,
+	): Flow<LoginState>
+
 	fun logout(user: User): Boolean
-	fun getUserImageUrl(server: Server, user: User): String?
+
+	fun getUserImageUrl(
+		server: Server,
+		user: User,
+	): String?
 }
 
 class AuthenticationRepositoryImpl(
@@ -64,15 +72,20 @@ class AuthenticationRepositoryImpl(
 	private val jellyseerrRepository: JellyseerrRepository,
 	private val jellyseerrPreferences: JellyseerrPreferences,
 ) : AuthenticationRepository {
-	override fun authenticate(server: Server, method: AuthenticateMethod): Flow<LoginState> {
-		return when (method) {
+	override fun authenticate(
+		server: Server,
+		method: AuthenticateMethod,
+	): Flow<LoginState> =
+		when (method) {
 			is AutomaticAuthenticateMethod -> authenticateAutomatic(server, method.user)
 			is CredentialAuthenticateMethod -> authenticateCredential(server, method.username, method.password)
 			is QuickConnectAuthenticateMethod -> authenticateQuickConnect(server, method.secret)
 		}
-	}
 
-	private fun authenticateAutomatic(server: Server, user: User): Flow<LoginState> {
+	private fun authenticateAutomatic(
+		server: Server,
+		user: User,
+	): Flow<LoginState> {
 		Timber.i("Authenticating user ${user.id}")
 
 		// Automatic logic is disabled when the always authenticate preference is enabled
@@ -80,26 +93,34 @@ class AuthenticationRepositoryImpl(
 
 		val authStoreUser = authenticationStore.getUser(server.id, user.id)
 		// Try login with access token
-		return if (authStoreUser?.accessToken != null) authenticateToken(server, user.withToken(authStoreUser.accessToken))
-		// Require login
-		else flowOf(RequireSignInState)
+		return if (authStoreUser?.accessToken != null) {
+			authenticateToken(server, user.withToken(authStoreUser.accessToken))
+		} // Require login
+		else {
+			flowOf(RequireSignInState)
+		}
 	}
 
-	private fun authenticateCredential(server: Server, username: String, password: String) = flow {
+	private fun authenticateCredential(
+		server: Server,
+		username: String,
+		password: String,
+	) = flow {
 		val api = jellyfin.createApi(server.address, deviceInfo = defaultDeviceInfo.forUser(username))
-		val result = try {
-			// For users without passwords, pass empty string to the API
-			val response = api.userApi.authenticateUserByName(username, password)
-			response.content
-		} catch (err: TimeoutException) {
-			Timber.e(err, "Failed to connect to server trying to sign in $username")
-			emit(ServerUnavailableState)
-			return@flow
-		} catch (err: ApiClientException) {
-			Timber.e(err, "Unable to sign in as $username")
-			emit(ApiClientErrorLoginState(err))
-			return@flow
-		}
+		val result =
+			try {
+				// For users without passwords, pass empty string to the API
+				val response = api.userApi.authenticateUserByName(username, password)
+				response.content
+			} catch (err: TimeoutException) {
+				Timber.e(err, "Failed to connect to server trying to sign in $username")
+				emit(ServerUnavailableState)
+				return@flow
+			} catch (err: ApiClientException) {
+				Timber.e(err, "Unable to sign in as $username")
+				emit(ApiClientErrorLoginState(err))
+				return@flow
+			}
 
 		// After successful Jellyfin authentication, attempt Jellyseerr auto-login
 		tryJellyseerrAutoLogin(server, username, password)
@@ -107,35 +128,43 @@ class AuthenticationRepositoryImpl(
 		emitAll(authenticateAuthenticationResult(server, result))
 	}.flowOn(Dispatchers.IO)
 
-	private fun authenticateQuickConnect(server: Server, secret: String) = flow {
+	private fun authenticateQuickConnect(
+		server: Server,
+		secret: String,
+	) = flow {
 		val api = jellyfin.createApi(server.address, deviceInfo = defaultDeviceInfo)
-		val result = try {
-			val response = api.userApi.authenticateWithQuickConnect(secret)
-			response.content
-		} catch (err: TimeoutException) {
-			Timber.e(err, "Failed to connect to server")
-			emit(ServerUnavailableState)
-			return@flow
-		} catch (err: ApiClientException) {
-			Timber.e(err, "Unable to sign in with Quick Connect secret")
-			emit(ApiClientErrorLoginState(err))
-			return@flow
-		}
+		val result =
+			try {
+				val response = api.userApi.authenticateWithQuickConnect(secret)
+				response.content
+			} catch (err: TimeoutException) {
+				Timber.e(err, "Failed to connect to server")
+				emit(ServerUnavailableState)
+				return@flow
+			} catch (err: ApiClientException) {
+				Timber.e(err, "Unable to sign in with Quick Connect secret")
+				emit(ApiClientErrorLoginState(err))
+				return@flow
+			}
 
 		emitAll(authenticateAuthenticationResult(server, result))
 	}.flowOn(Dispatchers.IO)
 
-	private fun authenticateAuthenticationResult(server: Server, result: AuthenticationResult) = flow {
+	private fun authenticateAuthenticationResult(
+		server: Server,
+		result: AuthenticationResult,
+	) = flow {
 		val accessToken = result.accessToken ?: return@flow emit(RequireSignInState)
 		val userInfo = result.user ?: return@flow emit(RequireSignInState)
-		val user = PrivateUser(
-			id = userInfo.id,
-			serverId = server.id,
-			name = userInfo.name!!,
-			accessToken = result.accessToken,
-			imageTag = userInfo.primaryImage?.tag,
-			lastUsed = Instant.now().toEpochMilli(),
-		)
+		val user =
+			PrivateUser(
+				id = userInfo.id,
+				serverId = server.id,
+				name = userInfo.name!!,
+				accessToken = result.accessToken,
+				imageTag = userInfo.primaryImage?.tag,
+				lastUsed = Instant.now().toEpochMilli(),
+			)
 
 		authenticateFinish(server, userInfo, accessToken)
 		val success = setActiveSession(user, server)
@@ -143,50 +172,69 @@ class AuthenticationRepositoryImpl(
 			emit(AuthenticatedState)
 		} else {
 			Timber.w("Failed to set active session after authenticating")
-			if (!server.versionSupported) emit(ServerVersionNotSupported(server))
-			else emit(RequireSignInState)
+			if (!server.versionSupported) {
+				emit(ServerVersionNotSupported(server))
+			} else {
+				emit(RequireSignInState)
+			}
 		}
 	}.flowOn(Dispatchers.IO)
 
-	private fun authenticateToken(server: Server, user: User) = flow {
+	private fun authenticateToken(
+		server: Server,
+		user: User,
+	) = flow {
 		emit(AuthenticatingState)
 
 		val success = setActiveSession(user, server)
 		if (!success) {
-			if (!server.versionSupported) emit(ServerVersionNotSupported(server))
-			else emit(RequireSignInState)
-		} else try {
-			// Update user info
-			val userInfo by userApiClient.userApi.getCurrentUser()
-			authenticateFinish(server, userInfo, user.accessToken.orEmpty())
-			emit(AuthenticatedState)
-		} catch (err: TimeoutException) {
-			Timber.e(err, "Failed to connect to server")
-			emit(ServerUnavailableState)
-			return@flow
-		} catch (err: ApiClientException) {
-			Timber.e(err, "Unable to get current user data")
-			emit(ApiClientErrorLoginState(err))
+			if (!server.versionSupported) {
+				emit(ServerVersionNotSupported(server))
+			} else {
+				emit(RequireSignInState)
+			}
+		} else {
+			try {
+				// Update user info
+				val userInfo by userApiClient.userApi.getCurrentUser()
+				authenticateFinish(server, userInfo, user.accessToken.orEmpty())
+				emit(AuthenticatedState)
+			} catch (err: TimeoutException) {
+				Timber.e(err, "Failed to connect to server")
+				emit(ServerUnavailableState)
+				return@flow
+			} catch (err: ApiClientException) {
+				Timber.e(err, "Unable to get current user data")
+				emit(ApiClientErrorLoginState(err))
+			}
 		}
 	}.flowOn(Dispatchers.IO)
 
-	private suspend fun authenticateFinish(server: Server, userInfo: UserDto, accessToken: String) {
+	private suspend fun authenticateFinish(
+		server: Server,
+		userInfo: UserDto,
+		accessToken: String,
+	) {
 		val currentUser = authenticationStore.getUser(server.id, userInfo.id)
 
-		val updatedUser = currentUser?.copy(
-			name = userInfo.name!!,
-			lastUsed = Instant.now().toEpochMilli(),
-			imageTag = userInfo.primaryImage?.tag,
-			accessToken = accessToken,
-		) ?: AuthenticationStoreUser(
-			name = userInfo.name!!,
-			imageTag = userInfo.primaryImage?.tag,
-			accessToken = accessToken,
-		)
+		val updatedUser =
+			currentUser?.copy(
+				name = userInfo.name!!,
+				lastUsed = Instant.now().toEpochMilli(),
+				imageTag = userInfo.primaryImage?.tag,
+				accessToken = accessToken,
+			) ?: AuthenticationStoreUser(
+				name = userInfo.name!!,
+				imageTag = userInfo.primaryImage?.tag,
+				accessToken = accessToken,
+			)
 		authenticationStore.putUser(server.id, userInfo.id, updatedUser)
 	}
 
-	private suspend fun setActiveSession(user: User, server: Server): Boolean {
+	private suspend fun setActiveSession(
+		user: User,
+		server: Server,
+	): Boolean {
 		val authenticated = sessionRepository.switchCurrentSession(server.id, user.id)
 
 		if (authenticated) {
@@ -204,29 +252,37 @@ class AuthenticationRepositoryImpl(
 	}
 
 	override fun logout(user: User): Boolean {
-		val authStoreUser = authenticationStore
-			.getUser(user.serverId, user.id)
-			?.copy(accessToken = null)
+		val authStoreUser =
+			authenticationStore
+				.getUser(user.serverId, user.id)
+				?.copy(accessToken = null)
 
-		return if (authStoreUser != null) authenticationStore.putUser(user.serverId, user.id, authStoreUser)
-		else false
+		return if (authStoreUser != null) {
+			authenticationStore.putUser(user.serverId, user.id, authStoreUser)
+		} else {
+			false
+		}
 	}
 
 	/**
 	 * Attempt to automatically login to Jellyseerr using Jellyfin credentials.
 	 * This is called after successful Jellyfin authentication to provide a seamless single sign-on experience.
-	 * 
+	 *
 	 * Note: The password is only held in memory temporarily and never stored on disk.
 	 * The Jellyseerr session is maintained via HTTP cookies stored by Ktor's PersistentCookiesStorage,
 	 * which persists across app restarts and updates. Users only need to login again after:
 	 * - Fresh install/reinstall (cookies cleared)
 	 * - Manual logout
 	 * - Cookie expiration (controlled by Jellyseerr server settings)
-	 * 
+	 *
 	 * IMPORTANT: This method first checks if the session is already valid (using cached result)
 	 * to prevent excessive login attempts that can trigger rate limiting/lockouts on Jellyseerr.
 	 */
-	private fun tryJellyseerrAutoLogin(server: Server, username: String, password: String) {
+	private fun tryJellyseerrAutoLogin(
+		server: Server,
+		username: String,
+		password: String,
+	) {
 		if (jellyseerrRepository.isVegafoXMode.value) {
 			Timber.d("Jellyseerr auto-login skipped: using VegafoX proxy mode")
 			return
@@ -252,12 +308,13 @@ class AuthenticationRepositoryImpl(
 				}
 				
 				Timber.d("Attempting Jellyseerr auto-login for user: $username (session invalid or expired)")
-				val result = jellyseerrRepository.loginWithJellyfin(
-					username = username,
-					password = password,
-					jellyfinUrl = server.address,
-					jellyseerrUrl = jellyseerrUrl
-				)
+				val result =
+					jellyseerrRepository.loginWithJellyfin(
+						username = username,
+						password = password,
+						jellyfinUrl = server.address,
+						jellyseerrUrl = jellyseerrUrl,
+					)
 				
 				if (result.isSuccess) {
 					val user = result.getOrNull()
@@ -273,15 +330,20 @@ class AuthenticationRepositoryImpl(
 		}
 	}
 
-	override fun getUserImageUrl(server: Server, user: User): String? = user.imageTag?.let { primaryImageTag ->
-		JellyfinImage(
-			item = user.id,
-			source = JellyfinImageSource.USER,
-			type = ImageType.PRIMARY,
-			tag = primaryImageTag,
-			blurHash = null,
-			aspectRatio = null,
-			index = null
-		)
-	}?.getUrl(jellyfin.createApi(server.address))
+	override fun getUserImageUrl(
+		server: Server,
+		user: User,
+	): String? =
+		user.imageTag
+			?.let { primaryImageTag ->
+				JellyfinImage(
+					item = user.id,
+					source = JellyfinImageSource.USER,
+					type = ImageType.PRIMARY,
+					tag = primaryImageTag,
+					blurHash = null,
+					aspectRatio = null,
+					index = null,
+				)
+			}?.getUrl(jellyfin.createApi(server.address))
 }

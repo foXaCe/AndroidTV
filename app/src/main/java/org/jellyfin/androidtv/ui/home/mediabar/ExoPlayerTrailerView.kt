@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +48,8 @@ fun ExoPlayerTrailerView(
 	isVisible: Boolean,
 	onVideoEnded: () -> Unit = {},
 	onVideoReady: () -> Unit = {},
+	crossfadeInMs: Int = 400,
+	crossfadeOutMs: Int = 400,
 	modifier: Modifier = Modifier,
 ) {
 	val context = LocalContext.current
@@ -56,41 +59,47 @@ fun ExoPlayerTrailerView(
 
 	val trailerAlpha by animateFloatAsState(
 		targetValue = if (isVisible) 1f else 0f,
-		animationSpec = tween(durationMillis = 400),
+		animationSpec = tween(durationMillis = if (isVisible) crossfadeInMs else crossfadeOutMs),
 		label = "trailerAlpha",
 	)
 
+	// Sync mute state dynamically
+	LaunchedEffect(muted) {
+		player?.volume = if (muted) 0f else 1f
+	}
+
 	DisposableEffect(streamInfo.videoUrl) {
-		val exoPlayer = buildTrailerPlayer(
-			context = context,
-			streamInfo = streamInfo,
-			startSeconds = startSeconds,
-			muted = muted,
-			onVideoReady = onVideoReady,
-			onVideoEnded = onVideoEnded,
-		)
+		val exoPlayer =
+			buildTrailerPlayer(
+				context = context,
+				streamInfo = streamInfo,
+				startSeconds = startSeconds,
+				muted = muted,
+				onVideoReady = onVideoReady,
+				onVideoEnded = onVideoEnded,
+			)
 
 		player = exoPlayer
 
-			if (segments.isNotEmpty()) {
-			val runnable = object : Runnable {
-				override fun run() {
-					val p = player ?: return
-					if (!p.isPlaying) {
-						mainHandler.postDelayed(this, 500)
-						return
-					}
-					val currentSec = p.currentPosition / 1000.0
-					for (seg in segments) {
-						if (currentSec >= seg.startTime && currentSec < seg.endTime - 0.5) {
-							Timber.d("ExoTrailer: Skipping SponsorBlock segment ${seg.category} at ${seg.startTime}s")
-							p.seekTo((seg.endTime * 1000).toLong())
-							break
+		if (segments.isNotEmpty()) {
+			val runnable =
+				object : Runnable {
+					override fun run() {
+						val p = player ?: return
+						if (!p.isPlaying) {
+							mainHandler.postDelayed(this, 500)
+							return
 						}
+						val currentSec = p.currentPosition / 1000.0
+						for (seg in segments) {
+							if (currentSec >= seg.startTime && currentSec < seg.endTime - 0.5) {
+								p.seekTo((seg.endTime * 1000).toLong())
+								break
+							}
+						}
+						mainHandler.postDelayed(this, 500)
 					}
-					mainHandler.postDelayed(this, 500)
 				}
-			}
 			skipRunnable.value = runnable
 			mainHandler.postDelayed(runnable, 500)
 		}
@@ -104,10 +113,11 @@ fun ExoPlayerTrailerView(
 	}
 
 	Box(
-		modifier = modifier
-			.fillMaxSize()
-			.alpha(trailerAlpha)
-			.background(Color.Black)
+		modifier =
+			modifier
+				.fillMaxSize()
+				.alpha(trailerAlpha)
+				.background(Color.Black),
 	) {
 		val currentPlayer = player
 		if (currentPlayer != null) {
@@ -116,11 +126,7 @@ fun ExoPlayerTrailerView(
 					PlayerView(ctx).apply {
 						this.player = currentPlayer
 						useController = false
-						resizeMode = if (muted) {
-							AspectRatioFrameLayout.RESIZE_MODE_ZOOM
-						} else {
-							AspectRatioFrameLayout.RESIZE_MODE_FIT
-						}
+						resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
 						setBackgroundColor(android.graphics.Color.BLACK)
 						setShutterBackgroundColor(android.graphics.Color.BLACK)
 					}
@@ -128,7 +134,7 @@ fun ExoPlayerTrailerView(
 				update = { view ->
 					view.player = currentPlayer
 				},
-				modifier = Modifier.fillMaxSize()
+				modifier = Modifier.fillMaxSize(),
 			)
 		}
 	}
@@ -145,48 +151,56 @@ private fun buildTrailerPlayer(
 ): ExoPlayer {
 	val dataSourceFactory = DefaultHttpDataSource.Factory()
 
-	val player = ExoPlayer.Builder(context)
-		.setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
-		.build()
+	val player =
+		ExoPlayer
+			.Builder(context)
+			.setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
+			.build()
 
 	player.volume = if (muted) 0f else 1f
 	player.repeatMode = Player.REPEAT_MODE_OFF
 	player.playWhenReady = true
 
-	player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
-		.setMaxVideoSize(1280, 720)
-		.build()
+	player.trackSelectionParameters =
+		player.trackSelectionParameters
+			.buildUpon()
+			.setMaxVideoSize(1280, 720)
+			.build()
 
 	var readySignaled = false
 
-	player.addListener(object : Player.Listener {
-		override fun onPlaybackStateChanged(playbackState: Int) {
-			when (playbackState) {
-				Player.STATE_READY -> {
-					if (!readySignaled) {
-						readySignaled = true
-						Timber.d("ExoTrailer: Player ready — signaling onVideoReady")
-						onVideoReady()
+	player.addListener(
+		object : Player.Listener {
+			override fun onPlaybackStateChanged(playbackState: Int) {
+				when (playbackState) {
+					Player.STATE_READY -> {
+						if (!readySignaled) {
+							readySignaled = true
+							onVideoReady()
+						}
+					}
+					Player.STATE_ENDED -> {
+						onVideoEnded()
 					}
 				}
-				Player.STATE_ENDED -> {
-					Timber.d("ExoTrailer: Playback ended")
-					onVideoEnded()
-				}
 			}
-		}
 
-		override fun onPlayerError(error: PlaybackException) {
-			Timber.w(error, "ExoTrailer: Playback error")
-			onVideoEnded()
-		}
-	})
+			override fun onPlayerError(error: PlaybackException) {
+				Timber.w(error, "ExoTrailer: Playback error")
+				onVideoEnded()
+			}
+		},
+	)
 
 	if (streamInfo.isVideoOnly && streamInfo.audioUrl != null) {
-		val videoSource = ProgressiveMediaSource.Factory(dataSourceFactory)
-			.createMediaSource(MediaItem.fromUri(streamInfo.videoUrl))
-		val audioSource = ProgressiveMediaSource.Factory(dataSourceFactory)
-			.createMediaSource(MediaItem.fromUri(streamInfo.audioUrl))
+		val videoSource =
+			ProgressiveMediaSource
+				.Factory(dataSourceFactory)
+				.createMediaSource(MediaItem.fromUri(streamInfo.videoUrl))
+		val audioSource =
+			ProgressiveMediaSource
+				.Factory(dataSourceFactory)
+				.createMediaSource(MediaItem.fromUri(streamInfo.audioUrl))
 		val merged = MergingMediaSource(videoSource, audioSource)
 		player.setMediaSource(merged)
 	} else {

@@ -38,7 +38,7 @@ fun SettingsPlaybackZoomModeScreen() {
 				onClick = {
 					playerZoomMode = entry
 					router.back()
-				}
+				},
 			)
 		}
 	}

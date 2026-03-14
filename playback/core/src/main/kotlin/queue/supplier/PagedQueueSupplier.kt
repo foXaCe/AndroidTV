@@ -27,5 +27,8 @@ abstract class PagedQueueSupplier(
 		return null
 	}
 
-	abstract suspend fun loadPage(offset: Int, size: Int): Collection<QueueEntry>
+	abstract suspend fun loadPage(
+		offset: Int,
+		size: Int,
+	): Collection<QueueEntry>
 }

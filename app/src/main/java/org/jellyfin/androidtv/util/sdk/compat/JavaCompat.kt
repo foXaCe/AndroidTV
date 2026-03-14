@@ -9,11 +9,10 @@ import org.jellyfin.sdk.model.api.UserItemDataDto
 import java.time.LocalDateTime
 import java.util.UUID
 
-fun BaseItemDto.copyWithDisplayPreferencesId(
-	displayPreferencesId: String?
-) = copy(
-	displayPreferencesId = displayPreferencesId,
-)
+fun BaseItemDto.copyWithDisplayPreferencesId(displayPreferencesId: String?) =
+	copy(
+		displayPreferencesId = displayPreferencesId,
+	)
 
 fun BaseItemDto.copyWithDates(
 	premiereDate: LocalDateTime?,
@@ -27,38 +26,34 @@ fun BaseItemDto.copyWithDates(
 	runTimeTicks = runTimeTicks,
 )
 
-fun BaseItemDto.copyWithTimerId(
-	seriesTimerId: String?,
-) = copy(
-	seriesTimerId = seriesTimerId,
-)
+fun BaseItemDto.copyWithSeriesTimerId(seriesTimerId: String?) =
+	copy(
+		seriesTimerId = seriesTimerId,
+	)
 
-fun BaseItemDto.copyWithOverview(
-	overview: String?,
-) = copy(
-	overview = overview,
-)
+fun BaseItemDto.copyWithOverview(overview: String?) =
+	copy(
+		overview = overview,
+	)
 
-fun BaseItemDto.copyWithParentId(
-	parentId: UUID?,
-) = copy(
-	parentId = parentId,
-)
+fun BaseItemDto.copyWithParentId(parentId: UUID?) =
+	copy(
+		parentId = parentId,
+	)
 
-fun BaseItemDto.copyWithUserData(
-	userData: UserItemDataDto?,
-) = copy(
-	userData = userData,
-)
+fun BaseItemDto.copyWithUserData(userData: UserItemDataDto?) =
+	copy(
+		userData = userData,
+	)
 
-fun BaseItemDto.copyWithServerId(
-	serverId: String?,
-) = copy(
-	serverId = UUIDUtils.normalizeUUIDString(serverId),
-)
+fun BaseItemDto.copyWithServerId(serverId: String?) =
+	copy(
+		serverId = UUIDUtils.normalizeUUIDString(serverId),
+	)
 
-fun MediaSourceInfo.getVideoStream() = mediaStreams?.firstOrNull {
-	it.type == org.jellyfin.sdk.model.api.MediaStreamType.VIDEO
-}
+fun MediaSourceInfo.getVideoStream() =
+	mediaStreams?.firstOrNull {
+		it.type == org.jellyfin.sdk.model.api.MediaStreamType.VIDEO
+	}
 
 val BaseItemDto.canResume get() = (userData?.playbackPositionTicks ?: 0) > 0

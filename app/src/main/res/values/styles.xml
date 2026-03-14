@@ -5,32 +5,6 @@
          DESIGN SYSTEM — Component Styles
          ══════════════════════════════════════════════════════════════════ -->
 
-    <!-- Base style roots -->
-    <style name="Style" />
-    <style name="Style.DS" />
-
-    <!-- ── Screen Background ── -->
-    <style name="Style.DS.Screen">
-        <item name="android:background">@color/ds_background</item>
-    </style>
-
-    <!-- ── Card styles ── -->
-    <style name="Style.DS.Card">
-        <item name="android:background">@color/ds_surface</item>
-    </style>
-
-    <style name="Style.DS.Card.Large">
-        <item name="android:layout_width">@dimen/ds_card_width_xl</item>
-    </style>
-
-    <style name="Style.DS.Card.Medium">
-        <item name="android:layout_width">@dimen/ds_card_width_md</item>
-    </style>
-
-    <style name="Style.DS.Card.Small">
-        <item name="android:layout_width">@dimen/ds_card_width_sm</item>
-    </style>
-
     <!-- ── Button styles ── -->
     <style name="Style.DS.Button.Primary" parent="android:Widget.Button">
         <item name="android:background">@drawable/button_default_back</item>
@@ -65,26 +39,6 @@
         <item name="android:tint">@drawable/button_icon_tint_animated</item>
     </style>
 
-    <!-- ── Text styles (for XML layouts) ── -->
-    <style name="Style.DS.Text" parent="android:Widget.TextView" />
-
-    <style name="Style.DS.Text.Title">
-        <item name="android:textAppearance">@style/TextAppearance.DS.TitleLarge</item>
-    </style>
-
-    <style name="Style.DS.Text.Body">
-        <item name="android:textAppearance">@style/TextAppearance.DS.BodyMedium</item>
-    </style>
-
-    <style name="Style.DS.Text.Label">
-        <item name="android:textAppearance">@style/TextAppearance.DS.LabelMedium</item>
-    </style>
-
-    <style name="Style.DS.Text.Meta">
-        <item name="android:textAppearance">@style/TextAppearance.DS.LabelSmall</item>
-        <item name="android:textColor">@color/ds_text_secondary</item>
-    </style>
-
     <!-- ── Input ── -->
     <style name="Style.DS.Input" parent="android:Widget.EditText">
         <item name="android:background">@drawable/input_default_back</item>
@@ -112,29 +66,7 @@
         <item name="android:datePickerMode">spinner</item>
     </style>
 
-    <style name="Widget.Jellyfin.Row.Header" parent="android:Widget.TextView">
-        <item name="android:textColor">?attr/headerTextColor</item>
-        <item name="android:textSize">18sp</item>
-        <item name="android:textStyle">bold</item>
-    </style>
-
-    <style name="player_progress" parent="android:Widget.ProgressBar.Horizontal">
-        <item name="android:progressDrawable">@drawable/progress_bar</item>
-        <item name="android:minHeight">5sp</item>
-        <item name="android:maxHeight">5sp</item>
-    </style>
-
     <style name="WindowAnimation" />
-
-    <style name="WindowAnimation.SlideTop">
-        <item name="android:windowEnterAnimation">@anim/abc_slide_in_top</item>
-        <item name="android:windowExitAnimation">@anim/abc_slide_out_top</item>
-    </style>
-
-    <style name="WindowAnimation.SlideRight">
-        <item name="android:windowEnterAnimation">@anim/slide_right_in</item>
-        <item name="android:windowExitAnimation">@anim/slide_right_out</item>
-    </style>
 
     <style name="WindowAnimation.Fade">
         <item name="android:windowEnterAnimation">@anim/fade_in</item>
@@ -152,10 +84,5 @@
     <style name="PopupMenu" parent="Style.DS.PopupMenu" />
 
     <style name="PopupWindow" parent="Style.DS.PopupMenu" />
-
-    <!-- Overlay progress bar (channel cards) -->
-    <style name="overlay_progress" parent="android:Widget.ProgressBar.Horizontal">
-        <item name="android:progressDrawable">@android:drawable/progress_horizontal</item>
-    </style>
 
 </resources>

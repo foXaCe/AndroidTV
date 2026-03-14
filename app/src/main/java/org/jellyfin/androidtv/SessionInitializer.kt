@@ -13,9 +13,11 @@ import org.jellyfin.androidtv.di.KoinInitializer
 @Suppress("unused")
 class SessionInitializer : Initializer<Unit> {
 	override fun create(context: Context) {
-		val koin = AppInitializer.getInstance(context)
-			.initializeComponent(KoinInitializer::class.java)
-			.koin
+		val koin =
+			AppInitializer
+				.getInstance(context)
+				.initializeComponent(KoinInitializer::class.java)
+				.koin
 
 		// Restore system session
 		ProcessLifecycleOwner.get().lifecycleScope.launch(Dispatchers.IO) {

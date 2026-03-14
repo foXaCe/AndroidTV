@@ -11,6 +11,9 @@ import org.jellyfin.preference.migration.MigrationContext
  */
 @Suppress("TooManyFunctions")
 abstract class PreferenceStore<ME, MV> {
+	// Placeholder enum used to satisfy the Enum<T> type bound in unchecked dispatch
+	private enum class EnumDispatchHelper
+
 	// val value = store[Preference.x]
 	@Suppress("UNCHECKED_CAST")
 	operator fun <T : Any> get(preference: Preference<T>): T =
@@ -21,6 +24,7 @@ abstract class PreferenceStore<ME, MV> {
 			is Float -> getFloat(preference.key, preference.defaultValue)
 			is Boolean -> getBool(preference.key, preference.defaultValue)
 			is String -> getString(preference.key, preference.defaultValue)
+			is Enum<*> -> getEnum(preference as Preference<EnumDispatchHelper>)
 			else -> throw IllegalArgumentException("${preference.type.simpleName} type is not supported")
 		} as T
 
@@ -28,16 +32,18 @@ abstract class PreferenceStore<ME, MV> {
 	operator fun <T : Enum<T>> get(preference: Preference<T>) = getEnum(preference)
 
 	// store[Preference.x] = value
-	operator fun <T : Any> set(preference: Preference<T>, value: T) =
-		when (value) {
-			is Int -> setInt(preference.key, value)
-			is Long -> setLong(preference.key, value)
-			is Float -> setFloat(preference.key, value)
-			is Boolean -> setBool(preference.key, value)
-			is String -> setString(preference.key, value)
-			is Enum<*> -> setEnum(preference, value)
-			else -> throw IllegalArgumentException("${preference.type.simpleName} type is not supported")
-		}
+	operator fun <T : Any> set(
+		preference: Preference<T>,
+		value: T,
+	) = when (value) {
+		is Int -> setInt(preference.key, value)
+		is Long -> setLong(preference.key, value)
+		is Float -> setFloat(preference.key, value)
+		is Boolean -> setBool(preference.key, value)
+		is String -> setString(preference.key, value)
+		is Enum<*> -> setEnum(preference, value)
+		else -> throw IllegalArgumentException("${preference.type.simpleName} type is not supported")
+	}
 
 	// store.getDefaultValue(Preference.x)
 	fun <T : Any> getDefaultValue(preference: Preference<T>): T = preference.defaultValue
@@ -52,22 +58,63 @@ abstract class PreferenceStore<ME, MV> {
 
 	// Protected methods to get / set items, this is an implementation detail so we protect
 	// it in the abstract common functionality (where it is used)
-	protected abstract fun getInt(key: String, defaultValue: Int): Int
-	protected abstract fun getLong(key: String, defaultValue: Long): Long
-	protected abstract fun getFloat(key: String, defaultValue: Float): Float
-	protected abstract fun getBool(key: String, defaultValue: Boolean): Boolean
-	protected abstract fun getString(key: String, defaultValue: String): String
+	protected abstract fun getInt(
+		key: String,
+		defaultValue: Int,
+	): Int
 
-	protected abstract fun setInt(key: String, value: Int)
-	protected abstract fun setLong(key: String, value: Long)
-	protected abstract fun setFloat(key: String, value: Float)
-	protected abstract fun setBool(key: String, value: Boolean)
-	protected abstract fun setString(key: String, value: String)
+	protected abstract fun getLong(
+		key: String,
+		defaultValue: Long,
+	): Long
+
+	protected abstract fun getFloat(
+		key: String,
+		defaultValue: Float,
+	): Float
+
+	protected abstract fun getBool(
+		key: String,
+		defaultValue: Boolean,
+	): Boolean
+
+	protected abstract fun getString(
+		key: String,
+		defaultValue: String,
+	): String
+
+	protected abstract fun setInt(
+		key: String,
+		value: Int,
+	)
+
+	protected abstract fun setLong(
+		key: String,
+		value: Long,
+	)
+
+	protected abstract fun setFloat(
+		key: String,
+		value: Float,
+	)
+
+	protected abstract fun setBool(
+		key: String,
+		value: Boolean,
+	)
+
+	protected abstract fun setString(
+		key: String,
+		value: String,
+	)
 
 	// Private Enum handling, all Enum types are serialized to / from String types
 	protected abstract fun <T : Enum<T>> getEnum(preference: Preference<T>): T
 
-	protected abstract fun <V : Enum<V>> setEnum(preference: Preference<*>, value: Enum<V>)
+	protected abstract fun <V : Enum<V>> setEnum(
+		preference: Preference<*>,
+		value: Enum<V>,
+	)
 
 	// Migrations
 	protected abstract fun runMigrations(body: MigrationContext<ME, MV>.() -> Unit)

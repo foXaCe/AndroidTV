@@ -31,7 +31,7 @@ fun ButtonBase(
 	shape: Shape = ButtonDefaults.Shape,
 	colors: ButtonColors = ButtonDefaults.colors(),
 	interactionSource: MutableInteractionSource? = null,
-	content: @Composable BoxScope.() -> Unit
+	content: @Composable BoxScope.() -> Unit,
 ) {
 	@Suppress("NAME_SHADOWING")
 	val interactionSource = interactionSource ?: remember { MutableInteractionSource() }
@@ -39,39 +39,40 @@ fun ButtonBase(
 	val pressed by interactionSource.collectIsPressedAsState()
 
 	val scale by animateFloatAsState(
-		targetValue = when {
-			pressed -> AnimationDefaults.PRESS_SCALE
-			focused -> AnimationDefaults.FOCUS_SCALE
-			else -> 1f
-		},
+		targetValue =
+			when {
+				pressed -> AnimationDefaults.PRESS_SCALE
+				focused -> AnimationDefaults.FOCUS_SCALE
+				else -> 1f
+			},
 		animationSpec = AnimationDefaults.focusSpec(),
 		label = "ButtonScale",
 	)
 
-	val colors = when {
-		!enabled -> colors.disabledContainerColor to colors.disabledContentColor
-		pressed -> colors.focusedContainerColor to colors.focusedContentColor
-		focused -> colors.focusedContainerColor to colors.focusedContentColor
-		else -> colors.containerColor to colors.contentColor
-	}
+	val colors =
+		when {
+			!enabled -> colors.disabledContainerColor to colors.disabledContentColor
+			pressed -> colors.focusedContainerColor to colors.focusedContentColor
+			focused -> colors.focusedContainerColor to colors.focusedContentColor
+			else -> colors.containerColor to colors.contentColor
+		}
 
 	ProvideTextStyle(value = JellyfinTheme.typography.bodyMedium.copy(color = colors.second)) {
 		Box(
-			modifier = modifier
-				.graphicsLayer {
-					scaleX = scale
-					scaleY = scale
-				}
-				.combinedClickable(
-					interactionSource = interactionSource,
-					indication = null,
-					enabled = enabled,
-					role = Role.Button,
-					onClick = onClick,
-					onLongClick = onLongClick,
-				)
-				.background(colors.first, shape)
-				.clip(shape),
+			modifier =
+				modifier
+					.graphicsLayer {
+						scaleX = scale
+						scaleY = scale
+					}.combinedClickable(
+						interactionSource = interactionSource,
+						indication = null,
+						enabled = enabled,
+						role = Role.Button,
+						onClick = onClick,
+						onLongClick = onLongClick,
+					).background(colors.first, shape)
+					.clip(shape),
 			content = content,
 		)
 	}

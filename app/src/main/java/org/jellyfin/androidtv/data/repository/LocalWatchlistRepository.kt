@@ -24,7 +24,7 @@ import java.util.UUID
 data class WatchlistEntry(
 	val itemId: String,
 	val serverId: String,
-	val addedAt: Long = System.currentTimeMillis()
+	val addedAt: Long = System.currentTimeMillis(),
 )
 
 /**
@@ -32,7 +32,7 @@ data class WatchlistEntry(
  * Items are stored locally in SharedPreferences and not synced to the server.
  */
 class LocalWatchlistRepository(
-	context: Context
+	context: Context,
 ) {
 	companion object {
 		private const val PREFS_NAME = "local_watchlist"
@@ -69,26 +69,28 @@ class LocalWatchlistRepository(
 	/**
 	 * Add an item to the watchlist.
 	 */
-	fun addToWatchlist(itemId: UUID, serverId: UUID): Boolean {
+	fun addToWatchlist(
+		itemId: UUID,
+		serverId: UUID,
+	): Boolean {
 		val entries = getWatchlistEntries().toMutableList()
 		val itemIdStr = itemId.toString()
 		val serverIdStr = serverId.toString()
 
-		if (entries.any { it.itemId == itemIdStr && it.serverId == serverIdStr }) {
-			Timber.d("Item $itemId already in watchlist")
-			return false
-		}
+		if (entries.any { it.itemId == itemIdStr && it.serverId == serverIdStr }) return false
 
 		entries.add(WatchlistEntry(itemIdStr, serverIdStr))
 		saveWatchlistEntries(entries)
-		Timber.d("Added item $itemId to local watchlist")
 		return true
 	}
 
 	/**
 	 * Remove an item from the watchlist.
 	 */
-	fun removeFromWatchlist(itemId: UUID, serverId: UUID): Boolean {
+	fun removeFromWatchlist(
+		itemId: UUID,
+		serverId: UUID,
+	): Boolean {
 		val entries = getWatchlistEntries().toMutableList()
 		val itemIdStr = itemId.toString()
 		val serverIdStr = serverId.toString()
@@ -96,12 +98,14 @@ class LocalWatchlistRepository(
 		val removed = entries.removeAll { it.itemId == itemIdStr && it.serverId == serverIdStr }
 		if (removed) {
 			saveWatchlistEntries(entries)
-			Timber.d("Removed item $itemId from local watchlist")
 		}
 		return removed
 	}
 
-	fun isInWatchlist(itemId: UUID, serverId: UUID): Boolean {
+	fun isInWatchlist(
+		itemId: UUID,
+		serverId: UUID,
+	): Boolean {
 		val itemIdStr = itemId.toString()
 		val serverIdStr = serverId.toString()
 		return getWatchlistEntries().any { it.itemId == itemIdStr && it.serverId == serverIdStr }
@@ -112,8 +116,8 @@ class LocalWatchlistRepository(
 		return getWatchlistEntries().filter { it.serverId == serverIdStr }
 	}
 
-	fun getWatchlistItemIds(serverId: UUID): List<UUID> {
-		return getWatchlistForServer(serverId)
+	fun getWatchlistItemIds(serverId: UUID): List<UUID> =
+		getWatchlistForServer(serverId)
 			.sortedByDescending { it.addedAt }
 			.mapNotNull { entry ->
 				try {
@@ -122,40 +126,45 @@ class LocalWatchlistRepository(
 					null
 				}
 			}
-	}
 
 	/**
 	 * Fetch full BaseItemDto objects for the watchlist items from the server.
 	 */
-	suspend fun getWatchlistItems(api: ApiClient, serverId: UUID): List<BaseItemDto> = withContext(Dispatchers.IO) {
-		val itemIds = getWatchlistItemIds(serverId)
-		if (itemIds.isEmpty()) {
-			return@withContext emptyList()
-		}
+	suspend fun getWatchlistItems(
+		api: ApiClient,
+		serverId: UUID,
+	): List<BaseItemDto> =
+		withContext(Dispatchers.IO) {
+			val itemIds = getWatchlistItemIds(serverId)
+			if (itemIds.isEmpty()) {
+				return@withContext emptyList()
+			}
 
-		try {
-			val response = api.itemsApi.getItems(
-				ids = itemIds,
-				fields = ItemRepository.itemFields
-			)
+			try {
+				val response =
+					api.itemsApi.getItems(
+						ids = itemIds,
+						fields = ItemRepository.itemFields,
+					)
 			
-			val itemsById = response.content.items.orEmpty().associateBy { it.id }
-			itemIds.mapNotNull { id -> itemsById[id] }
-		} catch (e: Exception) {
-			Timber.e(e, "Failed to fetch watchlist items from server")
-			emptyList()
+				val itemsById =
+					response.content.items
+						.orEmpty()
+						.associateBy { it.id }
+				itemIds.mapNotNull { id -> itemsById[id] }
+			} catch (e: Exception) {
+				Timber.e(e, "Failed to fetch watchlist items from server")
+				emptyList()
+			}
 		}
-	}
 
 	fun clearWatchlist() {
 		saveWatchlistEntries(emptyList())
-		Timber.d("Cleared local watchlist")
 	}
 
 	fun clearWatchlistForServer(serverId: UUID) {
 		val serverIdStr = serverId.toString()
 		val entries = getWatchlistEntries().filterNot { it.serverId == serverIdStr }
 		saveWatchlistEntries(entries)
-		Timber.d("Cleared local watchlist for server $serverId")
 	}
 }

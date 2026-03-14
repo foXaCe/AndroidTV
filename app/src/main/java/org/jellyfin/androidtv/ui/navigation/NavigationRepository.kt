@@ -35,7 +35,10 @@ interface NavigationRepository {
 	 *
 	 * @see Destinations
 	 */
-	fun navigate(destination: Destination, replace: Boolean)
+	fun navigate(
+		destination: Destination,
+		replace: Boolean,
+	)
 
 	/**
 	 * Whether the [goBack] function will succeed or not.
@@ -56,7 +59,10 @@ interface NavigationRepository {
 	 *
 	 * @param clearHistory Empty out the back stack
 	 */
-	fun reset(destination: Destination.Fragment? = null, clearHistory: Boolean)
+	fun reset(
+		destination: Destination.Fragment? = null,
+		clearHistory: Boolean,
+	)
 
 	/**
 	 * Reset navigation to the initial destination or a specific [Destination.Fragment] without clearing history.
@@ -75,14 +81,21 @@ class NavigationRepositoryImpl(
 	override val currentDestination: Destination.Fragment?
 		get() = fragmentHistory.lastOrNull()
 
-	override fun navigate(destination: Destination, replace: Boolean) {
+	override fun navigate(
+		destination: Destination,
+		replace: Boolean,
+	) {
 		Timber.i("Navigating to $destination (via navigate function)")
-		val action = when (destination) {
-			is Destination.Fragment -> NavigationAction.NavigateFragment(destination, true, replace, false)
-		}
+		val action =
+			when (destination) {
+				is Destination.Fragment -> NavigationAction.NavigateFragment(destination, true, replace, false)
+			}
 		if (destination is Destination.Fragment) {
-			if (replace && fragmentHistory.isNotEmpty()) fragmentHistory[fragmentHistory.lastIndex] = destination
-			else fragmentHistory.push(destination)
+			if (replace && fragmentHistory.isNotEmpty()) {
+				fragmentHistory[fragmentHistory.lastIndex] = destination
+			} else {
+				fragmentHistory.push(destination)
+			}
 		}
 		_currentAction.tryEmit(action)
 	}
@@ -98,11 +111,13 @@ class NavigationRepositoryImpl(
 		return true
 	}
 
-	override fun reset(destination: Destination.Fragment?, clearHistory: Boolean) {
+	override fun reset(
+		destination: Destination.Fragment?,
+		clearHistory: Boolean,
+	) {
 		fragmentHistory.clear()
 		val actualDestination = destination ?: defaultDestination
 		_currentAction.tryEmit(NavigationAction.NavigateFragment(actualDestination, true, false, clearHistory))
 		Timber.i("Navigating to $actualDestination (via reset, clearHistory=$clearHistory)")
 	}
 }
-

@@ -23,17 +23,18 @@ fun SettingsVegafoXNavbarPositionScreen() {
 	val userPreferences = koinInject<UserPreferences>()
 	var navbarPosition by rememberPreference(userPreferences, UserPreferences.navbarPosition)
 
-	val options = listOf(
-		NavbarPosition.TOP to stringResource(R.string.pref_navbar_position_top),
-		NavbarPosition.LEFT to stringResource(R.string.pref_navbar_position_left)
-	)
+	val options =
+		listOf(
+			NavbarPosition.TOP to stringResource(R.string.pref_navbar_position_top),
+			NavbarPosition.LEFT to stringResource(R.string.pref_navbar_position_left),
+		)
 
 	SettingsColumn {
 		item {
 			ListSection(
 				overlineContent = { Text(stringResource(R.string.vegafox_settings).uppercase()) },
 				headingContent = { Text(stringResource(R.string.pref_navbar_position)) },
-				captionContent = { Text(stringResource(R.string.pref_navbar_position_description)) }
+				captionContent = { Text(stringResource(R.string.pref_navbar_position_description)) },
 			)
 		}
 
@@ -44,7 +45,7 @@ fun SettingsVegafoXNavbarPositionScreen() {
 				onClick = {
 					navbarPosition = value
 					router.back()
-				}
+				},
 			)
 		}
 	}

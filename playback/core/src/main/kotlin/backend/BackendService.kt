@@ -23,11 +23,12 @@ class BackendService {
 		_backend?.setSurfaceView(null)
 		_backend?.setSubtitleView(null)
 
-		_backend = backend.apply {
-			_surfaceView?.let(::setSurfaceView)
-			_subtitleView?.let(::setSubtitleView)
-			setListener(BackendEventListener())
-		}
+		_backend =
+			backend.apply {
+				_surfaceView?.let(::setSurfaceView)
+				_subtitleView?.let(::setSubtitleView)
+				setListener(BackendEventListener())
+			}
 	}
 
 	fun attachSurfaceView(surfaceView: PlayerSurfaceView) {
@@ -37,17 +38,18 @@ class BackendService {
 		}
 
 		// Apply new surface view
-		_surfaceView = surfaceView.apply {
-			_backend?.setSurfaceView(surfaceView)
+		_surfaceView =
+			surfaceView.apply {
+				_backend?.setSurfaceView(surfaceView)
 
-			// Automatically detach
-			doOnDetach {
-				if (surfaceView == _surfaceView) {
-					_surfaceView = null
-					_backend?.setSurfaceView(null)
+				// Automatically detach
+				doOnDetach {
+					if (surfaceView == _surfaceView) {
+						_surfaceView = null
+						_backend?.setSurfaceView(null)
+					}
 				}
 			}
-		}
 	}
 
 	fun attachSubtitleView(subtitleView: PlayerSubtitleView) {
@@ -57,17 +59,18 @@ class BackendService {
 		}
 
 		// Apply new surface view
-		_subtitleView = subtitleView.apply {
-			_backend?.setSubtitleView(subtitleView)
+		_subtitleView =
+			subtitleView.apply {
+				_backend?.setSubtitleView(subtitleView)
 
-			// Automatically detach
-			doOnDetach {
-				if (subtitleView == _subtitleView) {
-					_subtitleView = null
-					_backend?.setSubtitleView(null)
+				// Automatically detach
+				doOnDetach {
+					if (subtitleView == _subtitleView) {
+						_subtitleView = null
+						_backend?.setSubtitleView(null)
+					}
 				}
 			}
-		}
 	}
 
 	fun addListener(listener: PlayerBackendEventListener) {
@@ -79,20 +82,25 @@ class BackendService {
 	}
 
 	inner class BackendEventListener : PlayerBackendEventListener {
-		private fun <T> callListeners(
-			body: PlayerBackendEventListener.() -> T
-		): List<T> = listeners.map { listener -> listener.body() }
+		private fun <T> callListeners(body: PlayerBackendEventListener.() -> T): List<T> = listeners.map { listener -> listener.body() }
 
 		override fun onPlayStateChange(state: PlayState) {
 			callListeners { onPlayStateChange(state) }
 		}
 
-		override fun onVideoSizeChange(width: Int, height: Int) {
+		override fun onVideoSizeChange(
+			width: Int,
+			height: Int,
+		) {
 			callListeners { onVideoSizeChange(width, height) }
 		}
 
 		override fun onMediaStreamEnd(mediaStream: PlayableMediaStream) {
 			callListeners { onMediaStreamEnd(mediaStream) }
+		}
+
+		override fun onBufferingChange(isBuffering: Boolean) {
+			callListeners { onBufferingChange(isBuffering) }
 		}
 	}
 }

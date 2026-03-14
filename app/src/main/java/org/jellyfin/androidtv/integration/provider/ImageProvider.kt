@@ -24,38 +24,68 @@ class ImageProvider : ContentProvider() {
 	override fun onCreate(): Boolean = true
 
 	override fun getType(uri: Uri) = null
-	override fun query(uri: Uri, projection: Array<out String>?, selection: String?, selectionArgs: Array<out String>?, sortOrder: String?) = null
-	override fun insert(uri: Uri, values: ContentValues?) = null
-	override fun update(uri: Uri, values: ContentValues?, selection: String?, selectionArgs: Array<out String>?) = 0
-	override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?) = 0
 
-	override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? {
+	override fun query(
+		uri: Uri,
+		projection: Array<out String>?,
+		selection: String?,
+		selectionArgs: Array<out String>?,
+		sortOrder: String?,
+	) = null
+
+	override fun insert(
+		uri: Uri,
+		values: ContentValues?,
+	) = null
+
+	override fun update(
+		uri: Uri,
+		values: ContentValues?,
+		selection: String?,
+		selectionArgs: Array<out String>?,
+	) = 0
+
+	override fun delete(
+		uri: Uri,
+		selection: String?,
+		selectionArgs: Array<out String>?,
+	) = 0
+
+	override fun openFile(
+		uri: Uri,
+		mode: String,
+	): ParcelFileDescriptor? {
 		val src = requireNotNull(uri.getQueryParameter("src")).toUri()
 
 		val (read, write) = ParcelFileDescriptor.createPipe()
 		val outputStream = ParcelFileDescriptor.AutoCloseOutputStream(write)
 
-		imageLoader.enqueue(ImageRequest.Builder(context!!).apply {
-			data(src)
-			error(R.drawable.placeholder_icon)
-			target(
-				onSuccess = { image -> writeDrawable(image.asDrawable(context!!.resources), outputStream) },
-				onError = { image -> writeDrawable(requireNotNull(image?.asDrawable(context!!.resources)), outputStream) }
-			)
-		}.build())
+		imageLoader.enqueue(
+			ImageRequest
+				.Builder(context!!)
+				.apply {
+					data(src)
+					error(R.drawable.placeholder_icon)
+					target(
+						onSuccess = { image -> writeDrawable(image.asDrawable(context!!.resources), outputStream) },
+						onError = { image -> writeDrawable(requireNotNull(image?.asDrawable(context!!.resources)), outputStream) },
+					)
+				}.build(),
+		)
 
 		return read
 	}
 
 	private fun writeDrawable(
 		drawable: Drawable,
-		outputStream: ParcelFileDescriptor.AutoCloseOutputStream
+		outputStream: ParcelFileDescriptor.AutoCloseOutputStream,
 	) {
 		@Suppress("DEPRECATION")
-		val format = when {
-			Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> Bitmap.CompressFormat.WEBP_LOSSY
-			else -> Bitmap.CompressFormat.WEBP
-		}
+		val format =
+			when {
+				Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> Bitmap.CompressFormat.WEBP_LOSSY
+				else -> Bitmap.CompressFormat.WEBP
+			}
 
 		try {
 			outputStream.use {
@@ -73,11 +103,13 @@ class ImageProvider : ContentProvider() {
 		 * Get a [Uri] that uses the [ImageProvider] to load an image. The input should be a valid
 		 * Jellyfin image URL created using the SDK.
 		 */
-		fun getImageUri(src: String): Uri = Uri.Builder()
-			.scheme("content")
-			.authority("${BuildConfig.APPLICATION_ID}.integration.provider.ImageProvider")
-			.appendQueryParameter("src", src)
-			.appendQueryParameter("v", BuildConfig.VERSION_NAME)
-			.build()
+		fun getImageUri(src: String): Uri =
+			Uri
+				.Builder()
+				.scheme("content")
+				.authority("${BuildConfig.APPLICATION_ID}.integration.provider.ImageProvider")
+				.appendQueryParameter("src", src)
+				.appendQueryParameter("v", BuildConfig.VERSION_NAME)
+				.build()
 	}
 }

@@ -16,7 +16,9 @@ interface NotificationsRepository {
 	val notifications: StateFlow<List<AppNotification>>
 
 	fun dismissNotification(item: AppNotification)
+
 	fun addDefaultNotifications()
+
 	fun updateServerNotifications(server: Server?)
 }
 
@@ -39,7 +41,7 @@ class NotificationsRepositoryImpl(
 	private fun addNotification(
 		message: String,
 		public: Boolean = false,
-		dismiss: () -> Unit = {}
+		dismiss: () -> Unit = {},
 	): AppNotification {
 		val notification = AppNotification(message, dismiss, public)
 		notifications.value += notification
@@ -56,7 +58,7 @@ class NotificationsRepositoryImpl(
 		if (!context.isTvDevice() && !disableUiModeWarning) {
 			addNotification(
 				context.getString(R.string.app_notification_uimode_invalid),
-				public = true
+				public = true,
 			)
 		}
 	}
@@ -76,6 +78,7 @@ class NotificationsRepositoryImpl(
 
 	// Update server notification
 	private var _updateServerNotification: AppNotification? = null
+
 	override fun updateServerNotifications(server: Server?) {
 		// Remove current update notification
 		_updateServerNotification?.let(::removeNotification)
@@ -84,11 +87,12 @@ class NotificationsRepositoryImpl(
 		if (currentServerVersion < ServerRepository.upcomingMinimumServerVersion) {
 			_updateServerNotification =
 				addNotification(
-					message = context.getString(
-						R.string.app_notification_update_soon,
-						currentServerVersion,
-						ServerRepository.upcomingMinimumServerVersion
-					),
+					message =
+						context.getString(
+							R.string.app_notification_update_soon,
+							currentServerVersion,
+							ServerRepository.upcomingMinimumServerVersion,
+						),
 				)
 		}
 	}

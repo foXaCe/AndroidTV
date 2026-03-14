@@ -8,9 +8,11 @@ import org.jellyfin.preference.enumPreference
 import org.jellyfin.preference.store.SharedPreferenceStore
 import org.jellyfin.preference.stringPreference
 
-class AuthenticationPreferences(context: Context) : SharedPreferenceStore(
-	sharedPreferences = context.getSharedPreferences("authentication", Context.MODE_PRIVATE)
-) {
+class AuthenticationPreferences(
+	context: Context,
+) : SharedPreferenceStore(
+		sharedPreferences = context.getSharedPreferences("authentication", Context.MODE_PRIVATE),
+	) {
 	companion object {
 		// Preferences
 		val autoLoginUserBehavior = enumPreference("auto_login_user_behavior", UserSelectBehavior.LAST_USER)

@@ -26,7 +26,7 @@ import timber.log.Timber
 @Suppress("UNUSED_PARAMETER")
 fun showShuffleDialog(
 	context: android.content.Context,
-	navigationRepository: NavigationRepository
+	navigationRepository: NavigationRepository,
 ) {
 	val dialog = androidx.appcompat.app.AppCompatDialog(context, androidx.appcompat.R.style.Theme_AppCompat_Dialog)
 	dialog.setContentView(
@@ -53,9 +53,10 @@ fun showShuffleDialog(
 							userViews = views.toList()
 							if (enableMultiServer) {
 								try {
-									aggregatedLibraries = withContext(Dispatchers.IO) {
-										multiServerRepository.getAggregatedLibraries()
-									}
+									aggregatedLibraries =
+										withContext(Dispatchers.IO) {
+											multiServerRepository.getAggregatedLibraries()
+										}
 								} catch (e: Exception) {
 									Timber.e(e, "Failed to load aggregated libraries")
 								}
@@ -72,30 +73,30 @@ fun showShuffleDialog(
 							enableMultiServer = enableMultiServer,
 							shuffleContentType = shuffleContentType,
 							api = api,
-							onDismiss = { 
+							onDismiss = {
 								showDialog = false
 								dialog.dismiss()
 							},
 							onShuffle = { libraryId, serverId, genreName, contentType, libraryCollectionType ->
-							// Use a non-compose scope so the shuffle survives dialog dismissal
-							kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
-								shuffleManager.libraryShuffle(
-									context = context,
-									libraryId = libraryId,
-									serverId = serverId,
-									genreName = genreName,
-									contentType = contentType,
-									libraryCollectionType = libraryCollectionType
-								)
-							}
-							showDialog = false
-							dialog.dismiss()
-							}
+								// Use a non-compose scope so the shuffle survives dialog dismissal
+								kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+									shuffleManager.libraryShuffle(
+										context = context,
+										libraryId = libraryId,
+										serverId = serverId,
+										genreName = genreName,
+										contentType = contentType,
+										libraryCollectionType = libraryCollectionType,
+									)
+								}
+								showDialog = false
+								dialog.dismiss()
+							},
 						)
 					}
 				}
 			}
-		}
+		},
 	)
 	dialog.show()
 }

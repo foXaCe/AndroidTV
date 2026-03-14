@@ -34,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
@@ -42,8 +43,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import org.jellyfin.androidtv.R
@@ -55,6 +58,9 @@ import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrRequestDto
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrTvDetailsDto
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.JellyseerrDimensions
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.util.toHtmlSpanned
 
 @Composable
@@ -76,10 +82,11 @@ fun JellyseerrMediaDetailsScreen(
 	val mediaInfo = movieDetails?.mediaInfo ?: tvDetails?.mediaInfo ?: selectedItem?.mediaInfo
 
 	Column(
-		modifier = Modifier
-			.fillMaxSize()
-			.background(JellyfinTheme.colorScheme.background)
-			.verticalScroll(scrollState),
+		modifier =
+			Modifier
+				.fillMaxSize()
+				.background(VegafoXColors.BackgroundDeep)
+				.verticalScroll(scrollState),
 	) {
 		// Backdrop + poster + title overlay
 		BackdropWithHeaderSection(
@@ -102,13 +109,14 @@ fun JellyseerrMediaDetailsScreen(
 		)
 
 		// Cast row
-		val cast = movieDetails?.credits?.cast?.take(15)
-			?: tvDetails?.credits?.cast?.take(15)
-			?: emptyList()
+		val cast =
+			movieDetails?.credits?.cast?.take(15)
+				?: tvDetails?.credits?.cast?.take(15)
+				?: emptyList()
 		JellyseerrCastRow(
 			cast = cast,
 			onCastClick = onCastClick,
-			modifier = Modifier.padding(horizontal = 50.dp),
+			modifier = Modifier.padding(horizontal = JellyseerrDimensions.screenPaddingHorizontal),
 		)
 
 		Spacer(modifier = Modifier.height(32.dp))
@@ -119,23 +127,24 @@ fun JellyseerrMediaDetailsScreen(
 			emptyText = stringResource(R.string.jellyseerr_no_recommendations),
 			fetchPage = fetchRecommendations,
 			onItemClick = onItemClick,
-			modifier = Modifier.padding(horizontal = 50.dp),
+			modifier = Modifier.padding(horizontal = JellyseerrDimensions.screenPaddingHorizontal),
 		)
 
 		Spacer(modifier = Modifier.height(32.dp))
 
 		// Similar
-		val similarTitle = if (tvDetails != null) {
-			stringResource(R.string.jellyseerr_similar_series)
-		} else {
-			stringResource(R.string.jellyseerr_similar_titles)
-		}
+		val similarTitle =
+			if (tvDetails != null) {
+				stringResource(R.string.jellyseerr_similar_series)
+			} else {
+				stringResource(R.string.jellyseerr_similar_titles)
+			}
 		PaginatedCardRow(
 			headingText = similarTitle,
 			emptyText = stringResource(R.string.jellyseerr_no_similar),
 			fetchPage = fetchSimilar,
 			onItemClick = onItemClick,
-			modifier = Modifier.padding(horizontal = 50.dp),
+			modifier = Modifier.padding(horizontal = JellyseerrDimensions.screenPaddingHorizontal),
 		)
 
 		Spacer(modifier = Modifier.height(32.dp))
@@ -148,7 +157,7 @@ fun JellyseerrMediaDetailsScreen(
 				keywords = keywords,
 				mediaType = mediaType,
 				onKeywordClick = onKeywordClick,
-				modifier = Modifier.padding(horizontal = 50.dp),
+				modifier = Modifier.padding(horizontal = JellyseerrDimensions.screenPaddingHorizontal),
 			)
 		}
 
@@ -168,86 +177,114 @@ private fun BackdropWithHeaderSection(
 		val backdropPath = selectedItem?.backdropPath
 		if (backdropPath != null) {
 			AsyncImage(
-				model = ImageRequest.Builder(LocalContext.current)
-					.data("https://image.tmdb.org/t/p/w1280$backdropPath")
-					.build(),
+				model =
+					ImageRequest
+						.Builder(LocalContext.current)
+						.data("https://image.tmdb.org/t/p/w1280$backdropPath")
+						.build(),
 				contentDescription = null,
 				contentScale = ContentScale.Crop,
-				modifier = Modifier
-					.fillMaxWidth()
-					.height(400.dp),
+				modifier =
+					Modifier
+						.fillMaxWidth()
+						.height(JellyseerrDimensions.mediaBackdropHeight)
+						.alpha(0.25f),
 			)
 		} else {
 			Box(
-				modifier = Modifier
-					.fillMaxWidth()
-					.height(400.dp)
-					.background(JellyfinTheme.colorScheme.surface),
+				modifier =
+					Modifier
+						.fillMaxWidth()
+						.height(JellyseerrDimensions.mediaBackdropHeight)
+						.background(VegafoXColors.Surface),
 			)
 		}
 
-		// Scrim overlay
+		// Horizontal gradient overlay (left dark → transparent)
 		Box(
-			modifier = Modifier
-				.fillMaxWidth()
-				.height(400.dp)
-				.background(JellyfinTheme.colorScheme.scrim),
+			modifier =
+				Modifier
+					.fillMaxWidth()
+					.height(JellyseerrDimensions.mediaBackdropHeight)
+					.background(
+						Brush.horizontalGradient(
+							colors =
+								listOf(
+									VegafoXColors.BackgroundDeep.copy(alpha = 0.97f),
+									Color.Transparent,
+								),
+						),
+					),
 		)
 
 		// Gradient fade at bottom of backdrop
 		Box(
-			modifier = Modifier
-				.fillMaxWidth()
-				.height(120.dp)
-				.align(Alignment.BottomCenter)
-				.background(
-					Brush.verticalGradient(
-						colors = listOf(Color.Transparent, JellyfinTheme.colorScheme.background),
-					)
-				),
+			modifier =
+				Modifier
+					.fillMaxWidth()
+					.height(120.dp)
+					.align(Alignment.BottomCenter)
+					.background(
+						Brush.verticalGradient(
+							colors = listOf(Color.Transparent, VegafoXColors.BackgroundDeep),
+						),
+					),
 		)
 
 		// Poster
 		val posterPath = selectedItem?.posterPath
 		AsyncImage(
-			model = if (posterPath != null) {
-				ImageRequest.Builder(LocalContext.current)
-					.data("https://image.tmdb.org/t/p/w500$posterPath")
-					.build()
-			} else null,
+			model =
+				if (posterPath != null) {
+					ImageRequest
+						.Builder(LocalContext.current)
+						.data("https://image.tmdb.org/t/p/w500$posterPath")
+						.build()
+				} else {
+					null
+				},
 			contentDescription = null,
 			contentScale = ContentScale.Fit,
-			modifier = Modifier
-				.padding(start = 50.dp, top = 24.dp)
-				.size(width = 208.dp, height = 312.dp)
-				.shadow(8.dp, JellyfinTheme.shapes.small)
-				.clip(JellyfinTheme.shapes.small)
-				.background(JellyfinTheme.colorScheme.surface),
+			modifier =
+				Modifier
+					.padding(start = 50.dp, top = 24.dp)
+					.size(width = JellyseerrDimensions.posterWidth, height = JellyseerrDimensions.posterHeight)
+					.shadow(8.dp, JellyfinTheme.shapes.small)
+					.clip(JellyfinTheme.shapes.small)
+					.background(VegafoXColors.Surface),
 		)
 
 		// Title section overlaid to the right of poster
 		Column(
-			modifier = Modifier
-				.padding(start = 270.dp, top = 230.dp, end = 50.dp),
+			modifier =
+				Modifier
+					.padding(start = 270.dp, top = 230.dp, end = 50.dp),
 		) {
 			JellyseerrStatusBadge(mediaInfo = mediaInfo)
 
-			val title = when {
-				movieDetails != null -> movieDetails.title
-				tvDetails != null -> tvDetails.name
-				else -> selectedItem?.title
-			} ?: ""
-			val year = when {
-				movieDetails != null -> movieDetails.releaseDate?.take(4)
-				tvDetails != null -> tvDetails.firstAirDate?.take(4)
-				else -> selectedItem?.releaseDate?.take(4)
-			}
+			val title =
+				when {
+					movieDetails != null -> movieDetails.title
+					tvDetails != null -> tvDetails.name
+					else -> selectedItem?.title
+				} ?: ""
+			val year =
+				when {
+					movieDetails != null -> movieDetails.releaseDate?.take(4)
+					tvDetails != null -> tvDetails.firstAirDate?.take(4)
+					else -> selectedItem?.releaseDate?.take(4)
+				}
 			val displayTitle = if (year != null) "$title ($year)" else title
 
 			Text(
 				text = displayTitle,
-				style = JellyfinTheme.typography.headlineMedium,
-				color = JellyfinTheme.colorScheme.textPrimary,
+				style =
+					TextStyle(
+						fontFamily = BebasNeue,
+						fontSize = 52.sp,
+						letterSpacing = 2.sp,
+					),
+				color = VegafoXColors.TextPrimary,
 			)
 
 			// Attributes line (runtime, genres)
@@ -261,33 +298,36 @@ private fun AttributesLine(
 	movieDetails: JellyseerrMovieDetailsDto?,
 	tvDetails: JellyseerrTvDetailsDto?,
 ) {
-	val attributes = remember(movieDetails, tvDetails) {
-		val list = mutableListOf<String>()
-		movieDetails?.runtime?.let { list.add("$it min") }
-		val genres = movieDetails?.genres?.take(3)?.map { it.name }
-			?: tvDetails?.genres?.take(3)?.map { it.name }
-			?: emptyList()
-		list.addAll(genres)
-		list
-	}
+	val attributes =
+		remember(movieDetails, tvDetails) {
+			val list = mutableListOf<String>()
+			movieDetails?.runtime?.let { list.add("$it min") }
+			val genres =
+				movieDetails?.genres?.take(3)?.map { it.name }
+					?: tvDetails?.genres?.take(3)?.map { it.name }
+					?: emptyList()
+			list.addAll(genres)
+			list
+		}
 
 	if (attributes.isNotEmpty()) {
 		Text(
 			text = attributes.joinToString(" \u2022 "),
 			style = JellyfinTheme.typography.bodyMedium,
-			color = JellyfinTheme.colorScheme.textPrimary,
+			color = VegafoXColors.TextPrimary,
 			modifier = Modifier.padding(top = 8.dp),
 		)
 	}
 
-	val tagline = movieDetails?.tagline?.takeIf { it.isNotEmpty() }
-		?: tvDetails?.tagline?.takeIf { it.isNotEmpty() }
+	val tagline =
+		movieDetails?.tagline?.takeIf { it.isNotEmpty() }
+			?: tvDetails?.tagline?.takeIf { it.isNotEmpty() }
 	if (tagline != null) {
 		Text(
 			text = "\"$tagline\"",
 			style = JellyfinTheme.typography.bodyMedium,
 			fontStyle = FontStyle.Italic,
-			color = JellyfinTheme.colorScheme.textSecondary,
+			color = VegafoXColors.TextSecondary,
 			modifier = Modifier.padding(top = 4.dp),
 		)
 	}
@@ -305,10 +345,11 @@ private fun OverviewSection(
 	onPlayClick: () -> Unit,
 ) {
 	Row(
-		modifier = Modifier
-			.fillMaxWidth()
-			.padding(horizontal = 50.dp)
-			.padding(bottom = 24.dp),
+		modifier =
+			Modifier
+				.fillMaxWidth()
+				.padding(horizontal = JellyseerrDimensions.screenPaddingHorizontal)
+				.padding(bottom = 24.dp),
 		horizontalArrangement = Arrangement.spacedBy(32.dp),
 	) {
 		// Left side — overview text + action buttons (2/3 width)
@@ -318,18 +359,20 @@ private fun OverviewSection(
 			Text(
 				text = stringResource(R.string.lbl_overview),
 				style = JellyfinTheme.typography.titleLarge,
-				color = JellyfinTheme.colorScheme.textPrimary,
+				color = VegafoXColors.TextPrimary,
 				modifier = Modifier.padding(bottom = 13.dp),
 			)
 
 			val overview = movieDetails?.overview ?: tvDetails?.overview ?: selectedItem?.overview
-			val overviewDisplay = overview?.toHtmlSpanned()?.takeIf { it.isNotEmpty() }?.toString()
-				?: stringResource(R.string.jellyseerr_overview_unavailable)
+			val overviewDisplay =
+				overview?.toHtmlSpanned()?.takeIf { it.isNotEmpty() }?.toString()
+					?: stringResource(R.string.jellyseerr_overview_unavailable)
 
 			Text(
 				text = overviewDisplay,
 				style = JellyfinTheme.typography.bodyMedium,
-				color = JellyfinTheme.colorScheme.textSecondary,
+				color = VegafoXColors.TextSecondary,
+				maxLines = 4,
 			)
 
 			Spacer(modifier = Modifier.height(24.dp))
@@ -422,7 +465,7 @@ private fun PaginatedCardRow(
 		Text(
 			text = headingText,
 			style = JellyfinTheme.typography.titleLarge,
-			color = JellyfinTheme.colorScheme.textPrimary,
+			color = VegafoXColors.TextPrimary,
 			modifier = Modifier.padding(bottom = 16.dp),
 		)
 
@@ -430,13 +473,15 @@ private fun PaginatedCardRow(
 			Text(
 				text = emptyText,
 				style = JellyfinTheme.typography.bodyMedium,
-				color = JellyfinTheme.colorScheme.textSecondary,
+				color = VegafoXColors.TextSecondary,
 			)
 		} else if (items.isNotEmpty()) {
 			LazyRow(
 				state = listState,
 				horizontalArrangement = Arrangement.spacedBy(12.dp),
-				contentPadding = androidx.compose.foundation.layout.PaddingValues(end = 24.dp),
+				contentPadding =
+					androidx.compose.foundation.layout
+						.PaddingValues(end = 24.dp),
 			) {
 				itemsIndexed(items, key = { _, item -> item.id }) { _, item ->
 					CardItem(item = item, onClick = { onItemClick(item) })
@@ -469,7 +514,7 @@ private fun KeywordsSection(
 		Text(
 			text = stringResource(R.string.lbl_keywords),
 			style = JellyfinTheme.typography.titleLarge,
-			color = JellyfinTheme.colorScheme.textPrimary,
+			color = VegafoXColors.TextPrimary,
 			modifier = Modifier.padding(bottom = 16.dp),
 		)
 
@@ -495,22 +540,24 @@ private fun KeywordPill(
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
 
-	val bgColor = if (isFocused) {
-		JellyfinTheme.colorScheme.surfaceContainer
-	} else {
-		JellyfinTheme.colorScheme.surfaceBright
-	}
+	val bgColor =
+		if (isFocused) {
+			VegafoXColors.SurfaceContainer
+		} else {
+			VegafoXColors.SurfaceBright
+		}
 
 	Text(
 		text = keyword.name,
 		style = JellyfinTheme.typography.bodyLarge,
-		color = JellyfinTheme.colorScheme.textPrimary,
-		modifier = Modifier
-			.clip(JellyfinTheme.shapes.full)
-			.background(bgColor)
-			.clickable(interactionSource = interactionSource, indication = null) { onClick() }
-			.focusable(interactionSource = interactionSource)
-			.scale(if (isFocused) 1.05f else 1.0f)
-			.padding(horizontal = 24.dp, vertical = 12.dp),
+		color = VegafoXColors.TextPrimary,
+		modifier =
+			Modifier
+				.clip(JellyfinTheme.shapes.full)
+				.background(bgColor)
+				.clickable(interactionSource = interactionSource, indication = null) { onClick() }
+				.focusable(interactionSource = interactionSource)
+				.scale(if (isFocused) 1.05f else 1.0f)
+				.padding(horizontal = 24.dp, vertical = 12.dp),
 	)
 }

@@ -20,13 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,6 +32,8 @@ import kotlinx.coroutines.delay
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
+import org.jellyfin.androidtv.ui.base.theme.HeroDimensions
 import org.jellyfin.androidtv.ui.itemdetail.v2.DetailActionButton
 import org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsUiState
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailSectionWithCards
@@ -66,31 +66,35 @@ fun SeriesTimerDetailsContent(
 	Box(modifier = Modifier.fillMaxSize()) {
 		LazyColumn(
 			state = listState,
-			contentPadding = PaddingValues(top = 100.dp, start = 48.dp, end = 48.dp, bottom = 48.dp),
+			contentPadding = PaddingValues(top = HeroDimensions.contentTopPadding, start = 48.dp, end = 48.dp, bottom = 48.dp),
 			modifier = Modifier.fillMaxSize(),
 		) {
 			// Header
 			item {
 				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.focusRequester(titleFocusRequester)
-						.focusable()
-						.onKeyEvent { keyEvent ->
-							if (keyEvent.nativeKeyEvent.action == android.view.KeyEvent.ACTION_DOWN) {
-								when (keyEvent.key) {
-									Key.DirectionDown -> {
-										try {
-											cancelButtonFocusRequester.requestFocus(); true
-										} catch (_: Exception) {
-											false
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.focusRequester(titleFocusRequester)
+							.focusable()
+							.onKeyEvent { keyEvent ->
+								if (keyEvent.nativeKeyEvent.action == android.view.KeyEvent.ACTION_DOWN) {
+									when (keyEvent.key) {
+										Key.DirectionDown -> {
+											try {
+												cancelButtonFocusRequester.requestFocus()
+												true
+											} catch (_: Exception) {
+												false
+											}
 										}
-									}
 
-									else -> false
+										else -> false
+									}
+								} else {
+									false
 								}
-							} else false
-						},
+							},
 				) {
 					Column(modifier = Modifier.fillMaxWidth()) {
 						// Timer name
@@ -120,9 +124,10 @@ fun SeriesTimerDetailsContent(
 				// Action buttons
 				Spacer(modifier = Modifier.height(24.dp))
 				Row(
-					modifier = Modifier
-						.fillMaxWidth()
-						.focusRestorer(cancelButtonFocusRequester),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.focusRestorer(cancelButtonFocusRequester),
 					horizontalArrangement = Arrangement.Center,
 				) {
 					Row(
@@ -131,7 +136,7 @@ fun SeriesTimerDetailsContent(
 						// Cancel Series
 						DetailActionButton(
 							label = stringResource(R.string.lbl_cancel_series),
-							icon = ImageVector.vectorResource(R.drawable.ic_delete),
+							icon = VegafoXIcons.Delete,
 							onClick = onCancelSeriesTimer,
 							modifier = Modifier.focusRequester(cancelButtonFocusRequester),
 						)

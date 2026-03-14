@@ -16,9 +16,9 @@ class LibraryPreferences(
 	displayPreferencesId: String,
 	api: ApiClient,
 ) : DisplayPreferencesStore(
-	displayPreferencesId = displayPreferencesId,
-	api = api,
-) {
+		displayPreferencesId = displayPreferencesId,
+		api = api,
+	) {
 	companion object {
 		val posterSize = enumPreference("PosterSize", PosterSize.MED)
 		val imageType = enumPreference("ImageType", ImageType.POSTER)

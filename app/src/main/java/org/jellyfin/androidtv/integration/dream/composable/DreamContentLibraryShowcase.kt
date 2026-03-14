@@ -12,61 +12,62 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.dp
 import org.jellyfin.androidtv.integration.dream.model.DreamContent
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.theme.DreamDimensions
 import org.jellyfin.androidtv.ui.composable.ZoomBox
 import org.jellyfin.androidtv.ui.composable.modifier.overscan
 import org.jellyfin.androidtv.ui.shared.LogoView
 
 @Composable
-fun DreamContentLibraryShowcase(
-	content: DreamContent.LibraryShowcase,
-) = Box(
-	modifier = Modifier.fillMaxSize(),
-) {
-	ZoomBox(
-		initialValue = 1f,
-		targetValue = 1.1f,
-		delayMillis = 1_000,
-		durationMillis = 30_000,
+fun DreamContentLibraryShowcase(content: DreamContent.LibraryShowcase) =
+	Box(
+		modifier = Modifier.fillMaxSize(),
 	) {
-		Image(
-			bitmap = content.backdrop.asImageBitmap(),
-			contentDescription = null,
-			alignment = Alignment.Center,
-			contentScale = ContentScale.Crop,
-			modifier = Modifier.fillMaxSize()
-		)
+		ZoomBox(
+			initialValue = 1f,
+			targetValue = 1.1f,
+			delayMillis = 1_000,
+			durationMillis = 30_000,
+		) {
+			Image(
+				bitmap = content.backdrop.asImageBitmap(),
+				contentDescription = null,
+				alignment = Alignment.Center,
+				contentScale = ContentScale.Crop,
+				modifier = Modifier.fillMaxSize(),
+			)
 
-		// Image vignette
-		DreamContentVignette()
-	}
+			// Image vignette
+			DreamContentVignette()
+		}
 
-	// Overlay
-	Row(
-		modifier = Modifier
-			.align(Alignment.BottomStart)
-			.overscan(),
-	) {
-		if (content.logo != null) {
-			BoxWithConstraints {
-				LogoView(
-					bitmap = content.logo,
-					modifier = Modifier
-						.sizeIn(
-							maxWidth = maxWidth * 0.35f,
-							maxHeight = 75.dp
-						)
+		// Overlay
+		Row(
+			modifier =
+				Modifier
+					.align(Alignment.BottomStart)
+					.overscan(),
+		) {
+			if (content.logo != null) {
+				BoxWithConstraints {
+					LogoView(
+						bitmap = content.logo,
+						modifier =
+							Modifier
+								.sizeIn(
+									maxWidth = maxWidth * 0.35f,
+									maxHeight = DreamDimensions.carouselMaxHeight,
+								),
+					)
+				}
+			} else {
+				Text(
+					text = content.item.name.orEmpty(),
+					style = JellyfinTheme.typography.headlineLarge,
+					color = Color.White,
 				)
 			}
-		} else {
-			Text(
-				text = content.item.name.orEmpty(),
-				style = JellyfinTheme.typography.headlineLarge,
-				color = Color.White,
-			)
 		}
 	}
-}

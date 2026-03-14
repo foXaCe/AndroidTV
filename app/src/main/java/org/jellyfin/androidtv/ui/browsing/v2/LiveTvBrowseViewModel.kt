@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jellyfin.androidtv.data.repository.ItemRepository
+import org.jellyfin.androidtv.ui.base.state.UiError
+import org.jellyfin.androidtv.ui.base.state.toUiError
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.exception.ApiClientException
 import org.jellyfin.sdk.api.client.extensions.liveTvApi
@@ -19,8 +21,6 @@ import org.jellyfin.sdk.model.api.LocationType
 import org.jellyfin.sdk.model.api.MediaType
 import org.jellyfin.sdk.model.api.TimerInfoDto
 import org.jellyfin.sdk.model.serializer.toUUIDOrNull
-import org.jellyfin.androidtv.ui.base.state.UiError
-import org.jellyfin.androidtv.ui.base.state.toUiError
 import timber.log.Timber
 import java.time.LocalDateTime
 
@@ -43,16 +43,19 @@ data class LiveTvBrowseUiState(
 class LiveTvBrowseViewModel(
 	val api: ApiClient,
 ) : ViewModel() {
-
 	private val _uiState = MutableStateFlow(LiveTvBrowseUiState())
 	val uiState: StateFlow<LiveTvBrowseUiState> = _uiState.asStateFlow()
 
-	fun initialize(libraryName: String, canManage: Boolean) {
-		_uiState.value = LiveTvBrowseUiState(
-			isLoading = true,
-			libraryName = libraryName,
-			canManageRecordings = canManage,
-		)
+	fun initialize(
+		libraryName: String,
+		canManage: Boolean,
+	) {
+		_uiState.value =
+			LiveTvBrowseUiState(
+				isLoading = true,
+				libraryName = libraryName,
+				canManageRecordings = canManage,
+			)
 		loadAllRows()
 	}
 
@@ -85,15 +88,17 @@ class LiveTvBrowseViewModel(
 
 	private suspend fun loadOnNow() {
 		try {
-			val response = withContext(Dispatchers.IO) {
-				api.liveTvApi.getRecommendedPrograms(
-					isAiring = true,
-					fields = ItemRepository.itemFields,
-					imageTypeLimit = 1,
-					enableTotalRecordCount = false,
-					limit = 150,
-				).content
-			}
+			val response =
+				withContext(Dispatchers.IO) {
+					api.liveTvApi
+						.getRecommendedPrograms(
+							isAiring = true,
+							fields = ItemRepository.itemFields,
+							imageTypeLimit = 1,
+							enableTotalRecordCount = false,
+							limit = 150,
+						).content
+				}
 			_uiState.update { it.copy(onNow = response.items) }
 		} catch (err: ApiClientException) {
 			Timber.e(err, "Failed to load on now")
@@ -102,16 +107,18 @@ class LiveTvBrowseViewModel(
 
 	private suspend fun loadComingUp() {
 		try {
-			val response = withContext(Dispatchers.IO) {
-				api.liveTvApi.getRecommendedPrograms(
-					isAiring = false,
-					hasAired = false,
-					fields = ItemRepository.itemFields,
-					imageTypeLimit = 1,
-					enableTotalRecordCount = false,
-					limit = 150,
-				).content
-			}
+			val response =
+				withContext(Dispatchers.IO) {
+					api.liveTvApi
+						.getRecommendedPrograms(
+							isAiring = false,
+							hasAired = false,
+							fields = ItemRepository.itemFields,
+							imageTypeLimit = 1,
+							enableTotalRecordCount = false,
+							limit = 150,
+						).content
+				}
 			_uiState.update { it.copy(comingUp = response.items) }
 		} catch (err: ApiClientException) {
 			Timber.e(err, "Failed to load coming up")
@@ -120,11 +127,13 @@ class LiveTvBrowseViewModel(
 
 	private suspend fun loadFavoriteChannels() {
 		try {
-			val response = withContext(Dispatchers.IO) {
-				api.liveTvApi.getLiveTvChannels(
-					isFavorite = true,
-				).content
-			}
+			val response =
+				withContext(Dispatchers.IO) {
+					api.liveTvApi
+						.getLiveTvChannels(
+							isFavorite = true,
+						).content
+				}
 			_uiState.update { it.copy(favoriteChannels = response.items) }
 		} catch (err: ApiClientException) {
 			Timber.e(err, "Failed to load favorite channels")
@@ -133,11 +142,13 @@ class LiveTvBrowseViewModel(
 
 	private suspend fun loadOtherChannels() {
 		try {
-			val response = withContext(Dispatchers.IO) {
-				api.liveTvApi.getLiveTvChannels(
-					isFavorite = false,
-				).content
-			}
+			val response =
+				withContext(Dispatchers.IO) {
+					api.liveTvApi
+						.getLiveTvChannels(
+							isFavorite = false,
+						).content
+				}
 			_uiState.update { it.copy(otherChannels = response.items) }
 		} catch (err: ApiClientException) {
 			Timber.e(err, "Failed to load other channels")
@@ -146,23 +157,27 @@ class LiveTvBrowseViewModel(
 
 	private suspend fun loadRecordingsAndTimers() {
 		try {
-			val recordings = withContext(Dispatchers.IO) {
-				api.liveTvApi.getRecordings(
-					fields = ItemRepository.itemFields,
-					enableImages = true,
-					limit = 40,
-				).content
-			}
+			val recordings =
+				withContext(Dispatchers.IO) {
+					api.liveTvApi
+						.getRecordings(
+							fields = ItemRepository.itemFields,
+							enableImages = true,
+							limit = 40,
+						).content
+				}
 
-			val timers = withContext(Dispatchers.IO) {
-				api.liveTvApi.getTimers().content
-			}
+			val timers =
+				withContext(Dispatchers.IO) {
+					api.liveTvApi.getTimers().content
+				}
 
 			// Scheduled in next 24 hours
 			val next24 = LocalDateTime.now().plusDays(1)
-			val nearTimers = timers.items
-				.filter { it.startDate?.isBefore(next24) == true }
-				.map { getTimerProgramInfo(it) }
+			val nearTimers =
+				timers.items
+					.filter { it.startDate?.isBefore(next24) == true }
+					.map { getTimerProgramInfo(it) }
 
 			// Recent recordings split into day/week
 			val past24 = LocalDateTime.now().minusDays(1)
@@ -180,29 +195,32 @@ class LiveTvBrowseViewModel(
 				}
 			}
 
-			_uiState.update { it.copy(
-				recentRecordings = recordings.items,
-				scheduledNext24h = nearTimers,
-				pastDay = dayItems,
-				pastWeek = weekItems,
-			) }
+			_uiState.update {
+				it.copy(
+					recentRecordings = recordings.items,
+					scheduledNext24h = nearTimers,
+					pastDay = dayItems,
+					pastWeek = weekItems,
+				)
+			}
 		} catch (err: ApiClientException) {
 			Timber.e(err, "Failed to load recordings and timers")
 		}
 	}
 
 	private fun getTimerProgramInfo(timer: TimerInfoDto): BaseItemDto {
-		val programInfo = timer.programInfo ?: BaseItemDto(
-			id = requireNotNull(timer.id?.toUUIDOrNull()),
-			channelName = timer.channelName,
-			name = timer.name.orEmpty(),
-			type = BaseItemKind.PROGRAM,
-			timerId = timer.id,
-			seriesTimerId = timer.seriesTimerId,
-			startDate = timer.startDate,
-			endDate = timer.endDate,
-			mediaType = MediaType.UNKNOWN,
-		)
+		val programInfo =
+			timer.programInfo ?: BaseItemDto(
+				id = requireNotNull(timer.id?.toUUIDOrNull()),
+				channelName = timer.channelName,
+				name = timer.name.orEmpty(),
+				type = BaseItemKind.PROGRAM,
+				timerId = timer.id,
+				seriesTimerId = timer.seriesTimerId,
+				startDate = timer.startDate,
+				endDate = timer.endDate,
+				mediaType = MediaType.UNKNOWN,
+			)
 		return programInfo.copy(
 			locationType = LocationType.VIRTUAL,
 		)

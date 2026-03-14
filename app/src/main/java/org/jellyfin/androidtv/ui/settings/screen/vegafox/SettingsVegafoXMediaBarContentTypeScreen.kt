@@ -22,11 +22,12 @@ fun SettingsVegafoXMediaBarContentTypeScreen() {
 	val userSettingPreferences = koinInject<UserSettingPreferences>()
 	var mediaBarContentType by rememberPreference(userSettingPreferences, UserSettingPreferences.mediaBarContentType)
 
-	val options = listOf(
-		"movies" to stringResource(R.string.pref_shuffle_movies),
-		"tv" to stringResource(R.string.pref_shuffle_tv),
-		"both" to stringResource(R.string.pref_shuffle_both)
-	)
+	val options =
+		listOf(
+			"movies" to stringResource(R.string.pref_shuffle_movies),
+			"tv" to stringResource(R.string.pref_shuffle_tv),
+			"both" to stringResource(R.string.pref_shuffle_both),
+		)
 
 	SettingsColumn {
 		item {
@@ -43,7 +44,7 @@ fun SettingsVegafoXMediaBarContentTypeScreen() {
 				onClick = {
 					mediaBarContentType = value
 					router.back()
-				}
+				},
 			)
 		}
 	}

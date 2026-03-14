@@ -32,7 +32,7 @@ fun SettingsScreensaverModeScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_screensaver_mode_library)) },
 				trailingContent = { RadioButton(checked = screensaverMode == "library") },
-				onClick = { screensaverMode = "library" }
+				onClick = { screensaverMode = "library" },
 			)
 		}
 
@@ -42,7 +42,7 @@ fun SettingsScreensaverModeScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_screensaver_mode_logo)) },
 				trailingContent = { RadioButton(checked = screensaverMode == "logo") },
-				onClick = { screensaverMode = "logo" }
+				onClick = { screensaverMode = "logo" },
 			)
 		}
 	}

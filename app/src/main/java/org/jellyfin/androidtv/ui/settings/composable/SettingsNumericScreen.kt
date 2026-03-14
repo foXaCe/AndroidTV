@@ -4,12 +4,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.form.RadioButton
 import org.jellyfin.androidtv.ui.base.list.ListButton
+import org.jellyfin.androidtv.ui.base.list.ListControlDefaults
 import org.jellyfin.androidtv.ui.base.list.ListSection
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.navigation.LocalRouter
 import org.jellyfin.androidtv.ui.settings.compat.rememberPreference
 import org.jellyfin.preference.Preference
@@ -20,42 +23,62 @@ import org.koin.compose.koinInject
  */
 @Composable
 fun SettingsNumericScreen(
-    route: String,
-    preference: Preference<Float>,
-    titleRes: Int,
-    valueTemplate: Int,
-    minValue: Double,
-    maxValue: Double,
-    stepSize: Double,
+	route: String,
+	preference: Preference<Float>,
+	titleRes: Int,
+	valueTemplate: Int,
+	minValue: Double,
+	maxValue: Double,
+	stepSize: Double,
 ) {
-    val router = LocalRouter.current
-    val userPreferences = koinInject<UserPreferences>()
-    var currentValue by rememberPreference(userPreferences, preference)
+	val router = LocalRouter.current
+	val userPreferences = koinInject<UserPreferences>()
+	var currentValue by rememberPreference(userPreferences, preference)
 
-    // Generate options from min to max with step size
-    val options = generateSequence(minValue) { it + stepSize }
-        .takeWhile { it <= maxValue + (stepSize / 2) } // Add small epsilon to handle floating point
-        .map { it.toFloat() to "${it.toInt()} ms" }
-        .toList()
+	// Generate options from min to max with step size
+	val options =
+		generateSequence(minValue) { it + stepSize }
+			.takeWhile { it <= maxValue + (stepSize / 2) } // Add small epsilon to handle floating point
+			.map { it.toFloat() to "${it.toInt()} ms" }
+			.toList()
 
-    SettingsColumn {
-        item {
-            ListSection(
-                overlineContent = { Text(stringResource(titleRes).uppercase()) },
-                headingContent = { Text(stringResource(titleRes)) },
-                captionContent = { Text(stringResource(valueTemplate, currentValue.toInt())) },
-            )
-        }
+	SettingsColumn {
+		item {
+			ListSection(
+				overlineContent = { Text(stringResource(titleRes).uppercase()) },
+				headingContent = { Text(stringResource(titleRes)) },
+				captionContent = { Text(stringResource(valueTemplate, currentValue.toInt())) },
+			)
+		}
 
-        items(options) { (value, label) ->
-            ListButton(
-                headingContent = { Text(label) },
-                trailingContent = { RadioButton(checked = kotlin.math.abs(currentValue - value) < 0.01f) },
-                onClick = {
-                    currentValue = value
-                    router.back()
-                }
-            )
-        }
-    }
+		items(options) { (value, label) ->
+			val isSelected = kotlin.math.abs(currentValue - value) < 0.01f
+			ListButton(
+				headingContent = {
+					Text(
+						label,
+						color = if (isSelected) VegafoXColors.OrangePrimary else Color.Unspecified,
+					)
+				},
+				trailingContent = {
+					RadioButton(
+						checked = isSelected,
+						containerColor = VegafoXColors.OrangePrimary,
+					)
+				},
+				colors =
+					if (isSelected) {
+						ListControlDefaults.colors(
+							containerColor = VegafoXColors.OrangeSoft,
+						)
+					} else {
+						ListControlDefaults.colors()
+					},
+				onClick = {
+					currentValue = value
+					router.back()
+				},
+			)
+		}
+	}
 }

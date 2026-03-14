@@ -8,7 +8,9 @@ fun interface PlaybackPlugin {
 
 	interface InstallContext {
 		fun provide(backend: PlayerBackend)
+
 		fun provide(service: PlayerService)
+
 		fun provide(mediaStreamResolver: MediaStreamResolver)
 	}
 }

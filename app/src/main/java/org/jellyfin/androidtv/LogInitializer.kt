@@ -10,7 +10,8 @@ class LogInitializer : Initializer<Unit> {
 		// https://wh0.github.io/2020/08/12/closeguard.html
 		if (BuildConfig.DEBUG) {
 			try {
-				Class.forName("dalvik.system.CloseGuard")
+				Class
+					.forName("dalvik.system.CloseGuard")
 					.getMethod("setEnabled", Boolean::class.javaPrimitiveType)
 					.invoke(null, true)
 			} catch (e: ReflectiveOperationException) {
@@ -24,13 +25,20 @@ class LogInitializer : Initializer<Unit> {
 			Timber.plant(Timber.DebugTree())
 		} else {
 			// Release builds: only log warnings and errors
-			Timber.plant(object : Timber.Tree() {
-				override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-					if (priority >= android.util.Log.WARN) {
-						android.util.Log.println(priority, tag ?: "VegafoX", message)
+			Timber.plant(
+				object : Timber.Tree() {
+					override fun log(
+						priority: Int,
+						tag: String?,
+						message: String,
+						t: Throwable?,
+					) {
+						if (priority >= android.util.Log.WARN) {
+							android.util.Log.println(priority, tag ?: "VegafoX", message)
+						}
 					}
-				}
-			})
+				},
+			)
 		}
 		Timber.i("Timber initialized")
 	}

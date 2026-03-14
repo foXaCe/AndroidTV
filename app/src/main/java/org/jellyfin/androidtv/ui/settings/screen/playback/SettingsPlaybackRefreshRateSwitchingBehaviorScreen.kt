@@ -38,7 +38,7 @@ fun SettingsPlaybackRefreshRateSwitchingBehaviorScreen() {
 				onClick = {
 					refreshRateSwitchingBehavior = entry
 					router.back()
-				}
+				},
 			)
 		}
 	}

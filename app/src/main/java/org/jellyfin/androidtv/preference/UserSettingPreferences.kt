@@ -9,13 +9,13 @@ import org.jellyfin.androidtv.preference.constant.AppTheme
 import org.jellyfin.preference.booleanPreference
 import org.jellyfin.preference.enumPreference
 import org.jellyfin.preference.intPreference
-import org.jellyfin.preference.stringPreference
 import org.jellyfin.preference.store.SharedPreferenceStore
+import org.jellyfin.preference.stringPreference
 import java.util.UUID
 
 /**
  * User-specific settings and preferences.
- * 
+ *
  * Can be instantiated with a userId for per-user settings (like PIN codes),
  * or without userId for global user settings.
  */
@@ -23,14 +23,15 @@ class UserSettingPreferences(
 	context: Context,
 	userId: UUID? = null,
 ) : SharedPreferenceStore(
-	sharedPreferences = if (userId != null) {
-		// User-specific preferences (PIN codes, etc.)
-		context.getSharedPreferences("user_settings_${userId}", Context.MODE_PRIVATE)
-	} else {
-		// Global user settings (shared across all users)
-		PreferenceManager.getDefaultSharedPreferences(context)
-	}
-) {
+		sharedPreferences =
+			if (userId != null) {
+				// User-specific preferences (PIN codes, etc.)
+				context.getSharedPreferences("user_settings_$userId", Context.MODE_PRIVATE)
+			} else {
+				// Global user settings (shared across all users)
+				PreferenceManager.getDefaultSharedPreferences(context)
+			},
+	) {
 	companion object {
 		val skipBackLength = intPreference("skipBackLength", 10_000)
 		val skipForwardLength = intPreference("skipForwardLength", 30_000)
@@ -87,22 +88,31 @@ class UserSettingPreferences(
 		// Legacy home section preferences (kept for migration)
 		@Deprecated("Use homeSectionsJson instead")
 		val homesection0 = enumPreference("homesection0", HomeSectionType.MEDIA_BAR)
+
 		@Deprecated("Use homeSectionsJson instead")
 		val homesection1 = enumPreference("homesection1", HomeSectionType.RESUME)
+
 		@Deprecated("Use homeSectionsJson instead")
 		val homesection2 = enumPreference("homesection2", HomeSectionType.RESUME_BOOK)
+
 		@Deprecated("Use homeSectionsJson instead")
 		val homesection3 = enumPreference("homesection3", HomeSectionType.NONE)
+
 		@Deprecated("Use homeSectionsJson instead")
 		val homesection4 = enumPreference("homesection4", HomeSectionType.NEXT_UP)
+
 		@Deprecated("Use homeSectionsJson instead")
 		val homesection5 = enumPreference("homesection5", HomeSectionType.LATEST_MEDIA)
+
 		@Deprecated("Use homeSectionsJson instead")
 		val homesection6 = enumPreference("homesection6", HomeSectionType.NONE)
+
 		@Deprecated("Use homeSectionsJson instead")
 		val homesection7 = enumPreference("homesection7", HomeSectionType.NONE)
+
 		@Deprecated("Use homeSectionsJson instead")
 		val homesection8 = enumPreference("homesection8", HomeSectionType.NONE)
+
 		@Deprecated("Use homeSectionsJson instead")
 		val homesection9 = enumPreference("homesection9", HomeSectionType.NONE)
 
@@ -111,10 +121,10 @@ class UserSettingPreferences(
 		val themeMusicVolume = intPreference("themeMusicVolume", 30) // 0-100
 		val themeMusicOnHomeRows = booleanPreference("themeMusicOnHomeRows", false)
 
-		/* Display */
+		// Display
 		val focusColor = enumPreference("focus_color", AppTheme.WHITE)
 
-		/* Security */
+		// Security
 		/**
 		 * Optional PIN code for user account protection (stored as SHA-256 hash)
 		 */
@@ -126,24 +136,26 @@ class UserSettingPreferences(
 		val userPinEnabled = booleanPreference("user_pin_enabled", false)
 	}
 
-	private val json = Json { 
-		ignoreUnknownKeys = true 
-		encodeDefaults = true
-	}
+	private val json =
+		Json {
+			ignoreUnknownKeys = true
+			encodeDefaults = true
+		}
 
 	@Deprecated("Use homeSectionsConfig instead")
-	val homesections = listOf(
-		homesection0,
-		homesection1,
-		homesection2,
-		homesection3,
-		homesection4,
-		homesection5,
-		homesection6,
-		homesection7,
-		homesection8,
-		homesection9,
-	)
+	val homesections =
+		listOf(
+			homesection0,
+			homesection1,
+			homesection2,
+			homesection3,
+			homesection4,
+			homesection5,
+			homesection6,
+			homesection7,
+			homesection8,
+			homesection9,
+		)
 
 	/**
 	 * Get or set the home sections configuration.
@@ -168,11 +180,12 @@ class UserSettingPreferences(
 	 * Get the active home sections (enabled sections sorted by order).
 	 */
 	val activeHomesections: List<HomeSectionType>
-		get() = homeSectionsConfig
-			.filter { it.enabled }
-			.sortedBy { it.order }
-			.map { it.type }
-	
+		get() =
+			homeSectionsConfig
+				.filter { it.enabled }
+				.sortedBy { it.order }
+				.map { it.type }
+
 	/**
 	 * Get the image type for a specific home row, respecting universal override.
 	 */
@@ -186,7 +199,8 @@ class UserSettingPreferences(
 		val key = "homeRowImageType_${sectionType.serializedName}"
 		val value = sharedPreferences.getString(key, org.jellyfin.androidtv.constant.ImageType.POSTER.name)
 		return try {
-			org.jellyfin.androidtv.constant.ImageType.valueOf(value ?: org.jellyfin.androidtv.constant.ImageType.POSTER.name)
+			org.jellyfin.androidtv.constant.ImageType
+				.valueOf(value ?: org.jellyfin.androidtv.constant.ImageType.POSTER.name)
 		} catch (e: IllegalArgumentException) {
 			org.jellyfin.androidtv.constant.ImageType.POSTER
 		}
@@ -195,11 +209,14 @@ class UserSettingPreferences(
 	/**
 	 * Set the image type for a specific home row.
 	 */
-	fun setHomeRowImageType(sectionType: HomeSectionType, imageType: org.jellyfin.androidtv.constant.ImageType) {
+	fun setHomeRowImageType(
+		sectionType: HomeSectionType,
+		imageType: org.jellyfin.androidtv.constant.ImageType,
+	) {
 		val key = "homeRowImageType_${sectionType.serializedName}"
 		sharedPreferences.edit().putString(key, imageType.name).apply()
 	}
-	
+
 	init {
 		runMigrations {
 			// v1.3.1 to v1.4.0
@@ -237,17 +254,29 @@ class UserSettingPreferences(
 				}
 				
 				// Read old home section preferences and build enabled sections list
-				val enabledOldSections = listOf(
-					homesection0, homesection1, homesection2, homesection3, homesection4,
-					homesection5, homesection6, homesection7, homesection8, homesection9
-				).mapIndexedNotNull { index, pref ->
-					val typeString = prefs.getString(pref.key, HomeSectionType.NONE.serializedName)
-					val type = HomeSectionType.entries.find { it.serializedName == typeString } 
-						?: HomeSectionType.NONE
-					if (type != HomeSectionType.NONE) {
-						HomeSectionConfig(type = type, enabled = true, order = index)
-					} else null
-				}
+				val enabledOldSections =
+					listOf(
+						homesection0,
+						homesection1,
+						homesection2,
+						homesection3,
+						homesection4,
+						homesection5,
+						homesection6,
+						homesection7,
+						homesection8,
+						homesection9,
+					).mapIndexedNotNull { index, pref ->
+						val typeString = prefs.getString(pref.key, HomeSectionType.NONE.serializedName)
+						val type =
+							HomeSectionType.entries.find { it.serializedName == typeString }
+								?: HomeSectionType.NONE
+						if (type != HomeSectionType.NONE) {
+							HomeSectionConfig(type = type, enabled = true, order = index)
+						} else {
+							null
+						}
+					}
 				
 				// Check if user had MEDIA_BAR enabled and set the new toggle accordingly
 				val hadMediaBar = enabledOldSections.any { it.type == HomeSectionType.MEDIA_BAR }
@@ -259,21 +288,24 @@ class UserSettingPreferences(
 				// Build final config: start with enabled old sections, but exclude MEDIA_BAR
 				val enabledOldSectionsWithoutMediaBar = enabledOldSections.filter { it.type != HomeSectionType.MEDIA_BAR }
 				val enabledTypes = enabledOldSectionsWithoutMediaBar.map { it.type }.toSet()
-				val newConfigs = buildList {
-					// Add all old enabled sections with their original order (excluding MEDIA_BAR)
-					addAll(enabledOldSectionsWithoutMediaBar)
+				val newConfigs =
+					buildList {
+						// Add all old enabled sections with their original order (excluding MEDIA_BAR)
+						addAll(enabledOldSectionsWithoutMediaBar)
 					
-					// Add any section types from defaults that weren't in the old config (as disabled)
-					val maxOrder = enabledOldSectionsWithoutMediaBar.maxOfOrNull { it.order } ?: -1
-					defaultConfigs.forEach { defaultConfig ->
-						if (defaultConfig.type !in enabledTypes) {
-							add(defaultConfig.copy(
-								enabled = false, 
-								order = maxOrder + 1 + defaultConfig.order
-							))
+						// Add any section types from defaults that weren't in the old config (as disabled)
+						val maxOrder = enabledOldSectionsWithoutMediaBar.maxOfOrNull { it.order } ?: -1
+						defaultConfigs.forEach { defaultConfig ->
+							if (defaultConfig.type !in enabledTypes) {
+								add(
+									defaultConfig.copy(
+										enabled = false,
+										order = maxOrder + 1 + defaultConfig.order,
+									),
+								)
+							}
 						}
-					}
-				}.sortedBy { it.order }
+					}.sortedBy { it.order }
 				
 				// Save the new config
 				val jsonString = json.encodeToString(newConfigs)
@@ -292,11 +324,13 @@ class UserSettingPreferences(
 					if (!hasPlaylists) {
 						// Add PLAYLISTS as disabled at the end
 						val maxOrder = configs.maxOfOrNull { it.order } ?: -1
-						val updatedConfigs = configs + HomeSectionConfig(
-							type = HomeSectionType.PLAYLISTS,
-							enabled = false,
-							order = maxOrder + 1
-						)
+						val updatedConfigs =
+							configs +
+								HomeSectionConfig(
+									type = HomeSectionType.PLAYLISTS,
+									enabled = false,
+									order = maxOrder + 1,
+								)
 						putString(homeSectionsJson.key, json.encodeToString(updatedConfigs))
 					}
 				} catch (e: Exception) {
@@ -318,12 +352,13 @@ class UserSettingPreferences(
 				
 				// Convert to new multi-select format
 				// If user had a specific rating selected, enable both that and community rating
-				val newEnabledRatings = when (oldRatingType) {
-					"RATING_HIDDEN" -> "" // No ratings
-					"RATING_STARS" -> "RATING_STARS" // Just community rating
-					"RATING_TOMATOES" -> "RATING_TOMATOES,RATING_STARS" // RT + Stars (default)
-					else -> "$oldRatingType,RATING_STARS" // User's preference + community rating
-				}
+				val newEnabledRatings =
+					when (oldRatingType) {
+						"RATING_HIDDEN" -> "" // No ratings
+						"RATING_STARS" -> "RATING_STARS" // Just community rating
+						"RATING_TOMATOES" -> "RATING_TOMATOES,RATING_STARS" // RT + Stars (default)
+						else -> "$oldRatingType,RATING_STARS" // User's preference + community rating
+					}
 				
 				putString(enabledRatings.key, newEnabledRatings)
 			}

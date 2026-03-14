@@ -40,29 +40,30 @@ fun Text(
 	maxLines: Int = Int.MAX_VALUE,
 	minLines: Int = 1,
 	onTextLayout: (TextLayoutResult) -> Unit = {},
-	style: TextStyle = LocalTextStyle.current
+	style: TextStyle = LocalTextStyle.current,
 ) {
 	val textColor = color.takeOrElse { style.color.takeOrElse { Color.Black } }
 
 	BasicText(
 		text = text,
 		modifier = modifier.graphicsLayer { this.compositingStrategy = CompositingStrategy.Offscreen },
-		style = style.merge(
-			color = textColor,
-			fontSize = fontSize,
-			fontWeight = fontWeight,
-			textAlign = textAlign ?: TextAlign.Unspecified,
-			lineHeight = lineHeight,
-			fontFamily = fontFamily,
-			textDecoration = textDecoration,
-			fontStyle = fontStyle,
-			letterSpacing = letterSpacing
-		),
+		style =
+			style.merge(
+				color = textColor,
+				fontSize = fontSize,
+				fontWeight = fontWeight,
+				textAlign = textAlign ?: TextAlign.Unspecified,
+				lineHeight = lineHeight,
+				fontFamily = fontFamily,
+				textDecoration = textDecoration,
+				fontStyle = fontStyle,
+				letterSpacing = letterSpacing,
+			),
 		onTextLayout = onTextLayout,
 		overflow = overflow,
 		softWrap = softWrap,
 		maxLines = maxLines,
-		minLines = minLines
+		minLines = minLines,
 	)
 }
 
@@ -85,7 +86,7 @@ fun Text(
 	minLines: Int = 1,
 	inlineContent: Map<String, InlineTextContent> = mapOf(),
 	onTextLayout: (TextLayoutResult) -> Unit = {},
-	style: TextStyle = LocalTextStyle.current
+	style: TextStyle = LocalTextStyle.current,
 ) {
 	val textColor = color.takeOrElse { style.color.takeOrElse { Color.Black } }
 
@@ -102,21 +103,24 @@ fun Text(
 				fontFamily = fontFamily,
 				textDecoration = textDecoration,
 				fontStyle = fontStyle,
-				letterSpacing = letterSpacing
+				letterSpacing = letterSpacing,
 			),
 		onTextLayout = onTextLayout,
 		overflow = overflow,
 		softWrap = softWrap,
 		maxLines = maxLines,
 		minLines = minLines,
-		inlineContent = inlineContent
+		inlineContent = inlineContent,
 	)
 }
 
 val LocalTextStyle = compositionLocalOf(structuralEqualityPolicy()) { TypographyDefaults.Default }
 
 @Composable
-fun ProvideTextStyle(value: TextStyle, content: @Composable () -> Unit) {
+fun ProvideTextStyle(
+	value: TextStyle,
+	content: @Composable () -> Unit,
+) {
 	val mergedStyle = LocalTextStyle.current.merge(value)
 	CompositionLocalProvider(LocalTextStyle provides mergedStyle, content = content)
 }

@@ -27,7 +27,6 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class TvFoundationTest {
-
 	@get:Rule
 	val composeTestRule = createComposeRule()
 
@@ -53,18 +52,20 @@ class TvFoundationTest {
 		composeTestRule.waitForIdle()
 
 		// Request focus on the card
-		composeTestRule.onNodeWithTag("card")
+		composeTestRule
+			.onNodeWithTag("card")
 			.performSemanticsAction(SemanticsActions.RequestFocus)
 
 		composeTestRule.waitForIdle()
 
 		// Verify the target scale matches FOCUS_SCALE
-		composeTestRule.onNodeWithTag("card")
+		composeTestRule
+			.onNodeWithTag("card")
 			.assert(
 				SemanticsMatcher.expectValue(
 					TvFocusCardScaleKey,
 					AnimationDefaults.FOCUS_SCALE,
-				)
+				),
 			)
 	}
 
@@ -90,28 +91,32 @@ class TvFoundationTest {
 		composeTestRule.waitForIdle()
 
 		// Focus the card first
-		composeTestRule.onNodeWithTag("card")
+		composeTestRule
+			.onNodeWithTag("card")
 			.performSemanticsAction(SemanticsActions.RequestFocus)
 
 		composeTestRule.waitForIdle()
 
 		// Perform a touch down (press without release) to trigger press state
-		composeTestRule.onNodeWithTag("card")
+		composeTestRule
+			.onNodeWithTag("card")
 			.performTouchInput { down(center) }
 
 		composeTestRule.waitForIdle()
 
 		// Verify the target scale matches PRESS_SCALE
-		composeTestRule.onNodeWithTag("card")
+		composeTestRule
+			.onNodeWithTag("card")
 			.assert(
 				SemanticsMatcher.expectValue(
 					TvFocusCardScaleKey,
 					AnimationDefaults.PRESS_SCALE,
-				)
+				),
 			)
 
 		// Release touch to clean up
-		composeTestRule.onNodeWithTag("card")
+		composeTestRule
+			.onNodeWithTag("card")
 			.performTouchInput { up() }
 	}
 
@@ -134,9 +139,10 @@ class TvFoundationTest {
 				) { item ->
 					TvFocusCard(
 						onClick = {},
-						modifier = Modifier
-							.testTag("grid_$item")
-							.size(120.dp),
+						modifier =
+							Modifier
+								.testTag("grid_$item")
+								.size(120.dp),
 					) {
 						Box(Modifier.fillMaxSize().background(Color.DarkGray))
 					}
@@ -147,18 +153,20 @@ class TvFoundationTest {
 		composeTestRule.waitForIdle()
 
 		// Request focus on the first item
-		composeTestRule.onNodeWithTag("grid_Item A")
+		composeTestRule
+			.onNodeWithTag("grid_Item A")
 			.performSemanticsAction(SemanticsActions.RequestFocus)
 
 		composeTestRule.waitForIdle()
 
 		// Verify it received focus (scale should be FOCUS_SCALE)
-		composeTestRule.onNodeWithTag("grid_Item A")
+		composeTestRule
+			.onNodeWithTag("grid_Item A")
 			.assert(
 				SemanticsMatcher.expectValue(
 					TvFocusCardScaleKey,
 					AnimationDefaults.FOCUS_SCALE,
-				)
+				),
 			)
 	}
 
@@ -169,10 +177,11 @@ class TvFoundationTest {
 	 */
 	@Test
 	fun tvRowList_renders_row_titles() {
-		val testRows = listOf(
-			TvRow(title = "Continue Watching", items = listOf("A", "B")),
-			TvRow(title = "Recently Added", items = listOf("C", "D")),
-		)
+		val testRows =
+			listOf(
+				TvRow(title = "Continue Watching", items = listOf("A", "B")),
+				TvRow(title = "Recently Added", items = listOf("C", "D")),
+			)
 
 		composeTestRule.setContent {
 			JellyfinTheme {

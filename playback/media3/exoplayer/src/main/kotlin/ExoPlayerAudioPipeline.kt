@@ -17,9 +17,10 @@ class ExoPlayerAudioPipeline {
 
 		// Re-create loudness enhancer for normalization gain
 		loudnessEnhancer?.release()
-		loudnessEnhancer = runCatching { LoudnessEnhancer(audioSessionId) }
-			.onFailure { Timber.w(it, "Failed to create LoudnessEnhancer") }
-			.getOrNull()
+		loudnessEnhancer =
+			runCatching { LoudnessEnhancer(audioSessionId) }
+				.onFailure { Timber.w(it, "Failed to create LoudnessEnhancer") }
+				.getOrNull()
 
 		// Re-apply current normalization gain
 		applyGain()
@@ -31,11 +32,12 @@ class ExoPlayerAudioPipeline {
 			return
 		}
 
-		val targetGain = normalizationGain
-			// Convert to millibels
-			?.times(100f)
-			// Round to integer
-			?.toInt()
+		val targetGain =
+			normalizationGain
+				// Convert to millibels
+				?.times(100f)
+				// Round to integer
+				?.toInt()
 
 		Timber.d("Applying gain (targetGain=$targetGain)")
 		loudnessEnhancer?.setEnabled(targetGain != null)

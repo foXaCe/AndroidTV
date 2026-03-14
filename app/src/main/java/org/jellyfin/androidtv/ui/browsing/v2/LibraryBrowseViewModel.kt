@@ -1,6 +1,7 @@
 package org.jellyfin.androidtv.ui.browsing.v2
 
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -8,7 +9,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.Immutable
 import kotlinx.coroutines.withContext
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.constant.GridDirection
@@ -19,6 +19,8 @@ import org.jellyfin.androidtv.data.repository.MultiServerRepository
 import org.jellyfin.androidtv.preference.LibraryPreferences
 import org.jellyfin.androidtv.preference.PreferencesRepository
 import org.jellyfin.androidtv.preference.UserPreferences
+import org.jellyfin.androidtv.ui.base.state.UiError
+import org.jellyfin.androidtv.ui.base.state.toUiError
 import org.jellyfin.androidtv.util.sdk.ApiClientFactory
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.exception.ApiClientException
@@ -32,19 +34,22 @@ import org.jellyfin.sdk.model.api.ItemSortBy
 import org.jellyfin.sdk.model.api.SeriesStatus
 import org.jellyfin.sdk.model.api.SortOrder
 import timber.log.Timber
-import org.jellyfin.androidtv.ui.base.state.UiError
-import org.jellyfin.androidtv.ui.base.state.toUiError
 import java.util.UUID
 
-enum class SeriesStatusFilter(@StringRes val labelRes: Int) {
+enum class SeriesStatusFilter(
+	@StringRes val labelRes: Int,
+) {
 	ALL(R.string.lbl_all_items),
 	CONTINUING(R.string.lbl__continuing_title),
-	ENDED(R.string.lbl_ended_title)
+	ENDED(R.string.lbl_ended_title),
 }
-enum class PlayedStatusFilter(@StringRes val labelRes: Int) {
+
+enum class PlayedStatusFilter(
+	@StringRes val labelRes: Int,
+) {
 	ALL(R.string.lbl_all_items),
 	WATCHED(R.string.lbl_watched),
-	UNWATCHED(R.string.lbl_unwatched)
+	UNWATCHED(R.string.lbl_unwatched),
 }
 
 @Immutable
@@ -84,7 +89,6 @@ class LibraryBrowseViewModel(
 	private val multiServerRepository: MultiServerRepository,
 	private val userPreferences: UserPreferences,
 ) : ViewModel() {
-
 	private val _uiState = MutableStateFlow(LibraryBrowseUiState())
 	val uiState: StateFlow<LibraryBrowseUiState> = _uiState.asStateFlow()
 
@@ -127,29 +131,37 @@ class LibraryBrowseViewModel(
 		}
 	}
 
-	fun initialize(folderJson: String, serverId: UUID?, userId: UUID?) {
-		val folder = kotlinx.serialization.json.Json.decodeFromString(
-			BaseItemDto.serializer(), folderJson
-		)
+	fun initialize(
+		folderJson: String,
+		serverId: UUID?,
+		userId: UUID?,
+	) {
+		val folder =
+			kotlinx.serialization.json.Json.decodeFromString(
+				BaseItemDto.serializer(),
+				folderJson,
+			)
 		this.folder = folder
 		this.serverId = serverId
 
 		resolveApiClient(serverId, userId)
 
 		// Set initial loading state immediately
-		_uiState.value = LibraryBrowseUiState(
-			isLoading = true,
-			libraryName = folder.name ?: "",
-			collectionType = folder.collectionType,
-		)
+		_uiState.value =
+			LibraryBrowseUiState(
+				isLoading = true,
+				libraryName = folder.name ?: "",
+				collectionType = folder.collectionType,
+			)
 
 		viewModelScope.launch {
 			// Load library display preferences on IO thread
 			val dispPrefId = folder.displayPreferencesId
 			if (dispPrefId != null) {
-				libraryPreferences = withContext(Dispatchers.IO) {
-					preferencesRepository.getLibraryPreferences(dispPrefId, effectiveApi)
-				}
+				libraryPreferences =
+					withContext(Dispatchers.IO) {
+						preferencesRepository.getLibraryPreferences(dispPrefId, effectiveApi)
+					}
 			}
 
 			// Apply saved preferences
@@ -159,26 +171,28 @@ class LibraryBrowseViewModel(
 			val savedPlayed = libraryPreferences?.get(LibraryPreferences.filterPlayedStatus) ?: PlayedStatusFilter.ALL
 			val savedSeries = libraryPreferences?.get(LibraryPreferences.filterSeriesStatus) ?: SeriesStatusFilter.ALL
 
-			val initialSort = if (savedSort != null && savedOrder != null) {
-				sortOptions.find { it.sortBy == savedSort }?.copy(sortOrder = savedOrder)
-					?: SortOption(R.string.lbl_name, ItemSortBy.SORT_NAME, SortOrder.ASCENDING)
-			} else {
-				SortOption(R.string.lbl_name, ItemSortBy.SORT_NAME, SortOrder.ASCENDING)
-			}
+			val initialSort =
+				if (savedSort != null && savedOrder != null) {
+					sortOptions.find { it.sortBy == savedSort }?.copy(sortOrder = savedOrder)
+						?: SortOption(R.string.lbl_name, ItemSortBy.SORT_NAME, SortOrder.ASCENDING)
+				} else {
+					SortOption(R.string.lbl_name, ItemSortBy.SORT_NAME, SortOrder.ASCENDING)
+				}
 
 			val savedPosterSize = libraryPreferences?.get(LibraryPreferences.posterSize) ?: PosterSize.MED
 			val savedImageType = libraryPreferences?.get(LibraryPreferences.imageType) ?: ImageType.POSTER
 			val savedGridDirection = libraryPreferences?.get(LibraryPreferences.gridDirection) ?: GridDirection.VERTICAL
 
-			_uiState.value = _uiState.value.copy(
-				currentSortOption = initialSort,
-				filterFavorites = savedFavorites,
-				filterPlayed = savedPlayed,
-				filterSeriesStatus = savedSeries,
-				posterSize = savedPosterSize,
-				imageType = savedImageType,
-				gridDirection = savedGridDirection,
-			)
+			_uiState.value =
+				_uiState.value.copy(
+					currentSortOption = initialSort,
+					filterFavorites = savedFavorites,
+					filterPlayed = savedPlayed,
+					filterSeriesStatus = savedSeries,
+					posterSize = savedPosterSize,
+					imageType = savedImageType,
+					gridDirection = savedGridDirection,
+				)
 
 			loadItems(reset = true)
 		}
@@ -204,31 +218,34 @@ class LibraryBrowseViewModel(
 		resolveApiClient(serverId, userId)
 
 		// Set initial loading state
-		_uiState.value = LibraryBrowseUiState(
-			isLoading = true,
-			libraryName = genreName,
-			isGenreMode = true,
-			genreName = genreName,
-			displayPreferencesId = displayPreferencesId,
-			parentItemId = parentItemId,
-			currentSortOption = SortOption(R.string.lbl_name, ItemSortBy.SORT_NAME, SortOrder.ASCENDING),
-		)
+		_uiState.value =
+			LibraryBrowseUiState(
+				isLoading = true,
+				libraryName = genreName,
+				isGenreMode = true,
+				genreName = genreName,
+				displayPreferencesId = displayPreferencesId,
+				parentItemId = parentItemId,
+				currentSortOption = SortOption(R.string.lbl_name, ItemSortBy.SORT_NAME, SortOrder.ASCENDING),
+			)
 
 		if (displayPreferencesId != null) {
 			viewModelScope.launch {
-				libraryPreferences = withContext(Dispatchers.IO) {
-					preferencesRepository.getLibraryPreferences(displayPreferencesId, effectiveApi)
-				}
+				libraryPreferences =
+					withContext(Dispatchers.IO) {
+						preferencesRepository.getLibraryPreferences(displayPreferencesId, effectiveApi)
+					}
 
 				val savedPosterSize = libraryPreferences?.get(LibraryPreferences.posterSize) ?: PosterSize.MED
 				val savedImageType = libraryPreferences?.get(LibraryPreferences.imageType) ?: ImageType.POSTER
 				val savedGridDirection = libraryPreferences?.get(LibraryPreferences.gridDirection) ?: GridDirection.VERTICAL
 
-				_uiState.value = _uiState.value.copy(
-					posterSize = savedPosterSize,
-					imageType = savedImageType,
-					gridDirection = savedGridDirection,
-				)
+				_uiState.value =
+					_uiState.value.copy(
+						posterSize = savedPosterSize,
+						imageType = savedImageType,
+						gridDirection = savedGridDirection,
+					)
 
 				loadItems(reset = true)
 			}
@@ -241,10 +258,17 @@ class LibraryBrowseViewModel(
 	 * Initialize in explicit type mode — browse items of a specific type (e.g. Albums,
 	 * Artists, AlbumArtists) within a library folder.
 	 */
-	fun initializeWithType(folderJson: String, includeType: String, serverId: UUID?, userId: UUID?) {
-		val folder = kotlinx.serialization.json.Json.decodeFromString(
-			BaseItemDto.serializer(), folderJson
-		)
+	fun initializeWithType(
+		folderJson: String,
+		includeType: String,
+		serverId: UUID?,
+		userId: UUID?,
+	) {
+		val folder =
+			kotlinx.serialization.json.Json.decodeFromString(
+				BaseItemDto.serializer(),
+				folderJson,
+			)
 		this.folder = folder
 		this.explicitIncludeType = includeType
 		this.serverId = serverId
@@ -252,25 +276,28 @@ class LibraryBrowseViewModel(
 		resolveApiClient(serverId, userId)
 
 		// Artists use square images by default
-		val defaultImageType = when (includeType) {
-			"AlbumArtist", "Artist" -> ImageType.POSTER
-			else -> ImageType.POSTER
-		}
+		val defaultImageType =
+			when (includeType) {
+				"AlbumArtist", "Artist" -> ImageType.POSTER
+				else -> ImageType.POSTER
+			}
 
-		_uiState.value = LibraryBrowseUiState(
-			isLoading = true,
-			libraryName = folder.name ?: "",
-			collectionType = folder.collectionType,
-			imageType = defaultImageType,
-		)
+		_uiState.value =
+			LibraryBrowseUiState(
+				isLoading = true,
+				libraryName = folder.name ?: "",
+				collectionType = folder.collectionType,
+				imageType = defaultImageType,
+			)
 
 		viewModelScope.launch {
 			// Load library display preferences on IO thread
 			val dispPrefId = folder.displayPreferencesId
 			if (dispPrefId != null) {
-				libraryPreferences = withContext(Dispatchers.IO) {
-					preferencesRepository.getLibraryPreferences(dispPrefId, effectiveApi)
-				}
+				libraryPreferences =
+					withContext(Dispatchers.IO) {
+						preferencesRepository.getLibraryPreferences(dispPrefId, effectiveApi)
+					}
 			}
 
 			// Apply saved preferences
@@ -278,36 +305,42 @@ class LibraryBrowseViewModel(
 			val savedOrder = libraryPreferences?.get(LibraryPreferences.sortOrder)
 			val savedFavorites = libraryPreferences?.get(LibraryPreferences.filterFavoritesOnly) ?: false
 
-			val initialSort = if (savedSort != null && savedOrder != null) {
-				sortOptions.find { it.sortBy == savedSort }?.copy(sortOrder = savedOrder)
-					?: SortOption(R.string.lbl_name, ItemSortBy.SORT_NAME, SortOrder.ASCENDING)
-			} else {
-				SortOption(R.string.lbl_name, ItemSortBy.SORT_NAME, SortOrder.ASCENDING)
-			}
+			val initialSort =
+				if (savedSort != null && savedOrder != null) {
+					sortOptions.find { it.sortBy == savedSort }?.copy(sortOrder = savedOrder)
+						?: SortOption(R.string.lbl_name, ItemSortBy.SORT_NAME, SortOrder.ASCENDING)
+				} else {
+					SortOption(R.string.lbl_name, ItemSortBy.SORT_NAME, SortOrder.ASCENDING)
+				}
 
 			val savedPosterSize = libraryPreferences?.get(LibraryPreferences.posterSize) ?: PosterSize.MED
 			val savedImageType = libraryPreferences?.get(LibraryPreferences.imageType) ?: defaultImageType
 			val savedGridDirection = libraryPreferences?.get(LibraryPreferences.gridDirection) ?: GridDirection.VERTICAL
 
-			_uiState.value = _uiState.value.copy(
-				currentSortOption = initialSort,
-				filterFavorites = savedFavorites,
-				posterSize = savedPosterSize,
-				imageType = savedImageType,
-				gridDirection = savedGridDirection,
-			)
+			_uiState.value =
+				_uiState.value.copy(
+					currentSortOption = initialSort,
+					filterFavorites = savedFavorites,
+					posterSize = savedPosterSize,
+					imageType = savedImageType,
+					gridDirection = savedGridDirection,
+				)
 
 			loadItems(reset = true)
 		}
 	}
 
-	private fun resolveApiClient(serverId: UUID?, userId: UUID?) {
+	private fun resolveApiClient(
+		serverId: UUID?,
+		userId: UUID?,
+	) {
 		if (serverId != null) {
-			val serverApi = if (userId != null) {
-				apiClientFactory.getApiClient(serverId, userId)
-			} else {
-				apiClientFactory.getApiClientForServer(serverId)
-			}
+			val serverApi =
+				if (userId != null) {
+					apiClientFactory.getApiClient(serverId, userId)
+				} else {
+					apiClientFactory.getApiClientForServer(serverId)
+				}
 			if (serverApi != null) effectiveApi = serverApi
 		}
 	}
@@ -360,15 +393,17 @@ class LibraryBrowseViewModel(
 		val newPosterSize = prefs.get(LibraryPreferences.posterSize)
 		val newImageType = prefs.get(LibraryPreferences.imageType)
 		val newGridDirection = prefs.get(LibraryPreferences.gridDirection)
-		val changed = newPosterSize != _uiState.value.posterSize ||
-			newImageType != _uiState.value.imageType ||
-			newGridDirection != _uiState.value.gridDirection
+		val changed =
+			newPosterSize != _uiState.value.posterSize ||
+				newImageType != _uiState.value.imageType ||
+				newGridDirection != _uiState.value.gridDirection
 		if (changed) {
-			_uiState.value = _uiState.value.copy(
-				posterSize = newPosterSize,
-				imageType = newImageType,
-				gridDirection = newGridDirection,
-			)
+			_uiState.value =
+				_uiState.value.copy(
+					posterSize = newPosterSize,
+					imageType = newImageType,
+					gridDirection = newGridDirection,
+				)
 		}
 		return changed
 	}
@@ -402,50 +437,87 @@ class LibraryBrowseViewModel(
 			try {
 				val state = _uiState.value
 
-				val response = if (isExplicitType) {
-					// Explicit type mode: Artists use dedicated API endpoints,
-					// other types use getItems with the parsed BaseItemKind
-					val type = explicitIncludeType!!
+				val response =
+					if (isExplicitType) {
+						// Explicit type mode: Artists use dedicated API endpoints,
+						// other types use getItems with the parsed BaseItemKind
+						val type = explicitIncludeType!!
 
-					// For artists, only favorites filter applies (played status is not relevant)
-					val artistFilters = buildSet {
-						if (state.filterFavorites) add(ItemFilter.IS_FAVORITE)
-					}
+						// For artists, only favorites filter applies (played status is not relevant)
+						val artistFilters =
+							buildSet {
+								if (state.filterFavorites) add(ItemFilter.IS_FAVORITE)
+							}
 
-					when (type) {
-						"AlbumArtist" -> withContext(Dispatchers.IO) {
-							effectiveApi.artistsApi.getAlbumArtists(
-								parentId = folder?.id,
-								fields = ItemRepository.itemFields,
-								sortBy = setOf(state.currentSortOption.sortBy),
-								sortOrder = setOf(state.currentSortOption.sortOrder),
-								startIndex = currentPage * pageSize,
-								limit = pageSize,
-								enableTotalRecordCount = true,
-								nameStartsWith = state.startLetter,
-								filters = artistFilters,
-							).content
+						when (type) {
+							"AlbumArtist" ->
+								withContext(Dispatchers.IO) {
+									effectiveApi.artistsApi
+										.getAlbumArtists(
+											parentId = folder?.id,
+											fields = ItemRepository.itemFields,
+											sortBy = setOf(state.currentSortOption.sortBy),
+											sortOrder = setOf(state.currentSortOption.sortOrder),
+											startIndex = currentPage * pageSize,
+											limit = pageSize,
+											enableTotalRecordCount = true,
+											nameStartsWith = state.startLetter,
+											filters = artistFilters,
+										).content
+								}
+
+							"Artist" ->
+								withContext(Dispatchers.IO) {
+									effectiveApi.artistsApi
+										.getArtists(
+											parentId = folder?.id,
+											fields = ItemRepository.itemFields,
+											sortBy = setOf(state.currentSortOption.sortBy),
+											sortOrder = setOf(state.currentSortOption.sortOrder),
+											startIndex = currentPage * pageSize,
+											limit = pageSize,
+											enableTotalRecordCount = true,
+											nameStartsWith = state.startLetter,
+											filters = artistFilters,
+										).content
+								}
+
+							else -> {
+								// Standard type name (e.g. "MusicAlbum") — parse to BaseItemKind
+								// and use getItems with recursive search
+								val parsedKind = BaseItemKind.fromNameOrNull(type)
+								val itemFilters =
+									buildSet {
+										if (state.filterFavorites) add(ItemFilter.IS_FAVORITE)
+										when (state.filterPlayed) {
+											PlayedStatusFilter.WATCHED -> add(ItemFilter.IS_PLAYED)
+											PlayedStatusFilter.UNWATCHED -> add(ItemFilter.IS_UNPLAYED)
+											PlayedStatusFilter.ALL -> {} // no filter
+										}
+									}
+
+								withContext(Dispatchers.IO) {
+									effectiveApi.itemsApi
+										.getItems(
+											parentId = folder?.id,
+											includeItemTypes = parsedKind?.let { setOf(it) },
+											recursive = true,
+											fields = ItemRepository.itemFields,
+											sortBy = setOf(state.currentSortOption.sortBy),
+											sortOrder = setOf(state.currentSortOption.sortOrder),
+											filters = itemFilters,
+											startIndex = currentPage * pageSize,
+											limit = pageSize,
+											enableTotalRecordCount = true,
+											nameStartsWith = state.startLetter,
+										).content
+								}
+							}
 						}
-
-						"Artist" -> withContext(Dispatchers.IO) {
-							effectiveApi.artistsApi.getArtists(
-								parentId = folder?.id,
-								fields = ItemRepository.itemFields,
-								sortBy = setOf(state.currentSortOption.sortBy),
-								sortOrder = setOf(state.currentSortOption.sortOrder),
-								startIndex = currentPage * pageSize,
-								limit = pageSize,
-								enableTotalRecordCount = true,
-								nameStartsWith = state.startLetter,
-								filters = artistFilters,
-							).content
-						}
-
-						else -> {
-							// Standard type name (e.g. "MusicAlbum") — parse to BaseItemKind
-							// and use getItems with recursive search
-							val parsedKind = BaseItemKind.fromNameOrNull(type)
-							val itemFilters = buildSet {
+					} else {
+						// Build filters for genre/library modes
+						val filters =
+							buildSet {
 								if (state.filterFavorites) add(ItemFilter.IS_FAVORITE)
 								when (state.filterPlayed) {
 									PlayedStatusFilter.WATCHED -> add(ItemFilter.IS_PLAYED)
@@ -454,131 +526,111 @@ class LibraryBrowseViewModel(
 								}
 							}
 
-							withContext(Dispatchers.IO) {
-								effectiveApi.itemsApi.getItems(
-									parentId = folder?.id,
-									includeItemTypes = parsedKind?.let { setOf(it) },
-									recursive = true,
+						val includeTypes: Set<BaseItemKind>?
+						val excludeTypes: Set<BaseItemKind>?
+						val recursive: Boolean
+						val parentId: UUID?
+						val genres: Set<String>?
+
+						if (isGenre) {
+							// Genre mode: filter by genre name
+							parentId = genreParentId
+							genres = genreFilter?.let { setOf(it) }
+							recursive = true
+							includeTypes =
+								when (includeType) {
+									"Movie" -> setOf(BaseItemKind.MOVIE)
+									"Series" -> setOf(BaseItemKind.SERIES)
+									else -> setOf(BaseItemKind.MOVIE, BaseItemKind.SERIES)
+								}
+							excludeTypes = null
+						} else {
+							// Library mode
+							parentId = folder!!.id
+							genres = null
+
+							val isLibraryRoot =
+								folder.type == BaseItemKind.USER_VIEW ||
+									folder.type == BaseItemKind.COLLECTION_FOLDER
+
+							includeTypes =
+								when {
+									isLibraryRoot -> {
+										when (folder.collectionType) {
+											CollectionType.MOVIES -> setOf(BaseItemKind.MOVIE)
+											CollectionType.TVSHOWS -> setOf(BaseItemKind.SERIES)
+											CollectionType.MUSIC -> setOf(BaseItemKind.MUSIC_ALBUM)
+											else -> null
+										}
+									}
+									else -> null
+								}
+
+							// Only recurse when we have an includeItemTypes filter to
+							// avoid returning every nested item in mixed collections
+							recursive = isLibraryRoot && includeTypes != null
+
+							excludeTypes =
+								when {
+									(folder.type == BaseItemKind.USER_VIEW || folder.type == BaseItemKind.COLLECTION_FOLDER) &&
+										folder.collectionType == CollectionType.MOVIES -> setOf(BaseItemKind.BOX_SET)
+									else -> null
+								}
+						}
+
+						val seriesStatus =
+							when (state.filterSeriesStatus) {
+								SeriesStatusFilter.CONTINUING -> setOf(SeriesStatus.CONTINUING)
+								SeriesStatusFilter.ENDED -> setOf(SeriesStatus.ENDED)
+								else -> null
+							}
+
+						withContext(Dispatchers.IO) {
+							effectiveApi.itemsApi
+								.getItems(
+									parentId = parentId,
+									genres = genres,
+									includeItemTypes = includeTypes,
+									excludeItemTypes = excludeTypes,
+									collapseBoxSetItems = false,
+									recursive = recursive,
 									fields = ItemRepository.itemFields,
 									sortBy = setOf(state.currentSortOption.sortBy),
 									sortOrder = setOf(state.currentSortOption.sortOrder),
-									filters = itemFilters,
+									filters = filters,
+									seriesStatus = seriesStatus,
 									startIndex = currentPage * pageSize,
 									limit = pageSize,
 									enableTotalRecordCount = true,
 									nameStartsWith = state.startLetter,
 								).content
-							}
 						}
 					}
-				} else {
-					// Build filters for genre/library modes
-					val filters = buildSet {
-						if (state.filterFavorites) add(ItemFilter.IS_FAVORITE)
-						when (state.filterPlayed) {
-							PlayedStatusFilter.WATCHED -> add(ItemFilter.IS_PLAYED)
-							PlayedStatusFilter.UNWATCHED -> add(ItemFilter.IS_UNPLAYED)
-							PlayedStatusFilter.ALL -> {} // no filter
-						}
-					}
-
-					val includeTypes: Set<BaseItemKind>?
-					val excludeTypes: Set<BaseItemKind>?
-					val recursive: Boolean
-					val parentId: UUID?
-					val genres: Set<String>?
-
-					if (isGenre) {
-						// Genre mode: filter by genre name
-						parentId = genreParentId
-						genres = genreFilter?.let { setOf(it) }
-						recursive = true
-						includeTypes = when (includeType) {
-							"Movie" -> setOf(BaseItemKind.MOVIE)
-							"Series" -> setOf(BaseItemKind.SERIES)
-							else -> setOf(BaseItemKind.MOVIE, BaseItemKind.SERIES)
-						}
-						excludeTypes = null
-					} else {
-						// Library mode
-						parentId = folder!!.id
-						genres = null
-
-						val isLibraryRoot = folder.type == BaseItemKind.USER_VIEW ||
-							folder.type == BaseItemKind.COLLECTION_FOLDER
-
-						includeTypes = when {
-							isLibraryRoot -> {
-								when (folder.collectionType) {
-									CollectionType.MOVIES -> setOf(BaseItemKind.MOVIE)
-									CollectionType.TVSHOWS -> setOf(BaseItemKind.SERIES)
-									CollectionType.MUSIC -> setOf(BaseItemKind.MUSIC_ALBUM)
-									else -> null
-								}
-							}
-							else -> null
-						}
-
-						// Only recurse when we have an includeItemTypes filter to
-						// avoid returning every nested item in mixed collections
-						recursive = isLibraryRoot && includeTypes != null
-
-						excludeTypes = when {
-							(folder.type == BaseItemKind.USER_VIEW || folder.type == BaseItemKind.COLLECTION_FOLDER) &&
-								folder.collectionType == CollectionType.MOVIES -> setOf(BaseItemKind.BOX_SET)
-							else -> null
-						}
-					}
-
-					val seriesStatus = when (state.filterSeriesStatus) {
-						SeriesStatusFilter.CONTINUING -> setOf(SeriesStatus.CONTINUING)
-						SeriesStatusFilter.ENDED -> setOf(SeriesStatus.ENDED)
-						else -> null
-					}
-
-					withContext(Dispatchers.IO) {
-						effectiveApi.itemsApi.getItems(
-							parentId = parentId,
-							genres = genres,
-							includeItemTypes = includeTypes,
-							excludeItemTypes = excludeTypes,
-							collapseBoxSetItems = false,
-							recursive = recursive,
-							fields = ItemRepository.itemFields,
-							sortBy = setOf(state.currentSortOption.sortBy),
-							sortOrder = setOf(state.currentSortOption.sortOrder),
-							filters = filters,
-							seriesStatus = seriesStatus,
-							startIndex = currentPage * pageSize,
-							limit = pageSize,
-							enableTotalRecordCount = true,
-							nameStartsWith = state.startLetter,
-						).content
-					}
-				}
 
 				val totalItems = response.totalRecordCount ?: 0
 				val newItems = response.items
 
 				// Annotate with serverId for cross-server support
-				val annotatedItems = if (serverId != null) {
-					newItems.map { item ->
-						item.copy(serverId = serverId.toString())
+				val annotatedItems =
+					if (serverId != null) {
+						newItems.map { item ->
+							item.copy(serverId = serverId.toString())
+						}
+					} else {
+						newItems
 					}
-				} else {
-					newItems
-				}
 
 				val allItems = if (reset) annotatedItems else _uiState.value.items + annotatedItems
 				currentPage++
 
-				_uiState.value = _uiState.value.copy(
-					isLoading = false,
-					items = allItems,
-					totalItems = totalItems,
-					hasMoreItems = allItems.size < totalItems,
-					focusedItem = if (reset) allItems.firstOrNull() else _uiState.value.focusedItem,
-				)
+				_uiState.value =
+					_uiState.value.copy(
+						isLoading = false,
+						items = allItems,
+						totalItems = totalItems,
+						hasMoreItems = allItems.size < totalItems,
+						focusedItem = if (reset) allItems.firstOrNull() else _uiState.value.focusedItem,
+					)
 			} catch (err: ApiClientException) {
 				Timber.e(err, "Failed to load library items")
 				_uiState.value = _uiState.value.copy(isLoading = false, error = err.toUiError())

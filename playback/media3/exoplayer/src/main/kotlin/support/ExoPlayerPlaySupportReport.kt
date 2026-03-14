@@ -19,38 +19,41 @@ data class ExoPlayerPlaySupportReport(
 
 	companion object {
 		@OptIn(UnstableApi::class)
-		fun fromFlags(flags: Int): ExoPlayerPlaySupportReport = ExoPlayerPlaySupportReport(
-			format = FormatSupport.fromFlags(RendererCapabilities.getFormatSupport(flags)),
-			adaptive = AdaptiveSupport.fromFlags(RendererCapabilities.getAdaptiveSupport(flags)),
-			tunneling = tunnelingFromFlags(RendererCapabilities.getTunnelingSupport(flags)),
-			hardwareAcceleration = hardwareAccelerationFromFlags(RendererCapabilities.getHardwareAccelerationSupport(flags)),
-			decoder = DecoderSupport.fromFlags(RendererCapabilities.getDecoderSupport(flags)),
-		)
+		fun fromFlags(flags: Int): ExoPlayerPlaySupportReport =
+			ExoPlayerPlaySupportReport(
+				format = FormatSupport.fromFlags(RendererCapabilities.getFormatSupport(flags)),
+				adaptive = AdaptiveSupport.fromFlags(RendererCapabilities.getAdaptiveSupport(flags)),
+				tunneling = tunnelingFromFlags(RendererCapabilities.getTunnelingSupport(flags)),
+				hardwareAcceleration = hardwareAccelerationFromFlags(RendererCapabilities.getHardwareAccelerationSupport(flags)),
+				decoder = DecoderSupport.fromFlags(RendererCapabilities.getDecoderSupport(flags)),
+			)
 
 		@OptIn(UnstableApi::class)
-		private fun tunnelingFromFlags(flags: Int) = when (RendererCapabilities.getTunnelingSupport(flags)) {
-			RendererCapabilities.TUNNELING_SUPPORTED -> true
-			RendererCapabilities.TUNNELING_NOT_SUPPORTED -> false
-			else -> null
-		}
+		private fun tunnelingFromFlags(flags: Int) =
+			when (RendererCapabilities.getTunnelingSupport(flags)) {
+				RendererCapabilities.TUNNELING_SUPPORTED -> true
+				RendererCapabilities.TUNNELING_NOT_SUPPORTED -> false
+				else -> null
+			}
 
 		@OptIn(UnstableApi::class)
-		private fun hardwareAccelerationFromFlags(flags: Int) = when (RendererCapabilities.getHardwareAccelerationSupport(flags)) {
-			RendererCapabilities.HARDWARE_ACCELERATION_SUPPORTED -> true
-			RendererCapabilities.HARDWARE_ACCELERATION_NOT_SUPPORTED -> false
-			else -> null
-		}
+		private fun hardwareAccelerationFromFlags(flags: Int) =
+			when (RendererCapabilities.getHardwareAccelerationSupport(flags)) {
+				RendererCapabilities.HARDWARE_ACCELERATION_SUPPORTED -> true
+				RendererCapabilities.HARDWARE_ACCELERATION_NOT_SUPPORTED -> false
+				else -> null
+			}
 	}
 }
 
 fun ExoPlayer.getPlaySupportReport(format: Format): ExoPlayerPlaySupportReport =
 	ExoPlayerPlaySupportReport.fromFlags(supportsFormat(format))
 
-fun ExoPlayer.getPlaySupportReport(formats: Collection<Format>): ExoPlayerPlaySupportReport = formats
-	.map { format -> supportsFormat(format) }
-	.reduce { acc, i -> acc and i }
-	.let { flags -> ExoPlayerPlaySupportReport.fromFlags(flags) }
-
+fun ExoPlayer.getPlaySupportReport(formats: Collection<Format>): ExoPlayerPlaySupportReport =
+	formats
+		.map { format -> supportsFormat(format) }
+		.reduce { acc, i -> acc and i }
+		.let { flags -> ExoPlayerPlaySupportReport.fromFlags(flags) }
 
 @OptIn(UnstableApi::class)
 fun ExoPlayer.supportsFormat(format: Format): Int {
@@ -59,10 +62,11 @@ fun ExoPlayer.supportsFormat(format: Format): Int {
 	repeat(rendererCount) { rendererIndex ->
 		val renderer = getRenderer(rendererIndex)
 
-		val rendererCapabilities = when (renderer) {
-			is BaseRenderer -> renderer.supportsFormat(format)
-			else -> renderer.capabilities.supportsFormat(format)
-		}
+		val rendererCapabilities =
+			when (renderer) {
+				is BaseRenderer -> renderer.supportsFormat(format)
+				else -> renderer.capabilities.supportsFormat(format)
+			}
 
 		capabilities = capabilities or rendererCapabilities
 	}

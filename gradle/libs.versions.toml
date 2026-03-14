@@ -25,7 +25,6 @@ androidx-recyclerview = "1.4.0"
 androidx-startup = "1.2.0"
 androidx-tv-material = "1.0.1"
 androidx-tvprovider = "1.1.0"
-androidx-window = "1.5.1"
 androidx-work = "2.11.1"
 coil = "3.4.0"
 detekt = "1.23.8"
@@ -80,6 +79,7 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 androidx-cardview = { module = "androidx.cardview:cardview", version.ref = "androidx-cardview" }
 androidx-compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "androidx-compose-foundation" }
+androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version = "1.7.8" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "androidx-compose-material3" }
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "androidx-compose-ui" }
 androidx-compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics", version.ref = "androidx-compose-ui" }
@@ -98,11 +98,9 @@ androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version
 androidx-startup = { module = "androidx.startup:startup-runtime", version.ref = "androidx-startup" }
 androidx-tv-material = { module = "androidx.tv:tv-material", version.ref = "androidx-tv-material" }
 androidx-tvprovider = { module = "androidx.tvprovider:tvprovider", version.ref = "androidx-tvprovider" }
-androidx-window = { module = "androidx.window:window", version.ref = "androidx-window" }
 androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "androidx-work" }
 
 # Dependency Injection
-koin-android-compat = { module = "io.insert-koin:koin-android-compat", version.ref = "koin" }
 koin-android-core = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin-compose" }
 koin-androidx-workmanager = { module = "io.insert-koin:koin-androidx-workmanager", version.ref = "koin" }
@@ -168,6 +166,7 @@ acra = [
 ]
 androidx-compose = [
     "androidx-compose-foundation",
+    "androidx-compose-material-icons-extended",
     "androidx-compose-material3",
     "androidx-compose-ui-graphics",
     "androidx-compose-ui-tooling",
@@ -186,7 +185,6 @@ coil = [
     "coil-svg",
 ]
 koin = [
-    "koin-android-compat",
     "koin-android-core",
     "koin-androidx-workmanager",
     "koin-androidx-compose",

@@ -24,10 +24,11 @@ fun Badge(
 ) {
 	ProvideTextStyle(JellyfinTheme.typography.badge.copy(color = contentColor)) {
 		Box(
-			modifier = modifier
-				.defaultMinSize(minWidth = 24.dp, minHeight = 24.dp)
-				.background(containerColor, shape)
-				.padding(Tokens.Space.spaceXs),
+			modifier =
+				modifier
+					.defaultMinSize(minWidth = 24.dp, minHeight = 24.dp)
+					.background(containerColor, shape)
+					.padding(Tokens.Space.spaceXs),
 			contentAlignment = Alignment.Center,
 		) {
 			content()

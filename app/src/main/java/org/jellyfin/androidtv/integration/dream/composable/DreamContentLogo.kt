@@ -1,10 +1,8 @@
 package org.jellyfin.androidtv.integration.dream.composable
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -14,27 +12,26 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import org.jellyfin.androidtv.R
+import org.jellyfin.androidtv.ui.base.theme.DreamDimensions
 import kotlin.random.Random
 
 @Composable
 fun DreamContentLogo() {
 	val density = LocalDensity.current
-	val logoWidthDp = 400.dp
-	val logoHeightDp = 200.dp
+	val logoWidthDp = DreamDimensions.logoWidth
+	val logoHeightDp = DreamDimensions.logoHeight
 	
 	BoxWithConstraints(
-		modifier = Modifier
-			.fillMaxSize()
-			.background(Color.Black),
+		modifier =
+			Modifier
+				.fillMaxSize()
+				.background(Color.Black),
 	) {
 		// Get actual pixel dimensions
 		val screenWidth = with(density) { maxWidth.toPx() }.toInt()
@@ -85,11 +82,12 @@ fun DreamContentLogo() {
 		}
 		
 		Image(
-			painter = painterResource(R.drawable.app_logo),
+			painter = painterResource(R.mipmap.vegafox_launcher_foreground),
 			contentDescription = stringResource(R.string.app_name),
-			modifier = Modifier
-				.offset { IntOffset(offsetX.value.toInt(), offsetY.value.toInt()) }
-				.width(logoWidthDp)
+			modifier =
+				Modifier
+					.offset { IntOffset(offsetX.value.toInt(), offsetY.value.toInt()) }
+					.width(logoWidthDp),
 		)
 	}
 }

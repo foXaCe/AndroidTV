@@ -1,9 +1,13 @@
 package org.jellyfin.androidtv.ui.player.video
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -12,10 +16,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.map
-import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.data.service.BackgroundService
 import org.jellyfin.androidtv.ui.ScreensaverLock
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.player.base.PlayerSubtitles
 import org.jellyfin.androidtv.ui.player.base.PlayerSurface
 import org.jellyfin.androidtv.ui.player.base.toast.MediaToastRegistry
@@ -50,16 +56,18 @@ fun VideoPlayerScreen() {
 	rememberPlaybackManagerMediaToastEmitter(playbackManager, mediaToastRegistry)
 
 	Box(
-		modifier = Modifier
-			.background(JellyfinTheme.colorScheme.background)
-			.fillMaxSize()
+		modifier =
+			Modifier
+				.background(Color.Black)
+				.fillMaxSize(),
 	) {
 		PlayerSurface(
 			playbackManager = playbackManager,
-			modifier = Modifier
-				.aspectRatio(aspectRatio, videoSize.height < videoSize.width)
-				.fillMaxSize()
-				.align(Alignment.Center)
+			modifier =
+				Modifier
+					.aspectRatio(aspectRatio, videoSize.height < videoSize.width)
+					.fillMaxSize()
+					.align(Alignment.Center),
 		)
 
 		VideoPlayerOverlay(
@@ -69,10 +77,25 @@ fun VideoPlayerScreen() {
 
 		PlayerSubtitles(
 			playbackManager = playbackManager,
-			modifier = Modifier
-				.aspectRatio(aspectRatio, videoSize.height < videoSize.width)
-				.fillMaxSize()
-				.align(Alignment.Center)
+			modifier =
+				Modifier
+					.aspectRatio(aspectRatio, videoSize.height < videoSize.width)
+					.fillMaxSize()
+					.align(Alignment.Center),
 		)
+
+		// Buffering indicator — uses real ExoPlayer buffering state
+		val isBuffering by playbackManager.state.isBuffering.collectAsState()
+		AnimatedVisibility(
+			visible = isBuffering,
+			enter = fadeIn(),
+			exit = fadeOut(),
+			modifier = Modifier.align(Alignment.Center),
+		) {
+			org.jellyfin.androidtv.ui.base.CircularProgressIndicator(
+				color = VegafoXColors.OrangePrimary,
+				modifier = Modifier.size(48.dp),
+			)
+		}
 	}
 }

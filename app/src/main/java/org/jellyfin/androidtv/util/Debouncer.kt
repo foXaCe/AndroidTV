@@ -22,10 +22,11 @@ class Debouncer(
 	 */
 	fun debounce(action: suspend () -> Unit) {
 		debounceJob?.cancel()
-		debounceJob = scope.launch {
-			delay(delay)
-			action()
-		}
+		debounceJob =
+			scope.launch {
+				delay(delay)
+				action()
+			}
 	}
 
 	/**

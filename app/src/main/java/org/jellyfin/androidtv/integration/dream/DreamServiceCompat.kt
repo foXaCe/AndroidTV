@@ -16,14 +16,18 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 
-abstract class DreamServiceCompat : DreamService(), SavedStateRegistryOwner, ViewModelStoreOwner {
+abstract class DreamServiceCompat :
+	DreamService(),
+	SavedStateRegistryOwner,
+	ViewModelStoreOwner {
 	@Suppress("LeakingThis")
 	private val lifecycleRegistry = LifecycleRegistry(this)
 
 	@Suppress("LeakingThis")
-	private val savedStateRegistryController = SavedStateRegistryController.create(this).apply {
-		performAttach()
-	}
+	private val savedStateRegistryController =
+		SavedStateRegistryController.create(this).apply {
+			performAttach()
+		}
 
 	override val lifecycle: Lifecycle get() = lifecycleRegistry
 	override val viewModelStore = ViewModelStore()

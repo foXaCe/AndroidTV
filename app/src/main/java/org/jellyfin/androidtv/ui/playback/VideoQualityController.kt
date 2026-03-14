@@ -1,6 +1,6 @@
 package org.jellyfin.androidtv.ui.playback
 
-import org.jellyfin.androidtv.preference.UserPreferences;
+import org.jellyfin.androidtv.preference.UserPreferences
 
 class VideoQualityController(
 	previousQualitySelection: String,

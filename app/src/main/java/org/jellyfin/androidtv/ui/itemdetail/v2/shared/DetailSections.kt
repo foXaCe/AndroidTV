@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,13 +22,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
-import org.jellyfin.androidtv.ui.itemdetail.v2.EpisodeCard
 import org.jellyfin.androidtv.ui.itemdetail.v2.CastCard
+import org.jellyfin.androidtv.ui.itemdetail.v2.EpisodeCard
 import org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsUiState
 import org.jellyfin.androidtv.ui.itemdetail.v2.LandscapeItemCard
 import org.jellyfin.androidtv.ui.itemdetail.v2.MetadataGroup
@@ -142,14 +141,15 @@ fun DetailCastSection(
 				CastCard(
 					name = person.name ?: "",
 					role = person.role ?: person.type.toString(),
-					imageUrl = person.primaryImageTag?.let { tag ->
-						api.imageApi.getItemImageUrl(
-							itemId = person.id,
-							imageType = ImageType.PRIMARY,
-							tag = tag,
-							maxHeight = 280,
-						)
-					},
+					imageUrl =
+						person.primaryImageTag?.let { tag ->
+							api.imageApi.getItemImageUrl(
+								itemId = person.id,
+								imageType = ImageType.PRIMARY,
+								tag = tag,
+								maxHeight = 280,
+							)
+						},
 					onClick = { onNavigateToItem(person.id) },
 				)
 			}
@@ -175,9 +175,12 @@ fun DetailSectionWithCards(
 		) {
 			items(items.size) { index ->
 				val item = items[index]
-				val cardModifier = if (index == 0 && firstItemFocusRequester != null)
-					Modifier.focusRequester(firstItemFocusRequester)
-				else Modifier
+				val cardModifier =
+					if (index == 0 && firstItemFocusRequester != null) {
+						Modifier.focusRequester(firstItemFocusRequester)
+					} else {
+						Modifier
+					}
 
 				if (isLandscape) {
 					LandscapeItemCard(
@@ -221,9 +224,12 @@ fun DetailCollectionItemsGrid(
 			verticalArrangement = Arrangement.spacedBy(16.dp),
 		) {
 			items.forEachIndexed { index, item ->
-				val cardModifier = if (index == 0 && firstItemFocusRequester != null)
-					Modifier.focusRequester(firstItemFocusRequester)
-				else Modifier
+				val cardModifier =
+					if (index == 0 && firstItemFocusRequester != null) {
+						Modifier.focusRequester(firstItemFocusRequester)
+					} else {
+						Modifier
+					}
 
 				SimilarItemCard(
 					title = item.name ?: "",
@@ -241,16 +247,16 @@ fun DetailCollectionItemsGrid(
 @Composable
 fun DetailPlaylistHint() {
 	Row(
-		modifier = Modifier
-			.fillMaxWidth()
-			.clip(JellyfinTheme.shapes.small)
-			.background(JellyfinTheme.colorScheme.outlineVariant)
-			.border(
-				1.dp,
-				JellyfinTheme.colorScheme.outlineVariant,
-				JellyfinTheme.shapes.small,
-			)
-			.padding(vertical = 12.dp, horizontal = 18.dp),
+		modifier =
+			Modifier
+				.fillMaxWidth()
+				.clip(JellyfinTheme.shapes.small)
+				.background(JellyfinTheme.colorScheme.outlineVariant)
+				.border(
+					1.dp,
+					JellyfinTheme.colorScheme.outlineVariant,
+					JellyfinTheme.shapes.small,
+				).padding(vertical = 12.dp, horizontal = 18.dp),
 		verticalAlignment = Alignment.CenterVertically,
 	) {
 		Text(

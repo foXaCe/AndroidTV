@@ -16,14 +16,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-fun Modifier.fadingEdges(
-	all: Dp
-) = fadingEdges(
-	start = all,
-	top = all,
-	end = all,
-	bottom = all,
-)
+fun Modifier.fadingEdges(all: Dp) =
+	fadingEdges(
+		start = all,
+		top = all,
+		end = all,
+		bottom = all,
+	)
 
 fun Modifier.fadingEdges(
 	vertical: Dp = 0.dp,
@@ -49,11 +48,12 @@ fun Modifier.fadingEdges(
 			// Start edge
 			if (start.value > 0) {
 				drawRect(
-					brush = Brush.horizontalGradient(
-						0f to Color.Transparent,
-						1f to Color.Black,
-						endX = start.toPx(),
-					),
+					brush =
+						Brush.horizontalGradient(
+							0f to Color.Transparent,
+							1f to Color.Black,
+							endX = start.toPx(),
+						),
 					blendMode = BlendMode.DstIn,
 				)
 			}
@@ -61,11 +61,12 @@ fun Modifier.fadingEdges(
 			// Top edge
 			if (top.value > 0) {
 				drawRect(
-					brush = Brush.verticalGradient(
-						0f to Color.Transparent,
-						1f to Color.Black,
-						endY = top.toPx(),
-					),
+					brush =
+						Brush.verticalGradient(
+							0f to Color.Transparent,
+							1f to Color.Black,
+							endY = top.toPx(),
+						),
 					blendMode = BlendMode.DstIn,
 				)
 			}
@@ -73,11 +74,12 @@ fun Modifier.fadingEdges(
 			// End edge
 			if (end.value > 0) {
 				drawRect(
-					brush = Brush.horizontalGradient(
-						0f to Color.Black,
-						1f to Color.Transparent,
-						startX = size.width - end.toPx(),
-					),
+					brush =
+						Brush.horizontalGradient(
+							0f to Color.Black,
+							1f to Color.Transparent,
+							startX = size.width - end.toPx(),
+						),
 					blendMode = BlendMode.DstIn,
 				)
 			}
@@ -85,31 +87,34 @@ fun Modifier.fadingEdges(
 			// Bottom edge
 			if (bottom.value > 0) {
 				drawRect(
-					brush = Brush.verticalGradient(
-						0f to Color.Black,
-						1f to Color.Transparent,
-						startY = size.height - bottom.toPx(),
-					),
-					blendMode = BlendMode.DstIn
+					brush =
+						Brush.verticalGradient(
+							0f to Color.Black,
+							1f to Color.Transparent,
+							startY = size.height - bottom.toPx(),
+						),
+					blendMode = BlendMode.DstIn,
 				)
 			}
-		}
+		},
 )
 
 @Preview
 @Composable
 private fun FadingEdgePreview() {
 	Box(
-		modifier = Modifier
-			.size(100.dp)
-			.background(Color.Red)
+		modifier =
+			Modifier
+				.size(100.dp)
+				.background(Color.Red),
 	) {
 		Box(
-			modifier = Modifier
-				.size(50.dp)
-				.fadingEdges(10.dp, 0.dp, 25.dp, 3.dp)
-				.background(Color.Blue)
-				.align(Alignment.Center)
+			modifier =
+				Modifier
+					.size(50.dp)
+					.fadingEdges(10.dp, 0.dp, 25.dp, 3.dp)
+					.background(Color.Blue)
+					.align(Alignment.Center),
 		) { }
 	}
 }

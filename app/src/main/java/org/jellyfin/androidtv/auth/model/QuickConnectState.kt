@@ -15,7 +15,9 @@ data object UnavailableQuickConnectState : QuickConnectState()
 /**
  * Connection is pending.
  */
-data class PendingQuickConnectState(val code: String) : QuickConnectState()
+data class PendingQuickConnectState(
+	val code: String,
+) : QuickConnectState()
 
 /**
  * User connected.

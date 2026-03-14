@@ -24,9 +24,10 @@ data class Server(
 
 	operator fun compareTo(other: ServerVersion): Int = serverVersion?.compareTo(other) ?: -1
 
-	override fun equals(other: Any?) = other is Server
-		&& id == other.id
-		&& address == other.address
+	override fun equals(other: Any?) =
+		other is Server &&
+			id == other.id &&
+			address == other.address
 
 	override fun hashCode(): Int {
 		var result = id.hashCode()

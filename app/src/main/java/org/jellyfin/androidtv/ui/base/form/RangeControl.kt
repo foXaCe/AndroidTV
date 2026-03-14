@@ -59,57 +59,60 @@ fun RangeControl(
 	val knobSize by animateFloatAsState(if (focused) 1.75f else 1f)
 
 	Box(
-		modifier = modifier
-			.onKeyEvent {
-				if (!enabled) return@onKeyEvent false
+		modifier =
+			modifier
+				.onKeyEvent {
+					if (!enabled) return@onKeyEvent false
 
-				val isForward = it.key == Key.DirectionRight
-				val isRewind = it.key == Key.DirectionLeft
-				val isScrubbing = isForward || isRewind
-				val isKeyDown = it.type == KeyEventType.KeyDown
+					val isForward = it.key == Key.DirectionRight
+					val isRewind = it.key == Key.DirectionLeft
+					val isScrubbing = isForward || isRewind
+					val isKeyDown = it.type == KeyEventType.KeyDown
 
-				val newValue = when {
-					isKeyDown && isForward -> (value + stepForward).coerceAtMost(max)
-					isKeyDown && isRewind -> (value - stepBackward).coerceAtLeast(min)
-					else -> value
-				}
+					val newValue =
+						when {
+							isKeyDown && isForward -> (value + stepForward).coerceAtMost(max)
+							isKeyDown && isRewind -> (value - stepBackward).coerceAtLeast(min)
+							else -> value
+						}
 
-				if (value != newValue && onValueChange != null) onValueChange(newValue)
+					if (value != newValue && onValueChange != null) onValueChange(newValue)
 
-				return@onKeyEvent isScrubbing
-			}
-			.focusable(interactionSource = interactionSource, enabled = enabled)
-			.drawWithContent {
-				val barCornerRadius = CornerRadius(size.minDimension, size.minDimension)
+					return@onKeyEvent isScrubbing
+				}.focusable(interactionSource = interactionSource, enabled = enabled)
+				.drawWithContent {
+					val barCornerRadius = CornerRadius(size.minDimension, size.minDimension)
 
-				// Background bar
-				drawRoundRect(
-					color = colors.backgroundColor,
-					cornerRadius = barCornerRadius,
-				)
-
-				// Get percental value based on min/max options
-				val valuePercentage = (value - min) / (max - min)
-
-				// Value fill bar
-				if (valuePercentage > 0) {
+					// Background bar
 					drawRoundRect(
-						color = colors.fillColor,
-						size = size.copy(
-							width = valuePercentage * size.width,
-						),
+						color = colors.backgroundColor,
 						cornerRadius = barCornerRadius,
 					)
-				}
 
-				// Progress knob
-				drawCircle(
-					color = colors.knobColor,
-					center = center.copy(
-						x = valuePercentage * size.width,
-					),
-					radius = size.minDimension * knobSize,
-				)
-			}
+					// Get percental value based on min/max options
+					val valuePercentage = (value - min) / (max - min)
+
+					// Value fill bar
+					if (valuePercentage > 0) {
+						drawRoundRect(
+							color = colors.fillColor,
+							size =
+								size.copy(
+									width = valuePercentage * size.width,
+								),
+							cornerRadius = barCornerRadius,
+						)
+					}
+
+					// Progress knob
+					drawCircle(
+						color = colors.knobColor,
+						center =
+							center.copy(
+								x = valuePercentage * size.width,
+							),
+						radius = size.minDimension * knobSize,
+					)
+				},
 	)
 }

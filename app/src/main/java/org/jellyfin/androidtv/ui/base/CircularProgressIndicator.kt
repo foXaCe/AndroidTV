@@ -24,25 +24,28 @@ fun CircularProgressIndicator(
 	val rotation by infiniteTransition.animateFloat(
 		initialValue = 0f,
 		targetValue = 360f,
-		animationSpec = infiniteRepeatable(
-			animation = tween(
-				durationMillis = 1_500, // 1.5 seconds
-				easing = LinearEasing,
-			)
-		)
+		animationSpec =
+			infiniteRepeatable(
+				animation =
+					tween(
+						durationMillis = 1_500, // 1.5 seconds
+						easing = LinearEasing,
+					),
+			),
 	)
 
 	Canvas(
-		modifier = modifier
-			.aspectRatio(1f)
-			.rotate(rotation)
+		modifier =
+			modifier
+				.aspectRatio(1f)
+				.rotate(rotation),
 	) {
 		drawArc(
 			color = color,
 			startAngle = 0f,
 			sweepAngle = 270f,
 			useCenter = false,
-			style = Stroke(width = 4f, cap = StrokeCap.Round)
+			style = Stroke(width = 4f, cap = StrokeCap.Round),
 		)
 	}
 }

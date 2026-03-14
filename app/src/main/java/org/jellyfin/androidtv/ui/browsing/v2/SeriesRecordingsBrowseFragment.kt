@@ -34,10 +34,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -45,14 +43,18 @@ import androidx.fragment.app.Fragment
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.service.BackgroundService
 import org.jellyfin.androidtv.ui.background.AppBackground
+import org.jellyfin.androidtv.ui.base.Icon
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
+import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.debug.ScreenIdOverlay
+import org.jellyfin.androidtv.ui.base.debug.ScreenIds
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.skeleton.SkeletonLandscapeCardRow
 import org.jellyfin.androidtv.ui.base.state.DisplayState
 import org.jellyfin.androidtv.ui.base.state.EmptyState
 import org.jellyfin.androidtv.ui.base.state.ErrorState
 import org.jellyfin.androidtv.ui.base.state.StateContainer
-import org.jellyfin.androidtv.ui.base.Icon
-import org.jellyfin.androidtv.ui.base.JellyfinTheme
-import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.theme.BrowseDimensions
 import org.jellyfin.androidtv.ui.navigation.Destinations
 import org.jellyfin.androidtv.ui.navigation.NavigationRepository
 import org.jellyfin.sdk.model.api.SeriesTimerInfoDto
@@ -61,7 +63,6 @@ import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class SeriesRecordingsBrowseFragment : Fragment() {
-
 	private val viewModel: SeriesRecordingsBrowseViewModel by viewModel()
 	private val navigationRepository: NavigationRepository by inject()
 	private val backgroundService: BackgroundService by inject()
@@ -71,26 +72,35 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 		container: ViewGroup?,
 		savedInstanceState: Bundle?,
 	): View {
-		val mainContainer = FrameLayout(requireContext()).apply {
-			layoutParams = ViewGroup.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.MATCH_PARENT,
-			)
-		}
+		val mainContainer =
+			FrameLayout(requireContext()).apply {
+				layoutParams =
+					ViewGroup.LayoutParams(
+						ViewGroup.LayoutParams.MATCH_PARENT,
+						ViewGroup.LayoutParams.MATCH_PARENT,
+					)
+			}
 
-		val contentView = ComposeView(requireContext()).apply {
-			layoutParams = FrameLayout.LayoutParams(
-				FrameLayout.LayoutParams.MATCH_PARENT,
-				FrameLayout.LayoutParams.MATCH_PARENT,
-			)
-			setContent { JellyfinTheme { SeriesRecordingsContent() } }
-		}
+		val contentView =
+			ComposeView(requireContext()).apply {
+				layoutParams =
+					FrameLayout.LayoutParams(
+						FrameLayout.LayoutParams.MATCH_PARENT,
+						FrameLayout.LayoutParams.MATCH_PARENT,
+					)
+				setContent {
+					JellyfinTheme { ScreenIdOverlay(ScreenIds.SERIES_RECORDINGS_ID, ScreenIds.SERIES_RECORDINGS_NAME) { SeriesRecordingsContent() } }
+				}
+			}
 		mainContainer.addView(contentView)
 
 		return mainContainer
 	}
 
-	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+	override fun onViewCreated(
+		view: View,
+		savedInstanceState: Bundle?,
+	) {
 		super.onViewCreated(view, savedInstanceState)
 		viewModel.initialize()
 	}
@@ -105,19 +115,21 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 			val currentBg by backgroundService.currentBackground.collectAsState()
 			val overlayAlpha = if (currentBg != null) 0.45f else 0.75f
 			Box(
-				modifier = Modifier
-					.fillMaxSize()
-					.background(JellyfinTheme.colorScheme.surfaceDim.copy(alpha = overlayAlpha)),
+				modifier =
+					Modifier
+						.fillMaxSize()
+						.background(JellyfinTheme.colorScheme.surfaceDim.copy(alpha = overlayAlpha)),
 			)
 
 			Column(modifier = Modifier.fillMaxSize()) {
 				SeriesRecordingsHeader(uiState = uiState)
 
-				val displayState = when {
-					uiState.isLoading -> DisplayState.LOADING
-					uiState.error != null -> DisplayState.ERROR
-					else -> DisplayState.CONTENT
-				}
+				val displayState =
+					when {
+						uiState.isLoading -> DisplayState.LOADING
+						uiState.error != null -> DisplayState.ERROR
+						else -> DisplayState.CONTENT
+					}
 				StateContainer(
 					state = displayState,
 					modifier = Modifier.weight(1f),
@@ -158,9 +170,15 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 	@Composable
 	private fun SeriesRecordingsHeader(uiState: SeriesRecordingsBrowseUiState) {
 		Column(
-			modifier = Modifier
-				.fillMaxWidth()
-				.padding(start = 60.dp, end = 60.dp, top = 12.dp, bottom = 4.dp),
+			modifier =
+				Modifier
+					.fillMaxWidth()
+					.padding(
+						start = BrowseDimensions.contentPaddingHorizontal,
+						end = BrowseDimensions.contentPaddingHorizontal,
+						top = 12.dp,
+						bottom = 4.dp,
+					),
 		) {
 			Box(
 				modifier = Modifier.fillMaxWidth(),
@@ -188,7 +206,7 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 				verticalAlignment = Alignment.CenterVertically,
 			) {
 				LibraryToolbarButton(
-					iconRes = R.drawable.ic_house,
+					icon = VegafoXIcons.Home,
 					contentDescription = stringResource(R.string.home),
 					onClick = { navigationRepository.navigate(Destinations.home) },
 				)
@@ -237,16 +255,18 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 		val scrollState = rememberScrollState()
 
 		Column(
-			modifier = modifier
-				.fillMaxWidth()
-				.verticalScroll(scrollState)
-				.padding(bottom = 16.dp),
+			modifier =
+				modifier
+					.fillMaxWidth()
+					.verticalScroll(scrollState)
+					.padding(bottom = 16.dp),
 		) {
 			if (uiState.seriesTimers.isEmpty()) {
 				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.padding(top = 40.dp),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.padding(top = 40.dp),
 					contentAlignment = Alignment.Center,
 				) {
 					Text(
@@ -257,20 +277,21 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 				}
 			} else {
 				Column(
-					modifier = Modifier
-						.fillMaxWidth()
-						.padding(top = 12.dp),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.padding(top = 12.dp),
 				) {
 					Text(
 						text = stringResource(R.string.lbl_series_recordings),
 						style = JellyfinTheme.typography.titleMedium,
 						color = JellyfinTheme.colorScheme.onSurface,
-						modifier = Modifier.padding(start = 60.dp, bottom = 8.dp),
+						modifier = Modifier.padding(start = BrowseDimensions.contentPaddingHorizontal, bottom = 8.dp),
 					)
 
 					LazyRow(
 						horizontalArrangement = Arrangement.spacedBy(12.dp),
-						contentPadding = PaddingValues(horizontal = 60.dp),
+						contentPadding = PaddingValues(horizontal = BrowseDimensions.contentPaddingHorizontal),
 					) {
 						items(uiState.seriesTimers, key = { it.id ?: it.name.orEmpty() }) { timer ->
 							SeriesTimerCard(
@@ -304,37 +325,47 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 		val alpha = if (isFocused) 1.0f else 0.75f
 
 		Column(
-			modifier = Modifier
-				.width(cardWidth.dp)
-				.graphicsLayer {
-					scaleX = scale
-					scaleY = scale
-					this.alpha = alpha
-				}
-				.clickable(
-					interactionSource = interactionSource,
-					indication = null,
-					onClick = onClick,
-				),
+			modifier =
+				Modifier
+					.width(cardWidth.dp)
+					.graphicsLayer {
+						scaleX = scale
+						scaleY = scale
+						this.alpha = alpha
+					}.clickable(
+						interactionSource = interactionSource,
+						indication = null,
+						onClick = onClick,
+					),
 			horizontalAlignment = Alignment.Start,
 		) {
 			Box(
-				modifier = Modifier
-					.width(cardWidth.dp)
-					.height(cardHeight.dp)
-					.clip(JellyfinTheme.shapes.extraSmall)
-					.then(
-						if (isFocused) Modifier.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.12f))
-						else Modifier
-					)
-					.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.06f)),
+				modifier =
+					Modifier
+						.width(cardWidth.dp)
+						.height(cardHeight.dp)
+						.clip(JellyfinTheme.shapes.extraSmall)
+						.then(
+							if (isFocused) {
+								Modifier.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.12f))
+							} else {
+								Modifier
+							},
+						).background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.06f)),
 				contentAlignment = Alignment.Center,
 			) {
 				Icon(
-					imageVector = ImageVector.vectorResource(R.drawable.ic_record_series),
+					imageVector = VegafoXIcons.RecordSeries,
 					contentDescription = null,
 					modifier = Modifier.size(48.dp),
-					tint = if (isFocused) JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.4f) else JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.15f),
+					tint =
+						if (isFocused) {
+							JellyfinTheme.colorScheme.onSurface.copy(
+								alpha = 0.4f,
+							)
+						} else {
+							JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.15f)
+						},
 				)
 			}
 
@@ -365,11 +396,12 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 
 	private fun buildSeriesTimerSubtitle(timer: SeriesTimerInfoDto): String {
 		val parts = mutableListOf<String>()
-		val channelText = if (timer.recordAnyChannel == true) {
-			getString(R.string.all_channels)
-		} else {
-			timer.channelName
-		}
+		val channelText =
+			if (timer.recordAnyChannel == true) {
+				getString(R.string.all_channels)
+			} else {
+				timer.channelName
+			}
 		channelText?.let { if (it.isNotBlank()) parts.add(it) }
 		timer.dayPattern?.let { parts.add(it.toString()) }
 		return parts.joinToString(" • ")

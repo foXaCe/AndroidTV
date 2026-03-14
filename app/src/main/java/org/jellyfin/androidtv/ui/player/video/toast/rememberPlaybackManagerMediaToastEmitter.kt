@@ -6,7 +6,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import org.jellyfin.androidtv.R
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.player.base.toast.MediaToastRegistry
 import org.jellyfin.playback.core.PlaybackManager
 import org.jellyfin.playback.core.model.PlayState
@@ -31,14 +31,12 @@ fun rememberPlaybackManagerMediaToastEmitter(
 				} else {
 					active
 				}
-			}
-			.onEach { playState ->
+			}.onEach { playState ->
 				when (playState) {
-					PlayState.PLAYING -> mediaToastRegistry.emit(R.drawable.ic_play)
-					PlayState.PAUSED -> mediaToastRegistry.emit(R.drawable.ic_pause)
+					PlayState.PLAYING -> mediaToastRegistry.emit(VegafoXIcons.Play)
+					PlayState.PAUSED -> mediaToastRegistry.emit(VegafoXIcons.Pause)
 					else -> Unit
 				}
-			}
-			.launchIn(coroutineScope)
+			}.launchIn(coroutineScope)
 	}
 }

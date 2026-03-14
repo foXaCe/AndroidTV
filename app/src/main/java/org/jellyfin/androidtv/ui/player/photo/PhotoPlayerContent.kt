@@ -17,9 +17,7 @@ import org.jellyfin.sdk.model.api.ImageType
 import org.koin.compose.koinInject
 
 @Composable
-fun PhotoPlayerContent(
-	item: BaseItemDto?,
-) {
+fun PhotoPlayerContent(item: BaseItemDto?) {
 	val api = koinInject<ApiClient>()
 	val resources = LocalResources.current
 
@@ -27,20 +25,22 @@ fun PhotoPlayerContent(
 		targetState = item,
 		transitionSpec = {
 			fadeIn() togetherWith fadeOut()
-		}
+		},
 	) { item ->
 		val image = item?.itemImages[ImageType.PRIMARY]
 
 		AsyncImage(
-			url = image?.getUrl(
-				api = api,
-				maxWidth = resources.displayMetrics.widthPixels,
-				maxHeight = resources.displayMetrics.heightPixels,
-			),
+			url =
+				image?.getUrl(
+					api = api,
+					maxWidth = resources.displayMetrics.widthPixels,
+					maxHeight = resources.displayMetrics.heightPixels,
+				),
 			blurHash = image?.blurHash,
 			aspectRatio = image?.aspectRatio ?: 1f,
-			modifier = Modifier
-				.fillMaxSize()
+			modifier =
+				Modifier
+					.fillMaxSize(),
 		)
 	}
 }

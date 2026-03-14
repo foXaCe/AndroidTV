@@ -1,6 +1,7 @@
 package org.jellyfin.playback.core.backend
 
 import org.jellyfin.playback.core.mediastream.MediaStream
+import org.jellyfin.playback.core.model.PlayerTrack
 import org.jellyfin.playback.core.model.PositionInfo
 import org.jellyfin.playback.core.queue.QueueEntry
 import org.jellyfin.playback.core.support.PlaySupportReport
@@ -18,25 +19,42 @@ interface PlayerBackend {
 
 	// UI
 	fun setSurfaceView(surfaceView: PlayerSurfaceView?)
+
 	fun setSubtitleView(surfaceView: PlayerSubtitleView?)
 
 	// Data retrieval
 
 	fun setListener(eventListener: PlayerBackendEventListener?)
+
 	fun getPositionInfo(): PositionInfo
 
 	// Mutation
 
 	fun prepareItem(item: QueueEntry)
+
 	fun playItem(item: QueueEntry)
 
 	fun play()
+
 	fun pause()
+
 	fun stop()
 
 	fun seekTo(position: Duration)
+
 	fun setScrubbing(scrubbing: Boolean)
 
 	fun setSpeed(speed: Float)
-}
 
+	// Track selection
+
+	fun getAudioTracks(): List<PlayerTrack> = emptyList()
+
+	fun getSubtitleTracks(): List<PlayerTrack> = emptyList()
+
+	fun selectAudioTrack(index: Int) {}
+
+	fun selectSubtitleTrack(index: Int) {}
+
+	fun disableSubtitles() {}
+}

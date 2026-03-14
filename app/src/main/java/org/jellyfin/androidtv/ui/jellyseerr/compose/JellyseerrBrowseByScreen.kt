@@ -1,5 +1,6 @@
 package org.jellyfin.androidtv.ui.jellyseerr.compose
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -33,16 +33,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRestorer
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrDiscoverItemDto
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.jellyseerr.BrowseFilterType
 import org.jellyfin.androidtv.ui.jellyseerr.JellyseerrDiscoverViewModel
 import org.jellyfin.androidtv.ui.jellyseerr.JellyseerrSortOption
@@ -82,23 +87,33 @@ fun JellyseerrBrowseByScreen(
 	var showFilterMenu by remember { mutableStateOf(false) }
 
 	// Content loading function
-	fun loadContent(page: Int, append: Boolean = false) {
+	fun loadContent(
+		page: Int,
+		append: Boolean = false,
+	) {
 		if (isLoading) return
 		isLoading = true
 		scope.launch {
 			try {
-				val result = when (filterType) {
-					BrowseFilterType.GENRE -> {
-						if (mediaType == "movie") viewModel.discoverMovies(page = page, sortBy = currentSort.value, genreId = filterId.toString())
-						else viewModel.discoverTv(page = page, sortBy = currentSort.value, genreId = filterId.toString())
+				val result =
+					when (filterType) {
+						BrowseFilterType.GENRE -> {
+							if (mediaType == "movie") {
+								viewModel.discoverMovies(page = page, sortBy = currentSort.value, genreId = filterId.toString())
+							} else {
+								viewModel.discoverTv(page = page, sortBy = currentSort.value, genreId = filterId.toString())
+							}
+						}
+						BrowseFilterType.NETWORK -> viewModel.discoverTv(page = page, sortBy = currentSort.value, networkId = filterId.toString())
+						BrowseFilterType.STUDIO -> viewModel.discoverMovies(page = page, sortBy = currentSort.value, studioId = filterId.toString())
+						BrowseFilterType.KEYWORD -> {
+							if (mediaType == "movie") {
+								viewModel.discoverMovies(page = page, sortBy = currentSort.value, keywords = filterId.toString())
+							} else {
+								viewModel.discoverTv(page = page, sortBy = currentSort.value, keywords = filterId.toString())
+							}
+						}
 					}
-					BrowseFilterType.NETWORK -> viewModel.discoverTv(page = page, sortBy = currentSort.value, networkId = filterId.toString())
-					BrowseFilterType.STUDIO -> viewModel.discoverMovies(page = page, sortBy = currentSort.value, studioId = filterId.toString())
-					BrowseFilterType.KEYWORD -> {
-						if (mediaType == "movie") viewModel.discoverMovies(page = page, sortBy = currentSort.value, keywords = filterId.toString())
-						else viewModel.discoverTv(page = page, sortBy = currentSort.value, keywords = filterId.toString())
-					}
-				}
 				result.getOrNull()?.let { pageResult ->
 					if (!append) {
 						totalPages = pageResult.totalPages
@@ -129,7 +144,10 @@ fun JellyseerrBrowseByScreen(
 	val gridState = rememberLazyGridState()
 	val shouldLoadMore by remember {
 		derivedStateOf {
-			val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+			val lastVisible =
+				gridState.layoutInfo.visibleItemsInfo
+					.lastOrNull()
+					?.index ?: 0
 			val total = gridState.layoutInfo.totalItemsCount
 			total > 0 && lastVisible >= total - 10 && currentPage < totalPages
 		}
@@ -141,15 +159,16 @@ fun JellyseerrBrowseByScreen(
 	}
 
 	// Label helpers
-	val filterTypeName = when (filterType) {
-		BrowseFilterType.GENRE -> stringResource(R.string.lbl_genres)
-		BrowseFilterType.NETWORK -> stringResource(R.string.jellyseerr_filter_network)
-		BrowseFilterType.STUDIO -> stringResource(R.string.jellyseerr_filter_studio)
-		BrowseFilterType.KEYWORD -> stringResource(R.string.jellyseerr_filter_keyword)
-	}
+	val filterTypeName =
+		when (filterType) {
+			BrowseFilterType.GENRE -> stringResource(R.string.lbl_genres)
+			BrowseFilterType.NETWORK -> stringResource(R.string.jellyseerr_filter_network)
+			BrowseFilterType.STUDIO -> stringResource(R.string.jellyseerr_filter_studio)
+			BrowseFilterType.KEYWORD -> stringResource(R.string.jellyseerr_filter_keyword)
+		}
 	val mediaTypeName = if (mediaType == "movie") stringResource(R.string.lbl_movies) else stringResource(R.string.lbl_tv_series)
 
-	Column(modifier = modifier.fillMaxSize().padding(horizontal = 48.dp, vertical = 27.dp)) {
+	Column(modifier = modifier.fillMaxSize().background(VegafoXColors.BackgroundDeep).padding(horizontal = 48.dp, vertical = 27.dp)) {
 		// ── Header ───────────────────────────────────────────────────
 		Row(
 			modifier = Modifier.fillMaxWidth(),
@@ -159,7 +178,7 @@ fun JellyseerrBrowseByScreen(
 			Text(
 				text = selectedTitle,
 				style = JellyfinTheme.typography.titleLarge,
-				color = JellyfinTheme.colorScheme.textPrimary,
+				color = VegafoXColors.TextPrimary,
 				maxLines = 1,
 				overflow = TextOverflow.Ellipsis,
 				modifier = Modifier.weight(1f),
@@ -168,8 +187,13 @@ fun JellyseerrBrowseByScreen(
 			// Filter name (center)
 			Text(
 				text = filterName,
-				style = JellyfinTheme.typography.titleLarge,
-				color = JellyfinTheme.colorScheme.textPrimary,
+				style =
+					TextStyle(
+						fontFamily = BebasNeue,
+						fontSize = 32.sp,
+						letterSpacing = 2.sp,
+					),
+				color = VegafoXColors.TextPrimary,
 				maxLines = 1,
 				textAlign = TextAlign.Center,
 				modifier = Modifier.weight(1f),
@@ -180,14 +204,15 @@ fun JellyseerrBrowseByScreen(
 				Box {
 					IconButton(onClick = { showFilterMenu = true }) {
 						Icon(
-							painter = painterResource(R.drawable.ic_filter),
+							painter = rememberVectorPainter(VegafoXIcons.Filter),
 							contentDescription = stringResource(R.string.lbl_filters),
-							tint = JellyfinTheme.colorScheme.textPrimary,
+							tint = VegafoXColors.TextPrimary,
 						)
 					}
 					DropdownMenu(
 						expanded = showFilterMenu,
 						onDismissRequest = { showFilterMenu = false },
+						modifier = Modifier.background(VegafoXColors.SurfaceBright),
 					) {
 						DropdownMenuItem(
 							text = { Text(stringResource(R.string.jellyseerr_filter_show_all)) },
@@ -222,14 +247,15 @@ fun JellyseerrBrowseByScreen(
 				Box {
 					IconButton(onClick = { showSortMenu = true }) {
 						Icon(
-							painter = painterResource(R.drawable.ic_sort),
+							painter = rememberVectorPainter(VegafoXIcons.Sort),
 							contentDescription = stringResource(R.string.lbl_sort_by),
-							tint = JellyfinTheme.colorScheme.textPrimary,
+							tint = VegafoXColors.TextPrimary,
 						)
 					}
 					DropdownMenu(
 						expanded = showSortMenu,
 						onDismissRequest = { showSortMenu = false },
+						modifier = Modifier.background(VegafoXColors.SurfaceBright),
 					) {
 						sortOptions.forEach { option ->
 							DropdownMenuItem(
@@ -278,15 +304,17 @@ fun JellyseerrBrowseByScreen(
 			verticalAlignment = Alignment.CenterVertically,
 		) {
 			Text(
-				text = "${stringResource(R.string.lbl_showing)} $mediaTypeName ${stringResource(R.string.lbl_from)} '$filterName' ${stringResource(R.string.lbl_sorted_by)} ${currentSort.name}",
+				text = "${stringResource(
+					R.string.lbl_showing,
+				)} $mediaTypeName ${stringResource(R.string.lbl_from)} '$filterName' ${stringResource(R.string.lbl_sorted_by)} ${currentSort.name}",
 				style = JellyfinTheme.typography.labelSmall,
-				color = JellyfinTheme.colorScheme.textSecondary,
+				color = VegafoXColors.TextSecondary,
 				modifier = Modifier.weight(1f),
 			)
 			Text(
 				text = "$selectedPosition | $totalResults",
 				style = JellyfinTheme.typography.bodyMedium,
-				color = JellyfinTheme.colorScheme.textPrimary,
+				color = VegafoXColors.TextPrimary,
 			)
 		}
 	}

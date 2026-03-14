@@ -1,5 +1,6 @@
 package org.jellyfin.androidtv.ui.itemdetail.v2
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -8,24 +9,25 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import androidx.compose.runtime.Immutable
 import org.jellyfin.androidtv.data.repository.ItemRepository
+import org.jellyfin.androidtv.ui.base.state.UiError
+import org.jellyfin.androidtv.ui.base.state.toUiError
+import org.jellyfin.androidtv.ui.livetv.compose.asTimerInfoDto
 import org.jellyfin.androidtv.util.Utils
 import org.jellyfin.androidtv.util.sdk.ApiClientFactory
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.exception.ApiClientException
-import org.jellyfin.sdk.api.client.extensions.libraryApi
 import org.jellyfin.sdk.api.client.extensions.itemsApi
+import org.jellyfin.sdk.api.client.extensions.libraryApi
 import org.jellyfin.sdk.api.client.extensions.liveTvApi
 import org.jellyfin.sdk.api.client.extensions.playStateApi
 import org.jellyfin.sdk.api.client.extensions.playlistsApi
 import org.jellyfin.sdk.api.client.extensions.tvShowsApi
 import org.jellyfin.sdk.api.client.extensions.userLibraryApi
-import org.jellyfin.androidtv.ui.asTimerInfoDto
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.BaseItemKind
-import org.jellyfin.sdk.model.api.ItemSortBy
 import org.jellyfin.sdk.model.api.BaseItemPerson
+import org.jellyfin.sdk.model.api.ItemSortBy
 import org.jellyfin.sdk.model.api.MediaStreamType
 import org.jellyfin.sdk.model.api.MediaType
 import org.jellyfin.sdk.model.api.PersonKind
@@ -33,8 +35,6 @@ import org.jellyfin.sdk.model.api.SeriesTimerInfoDto
 import org.jellyfin.sdk.model.api.VideoRangeType
 import org.jellyfin.sdk.model.serializer.toUUID
 import org.jellyfin.sdk.model.serializer.toUUIDOrNull
-import org.jellyfin.androidtv.ui.base.state.UiError
-import org.jellyfin.androidtv.ui.base.state.toUiError
 import timber.log.Timber
 import java.util.UUID
 
@@ -70,7 +70,6 @@ class ItemDetailsViewModel(
 	private val api: ApiClient,
 	private val apiClientFactory: ApiClientFactory,
 ) : ViewModel() {
-
 	private val _uiState = MutableStateFlow(ItemDetailsUiState())
 	val uiState: StateFlow<ItemDetailsUiState> = _uiState.asStateFlow()
 
@@ -82,7 +81,10 @@ class ItemDetailsViewModel(
 
 	private var lastItemId: UUID? = null
 
-	fun loadItem(itemId: UUID, serverId: UUID? = null) {
+	fun loadItem(
+		itemId: UUID,
+		serverId: UUID? = null,
+	) {
 		viewModelScope.launch {
 			_uiState.value = ItemDetailsUiState(isLoading = true)
 			lastItemId = itemId
@@ -93,11 +95,13 @@ class ItemDetailsViewModel(
 			}
 
 			try {
-				val item = withContext(Dispatchers.IO) {
-					effectiveApi.userLibraryApi.getItem(
-						itemId = itemId,
-					).content
-				}
+				val item =
+					withContext(Dispatchers.IO) {
+						effectiveApi.userLibraryApi
+							.getItem(
+								itemId = itemId,
+							).content
+					}
 
 				// If serverId wasn't passed explicitly, try to resolve from the item itself
 				if (this@ItemDetailsViewModel.serverId == null && item.serverId != null) {
@@ -111,21 +115,23 @@ class ItemDetailsViewModel(
 					}
 				}
 
-				val cast = item.people
-					?.filter { it.type == PersonKind.ACTOR || it.type == PersonKind.GUEST_STAR }
-					?: emptyList()
+				val cast =
+					item.people
+						?.filter { it.type == PersonKind.ACTOR || it.type == PersonKind.GUEST_STAR }
+						?: emptyList()
 				val directors = item.people?.filter { it.type == PersonKind.DIRECTOR } ?: emptyList()
 				val writers = item.people?.filter { it.type == PersonKind.WRITER } ?: emptyList()
 				val badges = getMediaBadges(item)
 
-				_uiState.value = ItemDetailsUiState(
-					isLoading = false,
-					item = item,
-					cast = cast,
-					directors = directors,
-					writers = writers,
-					badges = badges,
-				)
+				_uiState.value =
+					ItemDetailsUiState(
+						isLoading = false,
+						item = item,
+						cast = cast,
+						directors = directors,
+						writers = writers,
+						badges = badges,
+					)
 
 				loadAdditionalData(item)
 			} catch (err: ApiClientException) {
@@ -186,27 +192,34 @@ class ItemDetailsViewModel(
 
 	private suspend fun loadSeasons(seriesId: UUID) {
 		try {
-			val seasons = withContext(Dispatchers.IO) {
-				effectiveApi.tvShowsApi.getSeasons(
-					seriesId = seriesId,
-					fields = ItemRepository.itemFields,
-				).content
-			}
+			val seasons =
+				withContext(Dispatchers.IO) {
+					effectiveApi.tvShowsApi
+						.getSeasons(
+							seriesId = seriesId,
+							fields = ItemRepository.itemFields,
+						).content
+				}
 			_uiState.value = _uiState.value.copy(seasons = seasons.items)
 		} catch (err: ApiClientException) {
 			Timber.w(err, "Failed to load seasons")
 		}
 	}
 
-	private suspend fun loadEpisodes(seriesId: UUID, seasonId: UUID) {
+	private suspend fun loadEpisodes(
+		seriesId: UUID,
+		seasonId: UUID,
+	) {
 		try {
-			val episodes = withContext(Dispatchers.IO) {
-				effectiveApi.tvShowsApi.getEpisodes(
-					seriesId = seriesId,
-					seasonId = seasonId,
-					fields = ItemRepository.itemFields,
-				).content
-			}
+			val episodes =
+				withContext(Dispatchers.IO) {
+					effectiveApi.tvShowsApi
+						.getEpisodes(
+							seriesId = seriesId,
+							seasonId = seasonId,
+							fields = ItemRepository.itemFields,
+						).content
+				}
 			_uiState.value = _uiState.value.copy(episodes = episodes.items)
 		} catch (err: ApiClientException) {
 			Timber.w(err, "Failed to load episodes")
@@ -215,13 +228,15 @@ class ItemDetailsViewModel(
 
 	private suspend fun loadNextUp(seriesId: UUID) {
 		try {
-			val nextUp = withContext(Dispatchers.IO) {
-				effectiveApi.tvShowsApi.getNextUp(
-					seriesId = seriesId,
-					fields = ItemRepository.itemFields,
-					limit = 1,
-				).content
-			}
+			val nextUp =
+				withContext(Dispatchers.IO) {
+					effectiveApi.tvShowsApi
+						.getNextUp(
+							seriesId = seriesId,
+							fields = ItemRepository.itemFields,
+							limit = 1,
+						).content
+				}
 			_uiState.value = _uiState.value.copy(nextUp = nextUp.items)
 		} catch (err: ApiClientException) {
 			Timber.w(err, "Failed to load next up")
@@ -230,13 +245,15 @@ class ItemDetailsViewModel(
 
 	private suspend fun loadSimilar(itemId: UUID) {
 		try {
-			val similar = withContext(Dispatchers.IO) {
-				effectiveApi.libraryApi.getSimilarItems(
-					itemId = itemId,
-					limit = 12,
-					fields = ItemRepository.itemFields,
-				).content
-			}
+			val similar =
+				withContext(Dispatchers.IO) {
+					effectiveApi.libraryApi
+						.getSimilarItems(
+							itemId = itemId,
+							limit = 12,
+							fields = ItemRepository.itemFields,
+						).content
+				}
 			_uiState.value = _uiState.value.copy(similar = similar.items)
 		} catch (err: ApiClientException) {
 			Timber.w(err, "Failed to load similar items")
@@ -245,16 +262,18 @@ class ItemDetailsViewModel(
 
 	private suspend fun loadArtistAlbums(artistId: UUID) {
 		try {
-			val albums = withContext(Dispatchers.IO) {
-				effectiveApi.itemsApi.getItems(
-					artistIds = setOf(artistId),
-					recursive = true,
-					includeItemTypes = setOf(BaseItemKind.MUSIC_ALBUM),
-					sortBy = setOf(ItemSortBy.SORT_NAME),
-					fields = ItemRepository.itemFields,
-					limit = 100,
-				).content
-			}
+			val albums =
+				withContext(Dispatchers.IO) {
+					effectiveApi.itemsApi
+						.getItems(
+							artistIds = setOf(artistId),
+							recursive = true,
+							includeItemTypes = setOf(BaseItemKind.MUSIC_ALBUM),
+							sortBy = setOf(ItemSortBy.SORT_NAME),
+							fields = ItemRepository.itemFields,
+							limit = 100,
+						).content
+				}
 			_uiState.value = _uiState.value.copy(albums = albums.items)
 		} catch (err: ApiClientException) {
 			Timber.w(err, "Failed to load artist albums")
@@ -263,13 +282,15 @@ class ItemDetailsViewModel(
 
 	private suspend fun loadCollectionItems(collectionId: UUID) {
 		try {
-			val collectionItems = withContext(Dispatchers.IO) {
-				effectiveApi.itemsApi.getItems(
-					parentId = collectionId,
-					fields = ItemRepository.itemFields,
-					sortBy = setOf(ItemSortBy.PREMIERE_DATE, ItemSortBy.SORT_NAME),
-				).content
-			}
+			val collectionItems =
+				withContext(Dispatchers.IO) {
+					effectiveApi.itemsApi
+						.getItems(
+							parentId = collectionId,
+							fields = ItemRepository.itemFields,
+							sortBy = setOf(ItemSortBy.PREMIERE_DATE, ItemSortBy.SORT_NAME),
+						).content
+				}
 			_uiState.value = _uiState.value.copy(collectionItems = collectionItems.items)
 		} catch (err: ApiClientException) {
 			Timber.w(err, "Failed to load collection items")
@@ -278,16 +299,18 @@ class ItemDetailsViewModel(
 
 	private suspend fun loadFilmography(personId: UUID) {
 		try {
-			val filmography = withContext(Dispatchers.IO) {
-				effectiveApi.itemsApi.getItems(
-					personIds = setOf(personId),
-					recursive = true,
-					includeItemTypes = setOf(BaseItemKind.MOVIE, BaseItemKind.SERIES),
-					sortBy = setOf(ItemSortBy.SORT_NAME),
-					fields = ItemRepository.itemFields,
-					limit = 100,
-				).content
-			}
+			val filmography =
+				withContext(Dispatchers.IO) {
+					effectiveApi.itemsApi
+						.getItems(
+							personIds = setOf(personId),
+							recursive = true,
+							includeItemTypes = setOf(BaseItemKind.MOVIE, BaseItemKind.SERIES),
+							sortBy = setOf(ItemSortBy.SORT_NAME),
+							fields = ItemRepository.itemFields,
+							limit = 100,
+						).content
+				}
 			_uiState.value = _uiState.value.copy(similar = filmography.items)
 		} catch (err: ApiClientException) {
 			Timber.w(err, "Failed to load filmography")
@@ -296,13 +319,15 @@ class ItemDetailsViewModel(
 
 	private suspend fun loadTracks(containerId: UUID) {
 		try {
-			val tracks = withContext(Dispatchers.IO) {
-				effectiveApi.itemsApi.getItems(
-					parentId = containerId,
-					fields = ItemRepository.itemFields,
-					sortBy = setOf(ItemSortBy.SORT_NAME),
-				).content
-			}
+			val tracks =
+				withContext(Dispatchers.IO) {
+					effectiveApi.itemsApi
+						.getItems(
+							parentId = containerId,
+							fields = ItemRepository.itemFields,
+							sortBy = setOf(ItemSortBy.SORT_NAME),
+						).content
+				}
 			_uiState.value = _uiState.value.copy(tracks = tracks.items)
 		} catch (err: ApiClientException) {
 			Timber.w(err, "Failed to load tracks")
@@ -311,19 +336,24 @@ class ItemDetailsViewModel(
 
 	private suspend fun loadPlaylistItems(playlistId: UUID) {
 		try {
-			val items = withContext(Dispatchers.IO) {
-				effectiveApi.playlistsApi.getPlaylistItems(
-					playlistId = playlistId,
-					fields = ItemRepository.itemFields,
-				).content
-			}
+			val items =
+				withContext(Dispatchers.IO) {
+					effectiveApi.playlistsApi
+						.getPlaylistItems(
+							playlistId = playlistId,
+							fields = ItemRepository.itemFields,
+						).content
+				}
 			_uiState.value = _uiState.value.copy(tracks = items.items)
 		} catch (err: ApiClientException) {
 			Timber.w(err, "Failed to load playlist items")
 		}
 	}
 
-	fun movePlaylistItem(fromIndex: Int, toIndex: Int) {
+	fun movePlaylistItem(
+		fromIndex: Int,
+		toIndex: Int,
+	) {
 		val item = _uiState.value.item ?: return
 		val tracks = _uiState.value.tracks.toMutableList()
 		if (fromIndex !in tracks.indices || toIndex !in tracks.indices) return
@@ -334,8 +364,6 @@ class ItemDetailsViewModel(
 		tracks.removeAt(fromIndex)
 		tracks.add(toIndex, track)
 		_uiState.value = _uiState.value.copy(tracks = tracks)
-
-		Timber.d("Moving playlist item from index %d to %d", fromIndex, toIndex)
 
 		viewModelScope.launch {
 			try {
@@ -388,21 +416,32 @@ class ItemDetailsViewModel(
 		val item = _uiState.value.item ?: return
 		val newFavorite = !(item.userData?.isFavorite ?: false)
 
-		_uiState.value = _uiState.value.copy(
-			item = item.copy(userData = item.userData?.copy(isFavorite = newFavorite))
-		)
+		_uiState.value =
+			_uiState.value.copy(
+				item = item.copy(userData = item.userData?.copy(isFavorite = newFavorite)),
+			)
 
 		viewModelScope.launch {
 			try {
 				withContext(Dispatchers.IO) {
-					if (newFavorite) effectiveApi.userLibraryApi.markFavoriteItem(itemId = item.id)
-					else effectiveApi.userLibraryApi.unmarkFavoriteItem(itemId = item.id)
+					if (newFavorite) {
+						effectiveApi.userLibraryApi.markFavoriteItem(itemId = item.id)
+					} else {
+						effectiveApi.userLibraryApi.unmarkFavoriteItem(itemId = item.id)
+					}
 				}
 			} catch (err: Exception) {
 				Timber.e(err, "Failed to toggle favorite")
-				_uiState.value = _uiState.value.copy(
-					item = _uiState.value.item?.copy(userData = _uiState.value.item?.userData?.copy(isFavorite = !newFavorite))
-				)
+				_uiState.value =
+					_uiState.value.copy(
+						item =
+							_uiState.value.item?.copy(
+								userData =
+									_uiState.value.item
+										?.userData
+										?.copy(isFavorite = !newFavorite),
+							),
+					)
 			}
 		}
 	}
@@ -411,58 +450,73 @@ class ItemDetailsViewModel(
 		val item = _uiState.value.item ?: return
 		val newPlayed = !(item.userData?.played ?: false)
 
-		_uiState.value = _uiState.value.copy(
-			item = item.copy(
-				userData = item.userData?.copy(
-					played = newPlayed,
-					playedPercentage = if (newPlayed) 100.0 else 0.0,
-				)
+		_uiState.value =
+			_uiState.value.copy(
+				item =
+					item.copy(
+						userData =
+							item.userData?.copy(
+								played = newPlayed,
+								playedPercentage = if (newPlayed) 100.0 else 0.0,
+							),
+					),
 			)
-		)
 
 		viewModelScope.launch {
 			try {
 				withContext(Dispatchers.IO) {
-					if (newPlayed) effectiveApi.playStateApi.markPlayedItem(itemId = item.id)
-					else effectiveApi.playStateApi.markUnplayedItem(itemId = item.id)
+					if (newPlayed) {
+						effectiveApi.playStateApi.markPlayedItem(itemId = item.id)
+					} else {
+						effectiveApi.playStateApi.markUnplayedItem(itemId = item.id)
+					}
 				}
 			} catch (err: Exception) {
 				Timber.e(err, "Failed to toggle watched")
-				_uiState.value = _uiState.value.copy(
-					item = _uiState.value.item?.copy(
-						userData = _uiState.value.item?.userData?.copy(
-							played = !newPlayed,
-							playedPercentage = if (!newPlayed) 100.0 else 0.0,
-						)
+				_uiState.value =
+					_uiState.value.copy(
+						item =
+							_uiState.value.item?.copy(
+								userData =
+									_uiState.value.item?.userData?.copy(
+										played = !newPlayed,
+										playedPercentage = if (!newPlayed) 100.0 else 0.0,
+									),
+							),
 					)
-				)
 			}
 		}
 	}
 
 	// region Live TV
 
-	fun loadChannelProgram(channelId: UUID, programInfo: BaseItemDto) {
+	fun loadChannelProgram(
+		channelId: UUID,
+		programInfo: BaseItemDto,
+	) {
 		viewModelScope.launch {
 			_uiState.value = ItemDetailsUiState(isLoading = true)
 			try {
-				val item = withContext(Dispatchers.IO) {
-					effectiveApi.userLibraryApi.getItem(itemId = programInfo.id).content
-				}
-				val enrichedItem = item.copy(
-					parentId = channelId,
-					startDate = programInfo.startDate,
-					endDate = programInfo.endDate,
-					runTimeTicks = programInfo.runTimeTicks,
-				)
+				val item =
+					withContext(Dispatchers.IO) {
+						effectiveApi.userLibraryApi.getItem(itemId = programInfo.id).content
+					}
+				val enrichedItem =
+					item.copy(
+						parentId = channelId,
+						startDate = programInfo.startDate,
+						endDate = programInfo.endDate,
+						runTimeTicks = programInfo.runTimeTicks,
+					)
 				lastItemId = enrichedItem.id
-				_uiState.value = ItemDetailsUiState(
-					isLoading = false,
-					item = enrichedItem,
-					programInfo = programInfo,
-					isRecording = programInfo.timerId != null,
-					isRecordingSeries = programInfo.seriesTimerId != null,
-				)
+				_uiState.value =
+					ItemDetailsUiState(
+						isLoading = false,
+						item = enrichedItem,
+						programInfo = programInfo,
+						isRecording = programInfo.timerId != null,
+						isRecordingSeries = programInfo.seriesTimerId != null,
+					)
 			} catch (err: ApiClientException) {
 				Timber.e(err, "Failed to load channel program")
 				_uiState.value = ItemDetailsUiState(isLoading = false, error = err.toUiError())
@@ -474,44 +528,48 @@ class ItemDetailsViewModel(
 		viewModelScope.launch {
 			_uiState.value = ItemDetailsUiState(isLoading = true)
 			val timerId = requireNotNull(seriesTimerInfo.id)
-			val fakeItem = BaseItemDto(
-				id = timerId.toUUID(),
-				type = BaseItemKind.FOLDER,
-				mediaType = MediaType.UNKNOWN,
-				seriesTimerId = seriesTimerInfo.id,
-				name = seriesTimerInfo.name,
-				overview = null,
-			)
+			val fakeItem =
+				BaseItemDto(
+					id = timerId.toUUID(),
+					type = BaseItemKind.FOLDER,
+					mediaType = MediaType.UNKNOWN,
+					seriesTimerId = seriesTimerInfo.id,
+					name = seriesTimerInfo.name,
+					overview = null,
+				)
 			lastItemId = fakeItem.id
-			_uiState.value = ItemDetailsUiState(
-				isLoading = false,
-				item = fakeItem,
-				seriesTimerInfo = seriesTimerInfo,
-			)
+			_uiState.value =
+				ItemDetailsUiState(
+					isLoading = false,
+					item = fakeItem,
+					seriesTimerInfo = seriesTimerInfo,
+				)
 			loadScheduleItems(timerId)
 		}
 	}
 
 	private suspend fun loadScheduleItems(seriesTimerId: String) {
 		try {
-			val timers = withContext(Dispatchers.IO) {
-				effectiveApi.liveTvApi.getTimers(seriesTimerId = seriesTimerId).content
-			}
-			val programs = timers.items.mapNotNull { timer ->
-				timer.programInfo ?: timer.id?.toUUIDOrNull()?.let { id ->
-					BaseItemDto(
-						id = id,
-						channelName = timer.channelName,
-						name = timer.name.orEmpty(),
-						type = BaseItemKind.PROGRAM,
-						mediaType = MediaType.UNKNOWN,
-						timerId = timer.id,
-						seriesTimerId = timer.seriesTimerId,
-						startDate = timer.startDate,
-						endDate = timer.endDate,
-					)
+			val timers =
+				withContext(Dispatchers.IO) {
+					effectiveApi.liveTvApi.getTimers(seriesTimerId = seriesTimerId).content
 				}
-			}
+			val programs =
+				timers.items.mapNotNull { timer ->
+					timer.programInfo ?: timer.id?.toUUIDOrNull()?.let { id ->
+						BaseItemDto(
+							id = id,
+							channelName = timer.channelName,
+							name = timer.name.orEmpty(),
+							type = BaseItemKind.PROGRAM,
+							mediaType = MediaType.UNKNOWN,
+							timerId = timer.id,
+							seriesTimerId = timer.seriesTimerId,
+							startDate = timer.startDate,
+							endDate = timer.endDate,
+						)
+					}
+				}
 			_uiState.value = _uiState.value.copy(scheduleItems = programs)
 		} catch (err: Exception) {
 			Timber.w(err, "Failed to load schedule items")
@@ -523,25 +581,28 @@ class ItemDetailsViewModel(
 		viewModelScope.launch {
 			try {
 				if (programInfo.timerId == null) {
-					val updatedProgram = withContext(Dispatchers.IO) {
-						val defaultTimer by effectiveApi.liveTvApi.getDefaultTimer(programInfo.id.toString())
-						val timer = defaultTimer.asTimerInfoDto()
-						effectiveApi.liveTvApi.createTimer(timer.copy(programId = programInfo.id.toString()))
-						effectiveApi.liveTvApi.getProgram(programInfo.id.toString()).content
-					}
-					_uiState.value = _uiState.value.copy(
-						programInfo = updatedProgram,
-						isRecording = updatedProgram.timerId != null,
-						isRecordingSeries = updatedProgram.seriesTimerId != null,
-					)
+					val updatedProgram =
+						withContext(Dispatchers.IO) {
+							val defaultTimer by effectiveApi.liveTvApi.getDefaultTimer(programInfo.id.toString())
+							val timer = defaultTimer.asTimerInfoDto()
+							effectiveApi.liveTvApi.createTimer(timer.copy(programId = programInfo.id.toString()))
+							effectiveApi.liveTvApi.getProgram(programInfo.id.toString()).content
+						}
+					_uiState.value =
+						_uiState.value.copy(
+							programInfo = updatedProgram,
+							isRecording = updatedProgram.timerId != null,
+							isRecordingSeries = updatedProgram.seriesTimerId != null,
+						)
 				} else {
 					withContext(Dispatchers.IO) {
 						effectiveApi.liveTvApi.cancelTimer(programInfo.timerId!!)
 					}
-					_uiState.value = _uiState.value.copy(
-						programInfo = programInfo.copy(timerId = null),
-						isRecording = false,
-					)
+					_uiState.value =
+						_uiState.value.copy(
+							programInfo = programInfo.copy(timerId = null),
+							isRecording = false,
+						)
 				}
 			} catch (err: Exception) {
 				Timber.e(err, "Failed to toggle recording")
@@ -554,25 +615,28 @@ class ItemDetailsViewModel(
 		viewModelScope.launch {
 			try {
 				if (programInfo.seriesTimerId == null) {
-					val updatedProgram = withContext(Dispatchers.IO) {
-						val defaultTimer by effectiveApi.liveTvApi.getDefaultTimer(programInfo.id.toString())
-						effectiveApi.liveTvApi.createSeriesTimer(defaultTimer)
-						effectiveApi.liveTvApi.getProgram(programInfo.id.toString()).content
-					}
-					_uiState.value = _uiState.value.copy(
-						programInfo = updatedProgram,
-						isRecording = updatedProgram.timerId != null,
-						isRecordingSeries = updatedProgram.seriesTimerId != null,
-					)
+					val updatedProgram =
+						withContext(Dispatchers.IO) {
+							val defaultTimer by effectiveApi.liveTvApi.getDefaultTimer(programInfo.id.toString())
+							effectiveApi.liveTvApi.createSeriesTimer(defaultTimer)
+							effectiveApi.liveTvApi.getProgram(programInfo.id.toString()).content
+						}
+					_uiState.value =
+						_uiState.value.copy(
+							programInfo = updatedProgram,
+							isRecording = updatedProgram.timerId != null,
+							isRecordingSeries = updatedProgram.seriesTimerId != null,
+						)
 				} else {
 					withContext(Dispatchers.IO) {
 						effectiveApi.liveTvApi.cancelSeriesTimer(programInfo.seriesTimerId!!)
 					}
-					_uiState.value = _uiState.value.copy(
-						programInfo = programInfo.copy(seriesTimerId = null),
-						isRecordingSeries = false,
-						isRecording = false,
-					)
+					_uiState.value =
+						_uiState.value.copy(
+							programInfo = programInfo.copy(seriesTimerId = null),
+							isRecordingSeries = false,
+							isRecording = false,
+						)
 				}
 			} catch (err: Exception) {
 				Timber.e(err, "Failed to toggle series recording")
@@ -632,13 +696,14 @@ class ItemDetailsViewModel(
 
 				val codec = video.codec?.uppercase()
 				if (codec != null) {
-					val label = when (codec) {
-						"HEVC" -> "HEVC"
-						"AV1" -> "AV1"
-						"H264" -> "H.264"
-						"VP9" -> "VP9"
-						else -> codec
-					}
+					val label =
+						when (codec) {
+							"HEVC" -> "HEVC"
+							"AV1" -> "AV1"
+							"H264" -> "H.264"
+							"VP9" -> "VP9"
+							else -> codec
+						}
 					badges.add(MediaBadge("badgeCodec", label))
 				}
 			}
@@ -658,15 +723,16 @@ class ItemDetailsViewModel(
 
 				val audioCodec = audio.codec?.uppercase()
 				if (audioCodec != null) {
-					val label = when (audioCodec) {
-						"AAC" -> "AAC"
-						"AC3" -> "AC3"
-						"EAC3" -> "EAC3"
-						"FLAC" -> "FLAC"
-						"DTS" -> "DTS"
-						"TRUEHD" -> "TrueHD"
-						else -> audioCodec
-					}
+					val label =
+						when (audioCodec) {
+							"AAC" -> "AAC"
+							"AC3" -> "AC3"
+							"EAC3" -> "EAC3"
+							"FLAC" -> "FLAC"
+							"DTS" -> "DTS"
+							"TRUEHD" -> "TrueHD"
+							else -> audioCodec
+						}
 					badges.add(MediaBadge("badgeAudioCodec", label))
 				}
 			}

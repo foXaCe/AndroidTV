@@ -13,9 +13,7 @@ import org.jellyfin.sdk.model.api.BaseItemDto
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun PhotoPlayerOverlay(
-	item: BaseItemDto?,
-) {
+fun PhotoPlayerOverlay(item: BaseItemDto?) {
 	val viewModel = koinViewModel<PhotoPlayerViewModel>()
 	val visibilityState = rememberPlayerOverlayVisibility()
 
@@ -29,34 +27,38 @@ fun PhotoPlayerOverlay(
 		controls = {
 			PhotoPlayerControls()
 		},
-		modifier = Modifier
-			.onKeyEvent { event ->
-				if (event.type != KeyEventType.KeyDown) return@onKeyEvent false
+		modifier =
+			Modifier
+				.onKeyEvent { event ->
+					if (event.type != KeyEventType.KeyDown) return@onKeyEvent false
 
-				when (event.key) {
-					Key.MediaPlayPause,
-					Key.MediaPlay,
-					Key.MediaPause -> {
-						viewModel.togglePresentation()
-						true
+					when (event.key) {
+						Key.MediaPlayPause,
+						Key.MediaPlay,
+						Key.MediaPause,
+						-> {
+							viewModel.togglePresentation()
+							true
+						}
+
+						Key.MediaStepBackward,
+						Key.MediaSkipBackward,
+						Key.MediaPrevious,
+						-> {
+							viewModel.showPrevious()
+							true
+						}
+
+						Key.MediaFastForward,
+						Key.MediaSkipForward,
+						Key.MediaNext,
+						-> {
+							viewModel.showNext()
+							true
+						}
+
+						else -> false
 					}
-
-					Key.MediaStepBackward,
-					Key.MediaSkipBackward,
-					Key.MediaPrevious -> {
-						viewModel.showPrevious()
-						true
-					}
-
-					Key.MediaFastForward,
-					Key.MediaSkipForward,
-					Key.MediaNext -> {
-						viewModel.showNext()
-						true
-					}
-
-					else -> false
-				}
-			}
+				},
 	)
 }

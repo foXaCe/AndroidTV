@@ -36,88 +36,94 @@ class SearchRepositoryImpl(
 	private val apiClient: ApiClient,
 	private val multiServerRepository: MultiServerRepository,
 ) : SearchRepository {
-
-	private fun BaseItemDto.withServerId(serverId: UUID): BaseItemDto =
-		copy(serverId = serverId.toString())
+	private fun BaseItemDto.withServerId(serverId: UUID): BaseItemDto = copy(serverId = serverId.toString())
 
 	override suspend fun search(
 		searchTerm: String,
 		itemTypes: Collection<BaseItemKind>,
-	): Result<List<BaseItemDto>> = try {
-		if (itemTypes.size == 1 && itemTypes.first() == BaseItemKind.PERSON) {
-			val request = GetPersonsRequest(
-				searchTerm = searchTerm,
-				limit = QueryDefaults.SEARCH_PAGE_SIZE,
-				imageTypeLimit = 1,
-				fields = ItemRepository.itemFields,
-			)
+	): Result<List<BaseItemDto>> =
+		try {
+			if (itemTypes.size == 1 && itemTypes.first() == BaseItemKind.PERSON) {
+				val request =
+					GetPersonsRequest(
+						searchTerm = searchTerm,
+						limit = QueryDefaults.SEARCH_PAGE_SIZE,
+						imageTypeLimit = 1,
+						fields = ItemRepository.itemFields,
+					)
 
-			val result = apiClient.ioCallContent {
-				personsApi.getPersons(request)
+				val result =
+					apiClient.ioCallContent {
+						personsApi.getPersons(request)
+					}
+
+				return Result.success(result.items)
 			}
 
-			return Result.success(result.items)
+			var request =
+				GetItemsRequest(
+					searchTerm = searchTerm,
+					limit = QueryDefaults.SEARCH_PAGE_SIZE,
+					imageTypeLimit = 1,
+					includeItemTypes = itemTypes,
+					fields = ItemRepository.itemFields,
+					recursive = true,
+					enableTotalRecordCount = false,
+				)
+
+			if (itemTypes.size == 1 && itemTypes.first() == BaseItemKind.VIDEO) {
+				request =
+					request.copy(
+						mediaTypes = setOf(MediaType.VIDEO),
+						includeItemTypes = null,
+						excludeItemTypes = setOf(BaseItemKind.MOVIE, BaseItemKind.EPISODE, BaseItemKind.TV_CHANNEL),
+					)
+			}
+
+			val result =
+				apiClient.ioCallContent {
+					itemsApi.getItems(request)
+				}
+
+			Result.success(result.items)
+		} catch (e: ApiClientException) {
+			Timber.e(e, "Failed to search for items")
+			Result.failure(e)
 		}
-
-		var request = GetItemsRequest(
-			searchTerm = searchTerm,
-			limit = QueryDefaults.SEARCH_PAGE_SIZE,
-			imageTypeLimit = 1,
-			includeItemTypes = itemTypes,
-			fields = ItemRepository.itemFields,
-			recursive = true,
-			enableTotalRecordCount = false,
-		)
-
-		if (itemTypes.size == 1 && itemTypes.first() == BaseItemKind.VIDEO) {
-			request = request.copy(
-				mediaTypes = setOf(MediaType.VIDEO),
-				includeItemTypes = null,
-				excludeItemTypes = setOf(BaseItemKind.MOVIE, BaseItemKind.EPISODE, BaseItemKind.TV_CHANNEL)
-			)
-		}
-
-		val result = apiClient.ioCallContent {
-			itemsApi.getItems(request)
-		}
-
-		Result.success(result.items)
-	} catch (e: ApiClientException) {
-		Timber.e(e, "Failed to search for items")
-		Result.failure(e)
-	}
 
 	override suspend fun searchMultiServer(
 		searchTerm: String,
 		itemTypes: Collection<BaseItemKind>,
-	): Result<List<BaseItemDto>> = withContext(Dispatchers.IO) {
-		try {
-			val sessions = multiServerRepository.getLoggedInServers()
-			Timber.d("SearchRepository: Multi-server search across ${sessions.size} servers for '$searchTerm'")
+	): Result<List<BaseItemDto>> =
+		withContext(Dispatchers.IO) {
+			try {
+				val sessions = multiServerRepository.getLoggedInServers()
 
-			if (sessions.isEmpty()) {
-				return@withContext search(searchTerm, itemTypes)
-			}
-
-			val allResults = sessions.map { session ->
-				async {
-					try {
-						val items = searchOnServer(session.apiClient, searchTerm, itemTypes)
-						items.map { it.withServerId(session.server.id) }
-					} catch (e: Exception) {
-						Timber.e(e, "SearchRepository: Failed to search server ${session.server.name}")
-						emptyList()
-					}
+				if (sessions.isEmpty()) {
+					return@withContext search(searchTerm, itemTypes)
 				}
-			}.awaitAll().flatten()
 
-			Timber.d("SearchRepository: Found ${allResults.size} total results across all servers")
-			Result.success(allResults)
-		} catch (e: Exception) {
-			Timber.e(e, "SearchRepository: Multi-server search failed")
-			Result.failure(e)
+				val allResults =
+					sessions
+						.map { session ->
+							async {
+								try {
+									val items = searchOnServer(session.apiClient, searchTerm, itemTypes)
+									items.map { it.withServerId(session.server.id) }
+								} catch (e: Exception) {
+									Timber.e(e, "SearchRepository: Failed to search server ${session.server.name}")
+									emptyList()
+								}
+							}
+						}.awaitAll()
+						.flatten()
+
+				Result.success(allResults)
+			} catch (e: Exception) {
+				Timber.e(e, "SearchRepository: Multi-server search failed")
+				Result.failure(e)
+			}
 		}
-	}
 
 	private suspend fun searchOnServer(
 		client: ApiClient,
@@ -125,41 +131,46 @@ class SearchRepositoryImpl(
 		itemTypes: Collection<BaseItemKind>,
 	): List<BaseItemDto> {
 		if (itemTypes.size == 1 && itemTypes.first() == BaseItemKind.PERSON) {
-			val request = GetPersonsRequest(
-				searchTerm = searchTerm,
-				limit = QueryDefaults.SEARCH_PAGE_SIZE,
-				imageTypeLimit = 1,
-				fields = ItemRepository.itemFields,
-			)
+			val request =
+				GetPersonsRequest(
+					searchTerm = searchTerm,
+					limit = QueryDefaults.SEARCH_PAGE_SIZE,
+					imageTypeLimit = 1,
+					fields = ItemRepository.itemFields,
+				)
 
-			val result = client.ioCallContent {
-				personsApi.getPersons(request)
-			}
+			val result =
+				client.ioCallContent {
+					personsApi.getPersons(request)
+				}
 
 			return result.items
 		}
 
-		var request = GetItemsRequest(
-			searchTerm = searchTerm,
-			limit = QueryDefaults.SEARCH_PAGE_SIZE,
-			imageTypeLimit = 1,
-			includeItemTypes = itemTypes,
-			fields = ItemRepository.itemFields,
-			recursive = true,
-			enableTotalRecordCount = false,
-		)
+		var request =
+			GetItemsRequest(
+				searchTerm = searchTerm,
+				limit = QueryDefaults.SEARCH_PAGE_SIZE,
+				imageTypeLimit = 1,
+				includeItemTypes = itemTypes,
+				fields = ItemRepository.itemFields,
+				recursive = true,
+				enableTotalRecordCount = false,
+			)
 
 		if (itemTypes.size == 1 && itemTypes.first() == BaseItemKind.VIDEO) {
-			request = request.copy(
-				mediaTypes = setOf(MediaType.VIDEO),
-				includeItemTypes = null,
-				excludeItemTypes = setOf(BaseItemKind.MOVIE, BaseItemKind.EPISODE, BaseItemKind.TV_CHANNEL)
-			)
+			request =
+				request.copy(
+					mediaTypes = setOf(MediaType.VIDEO),
+					includeItemTypes = null,
+					excludeItemTypes = setOf(BaseItemKind.MOVIE, BaseItemKind.EPISODE, BaseItemKind.TV_CHANNEL),
+				)
 		}
 
-		val result = client.ioCallContent {
-			itemsApi.getItems(request)
-		}
+		val result =
+			client.ioCallContent {
+				itemsApi.getItems(request)
+			}
 
 		return result.items
 	}

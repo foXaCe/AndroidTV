@@ -22,11 +22,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.compose.content
@@ -37,29 +35,32 @@ import org.jellyfin.androidtv.ui.base.LocalTextStyle
 import org.jellyfin.androidtv.ui.base.ProvideTextStyle
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.button.Button
+import org.jellyfin.androidtv.ui.base.debug.ScreenIdOverlay
+import org.jellyfin.androidtv.ui.base.debug.ScreenIds
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.composable.modifier.overscan
 
 @Composable
-private fun ConnectHelpAlert(
-	onClose: () -> Unit,
-) {
+private fun ConnectHelpAlert(onClose: () -> Unit) {
 	val focusRequester = remember { FocusRequester() }
 
 	Box(
-		modifier = Modifier.background(colorResource(R.color.ds_background))
+		modifier = Modifier.background(colorResource(R.color.ds_background)),
 	) {
 		ProvideTextStyle(LocalTextStyle.current.copy(color = colorResource(R.color.white))) {
 			Row(
-				modifier = Modifier
-					.fillMaxWidth()
-					.fillMaxHeight()
-					.overscan(),
+				modifier =
+					Modifier
+						.fillMaxWidth()
+						.fillMaxHeight()
+						.overscan(),
 				horizontalArrangement = Arrangement.SpaceEvenly,
 			) {
 				Column(
-					modifier = Modifier
-						.width(400.dp)
-						.align(Alignment.CenterVertically),
+					modifier =
+						Modifier
+							.width(400.dp)
+							.align(Alignment.CenterVertically),
 				) {
 					Text(
 						text = stringResource(R.string.login_help_title),
@@ -71,14 +72,15 @@ private fun ConnectHelpAlert(
 						style = JellyfinTheme.typography.bodyLarge,
 					)
 					Button(
-						modifier = Modifier
-							.padding(top = 24.dp)
-							.align(Alignment.Start)
-							.focusRequester(focusRequester),
+						modifier =
+							Modifier
+								.padding(top = 24.dp)
+								.align(Alignment.Start)
+								.focusRequester(focusRequester),
 						onClick = onClose,
 					) {
 						Icon(
-							imageVector = ImageVector.vectorResource(R.drawable.ic_check),
+							imageVector = VegafoXIcons.Check,
 							contentDescription = null,
 							modifier = Modifier.size(20.dp),
 						)
@@ -93,9 +95,10 @@ private fun ConnectHelpAlert(
 				Image(
 					painter = painterResource(R.drawable.qr_jellyfin_docs),
 					contentDescription = stringResource(R.string.app_name),
-					modifier = Modifier
-						.width(200.dp)
-						.align(Alignment.CenterVertically),
+					modifier =
+						Modifier
+							.width(200.dp)
+							.align(Alignment.CenterVertically),
 				)
 			}
 		}
@@ -110,12 +113,14 @@ class ConnectHelpAlertFragment : Fragment() {
 	override fun onCreateView(
 		inflater: LayoutInflater,
 		container: ViewGroup?,
-		savedInstanceState: Bundle?
+		savedInstanceState: Bundle?,
 	) = content {
 		JellyfinTheme {
-			ConnectHelpAlert(
-				onClose = { parentFragmentManager.popBackStack() },
-			)
+			ScreenIdOverlay(ScreenIds.CONNECT_HELP_ID, ScreenIds.CONNECT_HELP_NAME) {
+				ConnectHelpAlert(
+					onClose = { parentFragmentManager.popBackStack() },
+				)
+			}
 		}
 	}
 }

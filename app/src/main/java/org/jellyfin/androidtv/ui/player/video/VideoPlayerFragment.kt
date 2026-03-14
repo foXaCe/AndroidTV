@@ -3,11 +3,14 @@ package org.jellyfin.androidtv.ui.player.video
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.compose.content
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
+import org.jellyfin.androidtv.ui.base.debug.ScreenIdOverlay
+import org.jellyfin.androidtv.ui.base.debug.ScreenIds
 import org.jellyfin.androidtv.ui.playback.VideoQueueManager
 import org.jellyfin.androidtv.ui.playback.rewrite.RewriteMediaManager
 import org.jellyfin.playback.core.PlaybackManager
@@ -18,8 +21,21 @@ import timber.log.Timber
 import kotlin.time.Duration.Companion.milliseconds
 
 class VideoPlayerFragment : Fragment() {
+	data class Args(
+		val position: Int? = null,
+	) {
+		fun toBundle() = bundleOf(EXTRA_POSITION to position)
+
+		companion object {
+			fun fromBundle(bundle: Bundle?): Args =
+				Args(
+					position = if (bundle?.containsKey(EXTRA_POSITION) == true) bundle.getInt(EXTRA_POSITION) else null,
+				)
+		}
+	}
+
 	companion object {
-		const val EXTRA_POSITION: String = "position"
+		internal const val EXTRA_POSITION: String = "position"
 	}
 
 	private val videoQueueManager by inject<VideoQueueManager>()
@@ -35,10 +51,14 @@ class VideoPlayerFragment : Fragment() {
 		playbackManager.queue.clear()
 		playbackManager.queue.addSupplier(queueSupplier)
 
-		// Set position
-		arguments?.getInt(EXTRA_POSITION)?.milliseconds?.let {
+		// Set position — retry until backend is ready
+		Args.fromBundle(arguments).position?.milliseconds?.let { seekPosition ->
 			lifecycleScope.launch {
-				playbackManager.state.seek(it)
+				// Wait for the player backend to be ready before seeking
+				repeat(20) {
+					playbackManager.state.seek(seekPosition)
+					kotlinx.coroutines.delay(50)
+				}
 			}
 		}
 
@@ -49,10 +69,12 @@ class VideoPlayerFragment : Fragment() {
 	override fun onCreateView(
 		inflater: LayoutInflater,
 		container: ViewGroup?,
-		savedInstanceState: Bundle?
+		savedInstanceState: Bundle?,
 	) = content {
 		JellyfinTheme {
-			VideoPlayerScreen()
+			ScreenIdOverlay(ScreenIds.VIDEO_PLAYER_ID, ScreenIds.VIDEO_PLAYER_NAME) {
+				VideoPlayerScreen()
+			}
 		}
 	}
 

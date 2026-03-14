@@ -3,7 +3,6 @@ package org.jellyfin.androidtv.ui.composable
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import org.jellyfin.androidtv.R
 
 /**
@@ -11,7 +10,12 @@ import org.jellyfin.androidtv.R
  * Non-composable version for use in View-based code.
  */
 @Suppress("MagicNumber")
-fun getResolutionName(context: Context, width: Int, height: Int, interlaced: Boolean = false): String {
+fun getResolutionName(
+	context: Context,
+	width: Int,
+	height: Int,
+	interlaced: Boolean = false,
+): String {
 	val suffix = if (interlaced) "i" else "p"
 	return when {
 		width >= 7600 || height >= 4300 -> "8K"
@@ -30,5 +34,8 @@ fun getResolutionName(context: Context, width: Int, height: Int, interlaced: Boo
  */
 @Composable
 @Suppress("MagicNumber")
-fun getResolutionName(width: Int, height: Int, interlaced: Boolean = false): String =
-	getResolutionName(LocalContext.current, width, height, interlaced)
+fun getResolutionName(
+	width: Int,
+	height: Int,
+	interlaced: Boolean = false,
+): String = getResolutionName(LocalContext.current, width, height, interlaced)

@@ -28,7 +28,6 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class DesignSystemTest {
-
 	@get:Rule
 	val composeTestRule = createComposeRule()
 
@@ -46,10 +45,11 @@ class DesignSystemTest {
 				surface = JellyfinTheme.colorScheme.surface
 
 				Box(
-					modifier = Modifier
-						.testTag("themed_box")
-						.size(100.dp)
-						.background(JellyfinTheme.colorScheme.background),
+					modifier =
+						Modifier
+							.testTag("themed_box")
+							.size(100.dp)
+							.background(JellyfinTheme.colorScheme.background),
 				)
 			}
 		}
@@ -81,24 +81,26 @@ class DesignSystemTest {
 			JellyfinTheme {
 				var isFocused by remember { mutableStateOf(false) }
 
-				val borderColor = if (isFocused) {
-					JellyfinTheme.colorScheme.focusRing
-				} else {
-					Color.Transparent
-				}
+				val borderColor =
+					if (isFocused) {
+						JellyfinTheme.colorScheme.focusRing
+					} else {
+						Color.Transparent
+					}
 
 				// Capture colors for assertion
 				if (!isFocused) borderColorUnfocused = borderColor
 				if (isFocused) borderColorFocused = borderColor
 
 				Box(
-					modifier = Modifier
-						.testTag("focus_box")
-						.size(100.dp)
-						.focusRequester(focusRequester)
-						.onFocusChanged { isFocused = it.isFocused }
-						.focusable()
-						.border(2.dp, borderColor),
+					modifier =
+						Modifier
+							.testTag("focus_box")
+							.size(100.dp)
+							.focusRequester(focusRequester)
+							.onFocusChanged { isFocused = it.isFocused }
+							.focusable()
+							.border(2.dp, borderColor),
 				)
 			}
 		}

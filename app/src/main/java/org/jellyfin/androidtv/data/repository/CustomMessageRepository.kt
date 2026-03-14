@@ -7,6 +7,7 @@ import org.jellyfin.androidtv.constant.CustomMessage
 
 interface CustomMessageRepository {
 	val message: StateFlow<CustomMessage?>
+
 	fun pushMessage(message: CustomMessage)
 }
 

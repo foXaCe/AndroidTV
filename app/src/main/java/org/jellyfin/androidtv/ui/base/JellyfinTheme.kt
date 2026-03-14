@@ -10,7 +10,7 @@ fun JellyfinTheme(
 	colorScheme: ColorScheme = JellyfinTheme.colorScheme,
 	shapes: Shapes = JellyfinTheme.shapes,
 	typography: Typography = JellyfinTheme.typography,
-	content: @Composable () -> Unit
+	content: @Composable () -> Unit,
 ) {
 	CompositionLocalProvider(
 		LocalColorScheme provides colorScheme,
@@ -25,11 +25,14 @@ fun JellyfinTheme(
 
 object JellyfinTheme {
 	val colorScheme: ColorScheme
-		@Composable @ReadOnlyComposable get() = LocalColorScheme.current
+		@Composable @ReadOnlyComposable
+		get() = LocalColorScheme.current
 
 	val typography: Typography
-		@Composable @ReadOnlyComposable get() = LocalTypography.current
+		@Composable @ReadOnlyComposable
+		get() = LocalTypography.current
 
 	val shapes: Shapes
-		@Composable @ReadOnlyComposable get() = LocalShapes.current
+		@Composable @ReadOnlyComposable
+		get() = LocalShapes.current
 }

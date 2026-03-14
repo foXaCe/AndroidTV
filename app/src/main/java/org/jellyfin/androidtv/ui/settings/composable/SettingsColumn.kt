@@ -20,12 +20,14 @@ import org.jellyfin.design.Tokens
 
 @Composable
 fun SettingsColumn(content: LazyListScope.() -> Unit) {
-	val listState = rememberSaveable(saver = LazyListState.Saver) {
-		LazyListState()
-	}
-	val focusState = rememberSaveable(saver = SettingsFocusState.Saver) {
-		SettingsFocusState()
-	}
+	val listState =
+		rememberSaveable(saver = LazyListState.Saver) {
+			LazyListState()
+		}
+	val focusState =
+		rememberSaveable(saver = SettingsFocusState.Saver) {
+			SettingsFocusState()
+		}
 
 	LazyColumn(
 		state = listState,
@@ -45,10 +47,11 @@ private class SettingsFocusState(
 	var needsRestore: Boolean = false,
 ) {
 	companion object {
-		val Saver = Saver<SettingsFocusState, Int>(
-			save = { it.lastFocusedIndex },
-			restore = { SettingsFocusState(lastFocusedIndex = it, needsRestore = it >= 0) },
-		)
+		val Saver =
+			Saver<SettingsFocusState, Int>(
+				save = { it.lastFocusedIndex },
+				restore = { SettingsFocusState(lastFocusedIndex = it, needsRestore = it >= 0) },
+			)
 	}
 }
 
@@ -73,14 +76,15 @@ private class FocusTrackingScope(
 			val lazyItemScope = this
 			val focusRequester = remember { FocusRequester() }
 			Box(
-				modifier = Modifier
-					.focusRequester(focusRequester)
-					.onFocusChanged { focusChanged ->
-						if (focusChanged.hasFocus) {
-							state.lastFocusedIndex = index
-							state.needsRestore = false
-						}
-					},
+				modifier =
+					Modifier
+						.focusRequester(focusRequester)
+						.onFocusChanged { focusChanged ->
+							if (focusChanged.hasFocus) {
+								state.lastFocusedIndex = index
+								state.needsRestore = false
+							}
+						},
 			) {
 				lazyItemScope.content()
 			}

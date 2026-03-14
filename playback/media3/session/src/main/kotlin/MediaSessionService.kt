@@ -26,55 +26,67 @@ class MediaSessionService(
 	private var notifiedNotificationId: Int? = null
 
 	override suspend fun onInitialize() {
-		val player = MediaSessionPlayer(
-			looper = Looper.getMainLooper(),
-			scope = coroutineScope,
-			state = state,
-			manager = manager,
-		)
-		val session = MediaSession.Builder(androidContext, player).apply {
-			setId(options.notificationId.toString())
-			setSessionActivity(options.openIntent)
-		}.build()
+		val player =
+			MediaSessionPlayer(
+				looper = Looper.getMainLooper(),
+				scope = coroutineScope,
+				state = state,
+				manager = manager,
+			)
+		val session =
+			MediaSession
+				.Builder(androidContext, player)
+				.apply {
+					setId(options.notificationId.toString())
+					setSessionActivity(options.openIntent)
+				}.build()
 
-		manager.queue.entry.onEach { item ->
-			if (item != null) updateNotification(session, item)
-			else if (notifiedNotificationId != null) {
-				notificationManager.cancel(notifiedNotificationId!!)
-				notifiedNotificationId = null
-			}
-		}.launchIn(coroutineScope)
+		manager.queue.entry
+			.onEach { item ->
+				if (item != null) {
+					updateNotification(session, item)
+				} else if (notifiedNotificationId != null) {
+					notificationManager.cancel(notifiedNotificationId!!)
+					notifiedNotificationId = null
+				}
+			}.launchIn(coroutineScope)
 	}
 
 	@OptIn(UnstableApi::class)
-	private suspend fun updateNotification(session: MediaSession, item: QueueEntry) {
-		val notification = NotificationCompat.Builder(androidContext, options.channelId).apply {
-			// Set metadata
-			setContentTitle(item.metadata.title)
-			setContentText(item.metadata.artist)
+	private suspend fun updateNotification(
+		session: MediaSession,
+		item: QueueEntry,
+	) {
+		val notification =
+			NotificationCompat
+				.Builder(androidContext, options.channelId)
+				.apply {
+					// Set metadata
+					setContentTitle(item.metadata.title)
+					setContentText(item.metadata.artist)
 
-			// Set actions
-			setContentIntent(options.openIntent)
-			setStyle(MediaStyleNotificationHelper.MediaStyle(session))
+					// Set actions
+					setContentIntent(options.openIntent)
+					setStyle(MediaStyleNotificationHelper.MediaStyle(session))
 
-			// Make visible on lock screen
-			setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+					// Make visible on lock screen
+					setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
 
-			// Set flags
-			setOnlyAlertOnce(true)
-			setOngoing(false)
+					// Set flags
+					setOnlyAlertOnce(true)
+					setOngoing(false)
 
-			// Add branding & art
-			setSmallIcon(options.iconSmall)
-			item.metadata.artworkUri?.toUri()?.let { artworkUri ->
-				runCatching {
-					session.bitmapLoader.loadBitmap(artworkUri).await()
-				}.fold(
-					onSuccess = ::setLargeIcon,
-					onFailure = { error -> Timber.w(error, "Failed to retrieve artwork") },
-				)
-			}
-		}.build()
+					// Add branding & art
+					setSmallIcon(options.iconSmall)
+					item.metadata.artworkUri?.toUri()?.let { artworkUri ->
+						runCatching {
+							session.bitmapLoader.loadBitmap(artworkUri).await()
+						}.fold(
+							onSuccess = ::setLargeIcon,
+							onFailure = { error -> Timber.w(error, "Failed to retrieve artwork") },
+						)
+					}
+				}.build()
 
 		if (notifiedNotificationId == null) notifiedNotificationId = options.notificationId
 

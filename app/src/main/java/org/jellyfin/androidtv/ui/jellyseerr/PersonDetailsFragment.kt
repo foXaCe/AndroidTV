@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
@@ -22,6 +23,8 @@ import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrPersonDetailsDto
 import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.preference.constant.NavbarPosition
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
+import org.jellyfin.androidtv.ui.base.debug.ScreenIdOverlay
+import org.jellyfin.androidtv.ui.base.debug.ScreenIds
 import org.jellyfin.androidtv.ui.jellyseerr.compose.JellyseerrPersonDetailsScreen
 import org.jellyfin.androidtv.ui.navigation.Destinations
 import org.jellyfin.androidtv.ui.navigation.NavigationRepository
@@ -33,6 +36,32 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
 
 class PersonDetailsFragment : Fragment() {
+	data class Args(
+		val personId: Int,
+		val personName: String = "",
+	) {
+		fun toBundle() =
+			bundleOf(
+				KEY_PERSON_ID to personId.toString(),
+				KEY_PERSON_NAME to personName,
+			)
+
+		companion object {
+			fun fromBundle(bundle: Bundle?): Args? {
+				val personId = bundle?.getString(KEY_PERSON_ID)?.toIntOrNull() ?: return null
+				return Args(
+					personId = personId,
+					personName = bundle.getString(KEY_PERSON_NAME) ?: "",
+				)
+			}
+		}
+	}
+
+	companion object {
+		internal const val KEY_PERSON_ID = "personId"
+		internal const val KEY_PERSON_NAME = "personName"
+	}
+
 	private val viewModel: JellyseerrDetailsViewModel by viewModel()
 	private val navigationRepository: NavigationRepository by inject()
 	private val userPreferences: UserPreferences by inject()
@@ -46,8 +75,9 @@ class PersonDetailsFragment : Fragment() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
-		personId = arguments?.getString("personId")?.toIntOrNull() ?: -1
-		personName = arguments?.getString("personName") ?: ""
+		val args = Args.fromBundle(arguments)
+		personId = args?.personId ?: -1
+		personName = args?.personName ?: ""
 
 		if (personId == -1) {
 			Timber.e("PersonDetailsFragment: No person ID found in arguments")
@@ -60,37 +90,41 @@ class PersonDetailsFragment : Fragment() {
 		inflater: LayoutInflater,
 		container: ViewGroup?,
 		savedInstanceState: Bundle?,
-	): View {
-		return ComposeView(requireContext()).apply {
+	): View =
+		ComposeView(requireContext()).apply {
 			setContent {
 				JellyfinTheme {
-					Box(modifier = Modifier.fillMaxSize()) {
-						JellyseerrPersonDetailsScreen(
-							personName = personName,
-							personDetails = personDetails,
-							appearances = appearances,
-							onItemClick = { item ->
-								val itemJson = Json.encodeToString(JellyseerrDiscoverItemDto.serializer(), item)
-								navigationRepository.navigate(Destinations.jellyseerrMediaDetails(itemJson))
-							},
-						)
+					ScreenIdOverlay(ScreenIds.JELLYSEERR_PERSON_ID, ScreenIds.JELLYSEERR_PERSON_NAME) {
+						Box(modifier = Modifier.fillMaxSize()) {
+							JellyseerrPersonDetailsScreen(
+								personName = personName,
+								personDetails = personDetails,
+								appearances = appearances,
+								onItemClick = { item ->
+									val itemJson = Json.encodeToString(JellyseerrDiscoverItemDto.serializer(), item)
+									navigationRepository.navigate(Destinations.jellyseerrMediaDetails(itemJson))
+								},
+							)
 
-						val navbarPosition = userPreferences[UserPreferences.navbarPosition]
-						when (navbarPosition) {
-							NavbarPosition.LEFT -> {
-								LeftSidebarNavigation(activeButton = MainToolbarActiveButton.Jellyseerr)
-							}
-							NavbarPosition.TOP -> {
-								MainToolbar(activeButton = MainToolbarActiveButton.Jellyseerr)
+							val navbarPosition = userPreferences[UserPreferences.navbarPosition]
+							when (navbarPosition) {
+								NavbarPosition.LEFT -> {
+									LeftSidebarNavigation(activeButton = MainToolbarActiveButton.Jellyseerr)
+								}
+								NavbarPosition.TOP -> {
+									MainToolbar(activeButton = MainToolbarActiveButton.Jellyseerr)
+								}
 							}
 						}
 					}
 				}
 			}
 		}
-	}
 
-	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+	override fun onViewCreated(
+		view: View,
+		savedInstanceState: Bundle?,
+	) {
 		super.onViewCreated(view, savedInstanceState)
 		loadPersonData()
 	}
@@ -99,15 +133,16 @@ class PersonDetailsFragment : Fragment() {
 		lifecycleScope.launch {
 			try {
 				val detailsResult = viewModel.getPersonDetails(personId)
-				detailsResult.onSuccess { details ->
-					personDetails = details
-					loadPersonCredits()
-				}.onFailure { error ->
-					Timber.e(error, "Failed to load person details")
-					if (isAdded) {
-						Toast.makeText(requireContext(), getString(R.string.person_load_failed), Toast.LENGTH_SHORT).show()
+				detailsResult
+					.onSuccess { details ->
+						personDetails = details
+						loadPersonCredits()
+					}.onFailure { error ->
+						Timber.e(error, "Failed to load person details")
+						if (isAdded) {
+							Toast.makeText(requireContext(), getString(R.string.person_load_failed), Toast.LENGTH_SHORT).show()
+						}
 					}
-				}
 			} catch (e: Exception) {
 				Timber.e(e, "Error loading person data")
 			}
@@ -118,13 +153,15 @@ class PersonDetailsFragment : Fragment() {
 		lifecycleScope.launch {
 			try {
 				val creditsResult = viewModel.getPersonCombinedCredits(personId)
-				creditsResult.onSuccess { credits ->
-					appearances = credits.cast
-						.filter { it.posterPath != null }
-						.sortedBy { it.title ?: it.name ?: "" }
-				}.onFailure { error ->
-					Timber.e(error, "Failed to load person credits")
-				}
+				creditsResult
+					.onSuccess { credits ->
+						appearances =
+							credits.cast
+								.filter { it.posterPath != null }
+								.sortedBy { it.title ?: it.name ?: "" }
+					}.onFailure { error ->
+						Timber.e(error, "Failed to load person credits")
+					}
 			} catch (e: Exception) {
 				Timber.e(e, "Error loading person credits")
 			}

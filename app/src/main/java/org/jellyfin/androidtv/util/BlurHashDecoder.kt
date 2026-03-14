@@ -14,7 +14,12 @@ object BlurHashDecoder {
 	/**
 	 * Decode a blur hash into a new bitmap.
 	 */
-	fun decode(blurHash: String?, width: Int, height: Int, punch: Float = 1f): Bitmap? {
+	fun decode(
+		blurHash: String?,
+		width: Int,
+		height: Int,
+		punch: Float = 1f,
+	): Bitmap? {
 		if (blurHash == null || blurHash.length < 6) return null
 
 		val numCompEnc = decode83(blurHash, 0, 1)
@@ -38,7 +43,11 @@ object BlurHashDecoder {
 		return composeBitmap(width, height, numCompX, numCompY, colors)
 	}
 
-	private fun decode83(str: String, from: Int, to: Int): Int {
+	private fun decode83(
+		str: String,
+		from: Int,
+		to: Int,
+	): Int {
 		var result = 0
 
 		for (i in from until to) {
@@ -49,7 +58,10 @@ object BlurHashDecoder {
 		return result
 	}
 
-	private fun decodeDc(colorEnc: Int, outArray: FloatArray) {
+	private fun decodeDc(
+		colorEnc: Int,
+		outArray: FloatArray,
+	) {
 		val r = (colorEnc shr 16) and 0xFF
 		val g = (colorEnc shr 8) and 0xFF
 		val b = colorEnc and 0xFF
@@ -68,7 +80,12 @@ object BlurHashDecoder {
 		}
 	}
 
-	private fun decodeAc(value: Int, maxAc: Float, outArray: FloatArray, outIndex: Int) {
+	private fun decodeAc(
+		value: Int,
+		maxAc: Float,
+		outArray: FloatArray,
+		outIndex: Int,
+	) {
 		val r = value / (19 * 19)
 		val g = (value / 19) % 19
 		val b = value % 19
@@ -80,14 +97,21 @@ object BlurHashDecoder {
 
 	private fun signedPow2(value: Float) = (value * value).withSign(value)
 
-	private fun composeBitmap(width: Int, height: Int, numCompX: Int, numCompY: Int, colors: FloatArray): Bitmap {
+	private fun composeBitmap(
+		width: Int,
+		height: Int,
+		numCompX: Int,
+		numCompY: Int,
+		colors: FloatArray,
+	): Bitmap {
 		// use an array for better performance when writing pixel colors
 		val imageArray = IntArray(width * height)
 		val cosinesX = createCosines(width, numCompX)
-		val cosinesY = when {
-			width == height && numCompX == numCompY -> cosinesX
-			else -> createCosines(height, numCompY)
-		}
+		val cosinesY =
+			when {
+				width == height && numCompX == numCompY -> cosinesX
+				else -> createCosines(height, numCompY)
+			}
 
 		for (y in 0 until height) {
 			for (x in 0 until width) {
@@ -115,7 +139,10 @@ object BlurHashDecoder {
 		return Bitmap.createBitmap(imageArray, width, height, Bitmap.Config.ARGB_8888)
 	}
 
-	private fun createCosines(size: Int, numComp: Int) = FloatArray(size * numComp) { index ->
+	private fun createCosines(
+		size: Int,
+		numComp: Int,
+	) = FloatArray(size * numComp) { index ->
 		val x = index / numComp
 		val i = index % numComp
 

@@ -20,4 +20,3 @@ enum class RatingType(
 	RATING_ANILIST(R.string.pref_rating_source_anilist),
 	RATING_HIDDEN(R.string.lbl_hidden),
 }
-

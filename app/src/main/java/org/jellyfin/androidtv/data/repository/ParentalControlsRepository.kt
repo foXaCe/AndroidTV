@@ -56,7 +56,10 @@ interface ParentalControlsRepository {
 	/**
 	 * Filter a list of items based on parental controls.
 	 */
-	fun <T> filterItems(items: List<T>, ratingExtractor: (T) -> String?): List<T>
+	fun <T> filterItems(
+		items: List<T>,
+		ratingExtractor: (T) -> String?,
+	): List<T>
 
 	/**
 	 * Observable flow of blocked ratings for the current user.
@@ -74,7 +77,6 @@ class ParentalControlsRepositoryImpl(
 	private val sessionRepository: SessionRepository,
 	private val multiServerRepository: MultiServerRepository,
 ) : ParentalControlsRepository {
-
 	companion object {
 		private const val PREFS_NAME_PREFIX = "parental_controls_"
 		private const val KEY_BLOCKED_RATINGS = "blocked_ratings"
@@ -101,88 +103,77 @@ class ParentalControlsRepositoryImpl(
 			.filterNotNull()
 			.onEach { session ->
 				if (session.userId != currentLoadedUserId) {
-					Timber.d("ParentalControlsRepository: Session changed, reloading for user ${session.userId}")
 					currentLoadedUserId = session.userId
 					loadBlockedRatings()
 				}
-			}
-			.launchIn(scope)
+			}.launchIn(scope)
 		
 		// Also try to load immediately if session exists
 		loadBlockedRatings()
 	}
 
-	private fun getCurrentUserId(): UUID? {
-		return sessionRepository.currentSession.value?.userId
-	}
+	private fun getCurrentUserId(): UUID? = sessionRepository.currentSession.value?.userId
 
-	private fun getPrefsForUser(userId: UUID) =
-		context.getSharedPreferences("$PREFS_NAME_PREFIX$userId", Context.MODE_PRIVATE)
+	private fun getPrefsForUser(userId: UUID) = context.getSharedPreferences("$PREFS_NAME_PREFIX$userId", Context.MODE_PRIVATE)
 
 	private fun loadBlockedRatings() {
-		val userId = getCurrentUserId()
-		if (userId == null) {
-			Timber.d("ParentalControlsRepository: No current user, cannot load blocked ratings")
-			return
-		}
+		val userId = getCurrentUserId() ?: return
 		val prefs = getPrefsForUser(userId)
 		val jsonString = prefs.getString(KEY_BLOCKED_RATINGS, null)
-		val ratings = if (jsonString != null) {
-			try {
-				json.decodeFromString<Set<String>>(jsonString)
-			} catch (e: Exception) {
-				Timber.e(e, "Failed to parse blocked ratings")
+		val ratings =
+			if (jsonString != null) {
+				try {
+					json.decodeFromString<Set<String>>(jsonString)
+				} catch (e: Exception) {
+					Timber.e(e, "Failed to parse blocked ratings")
+					emptySet()
+				}
+			} else {
 				emptySet()
 			}
-		} else {
-			emptySet()
-		}
 		_blockedRatingsFlow.value = ratings
-		Timber.d("ParentalControlsRepository: Loaded ${ratings.size} blocked ratings for user $userId: $ratings")
 	}
 
-	override suspend fun getAvailableRatings(): List<String> = withContext(Dispatchers.IO) {
-		// Return in-memory cache if available
-		cachedRatings?.let { return@withContext it }
+	override suspend fun getAvailableRatings(): List<String> =
+		withContext(Dispatchers.IO) {
+			// Return in-memory cache if available
+			cachedRatings?.let { return@withContext it }
 
-		// Check disk cache
-		val userId = getCurrentUserId()
-		if (userId != null) {
-			val cached = loadCachedRatings(userId)
-			if (cached != null) {
-				Timber.d("ParentalControlsRepository: Using cached ratings (${cached.size} ratings)")
-				cachedRatings = cached
-				return@withContext cached
+			// Check disk cache
+			val userId = getCurrentUserId()
+			if (userId != null) {
+				val cached = loadCachedRatings(userId)
+				if (cached != null) {
+					cachedRatings = cached
+					return@withContext cached
+				}
 			}
-		}
 
-		// Fetch from servers
-		val allRatings = mutableSetOf<String>()
+			// Fetch from servers
+			val allRatings = mutableSetOf<String>()
 
-		val loggedInServers = multiServerRepository.getLoggedInServers()
-		Timber.d("ParentalControlsRepository: Getting ratings from ${loggedInServers.size} servers")
+			val loggedInServers = multiServerRepository.getLoggedInServers()
 
-		loggedInServers.forEach { session ->
-			try {
-				val ratings = getRatingsFromServer(session.apiClient)
-				allRatings.addAll(ratings)
-				Timber.d("ParentalControlsRepository: Got ${ratings.size} ratings from ${session.server.name}")
-			} catch (e: Exception) {
-				Timber.e(e, "ParentalControlsRepository: Error getting ratings from ${session.server.name}")
+			loggedInServers.forEach { session ->
+				try {
+					val ratings = getRatingsFromServer(session.apiClient)
+					allRatings.addAll(ratings)
+				} catch (e: Exception) {
+					Timber.e(e, "ParentalControlsRepository: Error getting ratings from ${session.server.name}")
+				}
 			}
+
+			// Sort ratings (common TV/Movie ratings first, then alphabetically)
+			val sortedRatings = allRatings.toList().sortedWith(RatingComparator)
+
+			// Cache the results
+			if (userId != null && sortedRatings.isNotEmpty()) {
+				saveCachedRatings(userId, sortedRatings)
+			}
+			cachedRatings = sortedRatings
+
+			sortedRatings
 		}
-
-		// Sort ratings (common TV/Movie ratings first, then alphabetically)
-		val sortedRatings = allRatings.toList().sortedWith(RatingComparator)
-
-		// Cache the results
-		if (userId != null && sortedRatings.isNotEmpty()) {
-			saveCachedRatings(userId, sortedRatings)
-		}
-		cachedRatings = sortedRatings
-
-		sortedRatings
-	}
 
 	private fun loadCachedRatings(userId: UUID): List<String>? {
 		val prefs = getPrefsForUser(userId)
@@ -190,10 +181,7 @@ class ParentalControlsRepositoryImpl(
 		val age = System.currentTimeMillis() - timestamp
 
 		// Check if cache is still valid
-		if (age > CACHE_DURATION.inWholeMilliseconds) {
-			Timber.d("ParentalControlsRepository: Cache expired (age: ${age}ms)")
-			return null
-		}
+		if (age > CACHE_DURATION.inWholeMilliseconds) return null
 
 		val jsonString = prefs.getString(KEY_CACHED_RATINGS, null) ?: return null
 		return try {
@@ -204,30 +192,39 @@ class ParentalControlsRepositoryImpl(
 		}
 	}
 
-	private fun saveCachedRatings(userId: UUID, ratings: List<String>) {
+	private fun saveCachedRatings(
+		userId: UUID,
+		ratings: List<String>,
+	) {
 		val prefs = getPrefsForUser(userId)
-		prefs.edit()
+		prefs
+			.edit()
 			.putString(KEY_CACHED_RATINGS, json.encodeToString(ratings))
 			.putLong(KEY_CACHE_TIMESTAMP, System.currentTimeMillis())
 			.apply()
-		Timber.d("ParentalControlsRepository: Cached ${ratings.size} ratings")
 	}
 
-	private suspend fun getRatingsFromServer(apiClient: ApiClient): List<String> {
-		return withTimeoutOrNull(SERVER_TIMEOUT) {
+	private suspend fun getRatingsFromServer(apiClient: ApiClient): List<String> =
+		withTimeoutOrNull(SERVER_TIMEOUT) {
 			try {
 				// Get ratings for movies and TV shows
-				val movieRatings = apiClient.filterApi.getQueryFiltersLegacy(
-					includeItemTypes = listOf(BaseItemKind.MOVIE)
-				).content.officialRatings ?: emptyList()
+				val movieRatings =
+					apiClient.filterApi
+						.getQueryFiltersLegacy(
+							includeItemTypes = listOf(BaseItemKind.MOVIE),
+						).content.officialRatings ?: emptyList()
 
-				val seriesRatings = apiClient.filterApi.getQueryFiltersLegacy(
-					includeItemTypes = listOf(BaseItemKind.SERIES)
-				).content.officialRatings ?: emptyList()
+				val seriesRatings =
+					apiClient.filterApi
+						.getQueryFiltersLegacy(
+							includeItemTypes = listOf(BaseItemKind.SERIES),
+						).content.officialRatings ?: emptyList()
 
-				val episodeRatings = apiClient.filterApi.getQueryFiltersLegacy(
-					includeItemTypes = listOf(BaseItemKind.EPISODE)
-				).content.officialRatings ?: emptyList()
+				val episodeRatings =
+					apiClient.filterApi
+						.getQueryFiltersLegacy(
+							includeItemTypes = listOf(BaseItemKind.EPISODE),
+						).content.officialRatings ?: emptyList()
 
 				(movieRatings + seriesRatings + episodeRatings)
 					.filter { it.isNotBlank() }
@@ -237,7 +234,6 @@ class ParentalControlsRepositoryImpl(
 				emptyList()
 			}
 		} ?: emptyList()
-	}
 
 	override fun getBlockedRatings(): Set<String> = getBlockedRatingsInternal()
 
@@ -251,11 +247,7 @@ class ParentalControlsRepositoryImpl(
 		if (current.isNotEmpty()) return current
 		
 		// Try to load from prefs directly if flow is empty (race condition at startup)
-		val userId = getCurrentUserId()
-		if (userId == null) {
-			Timber.d("ParentalControlsRepository: getBlockedRatingsInternal - no userId available")
-			return emptySet()
-		}
+		val userId = getCurrentUserId() ?: return emptySet()
 		
 		// Always try to load from prefs when flow is empty, regardless of currentLoadedUserId
 		// This handles the case where init ran before session was available
@@ -265,7 +257,6 @@ class ParentalControlsRepositoryImpl(
 			try {
 				val ratings = json.decodeFromString<Set<String>>(jsonString)
 				if (ratings.isNotEmpty()) {
-					Timber.d("ParentalControlsRepository: Loaded ${ratings.size} blocked ratings on-demand for user $userId: $ratings")
 					_blockedRatingsFlow.value = ratings
 					currentLoadedUserId = userId
 					return ratings
@@ -284,16 +275,9 @@ class ParentalControlsRepositoryImpl(
 		val jsonString = json.encodeToString(ratings)
 		prefs.edit().putString(KEY_BLOCKED_RATINGS, jsonString).apply()
 		_blockedRatingsFlow.value = ratings
-		Timber.d("ParentalControlsRepository: Set blocked ratings to $ratings for user $userId")
 	}
 
-	override fun shouldFilterItem(item: BaseItemDto): Boolean {
-		val result = isRatingBlocked(item.officialRating)
-		if (result) {
-			Timber.d("ParentalControlsRepository: Filtering item '${item.name}' with rating '${item.officialRating}'")
-		}
-		return result
-	}
+	override fun shouldFilterItem(item: BaseItemDto): Boolean = isRatingBlocked(item.officialRating)
 
 	override fun isRatingBlocked(rating: String?): Boolean {
 		if (rating.isNullOrBlank()) return false
@@ -301,16 +285,17 @@ class ParentalControlsRepositoryImpl(
 		return blocked.contains(rating)
 	}
 
-	override fun <T> filterItems(items: List<T>, ratingExtractor: (T) -> String?): List<T> {
+	override fun <T> filterItems(
+		items: List<T>,
+		ratingExtractor: (T) -> String?,
+	): List<T> {
 		val blocked = getBlockedRatingsInternal()
 		if (blocked.isEmpty()) return items
 
-		val filtered = items.filter { item ->
+		return items.filter { item ->
 			val rating = ratingExtractor(item)
 			rating == null || !blocked.contains(rating)
 		}
-		Timber.d("ParentalControlsRepository: Filtered ${items.size} -> ${filtered.size} items (blocked: $blocked)")
-		return filtered
 	}
 
 	override fun isEnabled(): Boolean = getBlockedRatingsInternal().isNotEmpty()
@@ -322,18 +307,45 @@ class ParentalControlsRepositoryImpl(
 	 * - Other ratings alphabetically
 	 */
 	private object RatingComparator : Comparator<String> {
-		private val ratingOrder = listOf(
-			// Movie ratings
-			"G", "PG", "PG-13", "R", "NC-17", "NR", "Unrated",
-			// TV ratings
-			"TV-Y", "TV-Y7", "TV-Y7-FV", "TV-G", "TV-PG", "TV-14", "TV-MA",
-			// UK ratings
-			"U", "PG", "12", "12A", "15", "18", "R18",
-			// Common international
-			"All", "6", "9", "12", "16", "18"
-		)
+		private val ratingOrder =
+			listOf(
+				// Movie ratings
+				"G",
+				"PG",
+				"PG-13",
+				"R",
+				"NC-17",
+				"NR",
+				"Unrated",
+				// TV ratings
+				"TV-Y",
+				"TV-Y7",
+				"TV-Y7-FV",
+				"TV-G",
+				"TV-PG",
+				"TV-14",
+				"TV-MA",
+				// UK ratings
+				"U",
+				"PG",
+				"12",
+				"12A",
+				"15",
+				"18",
+				"R18",
+				// Common international
+				"All",
+				"6",
+				"9",
+				"12",
+				"16",
+				"18",
+			)
 
-		override fun compare(a: String, b: String): Int {
+		override fun compare(
+			a: String,
+			b: String,
+		): Int {
 			val indexA = ratingOrder.indexOf(a)
 			val indexB = ratingOrder.indexOf(b)
 

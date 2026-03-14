@@ -48,9 +48,10 @@ fun SettingsPlaybackPlayerScreen() {
 					Image(
 						painter = rememberAsyncImagePainter(R.mipmap.app_icon),
 						contentDescription = null,
-						modifier = Modifier
-							.size(32.dp)
-							.clip(LocalShapes.current.small)
+						modifier =
+							Modifier
+								.size(32.dp)
+								.clip(LocalShapes.current.small),
 					)
 				},
 				headingContent = { Text(stringResource(R.string.app_name)) },
@@ -59,7 +60,7 @@ fun SettingsPlaybackPlayerScreen() {
 				onClick = {
 					externalAppRepository.setExternalPlayerapp(null)
 					router.back()
-				}
+				},
 			)
 		}
 
@@ -82,9 +83,10 @@ fun SettingsPlaybackPlayerScreen() {
 					Image(
 						painter = rememberAsyncImagePainter(icon),
 						contentDescription = null,
-						modifier = Modifier
-							.size(32.dp)
-							.clip(LocalShapes.current.small)
+						modifier =
+							Modifier
+								.size(32.dp)
+								.clip(LocalShapes.current.small),
 					)
 				},
 				headingContent = { Text(displayName) },
@@ -93,7 +95,7 @@ fun SettingsPlaybackPlayerScreen() {
 				onClick = {
 					externalAppRepository.setExternalPlayerapp(app.activityInfo)
 					router.back()
-				}
+				},
 			)
 		}
 	}

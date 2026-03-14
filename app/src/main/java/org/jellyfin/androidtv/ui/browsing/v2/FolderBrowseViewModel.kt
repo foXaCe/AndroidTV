@@ -48,7 +48,6 @@ class FolderBrowseViewModel(
 	private val api: ApiClient,
 	private val apiClientFactory: ApiClientFactory,
 ) : ViewModel() {
-
 	private val _uiState = MutableStateFlow(FolderBrowseUiState())
 	val uiState: StateFlow<FolderBrowseUiState> = _uiState.asStateFlow()
 
@@ -58,27 +57,33 @@ class FolderBrowseViewModel(
 	private var folder: BaseItemDto? = null
 	private var serverId: UUID? = null
 
-	fun initialize(folderJson: String, serverId: UUID?, userId: UUID?) {
+	fun initialize(
+		folderJson: String,
+		serverId: UUID?,
+		userId: UUID?,
+	) {
 		val folder = Json.decodeFromString(BaseItemDto.serializer(), folderJson)
 		this.folder = folder
 		this.serverId = serverId
 
 		// Resolve correct API client for multi-server
 		if (serverId != null) {
-			val serverApi = if (userId != null) {
-				apiClientFactory.getApiClient(serverId, userId)
-			} else {
-				apiClientFactory.getApiClientForServer(serverId)
-			}
+			val serverApi =
+				if (userId != null) {
+					apiClientFactory.getApiClient(serverId, userId)
+				} else {
+					apiClientFactory.getApiClientForServer(serverId)
+				}
 			if (serverApi != null) effectiveApi = serverApi
 		}
 
 		val isSeason = folder.type == BaseItemKind.SEASON
-		_uiState.value = FolderBrowseUiState(
-			isLoading = true,
-			folderName = folder.name.orEmpty(),
-			isSeason = isSeason,
-		)
+		_uiState.value =
+			FolderBrowseUiState(
+				isLoading = true,
+				folderName = folder.name.orEmpty(),
+				isSeason = isSeason,
+			)
 
 		loadRows()
 	}
@@ -96,12 +101,14 @@ class FolderBrowseViewModel(
 		val folder = this.folder ?: return
 
 		// Early return for empty folders that aren't container types
-		val isContainerType = folder.type in setOf(
-			BaseItemKind.CHANNEL,
-			BaseItemKind.CHANNEL_FOLDER_ITEM,
-			BaseItemKind.USER_VIEW,
-			BaseItemKind.COLLECTION_FOLDER,
-		)
+		val isContainerType =
+			folder.type in
+				setOf(
+					BaseItemKind.CHANNEL,
+					BaseItemKind.CHANNEL_FOLDER_ITEM,
+					BaseItemKind.USER_VIEW,
+					BaseItemKind.COLLECTION_FOLDER,
+				)
 		if ((folder.childCount == null || folder.childCount == 0) && !isContainerType) {
 			_uiState.value = _uiState.value.copy(isLoading = false, rows = emptyList())
 			return
@@ -113,98 +120,119 @@ class FolderBrowseViewModel(
 			try {
 				val rows = mutableListOf<FolderBrowseRow>()
 				val isSeason = folder.type == BaseItemKind.SEASON
-				val showSpecialViews = folder.type in setOf(
-					BaseItemKind.COLLECTION_FOLDER,
-					BaseItemKind.FOLDER,
-					BaseItemKind.USER_VIEW,
-					BaseItemKind.CHANNEL_FOLDER_ITEM,
-				)
+				val showSpecialViews =
+					folder.type in
+						setOf(
+							BaseItemKind.COLLECTION_FOLDER,
+							BaseItemKind.FOLDER,
+							BaseItemKind.USER_VIEW,
+							BaseItemKind.CHANNEL_FOLDER_ITEM,
+						)
 
 				// Resume row (not for channel folder items)
 				if (showSpecialViews && folder.type != BaseItemKind.CHANNEL_FOLDER_ITEM) {
-					val resumeItems = withContext(Dispatchers.IO) {
-						effectiveApi.itemsApi.getItems(
-							parentId = folder.id,
-							fields = ItemRepository.itemFields,
-							limit = 50,
-							filters = setOf(ItemFilter.IS_RESUMABLE),
-							sortBy = setOf(ItemSortBy.DATE_PLAYED),
-							sortOrder = setOf(SortOrder.DESCENDING),
-						).content.items
-					}
+					val resumeItems =
+						withContext(Dispatchers.IO) {
+							effectiveApi.itemsApi
+								.getItems(
+									parentId = folder.id,
+									fields = ItemRepository.itemFields,
+									limit = 50,
+									filters = setOf(ItemFilter.IS_RESUMABLE),
+									sortBy = setOf(ItemSortBy.DATE_PLAYED),
+									sortOrder = setOf(SortOrder.DESCENDING),
+								).content.items
+						}
 					if (resumeItems.isNotEmpty()) {
-						rows.add(FolderBrowseRow(
-							titleRes = R.string.lbl_continue_watching,
-							items = annotateItems(resumeItems),
-						))
+						rows.add(
+							FolderBrowseRow(
+								titleRes = R.string.lbl_continue_watching,
+								items = annotateItems(resumeItems),
+							),
+						)
 					}
 				}
 
 				// Latest row
 				if (showSpecialViews) {
-					val latestItems = withContext(Dispatchers.IO) {
-						effectiveApi.itemsApi.getItems(
-							parentId = folder.id,
-							fields = ItemRepository.itemFields,
-							limit = 50,
-							filters = setOf(ItemFilter.IS_UNPLAYED),
-							sortBy = setOf(ItemSortBy.DATE_CREATED),
-							sortOrder = setOf(SortOrder.DESCENDING),
-						).content.items
-					}
+					val latestItems =
+						withContext(Dispatchers.IO) {
+							effectiveApi.itemsApi
+								.getItems(
+									parentId = folder.id,
+									fields = ItemRepository.itemFields,
+									limit = 50,
+									filters = setOf(ItemFilter.IS_UNPLAYED),
+									sortBy = setOf(ItemSortBy.DATE_CREATED),
+									sortOrder = setOf(SortOrder.DESCENDING),
+								).content.items
+						}
 					if (latestItems.isNotEmpty()) {
-						rows.add(FolderBrowseRow(
-							titleRes = R.string.lbl_latest,
-							items = annotateItems(latestItems),
-						))
+						rows.add(
+							FolderBrowseRow(
+								titleRes = R.string.lbl_latest,
+								items = annotateItems(latestItems),
+							),
+						)
 					}
 				}
 
 				// By Name row (uses folder name for seasons, resource string otherwise)
-				val byNameItems = withContext(Dispatchers.IO) {
-					effectiveApi.itemsApi.getItems(
-						parentId = folder.id,
-						fields = ItemRepository.itemFields,
-					).content.items
-				}
+				val byNameItems =
+					withContext(Dispatchers.IO) {
+						effectiveApi.itemsApi
+							.getItems(
+								parentId = folder.id,
+								fields = ItemRepository.itemFields,
+							).content.items
+					}
 				if (byNameItems.isNotEmpty()) {
 					if (isSeason) {
-						rows.add(FolderBrowseRow(
-							titleOverride = folder.name.orEmpty(),
-							items = annotateItems(byNameItems),
-						))
+						rows.add(
+							FolderBrowseRow(
+								titleOverride = folder.name.orEmpty(),
+								items = annotateItems(byNameItems),
+							),
+						)
 					} else {
-						rows.add(FolderBrowseRow(
-							titleRes = R.string.lbl_by_name,
-							items = annotateItems(byNameItems),
-						))
+						rows.add(
+							FolderBrowseRow(
+								titleRes = R.string.lbl_by_name,
+								items = annotateItems(byNameItems),
+							),
+						)
 					}
 				}
 
 				// Specials row (only for seasons)
 				if (isSeason) {
 					try {
-						val specialItems = withContext(Dispatchers.IO) {
-							effectiveApi.userLibraryApi.getSpecialFeatures(
-								itemId = folder.id,
-							).content
-						}
+						val specialItems =
+							withContext(Dispatchers.IO) {
+								effectiveApi.userLibraryApi
+									.getSpecialFeatures(
+										itemId = folder.id,
+									).content
+							}
 						if (specialItems.isNotEmpty()) {
-							rows.add(FolderBrowseRow(
-								titleRes = R.string.lbl_specials,
-								items = annotateItems(specialItems),
-							))
+							rows.add(
+								FolderBrowseRow(
+									titleRes = R.string.lbl_specials,
+									items = annotateItems(specialItems),
+								),
+							)
 						}
 					} catch (err: ApiClientException) {
 						Timber.w(err, "Failed to load specials for season %s", folder.id)
 					}
 				}
 
-				_uiState.value = _uiState.value.copy(
-					isLoading = false,
-					rows = rows,
-					focusedItem = rows.firstOrNull()?.items?.firstOrNull(),
-				)
+				_uiState.value =
+					_uiState.value.copy(
+						isLoading = false,
+						rows = rows,
+						focusedItem = rows.firstOrNull()?.items?.firstOrNull(),
+					)
 			} catch (err: ApiClientException) {
 				Timber.e(err, "Failed to load folder rows")
 				_uiState.value = _uiState.value.copy(isLoading = false, error = err.toUiError())

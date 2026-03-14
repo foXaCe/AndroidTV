@@ -17,6 +17,7 @@ import kotlin.time.Duration
 interface PlayerState {
 	val volume: PlayerVolumeState
 	val playState: StateFlow<PlayState>
+	val isBuffering: StateFlow<Boolean>
 	val speed: StateFlow<Float>
 	val videoSize: StateFlow<VideoSize>
 	val playbackOrder: StateFlow<PlaybackOrder>
@@ -32,18 +33,23 @@ interface PlayerState {
 
 	// Queue management
 	fun play()
+
 	fun stop()
 
 	// Pausing
 
 	fun pause()
+
 	fun unpause()
 
 	// Seeking
 
 	fun seek(to: Duration)
+
 	fun fastForward(amount: Duration? = null)
+
 	fun rewind(amount: Duration? = null)
+
 	fun setScrubbing(scrubbing: Boolean)
 
 	// Playback properties
@@ -65,6 +71,9 @@ class MutablePlayerState(
 	private val _playState = MutableStateFlow(PlayState.STOPPED)
 	override val playState: StateFlow<PlayState> get() = _playState.asStateFlow()
 
+	private val _isBuffering = MutableStateFlow(false)
+	override val isBuffering: StateFlow<Boolean> get() = _isBuffering.asStateFlow()
+
 	private val _speed = MutableStateFlow(1f)
 	override val speed: StateFlow<Float> get() = _speed.asStateFlow()
 
@@ -84,23 +93,32 @@ class MutablePlayerState(
 		get() = backendService.backend?.getPositionInfo() ?: PositionInfo.EMPTY
 
 	init {
-		backendService.addListener(object : PlayerBackendEventListener {
-			override fun onPlayStateChange(state: PlayState) {
-				_playState.value = state
-			}
-
-			override fun onVideoSizeChange(width: Int, height: Int) {
-				_videoSize.value = VideoSize(width, height)
-			}
-
-			override fun onMediaStreamEnd(mediaStream: PlayableMediaStream) {
-				// Make sure to start stream again if repeat mode is turned on
-				// Note: the QueueService is responsible for changing REPEAT_ENTRY_ONCE to NONE
-				if (_repeatMode.value != RepeatMode.NONE) {
-					backendService.backend?.play()
+		backendService.addListener(
+			object : PlayerBackendEventListener {
+				override fun onPlayStateChange(state: PlayState) {
+					_playState.value = state
 				}
-			}
-		})
+
+				override fun onVideoSizeChange(
+					width: Int,
+					height: Int,
+				) {
+					_videoSize.value = VideoSize(width, height)
+				}
+
+				override fun onMediaStreamEnd(mediaStream: PlayableMediaStream) {
+					// Make sure to start stream again if repeat mode is turned on
+					// Note: the QueueService is responsible for changing REPEAT_ENTRY_ONCE to NONE
+					if (_repeatMode.value != RepeatMode.NONE) {
+						backendService.backend?.play()
+					}
+				}
+
+				override fun onBufferingChange(isBuffering: Boolean) {
+					_isBuffering.value = isBuffering
+				}
+			},
+		)
 
 		volume = options.playerVolumeState
 	}

@@ -17,14 +17,16 @@ class ExternalAppRepository(
 		const val MEDIA_TYPE_VIDEO = "video/*"
 	}
 
-	private val externalPlayerAppIntent = Intent(Intent.ACTION_VIEW).apply {
-		setDataAndTypeAndNormalize(SAMPLE_VIDEO_URL.toUri(), MEDIA_TYPE_VIDEO)
-	}
+	private val externalPlayerAppIntent =
+		Intent(Intent.ACTION_VIEW).apply {
+			setDataAndTypeAndNormalize(SAMPLE_VIDEO_URL.toUri(), MEDIA_TYPE_VIDEO)
+		}
 
-	fun getExternalPlayerApps(context: Context): List<ResolveInfo> = context.packageManager
-		.queryIntentActivities(externalPlayerAppIntent, 0)
-		// Hide apps with priority below zero (system stubs)
-		.filter { it.priority >= 0 }
+	fun getExternalPlayerApps(context: Context): List<ResolveInfo> =
+		context.packageManager
+			.queryIntentActivities(externalPlayerAppIntent, 0)
+			// Hide apps with priority below zero (system stubs)
+			.filter { it.priority >= 0 }
 
 	fun getCurrentExternalPlayerApp(context: Context): ActivityInfo? {
 		// Validate if external app should be used at all
@@ -32,11 +34,12 @@ class ExternalAppRepository(
 		if (!useExternalPlayer) return null
 
 		// Resolve external app information
-		val resolvedInfo = userPreferences[UserPreferences.externalPlayerComponentName]
-			.takeIf { it.isNotEmpty() }
-			?.let(ComponentName::unflattenFromString)
-			?.runCatching { context.packageManager.getActivityInfo(this, 0) }
-			?.getOrNull()
+		val resolvedInfo =
+			userPreferences[UserPreferences.externalPlayerComponentName]
+				.takeIf { it.isNotEmpty() }
+				?.let(ComponentName::unflattenFromString)
+				?.runCatching { context.packageManager.getActivityInfo(this, 0) }
+				?.getOrNull()
 		if (resolvedInfo != null) return resolvedInfo
 
 		// Fallback in case the app is uninstalled or unavailable for some other reason

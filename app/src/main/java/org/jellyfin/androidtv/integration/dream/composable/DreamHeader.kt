@@ -2,10 +2,8 @@ package org.jellyfin.androidtv.integration.dream.composable
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -14,11 +12,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import org.jellyfin.androidtv.ui.base.theme.DreamDimensions
 import org.jellyfin.androidtv.ui.composable.modifier.overscan
 import org.jellyfin.androidtv.ui.shared.toolbar.ToolbarClock
 import kotlin.random.Random
@@ -29,15 +27,16 @@ fun DreamHeader(
 	dimmingLevel: Int,
 ) {
 	val density = LocalDensity.current
-	val clockWidthDp = 150.dp
+	val clockWidthDp = DreamDimensions.clockWidth
 	val clockHeightDp = 50.dp
 	
 	val clockAlpha = 1f - (dimmingLevel / 100f * 0.7f)
 	
 	BoxWithConstraints(
-		modifier = Modifier
-			.fillMaxSize()
-			.overscan(),
+		modifier =
+			Modifier
+				.fillMaxSize()
+				.overscan(),
 	) {
 		// Get actual pixel dimensions
 		val screenWidth = with(density) { maxWidth.toPx() }.toInt()
@@ -94,9 +93,10 @@ fun DreamHeader(
 			visible = showClock,
 			enter = fadeIn(),
 			exit = fadeOut(),
-			modifier = Modifier
-				.offset { IntOffset(offsetX.value.toInt(), offsetY.value.toInt()) }
-				.alpha(clockAlpha),
+			modifier =
+				Modifier
+					.offset { IntOffset(offsetX.value.toInt(), offsetY.value.toInt()) }
+					.alpha(clockAlpha),
 		) {
 			ToolbarClock()
 		}

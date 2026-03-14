@@ -10,6 +10,7 @@ enum class PosterSize(
 	 * Smallest.
 	 */
 	SMALLEST(R.string.image_size_smallest),
+
 	/**
 	 * Small.
 	 */

@@ -33,7 +33,7 @@ fun SettingsPlaybackPrerollsScreen() {
 				headingContent = { Text(stringResource(R.string.pref_prerolls_enabled)) },
 				trailingContent = { Checkbox(checked = cinemaModeEnabled) },
 				captionContent = { Text(stringResource(R.string.pref_prerolls_enabled_description)) },
-				onClick = { cinemaModeEnabled = !cinemaModeEnabled }
+				onClick = { cinemaModeEnabled = !cinemaModeEnabled },
 			)
 		}
 	}

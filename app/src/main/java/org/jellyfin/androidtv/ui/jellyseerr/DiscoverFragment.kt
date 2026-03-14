@@ -1,7 +1,6 @@
 package org.jellyfin.androidtv.ui.jellyseerr
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,9 +22,9 @@ import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.preference.constant.NavbarPosition
 import org.jellyfin.androidtv.ui.shared.toolbar.LeftSidebarNavigation
 import org.jellyfin.androidtv.ui.shared.toolbar.MainToolbar
-import org.jellyfin.androidtv.util.toHtmlSpanned
 import org.jellyfin.androidtv.ui.shared.toolbar.MainToolbarActiveButton
 import org.jellyfin.androidtv.util.Debouncer
+import org.jellyfin.androidtv.util.toHtmlSpanned
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
@@ -51,7 +50,7 @@ class DiscoverFragment : Fragment() {
 	override fun onCreateView(
 		inflater: LayoutInflater,
 		container: ViewGroup?,
-		savedInstanceState: Bundle?
+		savedInstanceState: Bundle?,
 	): View {
 		val view = inflater.inflate(R.layout.fragment_jellyseerr_discover_new, container, false)
 
@@ -71,7 +70,7 @@ class DiscoverFragment : Fragment() {
 				sidebarOverlay.isVisible = false
 				topToolbarOverlay.setContent {
 					MainToolbar(
-						activeButton = MainToolbarActiveButton.Jellyseerr
+						activeButton = MainToolbarActiveButton.Jellyseerr,
 					)
 				}
 			}
@@ -80,7 +79,7 @@ class DiscoverFragment : Fragment() {
 				sidebarOverlay.isVisible = true
 				sidebarOverlay.setContent {
 					LeftSidebarNavigation(
-						activeButton = MainToolbarActiveButton.Jellyseerr
+						activeButton = MainToolbarActiveButton.Jellyseerr,
 					)
 				}
 			}
@@ -89,12 +88,16 @@ class DiscoverFragment : Fragment() {
 		return view
 	}
 
-	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+	override fun onViewCreated(
+		view: View,
+		savedInstanceState: Bundle?,
+	) {
 		super.onViewCreated(view, savedInstanceState)
 
 		rowsFragment = childFragmentManager.findFragmentById(R.id.jellyseerr_browse) as? JellyseerrDiscoverRowsFragment
 
-		rowsFragment?.selectedItemStateFlow
+		rowsFragment
+			?.selectedItemStateFlow
 			?.flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
 			?.onEach { item ->
 				if (item != null) {
@@ -108,8 +111,7 @@ class DiscoverFragment : Fragment() {
 						loadBackdropImage(item)
 					}
 				}
-			}
-			?.launchIn(lifecycleScope)
+			}?.launchIn(lifecycleScope)
 	}
 
 	override fun onResume() {
@@ -117,12 +119,12 @@ class DiscoverFragment : Fragment() {
 		
 		// Request focus on rows fragment when this fragment becomes visible
 		// This is crucial for when returning from details screen
-		focusRunnable = Runnable {
-			if (isResumed) {
-				rowsFragment?.view?.requestFocus()
-				Timber.d("DiscoverFragment: Requesting focus on rows fragment")
+		focusRunnable =
+			Runnable {
+				if (isResumed) {
+					rowsFragment?.view?.requestFocus()
+				}
 			}
-		}
 		view?.postDelayed(focusRunnable!!, 100)
 	}
 
@@ -173,11 +175,12 @@ class DiscoverFragment : Fragment() {
 			ratingTextView?.isVisible = false
 		}
 
-		val mediaType = when (item.mediaType) {
-			"movie" -> getString(R.string.lbl_movie_type)
-			"tv" -> getString(R.string.lbl_tv_series)
-			else -> null
-		}
+		val mediaType =
+			when (item.mediaType) {
+				"movie" -> getString(R.string.lbl_movie_type)
+				"tv" -> getString(R.string.lbl_tv_series)
+				else -> null
+			}
 		if (!mediaType.isNullOrEmpty()) {
 			mediaTypeTextView?.text = mediaType
 			mediaTypeTextView?.isVisible = true
@@ -196,11 +199,12 @@ class DiscoverFragment : Fragment() {
 						if (runtime != null && runtime > 0) {
 							val hours = runtime / 60
 							val minutes = runtime % 60
-							val runtimeText = if (hours > 0) {
-								if (minutes > 0) "${hours}h ${minutes}m" else "${hours}h"
-							} else {
-								"${minutes}m"
-							}
+							val runtimeText =
+								if (hours > 0) {
+									if (minutes > 0) "${hours}h ${minutes}m" else "${hours}h"
+								} else {
+									"${minutes}m"
+								}
 							mediaTypeTextView?.text = "$mediaType • $runtimeText"
 						}
 					}
@@ -231,19 +235,18 @@ class DiscoverFragment : Fragment() {
 	}
 
 	private fun loadBackdropImage(item: JellyseerrDiscoverItemDto) {
-		val imageUrl = if (item.backdropPath != null) {
-			"https://image.tmdb.org/t/p/w1280${item.backdropPath}"
-		} else if (item.posterPath != null) {
-			"https://image.tmdb.org/t/p/w1280${item.posterPath}"
-		} else {
-			null
-		}
+		val imageUrl =
+			if (item.backdropPath != null) {
+				"https://image.tmdb.org/t/p/w1280${item.backdropPath}"
+			} else if (item.posterPath != null) {
+				"https://image.tmdb.org/t/p/w1280${item.posterPath}"
+			} else {
+				null
+			}
 
 		if (imageUrl != null) {
-			Timber.d("Loading backdrop for: ${item.title ?: item.name} - URL: $imageUrl")
 			backgroundService.setBackgroundUrl(imageUrl, BlurContext.BROWSING)
 		} else {
-			Timber.d("No backdrop available for: ${item.title ?: item.name}")
 			backgroundService.clearBackgrounds()
 		}
 	}

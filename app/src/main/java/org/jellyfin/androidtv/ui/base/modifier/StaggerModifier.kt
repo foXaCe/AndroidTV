@@ -31,22 +31,24 @@ fun Modifier.staggerFadeIn(
 		val delay = index * AnimationDefaults.STAGGER_DELAY
 		alpha.animateTo(
 			targetValue = 1f,
-			animationSpec = tween(
-				durationMillis = AnimationDefaults.DURATION_MEDIUM,
-				delayMillis = delay,
-				easing = FastOutSlowInEasing,
-			),
+			animationSpec =
+				tween(
+					durationMillis = AnimationDefaults.DURATION_MEDIUM,
+					delayMillis = delay,
+					easing = FastOutSlowInEasing,
+				),
 		)
 	}
 	LaunchedEffect(Unit) {
 		val delay = index * AnimationDefaults.STAGGER_DELAY
 		offsetY.animateTo(
 			targetValue = 0f,
-			animationSpec = tween(
-				durationMillis = AnimationDefaults.DURATION_MEDIUM,
-				delayMillis = delay,
-				easing = FastOutSlowInEasing,
-			),
+			animationSpec =
+				tween(
+					durationMillis = AnimationDefaults.DURATION_MEDIUM,
+					delayMillis = delay,
+					easing = FastOutSlowInEasing,
+				),
 		)
 	}
 

@@ -18,8 +18,7 @@ import org.jellyfin.sdk.api.client.Response
  * val items = api.ioCall { itemsApi.getItems(request).content.items }
  * ```
  */
-suspend fun <T> ApiClient.ioCall(block: suspend ApiClient.() -> T): T =
-	withContext(Dispatchers.IO) { block() }
+suspend fun <T> ApiClient.ioCall(block: suspend ApiClient.() -> T): T = withContext(Dispatchers.IO) { block() }
 
 /**
  * Execute an API call that returns a Response on the IO dispatcher and extract the content.
@@ -35,5 +34,4 @@ suspend fun <T> ApiClient.ioCall(block: suspend ApiClient.() -> T): T =
  * // Equivalent to: withContext(Dispatchers.IO) { api.itemsApi.getItems(request).content }
  * ```
  */
-suspend fun <T> ApiClient.ioCallContent(block: suspend ApiClient.() -> Response<T>): T =
-	withContext(Dispatchers.IO) { block().content }
+suspend fun <T> ApiClient.ioCallContent(block: suspend ApiClient.() -> Response<T>): T = withContext(Dispatchers.IO) { block().content }

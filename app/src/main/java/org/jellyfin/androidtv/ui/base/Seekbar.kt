@@ -108,84 +108,89 @@ fun Seekbar(
 	var scrubCancelJob by remember { mutableStateOf<Job?>(null) }
 
 	Box(
-		modifier = modifier
-			.onKeyEvent {
-				if (!enabled) return@onKeyEvent false
+		modifier =
+			modifier
+				.onKeyEvent {
+					if (!enabled) return@onKeyEvent false
 
-				val isForward = it.key == Key.DirectionRight
-				val isRewind = it.key == Key.DirectionLeft
-				val isScrubbing = isForward || isRewind
-				val isKeyUp = it.type == KeyEventType.KeyUp
-				val isKeyDown = it.type == KeyEventType.KeyDown
+					val isForward = it.key == Key.DirectionRight
+					val isRewind = it.key == Key.DirectionLeft
+					val isScrubbing = isForward || isRewind
+					val isKeyUp = it.type == KeyEventType.KeyUp
+					val isKeyDown = it.type == KeyEventType.KeyDown
 
-				val newProgress = when {
-					isKeyDown && isForward -> (visibleProgress + seekForwardAmount).coerceAtMost(1f)
-					isKeyDown && isRewind -> (visibleProgress - seekRewindAmount).coerceAtLeast(0f)
-					else -> visibleProgress
-				}
+					val newProgress =
+						when {
+							isKeyDown && isForward -> (visibleProgress + seekForwardAmount).coerceAtMost(1f)
+							isKeyDown && isRewind -> (visibleProgress - seekRewindAmount).coerceAtLeast(0f)
+							else -> visibleProgress
+						}
 
-				if (isScrubbing && isKeyDown && onScrubbing != null) {
-					scrubCancelJob?.cancel()
-					onScrubbing(true)
-				}
-
-				if (visibleProgress != newProgress) {
-					progressOverride = newProgress
-					if (onSeek != null) onSeek(newProgress)
-				}
-
-				if (isScrubbing && isKeyUp && onScrubbing != null) {
-					scrubCancelJob?.cancel()
-					scrubCancelJob = coroutineScope.launch {
-						delay(300.milliseconds)
-						onScrubbing(false)
-						progressOverride = null
+					if (isScrubbing && isKeyDown && onScrubbing != null) {
+						scrubCancelJob?.cancel()
+						onScrubbing(true)
 					}
-				}
 
-				return@onKeyEvent isScrubbing
-			}
-			.focusable(interactionSource = interactionSource, enabled = enabled)
-			.drawWithContent {
-				val barCornerRadius = CornerRadius(size.minDimension, size.minDimension)
+					if (visibleProgress != newProgress) {
+						progressOverride = newProgress
+						if (onSeek != null) onSeek(newProgress)
+					}
 
-				// Background bar
-				drawRoundRect(
-					color = colors.backgroundColor,
-					cornerRadius = barCornerRadius,
-				)
+					if (isScrubbing && isKeyUp && onScrubbing != null) {
+						scrubCancelJob?.cancel()
+						scrubCancelJob =
+							coroutineScope.launch {
+								delay(300.milliseconds)
+								onScrubbing(false)
+								progressOverride = null
+							}
+					}
 
-				// Buffer bar
-				if (buffer > 0f) {
+					return@onKeyEvent isScrubbing
+				}.focusable(interactionSource = interactionSource, enabled = enabled)
+				.drawWithContent {
+					val barCornerRadius = CornerRadius(size.minDimension, size.minDimension)
+
+					// Background bar
 					drawRoundRect(
-						color = colors.bufferColor,
-						size = size.copy(
-							width = buffer * size.width,
-						),
+						color = colors.backgroundColor,
 						cornerRadius = barCornerRadius,
 					)
-				}
 
-				// Progress bar
-				if (visibleProgress > 0f) {
-					drawRoundRect(
-						color = colors.progressColor,
-						size = size.copy(
-							width = visibleProgress * size.width,
-						),
-						cornerRadius = barCornerRadius,
+					// Buffer bar
+					if (buffer > 0f) {
+						drawRoundRect(
+							color = colors.bufferColor,
+							size =
+								size.copy(
+									width = buffer * size.width,
+								),
+							cornerRadius = barCornerRadius,
+						)
+					}
+
+					// Progress bar
+					if (visibleProgress > 0f) {
+						drawRoundRect(
+							color = colors.progressColor,
+							size =
+								size.copy(
+									width = visibleProgress * size.width,
+								),
+							cornerRadius = barCornerRadius,
+						)
+					}
+
+					// Progress knob
+					drawCircle(
+						color = colors.knobColor,
+						alpha = knobAlpha,
+						center =
+							center.copy(
+								x = visibleProgress * size.width,
+							),
+						radius = size.minDimension * 2,
 					)
-				}
-
-				// Progress knob
-				drawCircle(
-					color = colors.knobColor,
-					alpha = knobAlpha,
-					center = center.copy(
-						x = visibleProgress * size.width,
-					),
-					radius = size.minDimension * 2,
-				)
-			}
+				},
 	)
 }

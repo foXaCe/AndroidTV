@@ -6,7 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.ui.navigation.NavigationRepository
-import org.koin.core.context.GlobalContext
 import java.util.UUID
 
 /**
@@ -17,9 +16,9 @@ import java.util.UUID
 fun executeQuickShuffle(
 	context: Context,
 	userPreferences: UserPreferences,
-	navigationRepository: NavigationRepository
+	navigationRepository: NavigationRepository,
+	shuffleManager: ShuffleManager,
 ) {
-	val shuffleManager = GlobalContext.get().get<ShuffleManager>()
 	CoroutineScope(Dispatchers.Main).launch {
 		shuffleManager.quickShuffle(context)
 	}
@@ -35,9 +34,9 @@ fun executeGenreShuffle(
 	libraryId: UUID?,
 	serverId: UUID?,
 	userPreferences: UserPreferences,
-	navigationRepository: NavigationRepository
+	navigationRepository: NavigationRepository,
+	shuffleManager: ShuffleManager,
 ) {
-	val shuffleManager = GlobalContext.get().get<ShuffleManager>()
 	CoroutineScope(Dispatchers.Main).launch {
 		if (genreName.isNullOrBlank()) {
 			shuffleManager.quickShuffle(context)
@@ -46,7 +45,7 @@ fun executeGenreShuffle(
 				context = context,
 				genreName = genreName,
 				libraryId = libraryId,
-				serverId = serverId
+				serverId = serverId,
 			)
 		}
 	}

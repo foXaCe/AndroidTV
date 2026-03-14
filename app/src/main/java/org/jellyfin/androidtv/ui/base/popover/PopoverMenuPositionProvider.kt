@@ -23,21 +23,23 @@ class PopoverMenuPositionProvider(
 		anchorBounds: IntRect,
 		windowSize: IntSize,
 		layoutDirection: LayoutDirection,
-		popupContentSize: IntSize
+		popupContentSize: IntSize,
 	): IntOffset {
 		// Calculate alignment if placed inside the anchor
-		val insidePosition = alignment.align(
-			size = popupContentSize,
-			space = anchorBounds.size,
-			layoutDirection = layoutDirection,
-		)
+		val insidePosition =
+			alignment.align(
+				size = popupContentSize,
+				space = anchorBounds.size,
+				layoutDirection = layoutDirection,
+			)
 
 		// Measure bias
-		val biasPosition = alignment.align(
-			size = IntSize.Companion.Zero,
-			space = PROBE_SPACE,
-			layoutDirection = layoutDirection,
-		)
+		val biasPosition =
+			alignment.align(
+				size = IntSize.Companion.Zero,
+				space = PROBE_SPACE,
+				layoutDirection = layoutDirection,
+			)
 		val biasX = (2f * biasPosition.x / PROBE_SPACE.width) - 1f
 		val biasY = (2f * biasPosition.y / PROBE_SPACE.height) - 1f
 
@@ -55,9 +57,10 @@ class PopoverMenuPositionProvider(
 	}
 
 	private val Float.dir
-		get() = when {
-			this > EPSILON -> 1
-			this < -EPSILON -> -1
-			else -> 0
-		}
+		get() =
+			when {
+				this > EPSILON -> 1
+				this < -EPSILON -> -1
+				else -> 0
+			}
 }

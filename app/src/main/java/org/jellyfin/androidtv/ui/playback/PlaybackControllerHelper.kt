@@ -26,9 +26,10 @@ fun PlaybackController.getLiveTvChannel(
 	id: UUID,
 	callback: (channel: BaseItemDto) -> Unit,
 ) {
-	val api by fragment.inject<ApiClient>()
+	val frag = fragment ?: return
+	val api by frag.inject<ApiClient>()
 
-	fragment.lifecycleScope.launch {
+	frag.lifecycleScope.launch {
 		runCatching {
 			withContext(Dispatchers.IO) {
 				api.liveTvApi.getChannel(id).content
@@ -43,25 +44,32 @@ fun PlaybackController.getLiveTvChannel(
 fun PlaybackController.disableDefaultSubtitles() {
 	Timber.i("Disabling non-baked subtitles")
 
-	with(mVideoManager.mExoPlayer.trackSelector!!) {
-		parameters = parameters.buildUpon()
-			.clearOverridesOfType(C.TRACK_TYPE_TEXT)
-			.setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
-			.build()
+	val player = mVideoManager?.mExoPlayer ?: return
+	with(player.trackSelector!!) {
+		parameters =
+			parameters
+				.buildUpon()
+				.clearOverridesOfType(C.TRACK_TYPE_TEXT)
+				.setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
+				.build()
 	}
 }
 
 @OptIn(UnstableApi::class)
 @JvmOverloads
-fun PlaybackController.setSubtitleIndex(index: Int, force: Boolean = false) {
-	Timber.i("Switching subtitles from index ${mCurrentOptions.subtitleStreamIndex} to $index")
+fun PlaybackController.setSubtitleIndex(
+	index: Int,
+	force: Boolean = false,
+) {
+	val options = mCurrentOptions ?: return
+	Timber.i("Switching subtitles from index ${options.subtitleStreamIndex} to $index")
 
 	// Already using this subtitle index
-	if (mCurrentOptions.subtitleStreamIndex == index && !force) return
+	if (options.subtitleStreamIndex == index && !force) return
 
 	// Disable subtitles
 	if (index == -1) {
-		mCurrentOptions.subtitleStreamIndex = -1
+		options.subtitleStreamIndex = -1
 
 		if (burningSubs) {
 			Timber.i("Disabling subtitle baking")
@@ -79,10 +87,10 @@ fun PlaybackController.setSubtitleIndex(index: Int, force: Boolean = false) {
 		// to stop the current baked subs. We can just stop & start with the new subtitle index for that
 		stop()
 		burningSubs = false
-		mCurrentOptions.subtitleStreamIndex = index
+		options.subtitleStreamIndex = index
 		play(mCurrentPosition, index)
 	} else {
-		val mediaSource = currentMediaSource
+		val mediaSource = currentMediaSource ?: return setSubtitleIndex(-1)
 		val stream = mediaSource.mediaStreams?.firstOrNull { it.type == MediaStreamType.SUBTITLE && it.index == index }
 		if (stream == null) {
 			Timber.w("Failed to find correct media stream")
@@ -95,39 +103,44 @@ fun PlaybackController.setSubtitleIndex(index: Int, force: Boolean = false) {
 
 				stop()
 				burningSubs = true
-				mCurrentOptions.subtitleStreamIndex = index
+				options.subtitleStreamIndex = index
 				play(mCurrentPosition, index)
 			}
 
 			SubtitleDeliveryMethod.EXTERNAL,
 			SubtitleDeliveryMethod.EMBED,
-			SubtitleDeliveryMethod.HLS -> {
+			SubtitleDeliveryMethod.HLS,
+			-> {
+				val exoPlayer = mVideoManager?.mExoPlayer ?: return setSubtitleIndex(-1)
 				// External subtitles need to be resolved differently
-				val group = if (stream.deliveryMethod == SubtitleDeliveryMethod.EXTERNAL) {
-					mVideoManager.mExoPlayer.currentTracks.groups.firstOrNull { group ->
-						// Verify this is a group with a single format (the subtitles) that is added by us. Because ExoPlayer uses a
-						// MergingMediaSource, each external subtitle format id is prefixed with its source index (normally starting at 1,
-						// increasing for each external subttitle). So we only check the end of the id
-						group.length == 1 && group.getTrackFormat(0).id?.endsWith(":JF_EXTERNAL:$index") == true
-					}
-				} else {
-					// The server does not send a reliable index in all cases, so calculate it manually
-					val localIndex = mediaSource.mediaStreams.orEmpty()
-						.filter { it.type == MediaStreamType.SUBTITLE }
-						.filter { it.deliveryMethod == SubtitleDeliveryMethod.EMBED || it.deliveryMethod == SubtitleDeliveryMethod.HLS }
-						.indexOf(stream)
-						.takeIf { it != -1 }
+				val group =
+					if (stream.deliveryMethod == SubtitleDeliveryMethod.EXTERNAL) {
+						exoPlayer.currentTracks.groups.firstOrNull { group ->
+							// Verify this is a group with a single format (the subtitles) that is added by us. Because ExoPlayer uses a
+							// MergingMediaSource, each external subtitle format id is prefixed with its source index (normally starting at 1,
+							// increasing for each external subttitle). So we only check the end of the id
+							group.length == 1 && group.getTrackFormat(0).id?.endsWith(":JF_EXTERNAL:$index") == true
+						}
+					} else {
+						// The server does not send a reliable index in all cases, so calculate it manually
+						val localIndex =
+							mediaSource.mediaStreams
+								.orEmpty()
+								.filter { it.type == MediaStreamType.SUBTITLE }
+								.filter { it.deliveryMethod == SubtitleDeliveryMethod.EMBED || it.deliveryMethod == SubtitleDeliveryMethod.HLS }
+								.indexOf(stream)
+								.takeIf { it != -1 }
 
-					if (localIndex == null) {
-						Timber.w("Failed to find local subtitle index")
-						return setSubtitleIndex(-1)
-					}
+						if (localIndex == null) {
+							Timber.w("Failed to find local subtitle index")
+							return setSubtitleIndex(-1)
+						}
 
-					mVideoManager.mExoPlayer.currentTracks.groups
-						.filter { it.type == C.TRACK_TYPE_TEXT }
-						.filterNot { it.length == 1 && it.getTrackFormat(0).id?.endsWith(":JF_EXTERNAL:$index") == true }
-						.getOrNull(localIndex)
-				}?.mediaTrackGroup
+						exoPlayer.currentTracks.groups
+							.filter { it.type == C.TRACK_TYPE_TEXT }
+							.filterNot { it.length == 1 && it.getTrackFormat(0).id?.endsWith(":JF_EXTERNAL:$index") == true }
+							.getOrNull(localIndex)
+					}?.mediaTrackGroup
 
 				if (group == null) {
 					Timber.w("Failed to find correct subtitle group for method ${stream.deliveryMethod}")
@@ -135,13 +148,15 @@ fun PlaybackController.setSubtitleIndex(index: Int, force: Boolean = false) {
 				}
 
 				Timber.i("Enabling subtitle group $index via method ${stream.deliveryMethod}")
-				mCurrentOptions.subtitleStreamIndex = index
-				with(mVideoManager.mExoPlayer.trackSelector!!) {
-					parameters = parameters.buildUpon()
-						.clearOverridesOfType(C.TRACK_TYPE_TEXT)
-						.addOverride(TrackSelectionOverride(group, 0))
-						.setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false)
-						.build()
+				options.subtitleStreamIndex = index
+				with(exoPlayer.trackSelector!!) {
+					parameters =
+						parameters
+							.buildUpon()
+							.clearOverridesOfType(C.TRACK_TYPE_TEXT)
+							.addOverride(TrackSelectionOverride(group, 0))
+							.setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false)
+							.build()
 				}
 			}
 
@@ -157,13 +172,18 @@ fun PlaybackController.applyMediaSegments(
 	item: BaseItemDto,
 	callback: () -> Unit,
 ) {
-	val mediaSegmentRepository by fragment.inject<MediaSegmentRepository>()
+	val frag =
+		fragment ?: run {
+			callback()
+			return
+		}
+	val mediaSegmentRepository by frag.inject<MediaSegmentRepository>()
 
-	fragment?.clearSkipOverlay()
-	fragment.lifecycleScope.launch {
-		val mediaSegments = runCatching {
-			mediaSegmentRepository.getSegmentsForItem(item)
-		}.getOrNull().orEmpty()
+	frag.lifecycleScope.launch {
+		val mediaSegments =
+			runCatching {
+				mediaSegmentRepository.getSegmentsForItem(item)
+			}.getOrNull().orEmpty()
 
 		for (mediaSegment in mediaSegments) {
 			val action = mediaSegmentRepository.getMediaSegmentAction(mediaSegment)
@@ -183,13 +203,14 @@ fun PlaybackController.applyMediaSegments(
 private fun PlaybackController.addSkipAction(mediaSegment: MediaSegmentDto) {
 	val videoManager = mVideoManager ?: return
 	val exoPlayer = videoManager.mExoPlayer ?: return
-	
+	val frag = fragment ?: return
+
 	exoPlayer
 		.createMessage { _, _ ->
 			// We can't seek directly on the ExoPlayer instance as not all media is seekable
 			// the seek function in the PlaybackController checks this and optionally starts a transcode
 			// at the requested position
-			fragment.lifecycleScope.launch(Dispatchers.Main) {
+			frag.lifecycleScope.launch(Dispatchers.Main) {
 				seek(mediaSegment.end.inWholeMilliseconds, true)
 			}
 		}
@@ -203,10 +224,10 @@ private fun PlaybackController.addSkipAction(mediaSegment: MediaSegmentDto) {
 private fun PlaybackController.addAskToSkipAction(mediaSegment: MediaSegmentDto) {
 	val videoManager = mVideoManager ?: return
 	val exoPlayer = videoManager.mExoPlayer ?: return
-	
+
 	exoPlayer
 		.createMessage { _, _ ->
-			fragment?.askToSkip(mediaSegment.end, mediaSegment.type)
+			// TODO: ask-to-skip UI removed during Fragment migration
 		}
 		// Segments at position 0 will never be hit by ExoPlayer so we need to add a minimum value
 		.setPosition(mediaSegment.start.inWholeMilliseconds.coerceAtLeast(1))

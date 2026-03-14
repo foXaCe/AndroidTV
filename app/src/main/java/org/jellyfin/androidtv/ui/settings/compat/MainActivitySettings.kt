@@ -20,7 +20,7 @@ fun MainActivitySettings() {
 		ProvideRouter(routes, Routes.MAIN) {
 			SettingsDialog(
 				visible = visible,
-				onDismissRequest = { viewModel.hide() }
+				onDismissRequest = { viewModel.hide() },
 			) {
 				SettingsRouterContent()
 			}

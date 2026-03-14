@@ -13,7 +13,6 @@ import java.net.URL
  * so the media bar trailer preview can skip to the actual content.
  */
 object SponsorBlockApi {
-
 	private const val BASE_URL = "https://sponsor.ajay.app/api"
 
 	/**
@@ -36,41 +35,41 @@ object SponsorBlockApi {
 	suspend fun getSkipSegments(
 		videoId: String,
 		categories: List<String> = listOf("sponsor", "selfpromo", "intro", "outro", "interaction", "music_offtopic"),
-	): List<Segment> = withContext(Dispatchers.IO) {
-		try {
-			val categoriesParam = categories.joinToString(",") { "\"$it\"" }
-			val url = URL("$BASE_URL/skipSegments?videoID=$videoId&categories=[$categoriesParam]")
-
-			val connection = url.openConnection() as HttpURLConnection
-			connection.requestMethod = "GET"
-			connection.connectTimeout = 5000
-			connection.readTimeout = 5000
-			connection.setRequestProperty("Accept", "application/json")
-
+	): List<Segment> =
+		withContext(Dispatchers.IO) {
 			try {
-				val responseCode = connection.responseCode
-				if (responseCode == 200) {
-					val responseBody = connection.inputStream.bufferedReader().readText()
-					parseSegments(responseBody)
-				} else if (responseCode == 404) {
-					// No segments found for this video - this is normal
-					Timber.d("SponsorBlock: No segments found for video $videoId")
-					emptyList()
-				} else {
-					Timber.w("SponsorBlock: Unexpected response code $responseCode for video $videoId")
-					emptyList()
-				}
-			} finally {
-				connection.disconnect()
-			}
-		} catch (e: Exception) {
-			Timber.w(e, "SponsorBlock: Failed to fetch segments for video $videoId")
-			emptyList()
-		}
-	}
+				val categoriesParam = categories.joinToString(",") { "\"$it\"" }
+				val url = URL("$BASE_URL/skipSegments?videoID=$videoId&categories=[$categoriesParam]")
 
-	private fun parseSegments(json: String): List<Segment> {
-		return try {
+				val connection = url.openConnection() as HttpURLConnection
+				connection.requestMethod = "GET"
+				connection.connectTimeout = 5000
+				connection.readTimeout = 5000
+				connection.setRequestProperty("Accept", "application/json")
+
+				try {
+					val responseCode = connection.responseCode
+					if (responseCode == 200) {
+						val responseBody = connection.inputStream.bufferedReader().readText()
+						parseSegments(responseBody)
+					} else if (responseCode == 404) {
+						// No segments found for this video - this is normal
+						emptyList()
+					} else {
+						Timber.w("SponsorBlock: Unexpected response code $responseCode for video $videoId")
+						emptyList()
+					}
+				} finally {
+					connection.disconnect()
+				}
+			} catch (e: Exception) {
+				Timber.w(e, "SponsorBlock: Failed to fetch segments for video $videoId")
+				emptyList()
+			}
+		}
+
+	private fun parseSegments(json: String): List<Segment> =
+		try {
 			val array = JSONArray(json)
 			(0 until array.length()).mapNotNull { i ->
 				val obj = array.getJSONObject(i)
@@ -85,7 +84,6 @@ object SponsorBlockApi {
 			Timber.w(e, "SponsorBlock: Failed to parse segments JSON")
 			emptyList()
 		}
-	}
 
 	/**
 	 * Calculate the best start time for a trailer preview.

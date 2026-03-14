@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.ui.base.Text
@@ -24,7 +26,8 @@ import org.jellyfin.androidtv.ui.base.form.ColorSwatch
 import org.jellyfin.androidtv.ui.base.form.RangeControl
 import org.jellyfin.androidtv.ui.base.list.ListButton
 import org.jellyfin.androidtv.ui.base.list.ListControl
-import org.jellyfin.androidtv.ui.base.list.ListSection
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.navigation.LocalRouter
 import org.jellyfin.androidtv.ui.settings.Routes
 import org.jellyfin.androidtv.ui.settings.compat.rememberPreference
@@ -48,9 +51,12 @@ fun SettingsSubtitlesScreen() {
 
 	SettingsColumn {
 		item {
-			ListSection(
-				overlineContent = { Text(stringResource(R.string.pref_customization).uppercase()) },
-				headingContent = { Text(stringResource(R.string.pref_subtitles)) },
+			Text(
+				text = stringResource(R.string.pref_subtitles),
+				fontFamily = BebasNeue,
+				fontSize = 22.sp,
+				color = VegafoXColors.TextPrimary,
+				modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp),
 			)
 		}
 
@@ -76,22 +82,23 @@ fun SettingsSubtitlesScreen() {
 					verticalAlignment = Alignment.CenterVertically,
 				) {
 					RangeControl(
-						modifier = Modifier
-							.height(4.dp)
-							.weight(1f),
+						modifier =
+							Modifier
+								.height(4.dp)
+								.weight(1f),
 						interactionSource = interactionSource,
 						min = 8f,
 						max = 32f,
 						stepForward = 1f,
 						value = subtitlesTextSize,
-						onValueChange = { subtitlesTextSize = it }
+						onValueChange = { subtitlesTextSize = it },
 					)
 
 					Spacer(Modifier.width(Tokens.Space.spaceSm))
 
 					Box(
 						modifier = Modifier.sizeIn(minWidth = 32.dp),
-						contentAlignment = Alignment.CenterEnd
+						contentAlignment = Alignment.CenterEnd,
 					) {
 						Text(subtitlesTextSize.roundToInt().toString())
 					}
@@ -105,37 +112,40 @@ fun SettingsSubtitlesScreen() {
 			ListControl(
 				headingContent = { Text(stringResource(R.string.pref_subtitles_weight)) },
 				captionContent = {
-					val normalizedValue = subtitlesTextWeight
-						.coerceIn(100, 900)
-						.floorDiv(100)
-						.times(100)
+					val normalizedValue =
+						subtitlesTextWeight
+							.coerceIn(100, 900)
+							.floorDiv(100)
+							.times(100)
 
-					val name = when (normalizedValue) {
-						100 -> stringResource(R.string.font_weight_100)
-						200 -> stringResource(R.string.font_weight_200)
-						300 -> stringResource(R.string.font_weight_300)
-						400 -> stringResource(R.string.font_weight_400)
-						500 -> stringResource(R.string.font_weight_500)
-						600 -> stringResource(R.string.font_weight_600)
-						700 -> stringResource(R.string.font_weight_700)
-						800 -> stringResource(R.string.font_weight_800)
-						900 -> stringResource(R.string.font_weight_900)
-						else -> normalizedValue.toString()
-					}
+					val name =
+						when (normalizedValue) {
+							100 -> stringResource(R.string.font_weight_100)
+							200 -> stringResource(R.string.font_weight_200)
+							300 -> stringResource(R.string.font_weight_300)
+							400 -> stringResource(R.string.font_weight_400)
+							500 -> stringResource(R.string.font_weight_500)
+							600 -> stringResource(R.string.font_weight_600)
+							700 -> stringResource(R.string.font_weight_700)
+							800 -> stringResource(R.string.font_weight_800)
+							900 -> stringResource(R.string.font_weight_900)
+							else -> normalizedValue.toString()
+						}
 					Text(name)
 				},
 				interactionSource = interactionSource,
 			) {
 				RangeControl(
-					modifier = Modifier
-						.fillMaxWidth()
-						.height(4.dp),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.height(4.dp),
 					interactionSource = interactionSource,
 					min = 100f,
 					max = 900f,
 					stepForward = 100f,
 					value = subtitlesTextWeight.toFloat(),
-					onValueChange = { subtitlesTextWeight = it.toInt() }
+					onValueChange = { subtitlesTextWeight = it.toInt() },
 				)
 			}
 		}
@@ -175,22 +185,23 @@ fun SettingsSubtitlesScreen() {
 					verticalAlignment = Alignment.CenterVertically,
 				) {
 					RangeControl(
-						modifier = Modifier
-							.height(4.dp)
-							.weight(1f),
+						modifier =
+							Modifier
+								.height(4.dp)
+								.weight(1f),
 						interactionSource = interactionSource,
 						min = 0f,
 						max = 0.8f,
 						stepForward = 0.01f,
 						value = subtitlesOffsetPosition,
-						onValueChange = { subtitlesOffsetPosition = it }
+						onValueChange = { subtitlesOffsetPosition = it },
 					)
 
 					Spacer(Modifier.width(Tokens.Space.spaceSm))
 
 					Box(
 						modifier = Modifier.sizeIn(minWidth = 32.dp),
-						contentAlignment = Alignment.CenterEnd
+						contentAlignment = Alignment.CenterEnd,
 					) {
 						Text("${(subtitlesOffsetPosition * 100f).roundToInt()}%")
 					}

@@ -19,14 +19,15 @@ import org.koin.compose.koinInject
 fun SettingsLiveTvGuideFiltersScreen() {
 	val systemPreferences = koinInject<SystemPreferences>()
 
-	val filters = listOf(
-		rememberPreference(systemPreferences, SystemPreferences.liveTvGuideFilterMovies) to stringResource(R.string.lbl_movies),
-		rememberPreference(systemPreferences, SystemPreferences.liveTvGuideFilterSeries) to stringResource(R.string.lbl_series),
-		rememberPreference(systemPreferences, SystemPreferences.liveTvGuideFilterNews) to stringResource(R.string.lbl_news),
-		rememberPreference(systemPreferences, SystemPreferences.liveTvGuideFilterKids) to stringResource(R.string.lbl_kids),
-		rememberPreference(systemPreferences, SystemPreferences.liveTvGuideFilterSports) to stringResource(R.string.lbl_sports),
-		rememberPreference(systemPreferences, SystemPreferences.liveTvGuideFilterPremiere) to stringResource(R.string.lbl_new_only),
-	)
+	val filters =
+		listOf(
+			rememberPreference(systemPreferences, SystemPreferences.liveTvGuideFilterMovies) to stringResource(R.string.lbl_movies),
+			rememberPreference(systemPreferences, SystemPreferences.liveTvGuideFilterSeries) to stringResource(R.string.lbl_series),
+			rememberPreference(systemPreferences, SystemPreferences.liveTvGuideFilterNews) to stringResource(R.string.lbl_news),
+			rememberPreference(systemPreferences, SystemPreferences.liveTvGuideFilterKids) to stringResource(R.string.lbl_kids),
+			rememberPreference(systemPreferences, SystemPreferences.liveTvGuideFilterSports) to stringResource(R.string.lbl_sports),
+			rememberPreference(systemPreferences, SystemPreferences.liveTvGuideFilterPremiere) to stringResource(R.string.lbl_new_only),
+		)
 
 	SettingsColumn {
 		item {
@@ -42,7 +43,7 @@ fun SettingsLiveTvGuideFiltersScreen() {
 			ListButton(
 				headingContent = { Text(label) },
 				trailingContent = { Checkbox(checked = enabled) },
-				onClick = { enabled = !enabled }
+				onClick = { enabled = !enabled },
 			)
 		}
 	}

@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -15,13 +15,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.CircularProgressIndicator
 import org.jellyfin.androidtv.ui.base.Icon
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.list.ListButton
 import org.jellyfin.androidtv.ui.base.list.ListControlColors
 import org.jellyfin.androidtv.ui.base.list.ListControlDefaults
-import org.jellyfin.design.Tokens
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import timber.log.Timber
 
 enum class SettingsAsyncActionListButtonState {
@@ -51,48 +51,54 @@ fun <T> SettingsAsyncActionListButton(
 		colors = colors,
 		leadingContent = {
 			when (state) {
-				SettingsAsyncActionListButtonState.PENDING -> Icon(
-					painter = painterResource(R.drawable.ic_upload),
-					contentDescription = null
-				)
+				SettingsAsyncActionListButtonState.PENDING ->
+					Icon(
+						painter = rememberVectorPainter(VegafoXIcons.Upload),
+						contentDescription = null,
+					)
 
-				SettingsAsyncActionListButtonState.WORKING -> CircularProgressIndicator(
-					modifier = Modifier.size(20.dp),
-				)
+				SettingsAsyncActionListButtonState.WORKING ->
+					CircularProgressIndicator(
+						modifier = Modifier.size(20.dp),
+					)
 
-				SettingsAsyncActionListButtonState.SUCCESS -> Icon(
-					painter = painterResource(R.drawable.ic_check),
-					tint = Tokens.Color.colorLime300,
-					contentDescription = null
-				)
+				SettingsAsyncActionListButtonState.SUCCESS ->
+					Icon(
+						painter = rememberVectorPainter(VegafoXIcons.Check),
+						tint = VegafoXColors.OrangePrimary,
+						contentDescription = null,
+					)
 
-				SettingsAsyncActionListButtonState.FAILED -> Icon(
-					painter = painterResource(R.drawable.ic_error),
-					tint = Tokens.Color.colorRed300,
-					contentDescription = null
-				)
+				SettingsAsyncActionListButtonState.FAILED ->
+					Icon(
+						painter = rememberVectorPainter(VegafoXIcons.Error),
+						tint = VegafoXColors.Error,
+						contentDescription = null,
+					)
 			}
 		},
 		onClick = {
-			if (state == SettingsAsyncActionListButtonState.PENDING || state == SettingsAsyncActionListButtonState.FAILED) lifecycleScope.launch {
-				state = SettingsAsyncActionListButtonState.WORKING
+			if (state == SettingsAsyncActionListButtonState.PENDING || state == SettingsAsyncActionListButtonState.FAILED) {
+				lifecycleScope.launch {
+					state = SettingsAsyncActionListButtonState.WORKING
 
-				runCatching {
-					withContext(Dispatchers.IO) {
-						action()
-					}
-				}.fold(
-					onSuccess = { result ->
-						state = SettingsAsyncActionListButtonState.SUCCESS
-						onSuccess(result)
-					},
-					onFailure = { error ->
-						state = SettingsAsyncActionListButtonState.FAILED
-						Timber.e(error, "Failed to execute reporting action")
-						onFailure(error)
-					}
-				)
+					runCatching {
+						withContext(Dispatchers.IO) {
+							action()
+						}
+					}.fold(
+						onSuccess = { result ->
+							state = SettingsAsyncActionListButtonState.SUCCESS
+							onSuccess(result)
+						},
+						onFailure = { error ->
+							state = SettingsAsyncActionListButtonState.FAILED
+							Timber.e(error, "Failed to execute reporting action")
+							onFailure(error)
+						},
+					)
+				}
 			}
-		}
+		},
 	)
 }

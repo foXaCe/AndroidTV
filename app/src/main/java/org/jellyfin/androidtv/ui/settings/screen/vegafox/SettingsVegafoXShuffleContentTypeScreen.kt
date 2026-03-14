@@ -22,11 +22,12 @@ fun SettingsVegafoXShuffleContentTypeScreen() {
 	val userPreferences = koinInject<UserPreferences>()
 	var shuffleContentType by rememberPreference(userPreferences, UserPreferences.shuffleContentType)
 
-	val options = listOf(
-		"movies" to stringResource(R.string.pref_shuffle_movies),
-		"tv" to stringResource(R.string.pref_shuffle_tv),
-		"both" to stringResource(R.string.pref_shuffle_both)
-	)
+	val options =
+		listOf(
+			"movies" to stringResource(R.string.pref_shuffle_movies),
+			"tv" to stringResource(R.string.pref_shuffle_tv),
+			"both" to stringResource(R.string.pref_shuffle_both),
+		)
 
 	SettingsColumn {
 		item {
@@ -43,7 +44,7 @@ fun SettingsVegafoXShuffleContentTypeScreen() {
 				onClick = {
 					shuffleContentType = value
 					router.back()
-				}
+				},
 			)
 		}
 	}

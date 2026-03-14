@@ -1,85 +1,31 @@
 <resources>
 
     <!-- ══════════════════════════════════════════════════════════════════
-         DESIGN SYSTEM — Spacing, Sizing, Radii, Typography
+         DESIGN SYSTEM — Spacing, Typography
          ══════════════════════════════════════════════════════════════════ -->
 
     <!-- ── Spacing scale (4dp base grid) ── -->
-    <dimen name="ds_space_2xs">2dp</dimen>
     <dimen name="ds_space_xs">4dp</dimen>
     <dimen name="ds_space_sm">8dp</dimen>
     <dimen name="ds_space_md">16dp</dimen>
     <dimen name="ds_space_lg">24dp</dimen>
     <dimen name="ds_space_xl">32dp</dimen>
-    <dimen name="ds_space_2xl">40dp</dimen>
-    <dimen name="ds_space_3xl">48dp</dimen>
-    <dimen name="ds_space_4xl">64dp</dimen>
 
-    <!-- ── Intermediate spacing (commonly used) ── -->
-    <dimen name="ds_space_6">6dp</dimen>
-    <dimen name="ds_space_10">10dp</dimen>
+    <!-- ── Intermediate spacing ── -->
     <dimen name="ds_space_12">12dp</dimen>
-    <dimen name="ds_space_14">14dp</dimen>
-    <dimen name="ds_space_20">20dp</dimen>
-
-    <!-- ── Corner radii ── -->
-    <dimen name="ds_radius_none">0dp</dimen>
-    <dimen name="ds_radius_xs">4dp</dimen>
-    <dimen name="ds_radius_sm">8dp</dimen>
-    <dimen name="ds_radius_md">12dp</dimen>
-    <dimen name="ds_radius_lg">16dp</dimen>
-    <dimen name="ds_radius_xl">20dp</dimen>
-    <dimen name="ds_radius_2xl">28dp</dimen>
-    <dimen name="ds_radius_full">999dp</dimen>
 
     <!-- ── Typography sizes ── -->
-    <dimen name="ds_text_display">48sp</dimen>
-    <dimen name="ds_text_headline_lg">32sp</dimen>
     <dimen name="ds_text_headline_md">24sp</dimen>
-    <dimen name="ds_text_title_lg">20sp</dimen>
-    <dimen name="ds_text_title_md">16sp</dimen>
-    <dimen name="ds_text_title_sm">14sp</dimen>
     <dimen name="ds_text_body_lg">16sp</dimen>
     <dimen name="ds_text_body_md">14sp</dimen>
     <dimen name="ds_text_body_sm">12sp</dimen>
     <dimen name="ds_text_label_lg">14sp</dimen>
-    <dimen name="ds_text_label_md">12sp</dimen>
     <dimen name="ds_text_label_sm">10sp</dimen>
 
-    <!-- ── Component sizes ── -->
-    <dimen name="ds_icon_sm">16dp</dimen>
-    <dimen name="ds_icon_md">24dp</dimen>
-    <dimen name="ds_icon_lg">32dp</dimen>
-    <dimen name="ds_icon_xl">48dp</dimen>
-
-    <dimen name="ds_button_height">48dp</dimen>
-    <dimen name="ds_button_height_sm">36dp</dimen>
+    <!-- ── Component sizes (referenced by active styles) ── -->
     <dimen name="ds_button_padding_h">24dp</dimen>
     <dimen name="ds_button_padding_v">10dp</dimen>
     <dimen name="ds_button_icon_padding">4dp</dimen>
-
-    <dimen name="ds_card_width_sm">120dp</dimen>
-    <dimen name="ds_card_width_md">160dp</dimen>
-    <dimen name="ds_card_width_lg">220dp</dimen>
-    <dimen name="ds_card_width_xl">300dp</dimen>
-
-    <dimen name="ds_toolbar_height">56dp</dimen>
-    <dimen name="ds_dialog_max_width">480dp</dimen>
-    <dimen name="ds_dialog_padding">24dp</dimen>
-
-    <dimen name="ds_focus_border_width">2dp</dimen>
-    <dimen name="ds_divider_thickness">1dp</dimen>
-
-    <!-- ── Elevation / Shadow ── -->
-    <dimen name="ds_elevation_sm">2dp</dimen>
-    <dimen name="ds_elevation_md">4dp</dimen>
-    <dimen name="ds_elevation_lg">8dp</dimen>
-    <dimen name="ds_elevation_xl">16dp</dimen>
-
-    <!-- ── Animation durations (ms) ── -->
-    <integer name="ds_anim_fast">150</integer>
-    <integer name="ds_anim_medium">300</integer>
-    <integer name="ds_anim_slow">500</integer>
 
     <!-- ══════════════════════════════════════════════════════════════════
          LEGACY — Kept for backward compatibility
@@ -88,18 +34,4 @@
     <dimen name="overscan_horizontal">27dp</dimen>
     <dimen name="overscan_vertical">48dp</dimen>
 
-    <!-- Home row spacing -->
-    <dimen name="home_row_spacing">24dp</dimen>
-    <dimen name="home_row_spacing_large">32dp</dimen>
-
-    <dimen name="lb_browse_padding_start">61dp</dimen>
-
-    <fraction name="card_scale_default">100%</fraction>
-    <fraction name="card_scale_focus">115%</fraction>
-
-    <!-- Set leanback card scale values -->
-    <fraction name="lb_focus_zoom_factor_small">@fraction/card_scale_focus</fraction>
-    <fraction name="lb_focus_zoom_factor_xsmall">@fraction/card_scale_focus</fraction>
-    <fraction name="lb_focus_zoom_factor_medium">@fraction/card_scale_focus</fraction>
-    <fraction name="lb_focus_zoom_factor_large">@fraction/card_scale_focus</fraction>
 </resources>

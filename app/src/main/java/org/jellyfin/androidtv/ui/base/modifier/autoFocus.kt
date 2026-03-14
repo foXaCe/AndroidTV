@@ -12,7 +12,6 @@ import androidx.compose.ui.layout.onPlaced
  * Items that can disappear will regain focus when being made visible later.
  */
 @Composable
-fun Modifier.autoFocus(
-	focusRequester: FocusRequester = remember { FocusRequester() }
-): Modifier = focusRequester(focusRequester)
-	.onPlaced { focusRequester.requestFocus() }
+fun Modifier.autoFocus(focusRequester: FocusRequester = remember { FocusRequester() }): Modifier =
+	focusRequester(focusRequester)
+		.onPlaced { focusRequester.requestFocus() }

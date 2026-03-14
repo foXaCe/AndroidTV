@@ -9,15 +9,20 @@ import org.jellyfin.sdk.model.extensions.ticks
 class ChapterItemInfoBaseRowItem(
 	val chapterInfo: ChapterItemInfo,
 ) : BaseRowItem(
-	baseRowType = BaseRowType.Chapter,
-	staticHeight = true,
-) {
+		baseRowType = BaseRowType.Chapter,
+		staticHeight = true,
+	) {
 	val serverId: String? get() = chapterInfo.serverId
+
 	override fun getImage(imageType: ImageType) = chapterInfo.image
+
 	override val itemId get() = chapterInfo.itemId
+
 	override fun getFullName(context: Context) = chapterInfo.name
+
 	override fun getName(context: Context) = chapterInfo.name
 
 	override fun getSubText(context: Context) =
-		chapterInfo.startPositionTicks.ticks.inWholeMilliseconds.let(TimeUtils::formatMillis)
+		chapterInfo.startPositionTicks.ticks.inWholeMilliseconds
+			.let(TimeUtils::formatMillis)
 }

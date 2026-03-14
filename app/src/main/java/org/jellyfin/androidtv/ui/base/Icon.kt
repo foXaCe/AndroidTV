@@ -56,27 +56,32 @@ fun Icon(
 	tint: Color = LocalTextStyle.current.color,
 ) {
 	val colorFilter = remember(tint) { tint.takeUnless { it == Color.Unspecified }?.let(ColorFilter::tint) }
-	val semantics = if (contentDescription != null) Modifier.semantics {
-		this.contentDescription = contentDescription
-		this.role = Role.Image
-	} else Modifier
+	val semantics =
+		if (contentDescription != null) {
+			Modifier.semantics {
+				this.contentDescription = contentDescription
+				this.role = Role.Image
+			}
+		} else {
+			Modifier
+		}
 
 	Box(
 		modifier
 			.toolingGraphicsLayer()
 			.defaultSizeFor(painter)
 			.paint(painter, colorFilter = colorFilter, contentScale = ContentScale.Fit)
-			.then(semantics)
+			.then(semantics),
 	)
 }
 
-private fun Modifier.defaultSizeFor(painter: Painter) = then(
-	if (painter.intrinsicSize == Size.Unspecified || painter.intrinsicSize.isInfinite()) {
-		Modifier.size(20.dp)
-	} else {
-		Modifier
-	}
-)
+private fun Modifier.defaultSizeFor(painter: Painter) =
+	then(
+		if (painter.intrinsicSize == Size.Unspecified || painter.intrinsicSize.isInfinite()) {
+			Modifier.size(20.dp)
+		} else {
+			Modifier
+		},
+	)
 
 private fun Size.isInfinite() = width.isInfinite() && height.isInfinite()
-

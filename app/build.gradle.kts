@@ -237,7 +237,6 @@ dependencies {
 	implementation(libs.androidx.recyclerview)
 	implementation(libs.androidx.work.runtime)
 	implementation(libs.bundles.androidx.lifecycle)
-	implementation(libs.androidx.window)
 	implementation(libs.androidx.cardview)
 	implementation(libs.androidx.startup)
 	implementation(libs.bundles.androidx.compose)

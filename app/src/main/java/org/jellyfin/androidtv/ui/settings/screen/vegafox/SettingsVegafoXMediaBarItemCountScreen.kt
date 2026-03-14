@@ -22,11 +22,12 @@ fun SettingsVegafoXMediaBarItemCountScreen() {
 	val userSettingPreferences = koinInject<UserSettingPreferences>()
 	var mediaBarItemCount by rememberPreference(userSettingPreferences, UserSettingPreferences.mediaBarItemCount)
 
-	val options = listOf(
-		"5" to stringResource(R.string.pref_media_bar_5_items),
-		"10" to stringResource(R.string.pref_media_bar_10_items),
-		"15" to stringResource(R.string.pref_media_bar_15_items)
-	)
+	val options =
+		listOf(
+			"5" to stringResource(R.string.pref_media_bar_5_items),
+			"10" to stringResource(R.string.pref_media_bar_10_items),
+			"15" to stringResource(R.string.pref_media_bar_15_items),
+		)
 
 	SettingsColumn {
 		item {
@@ -43,7 +44,7 @@ fun SettingsVegafoXMediaBarItemCountScreen() {
 				onClick = {
 					mediaBarItemCount = value
 					router.back()
-				}
+				},
 			)
 		}
 	}

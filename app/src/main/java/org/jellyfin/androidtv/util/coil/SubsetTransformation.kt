@@ -23,12 +23,10 @@ class SubsetTransformation(
 		val clampedHeight = height.coerceAtMost(input.height - clampedY)
 
 		if (clampedWidth <= 0 || clampedHeight <= 0) {
-			Timber.w("SubsetTransformation: invalid crop region after clamping (input=${input.width}x${input.height}, requested=[$x,$y,$width,$height])")
+			Timber.w(
+				"SubsetTransformation: invalid crop region after clamping (input=${input.width}x${input.height}, requested=[$x,$y,$width,$height])",
+			)
 			return input
-		}
-
-		if (clampedX != x || clampedY != y || clampedWidth != width || clampedHeight != height) {
-			Timber.d("SubsetTransformation: clamped crop from [$x,$y,$width,$height] to [$clampedX,$clampedY,$clampedWidth,$clampedHeight] for ${input.width}x${input.height} bitmap")
 		}
 
 		return Bitmap.createBitmap(input, clampedX, clampedY, clampedWidth, clampedHeight)

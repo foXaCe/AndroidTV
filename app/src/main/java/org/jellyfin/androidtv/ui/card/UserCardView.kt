@@ -62,23 +62,26 @@ fun UserCard(
 	// Mix button background with input foreground because we display text beneath the profile picture on a transparent background similar
 	// to the input text
 	val focusColor = focusBorderColor()
-	val color = when {
-		focused -> focusColor to JellyfinTheme.colorScheme.onInputFocused
-		else -> JellyfinTheme.colorScheme.button to JellyfinTheme.colorScheme.onInput
-	}
+	val color =
+		when {
+			focused -> focusColor to JellyfinTheme.colorScheme.onInputFocused
+			else -> JellyfinTheme.colorScheme.button to JellyfinTheme.colorScheme.onInput
+		}
 	val scale by animateFloatAsState(if (focused) AnimationDefaults.FOCUS_SCALE else 1f, label = "UserCardFocusScale")
 
 	Column(
-		modifier = modifier
-			.scale(scale)
-			.focusable(interactionSource = interactionSource)
-			.clickable(interactionSource = interactionSource, onClick = onClick, indication = null)
+		modifier =
+			modifier
+				.scale(scale)
+				.focusable(interactionSource = interactionSource)
+				.clickable(interactionSource = interactionSource, onClick = onClick, indication = null),
 	) {
 		Box(
-			modifier = Modifier
-				.aspectRatio(1f)
-				.clip(shape)
-				.border(2.dp, color.first, shape)
+			modifier =
+				Modifier
+					.aspectRatio(1f)
+					.clip(shape)
+					.border(2.dp, color.first, shape),
 		) {
 			image()
 		}
@@ -86,18 +89,19 @@ fun UserCard(
 		Spacer(Modifier.height(8.dp))
 
 		Box(
-			modifier = Modifier
-				.fillMaxWidth()
-				.basicMarquee(
-					iterations = if (focused) Int.MAX_VALUE else 0,
-					initialDelayMillis = 0,
-				),
+			modifier =
+				Modifier
+					.fillMaxWidth()
+					.basicMarquee(
+						iterations = if (focused) Int.MAX_VALUE else 0,
+						initialDelayMillis = 0,
+					),
 			contentAlignment = Alignment.TopCenter,
 		) {
 			ProvideTextStyle(
 				LocalTextStyle.current.copy(
 					color = color.second,
-				)
+				),
 			) {
 				name()
 			}
@@ -105,73 +109,86 @@ fun UserCard(
 	}
 }
 
-class UserCardView @JvmOverloads constructor(
-	context: Context,
-	attrs: AttributeSet? = null,
-	defStyleAttr: Int = 0,
-) : AbstractComposeView(context, attrs, defStyleAttr) {
-	var name by mutableStateOf<String?>(null)
-	var image by mutableStateOf<String?>(null)
-	private var focused by mutableStateOf(false)
+class UserCardView
+	@JvmOverloads
+	constructor(
+		context: Context,
+		attrs: AttributeSet? = null,
+		defStyleAttr: Int = 0,
+	) : AbstractComposeView(context, attrs, defStyleAttr) {
+		var name by mutableStateOf<String?>(null)
+		var image by mutableStateOf<String?>(null)
+		private var focused by mutableStateOf(false)
 
-	init {
-		isFocusable = true
-		descendantFocusability = FOCUS_BLOCK_DESCENDANTS
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) defaultFocusHighlightEnabled = false
-	}
-
-	fun setPopupMenu(init: MenuBuilder.() -> Unit) {
-		setOnLongClickListener {
-			popupMenu(context, this, init = init).showIfNotEmpty()
-		}
-	}
-
-	override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
-		if (super.onKeyUp(keyCode, event)) return true
-
-		// Menu key should show the popup menu
-		if (event.keyCode == KeyEvent.KEYCODE_MENU) return performLongClick()
-
-		return false
-	}
-
-	override fun onFocusChanged(gainFocus: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
-		super.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
-
-		focused = gainFocus
-	}
-
-	@Composable
-	override fun Content() {
-		val interactionSource = remember { MutableInteractionSource() }
-
-		// Forward focus events to the interaction source
-		val focusInteraction = remember { FocusInteraction.Focus() }
-		LaunchedEffect(focused) {
-			if (focused) interactionSource.emit(focusInteraction)
-			else interactionSource.emit(FocusInteraction.Unfocus(focusInteraction))
+		init {
+			isFocusable = true
+			descendantFocusability = FOCUS_BLOCK_DESCENDANTS
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) defaultFocusHighlightEnabled = false
 		}
 
-		UserCard(
-			image = {
-				ProfilePicture(
-					url = image,
-					iconPadding = PaddingValues(24.dp),
-					modifier = Modifier.fillMaxSize()
-				)
-			},
-			name = {
-				Text(
-					text = name.orEmpty(),
-					maxLines = 1
-				)
-			},
-			modifier = Modifier
-				.padding(horizontal = 6.dp, vertical = 8.dp)
-				.width(110.dp),
-			interactionSource = interactionSource,
-			// We use our own click handler for views used in presenters
-			onClick = {}
-		)
+		fun setPopupMenu(init: MenuBuilder.() -> Unit) {
+			setOnLongClickListener {
+				popupMenu(context, this, init = init).showIfNotEmpty()
+			}
+		}
+
+		override fun onKeyUp(
+			keyCode: Int,
+			event: KeyEvent,
+		): Boolean {
+			if (super.onKeyUp(keyCode, event)) return true
+
+			// Menu key should show the popup menu
+			if (event.keyCode == KeyEvent.KEYCODE_MENU) return performLongClick()
+
+			return false
+		}
+
+		override fun onFocusChanged(
+			gainFocus: Boolean,
+			direction: Int,
+			previouslyFocusedRect: Rect?,
+		) {
+			super.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
+
+			focused = gainFocus
+		}
+
+		@Composable
+		override fun Content() {
+			val interactionSource = remember { MutableInteractionSource() }
+
+			// Forward focus events to the interaction source
+			val focusInteraction = remember { FocusInteraction.Focus() }
+			LaunchedEffect(focused) {
+				if (focused) {
+					interactionSource.emit(focusInteraction)
+				} else {
+					interactionSource.emit(FocusInteraction.Unfocus(focusInteraction))
+				}
+			}
+
+			UserCard(
+				image = {
+					ProfilePicture(
+						url = image,
+						iconPadding = PaddingValues(24.dp),
+						modifier = Modifier.fillMaxSize(),
+					)
+				},
+				name = {
+					Text(
+						text = name.orEmpty(),
+						maxLines = 1,
+					)
+				},
+				modifier =
+					Modifier
+						.padding(horizontal = 6.dp, vertical = 8.dp)
+						.width(110.dp),
+				interactionSource = interactionSource,
+				// We use our own click handler for views used in presenters
+				onClick = {},
+			)
+		}
 	}
-}

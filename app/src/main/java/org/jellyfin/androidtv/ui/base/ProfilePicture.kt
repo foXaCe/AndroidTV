@@ -11,12 +11,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.vectorResource
 import coil3.compose.AsyncImagePainter
 import coil3.compose.rememberAsyncImagePainter
-import org.jellyfin.androidtv.R
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 
 @Composable
 fun ProfilePicture(
@@ -26,7 +24,7 @@ fun ProfilePicture(
 	iconPadding: PaddingValues = PaddingValues.Zero,
 ) {
 	Box(
-		modifier = modifier
+		modifier = modifier,
 	) {
 		val userImagePainter = rememberAsyncImagePainter(url)
 		val userImageState by userImagePainter.state.collectAsState()
@@ -34,20 +32,22 @@ fun ProfilePicture(
 
 		if (!userImageVisible) {
 			Icon(
-				imageVector = ImageVector.vectorResource(R.drawable.ic_user),
+				imageVector = VegafoXIcons.Person,
 				contentDescription = contentDescription,
-				modifier = Modifier
-					.align(Alignment.Center)
-					.padding(iconPadding)
-					.fillMaxSize()
+				modifier =
+					Modifier
+						.align(Alignment.Center)
+						.padding(iconPadding)
+						.fillMaxSize(),
 			)
 		} else {
 			Image(
 				painter = userImagePainter,
 				contentDescription = contentDescription,
 				contentScale = ContentScale.Crop,
-				modifier = Modifier
-					.aspectRatio(1f)
+				modifier =
+					Modifier
+						.aspectRatio(1f),
 			)
 		}
 	}

@@ -9,9 +9,9 @@ import org.jellyfin.sdk.model.api.ItemSortBy
 class LiveTvPreferences(
 	api: ApiClient,
 ) : DisplayPreferencesStore(
-	displayPreferencesId = "livetv",
-	api = api,
-) {
+		displayPreferencesId = "livetv",
+		api = api,
+	) {
 	companion object {
 		val channelOrder = stringPreference("livetv-channelorder", ItemSortBy.DATE_PLAYED.name)
 		val colorCodeGuide = booleanPreference("guide-colorcodedbackgrounds", false)

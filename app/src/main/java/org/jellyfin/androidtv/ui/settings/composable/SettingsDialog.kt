@@ -26,18 +26,22 @@ fun SettingsDialog(
 		onDismissRequest = onDismissRequest,
 		modifier = modifier,
 		contentAlignment = Alignment.TopEnd,
-		enterTransition = slideInHorizontally(
-			initialOffsetX = { it },
-			animationSpec = tween(duration, easing = FastOutSlowInEasing)
-		) + fadeIn(
-			animationSpec = tween(duration)
-		),
-		exitTransition = slideOutHorizontally(
-			targetOffsetX = { it },
-			animationSpec = tween(duration, easing = FastOutSlowInEasing)
-		) + fadeOut(
-			animationSpec = tween(duration)
-		),
+		enterTransition =
+			slideInHorizontally(
+				initialOffsetX = { it },
+				animationSpec = tween(duration, easing = FastOutSlowInEasing),
+			) +
+				fadeIn(
+					animationSpec = tween(duration),
+				),
+		exitTransition =
+			slideOutHorizontally(
+				targetOffsetX = { it },
+				animationSpec = tween(duration, easing = FastOutSlowInEasing),
+			) +
+				fadeOut(
+					animationSpec = tween(duration),
+				),
 	) {
 		SettingsLayout {
 			screen()

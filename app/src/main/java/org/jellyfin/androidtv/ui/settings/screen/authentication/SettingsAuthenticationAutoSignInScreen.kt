@@ -61,7 +61,7 @@ fun SettingsAuthenticationAutoSignInScreen() {
 				onClick = {
 					autoLoginUserBehavior = UserSelectBehavior.DISABLED
 					router.back()
-				}
+				},
 			)
 		}
 
@@ -73,7 +73,7 @@ fun SettingsAuthenticationAutoSignInScreen() {
 				onClick = {
 					autoLoginUserBehavior = UserSelectBehavior.LAST_USER
 					router.back()
-				}
+				},
 			)
 		}
 
@@ -89,20 +89,26 @@ fun SettingsAuthenticationAutoSignInScreen() {
 					leadingContent = {
 						ProfilePicture(
 							url = authenticationRepository.getUserImageUrl(server, user),
-							modifier = Modifier
-								.size(24.dp)
-								.clip(IconButtonDefaults.Shape)
+							modifier =
+								Modifier
+									.size(24.dp)
+									.clip(IconButtonDefaults.Shape),
 						)
 					},
 					headingContent = { Text(user.name) },
-					trailingContent = { RadioButton(checked = autoLoginUserBehavior == UserSelectBehavior.SPECIFIC_USER && autoLoginServerId == serverId && autoLoginUserId == userId) },
+					trailingContent = {
+						RadioButton(
+							checked =
+								autoLoginUserBehavior == UserSelectBehavior.SPECIFIC_USER && autoLoginServerId == serverId && autoLoginUserId == userId,
+						)
+					},
 					onClick = {
 						autoLoginUserBehavior = UserSelectBehavior.SPECIFIC_USER
 						autoLoginServerId = serverId
 						autoLoginUserId = userId
 
 						router.back()
-					}
+					},
 				)
 			}
 		}

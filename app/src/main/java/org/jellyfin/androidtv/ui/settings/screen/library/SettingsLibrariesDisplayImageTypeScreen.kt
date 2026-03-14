@@ -22,7 +22,7 @@ fun SettingsLibrariesDisplayImageTypeScreen(
 	itemId: UUID,
 	displayPreferencesId: String,
 	serverId: UUID,
-	userId: UUID
+	userId: UUID,
 ) {
 	val router = LocalRouter.current
 	val userView = rememberUserView(itemId)
@@ -44,7 +44,7 @@ fun SettingsLibrariesDisplayImageTypeScreen(
 				onClick = {
 					imageType = entry
 					router.back()
-				}
+				},
 			)
 		}
 	}

@@ -27,74 +27,92 @@ class PlaySessionSocketService(
 ) : PlayerService() {
 	override suspend fun onInitialize() {
 		coroutineScope.launch(Dispatchers.IO) {
-			if (lifecycle == null) subscribe(this)
-			else lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) { subscribe(this) }
+			if (lifecycle == null) {
+				subscribe(this)
+			} else {
+				lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) { subscribe(this) }
+			}
 		}
 	}
 
 	private fun subscribe(coroutineScope: CoroutineScope) {
 		// Player control
-		api.webSocket.subscribe<PlaystateMessage>().onEach { message ->
-			coroutineScope.launch(Dispatchers.Main) {
-				when (message.data?.command) {
-					PlaystateCommand.STOP -> state.stop()
-					PlaystateCommand.PAUSE -> state.pause()
-					PlaystateCommand.UNPAUSE -> state.unpause()
-					PlaystateCommand.NEXT_TRACK -> manager.queue.next()
-					PlaystateCommand.PREVIOUS_TRACK -> manager.queue.previous()
-					PlaystateCommand.SEEK -> {
-						val to = message.data?.seekPositionTicks?.ticks ?: Duration.ZERO
-						state.seek(to)
-					}
+		api.webSocket
+			.subscribe<PlaystateMessage>()
+			.onEach { message ->
+				coroutineScope.launch(Dispatchers.Main) {
+					when (message.data?.command) {
+						PlaystateCommand.STOP -> state.stop()
+						PlaystateCommand.PAUSE -> state.pause()
+						PlaystateCommand.UNPAUSE -> state.unpause()
+						PlaystateCommand.NEXT_TRACK -> manager.queue.next()
+						PlaystateCommand.PREVIOUS_TRACK -> manager.queue.previous()
+						PlaystateCommand.SEEK -> {
+							val to = message.data?.seekPositionTicks?.ticks ?: Duration.ZERO
+							state.seek(to)
+						}
 
-					PlaystateCommand.REWIND -> state.rewind()
-					PlaystateCommand.FAST_FORWARD -> state.fastForward()
-					PlaystateCommand.PLAY_PAUSE -> when (state.playState.value) {
-						PlayState.PLAYING -> state.pause()
-						else -> state.unpause()
-					}
+						PlaystateCommand.REWIND -> state.rewind()
+						PlaystateCommand.FAST_FORWARD -> state.fastForward()
+						PlaystateCommand.PLAY_PAUSE ->
+							when (state.playState.value) {
+								PlayState.PLAYING -> state.pause()
+								else -> state.unpause()
+							}
 
-					// Do nothing
-					null -> Unit
+						// Do nothing
+						null -> Unit
+					}
+					coroutineScope.launch { playSessionService.sendUpdateIfActive() }
 				}
-				coroutineScope.launch { playSessionService.sendUpdateIfActive() }
-			}
-		}.launchIn(coroutineScope)
+			}.launchIn(coroutineScope)
 
 		// Volume control
-		api.webSocket.subscribeGeneralCommand(GeneralCommandType.VOLUME_UP).onEach {
-			state.volume.increaseVolume()
-			coroutineScope.launch { playSessionService.sendUpdateIfActive() }
-		}.launchIn(coroutineScope)
+		api.webSocket
+			.subscribeGeneralCommand(GeneralCommandType.VOLUME_UP)
+			.onEach {
+				state.volume.increaseVolume()
+				coroutineScope.launch { playSessionService.sendUpdateIfActive() }
+			}.launchIn(coroutineScope)
 
-		api.webSocket.subscribeGeneralCommand(GeneralCommandType.VOLUME_DOWN).onEach {
-			state.volume.decreaseVolume()
-			coroutineScope.launch { playSessionService.sendUpdateIfActive() }
-		}.launchIn(coroutineScope)
+		api.webSocket
+			.subscribeGeneralCommand(GeneralCommandType.VOLUME_DOWN)
+			.onEach {
+				state.volume.decreaseVolume()
+				coroutineScope.launch { playSessionService.sendUpdateIfActive() }
+			}.launchIn(coroutineScope)
 
-		api.webSocket.subscribeGeneralCommand(GeneralCommandType.SET_VOLUME).onEach { message ->
-			@Suppress("MagicNumber")
-			val volume = message["volume"]?.toFloatOrNull()?.div(100f)
-			if (volume != null && volume in 0f..1f) state.volume.setVolume(volume)
-			coroutineScope.launch { playSessionService.sendUpdateIfActive() }
-		}.launchIn(coroutineScope)
+		api.webSocket
+			.subscribeGeneralCommand(GeneralCommandType.SET_VOLUME)
+			.onEach { message ->
+				@Suppress("MagicNumber")
+				val volume = message["volume"]?.toFloatOrNull()?.div(100f)
+				if (volume != null && volume in 0f..1f) state.volume.setVolume(volume)
+				coroutineScope.launch { playSessionService.sendUpdateIfActive() }
+			}.launchIn(coroutineScope)
 
-		api.webSocket.subscribeGeneralCommand(GeneralCommandType.MUTE).onEach {
-			state.volume.mute()
-			coroutineScope.launch { playSessionService.sendUpdateIfActive() }
-		}.launchIn(coroutineScope)
+		api.webSocket
+			.subscribeGeneralCommand(GeneralCommandType.MUTE)
+			.onEach {
+				state.volume.mute()
+				coroutineScope.launch { playSessionService.sendUpdateIfActive() }
+			}.launchIn(coroutineScope)
 
-		api.webSocket.subscribeGeneralCommand(GeneralCommandType.UNMUTE).onEach {
-			state.volume.unmute()
-			coroutineScope.launch { playSessionService.sendUpdateIfActive() }
-		}.launchIn(coroutineScope)
+		api.webSocket
+			.subscribeGeneralCommand(GeneralCommandType.UNMUTE)
+			.onEach {
+				state.volume.unmute()
+				coroutineScope.launch { playSessionService.sendUpdateIfActive() }
+			}.launchIn(coroutineScope)
 
-		api.webSocket.subscribeGeneralCommand(GeneralCommandType.TOGGLE_MUTE).onEach {
-			when (state.volume.muted) {
-				true -> state.volume.unmute()
-				false -> state.volume.mute()
-			}
-			coroutineScope.launch { playSessionService.sendUpdateIfActive() }
-		}.launchIn(coroutineScope)
+		api.webSocket
+			.subscribeGeneralCommand(GeneralCommandType.TOGGLE_MUTE)
+			.onEach {
+				when (state.volume.muted) {
+					true -> state.volume.unmute()
+					false -> state.volume.mute()
+				}
+				coroutineScope.launch { playSessionService.sendUpdateIfActive() }
+			}.launchIn(coroutineScope)
 	}
 }

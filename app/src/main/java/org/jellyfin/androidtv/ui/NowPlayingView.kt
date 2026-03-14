@@ -77,17 +77,19 @@ fun NowPlayingComposable(
 		if (item != null) {
 			ButtonBase(
 				onClick = { navigationRepository.navigate(Destinations.nowPlaying) },
-				modifier = Modifier
-					.widthIn(100.dp, 250.dp)
+				modifier =
+					Modifier
+						.widthIn(100.dp, 250.dp),
 			) {
 				ProvideTextStyle(
-					value = JellyfinTheme.typography.bodySmall
+					value = JellyfinTheme.typography.bodySmall,
 				) {
 					Row(
 						horizontalArrangement = Arrangement.spacedBy(6.dp),
 						verticalAlignment = Alignment.CenterVertically,
-						modifier = Modifier
-							.padding(3.dp)
+						modifier =
+							Modifier
+								.padding(3.dp),
 					) {
 						val image = item.itemImages[ImageType.PRIMARY] ?: item.albumPrimaryImage ?: item.parentImages[ImageType.PRIMARY]
 						val progressFillColor = JellyfinTheme.colorScheme.rangeControlFill
@@ -97,36 +99,38 @@ fun NowPlayingComposable(
 							blurHash = image?.blurHash,
 							placeholder = ContextCompat.getDrawable(LocalContext.current, R.drawable.ic_album),
 							aspectRatio = image?.aspectRatio ?: 1f,
-							modifier = Modifier
-								.size(35.dp)
-								.clip(CircleShape)
-								.drawWithContent {
-									drawContent()
+							modifier =
+								Modifier
+									.size(35.dp)
+									.clip(CircleShape)
+									.drawWithContent {
+										drawContent()
 
-									val width = 3.dp.toPx()
+										val width = 3.dp.toPx()
 
-									// Background
-									drawCircle(
-										style = Stroke(width),
-										color = overlayColor,
-										alpha = overlayOpacity * 0.7f,
-									)
-									// Foreground
-									drawArc(
-										style = Stroke(width, cap = StrokeCap.Round),
-										color = progressFillColor,
-										useCenter = false,
-										startAngle = -90f,
-										sweepAngle = 360f * progress,
-									)
-								},
+										// Background
+										drawCircle(
+											style = Stroke(width),
+											color = overlayColor,
+											alpha = overlayOpacity * 0.7f,
+										)
+										// Foreground
+										drawArc(
+											style = Stroke(width, cap = StrokeCap.Round),
+											color = progressFillColor,
+											useCenter = false,
+											startAngle = -90f,
+											sweepAngle = 360f * progress,
+										)
+									},
 							scaleType = ImageView.ScaleType.CENTER_CROP,
 						)
 
 						Column(
 							verticalArrangement = Arrangement.SpaceAround,
-							modifier = Modifier
-								.padding(start = 2.dp, end = 8.dp)
+							modifier =
+								Modifier
+									.padding(start = 2.dp, end = 8.dp),
 						) {
 							// Name
 							Text(text = item.name.orEmpty(), maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.Bold)
@@ -140,17 +144,20 @@ fun NowPlayingComposable(
 	}
 }
 
-class NowPlayingView @JvmOverloads constructor(
-	context: Context,
-	attrs: AttributeSet? = null,
-	defStyle: Int = 0
-) : AbstractComposeView(context, attrs, defStyle) {
-	@Composable
-	override fun Content() = NowPlayingComposable(
-		// Workaround for older Android versions unable to find focus in our toolbar view when the NowPlayingView is added but inactive
-		onFocusableChange = { focusable ->
-			isFocusable = focusable
-			descendantFocusability = if (focusable) FOCUS_AFTER_DESCENDANTS else FOCUS_BLOCK_DESCENDANTS
-		}
-	)
-}
+class NowPlayingView
+	@JvmOverloads
+	constructor(
+		context: Context,
+		attrs: AttributeSet? = null,
+		defStyle: Int = 0,
+	) : AbstractComposeView(context, attrs, defStyle) {
+		@Composable
+		override fun Content() =
+			NowPlayingComposable(
+				// Workaround for older Android versions unable to find focus in our toolbar view when the NowPlayingView is added but inactive
+				onFocusableChange = { focusable ->
+					isFocusable = focusable
+					descendantFocusability = if (focusable) FOCUS_AFTER_DESCENDANTS else FOCUS_BLOCK_DESCENDANTS
+				},
+			)
+	}

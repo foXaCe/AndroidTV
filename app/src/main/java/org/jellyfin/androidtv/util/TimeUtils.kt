@@ -20,15 +20,13 @@ object TimeUtils {
 	
 	private const val DURATION_TIME_FORMAT_NO_HOURS = "%d:%02d"
 	private const val DURATION_TIME_FORMAT_WITH_HOURS = "%d:%02d:%02d"
-	
+
 	/**
 	 * Convert seconds to milliseconds.
 	 */
 	@JvmStatic
-	fun secondsToMillis(seconds: Double): Long {
-		return (seconds * MILLIS_PER_SEC).roundToLong()
-	}
-	
+	fun secondsToMillis(seconds: Double): Long = (seconds * MILLIS_PER_SEC).roundToLong()
+
 	/**
 	 * Formats time in milliseconds to hh:mm:ss string format.
 	 *
@@ -50,7 +48,7 @@ object TimeUtils {
 			DURATION_TIME_FORMAT_NO_HOURS.format(min, sec)
 		}
 	}
-	
+
 	/**
 	 * Format runtime in milliseconds to hours and minutes format (e.g., "1h 30m" or "45m").
 	 *
@@ -59,7 +57,10 @@ object TimeUtils {
 	 * @return Formatted runtime string
 	 */
 	@JvmStatic
-	fun formatRuntimeHoursMinutes(context: Context, millis: Long): String {
+	fun formatRuntimeHoursMinutes(
+		context: Context,
+		millis: Long,
+	): String {
 		val totalMinutes = (millis / MILLIS_PER_MIN).toInt()
 		val hours = totalMinutes / 60
 		val minutes = totalMinutes % 60
@@ -70,19 +71,21 @@ object TimeUtils {
 			context.getString(R.string.runtime_minutes, minutes)
 		}
 	}
-	
+
 	/**
 	 * Format seconds into a human-readable string (e.g., "5 seconds", "2 minutes", "3 hours").
 	 */
 	@JvmStatic
-	fun formatSeconds(context: Context, seconds: Int): String {
-		return when {
+	fun formatSeconds(
+		context: Context,
+		seconds: Int,
+	): String =
+		when {
 			seconds < SECS_PER_MIN -> context.getQuantityString(R.plurals.seconds, seconds)
 			seconds < SECS_PER_HR -> context.getQuantityString(R.plurals.minutes, seconds / SECS_PER_MIN)
 			else -> context.getQuantityString(R.plurals.hours, (seconds / SECS_PER_HR).toInt())
 		}
-	}
-	
+
 	/**
 	 * Get a friendly date string (e.g., "Today", "Tomorrow", "Monday", or a formatted date).
 	 */
@@ -91,7 +94,7 @@ object TimeUtils {
 	fun getFriendlyDate(
 		context: Context,
 		dateTime: LocalDateTime,
-		relative: Boolean = false
+		relative: Boolean = false,
 	): String {
 		val now = LocalDateTime.now()
 		

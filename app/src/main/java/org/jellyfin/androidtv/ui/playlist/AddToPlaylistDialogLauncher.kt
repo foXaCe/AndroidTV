@@ -40,16 +40,18 @@ fun showAddToPlaylistDialog(
 					var showDialog by remember { mutableStateOf(true) }
 					var showCreatePlaylistFor by remember { mutableStateOf<ApiClient?>(null) }
 
-					val enableMultiServer = remember { 
-						userPreferences[UserPreferences.enableMultiServerLibraries]
-					}
+					val enableMultiServer =
+						remember {
+							userPreferences[UserPreferences.enableMultiServerLibraries]
+						}
 
 					var serverSessions by remember { mutableStateOf<List<ServerUserSession>>(emptyList()) }
 					LaunchedEffect(enableMultiServer) {
 						if (enableMultiServer) {
-							serverSessions = withContext(Dispatchers.IO) {
-								multiServerRepository.getLoggedInServers()
-							}
+							serverSessions =
+								withContext(Dispatchers.IO) {
+									multiServerRepository.getLoggedInServers()
+								}
 						}
 					}
 					
@@ -90,24 +92,26 @@ fun showAddToPlaylistDialog(
 										withContext(Dispatchers.IO) {
 											serverApi.playlistsApi.addItemToPlaylist(
 												playlistId = playlistId,
-												ids = listOf(itemId)
+												ids = listOf(itemId),
 											)
 										}
 										withContext(Dispatchers.Main) {
-											Toast.makeText(
-												context,
-												context.getString(R.string.msg_added_to_playlist),
-												Toast.LENGTH_SHORT
-											).show()
+											Toast
+												.makeText(
+													context,
+													context.getString(R.string.msg_added_to_playlist),
+													Toast.LENGTH_SHORT,
+												).show()
 										}
 									} catch (e: Exception) {
 										Timber.e(e, "Failed to add item to playlist")
 										withContext(Dispatchers.Main) {
-											Toast.makeText(
-												context,
-												context.getString(R.string.msg_failed_to_add_to_playlist),
-												Toast.LENGTH_SHORT
-											).show()
+											Toast
+												.makeText(
+													context,
+													context.getString(R.string.msg_failed_to_add_to_playlist),
+													Toast.LENGTH_SHORT,
+												).show()
 										}
 									}
 									showDialog = false
@@ -117,13 +121,12 @@ fun showAddToPlaylistDialog(
 							onCreateNewPlaylist = { serverApi ->
 								showDialog = false
 								showCreatePlaylistFor = serverApi
-							}
+							},
 						)
 					}
 				}
 			}
-		}
+		},
 	)
 	dialog.show()
 }
-

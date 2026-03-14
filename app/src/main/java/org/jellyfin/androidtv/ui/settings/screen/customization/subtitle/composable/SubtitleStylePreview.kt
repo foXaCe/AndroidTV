@@ -23,6 +23,7 @@ import androidx.media3.ui.SubtitleView
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.design.Tokens
 
 @OptIn(UnstableApi::class)
@@ -44,11 +45,12 @@ fun SubtitleStylePreview(
 		edgeType = if (subtitleTextStrokeColor.toInt().alpha > 0) CaptionStyleCompat.EDGE_TYPE_OUTLINE else CaptionStyleCompat.EDGE_TYPE_NONE,
 		edgeColor = subtitleTextStrokeColor.toInt(),
 		typeface = TypefaceCompat.create(context, Typeface.DEFAULT, subtitlesTextWeight, false),
-		modifier = Modifier
-			.background(Tokens.Color.colorBluegrey800, JellyfinTheme.shapes.large)
-			.fillMaxWidth()
-			.height(75.dp)
-			.clip(JellyfinTheme.shapes.large)
+		modifier =
+			Modifier
+				.background(VegafoXColors.BackgroundDeep, JellyfinTheme.shapes.large)
+				.fillMaxWidth()
+				.height(75.dp)
+				.clip(JellyfinTheme.shapes.large),
 	)
 	Spacer(Modifier.height(Tokens.Space.spaceSm))
 }
@@ -77,16 +79,19 @@ fun SubtitleStylePreview(
 				0,
 				edgeType,
 				edgeColor,
-				typeface
-			)
+				typeface,
+			),
 		)
 
-		val cue = Cue.Builder().apply {
-			setText(text)
-			setLine(0.5f, Cue.LINE_TYPE_FRACTION)
-			setLineAnchor(Cue.ANCHOR_TYPE_MIDDLE)
-		}.build()
+		val cue =
+			Cue
+				.Builder()
+				.apply {
+					setText(text)
+					setLine(0.5f, Cue.LINE_TYPE_FRACTION)
+					setLineAnchor(Cue.ANCHOR_TYPE_MIDDLE)
+				}.build()
 
 		view.setCues(listOf(cue))
-	}
+	},
 )

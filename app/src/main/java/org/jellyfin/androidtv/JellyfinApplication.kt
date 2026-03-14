@@ -23,16 +23,17 @@ import org.jellyfin.androidtv.data.repository.NotificationsRepository
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrHttpClient
 import org.jellyfin.androidtv.integration.LeanbackChannelWorker
 import org.jellyfin.androidtv.preference.JellyseerrPreferences
+import org.jellyfin.androidtv.telemetry.TelemetryService
 import org.jellyfin.androidtv.ui.background.UpdateCheckWorker
 import org.jellyfin.androidtv.ui.home.compose.HomePrefetchService
-import org.jellyfin.androidtv.telemetry.TelemetryService
 import org.koin.android.ext.android.inject
 import org.koin.core.qualifier.named
-import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @Suppress("unused")
-class JellyfinApplication : Application(), SingletonImageLoader.Factory {
+class JellyfinApplication :
+	Application(),
+	SingletonImageLoader.Factory {
 	override fun onCreate() {
 		super.onCreate()
 
@@ -41,12 +42,13 @@ class JellyfinApplication : Application(), SingletonImageLoader.Factory {
 
 		if (BuildConfig.DEBUG) {
 			StrictMode.setThreadPolicy(
-				StrictMode.ThreadPolicy.Builder()
+				StrictMode.ThreadPolicy
+					.Builder()
 					.detectDiskReads()
 					.detectDiskWrites()
 					.detectNetwork()
 					.penaltyLog()
-					.build()
+					.build(),
 			)
 		}
 
@@ -66,7 +68,7 @@ class JellyfinApplication : Application(), SingletonImageLoader.Factory {
 		val imageLoader by inject<ImageLoader>()
 		return imageLoader
 	}
-	
+
 	private fun setupJellyseerrUserMonitoring() {
 		val userRepository by inject<UserRepository>()
 		val jellyseerrPreferencesGlobal by inject<JellyseerrPreferences>(named("global"))
@@ -111,23 +113,25 @@ class JellyfinApplication : Application(), SingletonImageLoader.Factory {
 		scope.launch(Dispatchers.IO) {
 			workManager.cancelAllWork().await()
 
-			workManager.enqueueUniquePeriodicWork(
-				LeanbackChannelWorker.PERIODIC_UPDATE_REQUEST_NAME,
-				ExistingPeriodicWorkPolicy.UPDATE,
-				PeriodicWorkRequestBuilder<LeanbackChannelWorker>(1, TimeUnit.HOURS)
-					.setBackoffCriteria(BackoffPolicy.LINEAR, 10, TimeUnit.MINUTES)
-					.build()
-			).await()
+			workManager
+				.enqueueUniquePeriodicWork(
+					LeanbackChannelWorker.PERIODIC_UPDATE_REQUEST_NAME,
+					ExistingPeriodicWorkPolicy.UPDATE,
+					PeriodicWorkRequestBuilder<LeanbackChannelWorker>(1, TimeUnit.HOURS)
+						.setBackoffCriteria(BackoffPolicy.LINEAR, 10, TimeUnit.MINUTES)
+						.build(),
+				).await()
 
 			// Schedule update check worker (daily) — libre builds only
 			if (BuildConfig.ENABLE_OTA_UPDATES) {
-				workManager.enqueueUniquePeriodicWork(
-					UpdateCheckWorker.WORK_NAME,
-					ExistingPeriodicWorkPolicy.KEEP,
-					PeriodicWorkRequestBuilder<UpdateCheckWorker>(1, TimeUnit.DAYS)
-						.setBackoffCriteria(BackoffPolicy.LINEAR, 1, TimeUnit.HOURS)
-						.build()
-				).await()
+				workManager
+					.enqueueUniquePeriodicWork(
+						UpdateCheckWorker.WORK_NAME,
+						ExistingPeriodicWorkPolicy.KEEP,
+						PeriodicWorkRequestBuilder<UpdateCheckWorker>(1, TimeUnit.DAYS)
+							.setBackoffCriteria(BackoffPolicy.LINEAR, 1, TimeUnit.HOURS)
+							.build(),
+					).await()
 			}
 		}
 

@@ -9,7 +9,5 @@ interface MediaStreamResolver {
 	/**
 	 * @return [PlayableMediaStream] or null if no stream can be determined by this resolver
 	 */
-	suspend fun getStream(
-		queueEntry: QueueEntry,
-	): PlayableMediaStream?
+	suspend fun getStream(queueEntry: QueueEntry): PlayableMediaStream?
 }

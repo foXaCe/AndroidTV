@@ -10,8 +10,10 @@ import kotlin.math.min
  * Based on Mario Klingemann's algorithm: http://www.quasimondo.com/2004/02/25/stackblur-2004/ https://github.com/Quasimondo/QuasimondoJS/blob/master/blur/StackBlur.js
  */
 object BitmapBlur {
-	
-	fun blur(bitmap: Bitmap, radius: Int): Bitmap {
+	fun blur(
+		bitmap: Bitmap,
+		radius: Int,
+	): Bitmap {
 		if (radius <= 0) return bitmap
 		
 		val blurRadius = min(25, max(1, radius))
@@ -34,8 +36,11 @@ object BitmapBlur {
 		
 		return result
 	}
-	
-	private fun stackBlur(bitmap: Bitmap, radius: Int) {
+
+	private fun stackBlur(
+		bitmap: Bitmap,
+		radius: Int,
+	) {
 		val w = bitmap.width
 		val h = bitmap.height
 		

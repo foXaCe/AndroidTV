@@ -1,59 +1,64 @@
 package org.jellyfin.androidtv.ui.itemdetail.v2.content
 
-import androidx.compose.foundation.MutatePriority
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.focusRestorer
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
-import kotlinx.coroutines.delay
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.HeroDimensions
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.browsing.composable.inforow.InfoRowMultipleRatings
+import org.jellyfin.androidtv.ui.itemdetail.v2.CinemaGenreTag
+import org.jellyfin.androidtv.ui.itemdetail.v2.CinemaPosterColumn
 import org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsUiState
-import org.jellyfin.androidtv.ui.itemdetail.v2.PosterImage
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailActionButtonsRow
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailActionCallbacks
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailCastSection
-import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailInfoRow
-import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailMetadataSection
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailSeasonsSection
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailSectionWithCards
-import org.jellyfin.androidtv.ui.itemdetail.v2.shared.getLogoUrl
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.getPosterUrl
 import org.jellyfin.sdk.api.client.ApiClient
 import java.util.UUID
 
+private val EaseOutCubic = CubicBezierEasing(0.33f, 1f, 0.68f, 1f)
+
 /**
- * Detail content for Series type — shows seasons, next up, and series-specific info.
+ * Cinema Immersive detail content for Series type.
  */
 @Composable
 fun SeriesDetailsContent(
@@ -67,176 +72,246 @@ fun SeriesDetailsContent(
 	val listState = rememberLazyListState()
 	val playButtonFocusRequester = remember { FocusRequester() }
 	val titleFocusRequester = contentFocusRequester
+	val density = LocalDensity.current
 
 	val posterUrl = getPosterUrl(item, api)
-	val logoUrl = getLogoUrl(item, api)
+
+	// Genre tag
+	val genreTag = buildSeriesGenreTag(item)
+
+	// Enter animation
+	var showContent by remember { mutableStateOf(false) }
+	LaunchedEffect(item.id) {
+		kotlinx.coroutines.delay(100)
+		showContent = true
+		kotlinx.coroutines.delay(500)
+		try {
+			titleFocusRequester.requestFocus()
+		} catch (_: Exception) {
+		}
+	}
+
+	val slideOffsetPx = with(density) { 20.dp.roundToPx() }
 
 	Box(modifier = Modifier.fillMaxSize()) {
 		LazyColumn(
 			state = listState,
-			contentPadding = PaddingValues(top = 100.dp, start = 48.dp, end = 48.dp, bottom = 48.dp),
 			modifier = Modifier.fillMaxSize(),
 		) {
-			// ---- Header + Action buttons ----
+			// ═══ HERO ZONE ═══
 			item {
 				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.focusRequester(titleFocusRequester)
-						.focusable()
-						.onKeyEvent { keyEvent ->
-							if (keyEvent.nativeKeyEvent.action == android.view.KeyEvent.ACTION_DOWN) {
-								when (keyEvent.key) {
-									Key.DirectionDown -> {
-										try { playButtonFocusRequester.requestFocus(); true } catch (_: Exception) { false }
-									}
-									else -> false
-								}
-							} else false
-						},
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.height(HeroDimensions.backdropHeight),
+					contentAlignment = Alignment.CenterStart,
 				) {
-					Row(
-						modifier = Modifier.fillMaxWidth(),
-						horizontalArrangement = Arrangement.SpaceBetween,
+					AnimatedVisibility(
+						visible = showContent,
+						enter =
+							fadeIn(
+								animationSpec = tween(350, easing = EaseOutCubic),
+							) +
+								slideInVertically(
+									initialOffsetY = { slideOffsetPx },
+									animationSpec = tween(350, easing = EaseOutCubic),
+								),
 					) {
-						Column(
-							modifier = Modifier.weight(1f).padding(end = if (posterUrl != null) 24.dp else 0.dp),
+						Row(
+							modifier =
+								Modifier
+									.fillMaxSize()
+									.padding(horizontal = HeroDimensions.horizontalPadding),
+							verticalAlignment = Alignment.CenterVertically,
+							horizontalArrangement = Arrangement.spacedBy(48.dp),
 						) {
-							if (logoUrl != null) {
-								AsyncImage(
-									model = logoUrl,
-									contentDescription = item.name,
-									modifier = Modifier
-										.width(300.dp)
-										.height(80.dp),
-									contentScale = ContentScale.Fit,
-									alignment = Alignment.CenterStart,
-								)
-							} else {
-								Text(
-									text = item.name ?: "",
-									style = JellyfinTheme.typography.headlineLargeBold,
-									color = JellyfinTheme.colorScheme.onSurface,
-									maxLines = 2,
-									overflow = TextOverflow.Ellipsis,
-									lineHeight = 38.sp,
+							// ─── Left column ───
+							Column(
+								modifier = Modifier.weight(1f),
+							) {
+								Box(
+									modifier =
+										Modifier
+											.focusRequester(titleFocusRequester)
+											.focusable(),
+								) {
+									Column {
+										CinemaGenreTag(text = genreTag)
+
+										Spacer(modifier = Modifier.height(12.dp))
+
+										// Title
+										Text(
+											text = item.name ?: "",
+											style =
+												JellyfinTheme.typography.displayBold.copy(
+													fontSize = HeroDimensions.titleFontSize,
+													fontWeight = FontWeight.Black,
+													fontFamily = BebasNeue,
+													letterSpacing = 2.sp,
+												),
+											color = VegafoXColors.TextPrimary,
+											maxLines = 2,
+											overflow = TextOverflow.Ellipsis,
+											lineHeight = HeroDimensions.titleLineHeight,
+										)
+									}
+								}
+
+								Spacer(modifier = Modifier.height(16.dp))
+
+								// Ratings
+								InfoRowMultipleRatings(item = item)
+
+								Spacer(modifier = Modifier.height(16.dp))
+
+								// Synopsis
+								item.overview?.let { overview ->
+									Text(
+										text = overview,
+										style =
+											JellyfinTheme.typography.bodyMedium.copy(
+												fontSize = 15.sp,
+											),
+										color = VegafoXColors.TextSecondary,
+										maxLines = 3,
+										overflow = TextOverflow.Ellipsis,
+										lineHeight = 26.sp,
+									)
+								}
+
+								Spacer(modifier = Modifier.height(32.dp))
+
+								// ─── Action buttons (cinema style) ───
+								DetailActionButtonsRow(
+									item = item,
+									uiState = uiState,
+									playButtonFocusRequester = playButtonFocusRequester,
+									callbacks = actionCallbacks,
 								)
 							}
 
-							Spacer(modifier = Modifier.height(10.dp))
-							DetailInfoRow(item, isSeries = true, uiState.badges)
-							Spacer(modifier = Modifier.height(6.dp))
-							InfoRowMultipleRatings(item = item)
-							Spacer(modifier = Modifier.height(10.dp))
-
-							item.taglines?.firstOrNull()?.let { tagline ->
-								Text(
-									text = "\u201C$tagline\u201D",
-									style = JellyfinTheme.typography.bodyLarge.copy(fontStyle = FontStyle.Italic),
-									color = JellyfinTheme.colorScheme.onSurfaceVariant,
-									lineHeight = 22.sp,
-								)
-								Spacer(modifier = Modifier.height(8.dp))
-							}
-
-							item.overview?.let { overview ->
-								Text(
-									text = overview,
-									style = JellyfinTheme.typography.bodyMedium,
-									color = JellyfinTheme.colorScheme.textPrimary,
-									lineHeight = 24.sp,
-									maxLines = 4,
-									overflow = TextOverflow.Ellipsis,
+							// ─── Right column: Poster ───
+							if (posterUrl != null) {
+								CinemaPosterColumn(
+									posterUrl = posterUrl,
+									playedPercentage = 0.0,
+									watchedMinutes = 0,
 								)
 							}
-						}
-
-						if (posterUrl != null) {
-							PosterImage(
-								imageUrl = posterUrl,
-								isLandscape = false,
-								isSquare = false,
-								item = item,
-							)
 						}
 					}
 				}
-
-				Spacer(modifier = Modifier.height(24.dp))
-				Row(
-					modifier = Modifier
-						.fillMaxWidth()
-						.focusRestorer(playButtonFocusRequester),
-					horizontalArrangement = Arrangement.Center,
-				) {
-					DetailActionButtonsRow(
-						item = item,
-						uiState = uiState,
-						playButtonFocusRequester = playButtonFocusRequester,
-						callbacks = actionCallbacks,
-					)
-				}
 			}
 
-			// ---- Metadata ----
+			// ═══ CONTENT BELOW HERO ═══
+
+			// Gradient transition
 			item {
-				Spacer(modifier = Modifier.height(24.dp))
-				DetailMetadataSection(item, uiState)
+				Box(
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.height(40.dp)
+							.background(
+								Brush.verticalGradient(
+									colors = listOf(Color.Transparent, VegafoXColors.BackgroundDeep),
+								),
+							),
+				)
 			}
 
-			// ---- Next Up ----
+			// Next Up
 			if (uiState.nextUp.isNotEmpty()) {
 				item {
-					DetailSectionWithCards(
-						title = stringResource(R.string.lbl_next_up),
-						items = uiState.nextUp,
-						api = api,
-						onNavigateToItem = onNavigateToItem,
-						isLandscape = true,
-					)
+					Box(
+						modifier =
+							Modifier
+								.fillMaxWidth()
+								.background(VegafoXColors.BackgroundDeep)
+								.padding(horizontal = 48.dp)
+								.padding(top = 16.dp),
+					) {
+						DetailSectionWithCards(
+							title = stringResource(R.string.lbl_next_up),
+							items = uiState.nextUp,
+							api = api,
+							onNavigateToItem = onNavigateToItem,
+							isLandscape = true,
+						)
+					}
 				}
 			}
 
-			// ---- Seasons ----
+			// Seasons
 			if (uiState.seasons.isNotEmpty()) {
 				item {
-					DetailSeasonsSection(uiState.seasons, api, onNavigateToItem)
+					Box(
+						modifier =
+							Modifier
+								.fillMaxWidth()
+								.background(VegafoXColors.BackgroundDeep)
+								.padding(horizontal = 48.dp)
+								.padding(top = 24.dp),
+					) {
+						DetailSeasonsSection(uiState.seasons, api, onNavigateToItem)
+					}
 				}
 			}
 
-			// ---- Cast & Crew ----
+			// Cast & Crew
 			if (uiState.cast.isNotEmpty()) {
 				item {
-					DetailCastSection(uiState.cast, api, onNavigateToItem)
+					Box(
+						modifier =
+							Modifier
+								.fillMaxWidth()
+								.background(VegafoXColors.BackgroundDeep)
+								.padding(horizontal = 48.dp)
+								.padding(top = 24.dp),
+					) {
+						DetailCastSection(uiState.cast, api, onNavigateToItem)
+					}
 				}
 			}
 
-			// ---- More Like This ----
+			// More Like This
 			if (uiState.similar.isNotEmpty()) {
 				item {
-					DetailSectionWithCards(
-						title = stringResource(R.string.lbl_more_like_this),
-						items = uiState.similar,
-						api = api,
-						onNavigateToItem = onNavigateToItem,
-					)
+					Box(
+						modifier =
+							Modifier
+								.fillMaxWidth()
+								.background(VegafoXColors.BackgroundDeep)
+								.padding(horizontal = 48.dp)
+								.padding(top = 24.dp),
+					) {
+						DetailSectionWithCards(
+							title = stringResource(R.string.lbl_more_like_this),
+							items = uiState.similar,
+							api = api,
+							onNavigateToItem = onNavigateToItem,
+						)
+					}
 				}
 			}
-		}
-	}
 
-	LaunchedEffect(item.id) {
-		for (attempt in 1..5) {
-			delay(if (attempt == 1) 300L else 200L)
-			try {
-				playButtonFocusRequester.requestFocus()
-				delay(16)
-				listState.scroll(MutatePriority.UserInput) { scrollBy(0f) }
-				listState.scrollToItem(0)
-				break
-			} catch (_: Exception) {
-				// Composable not yet laid out, retry
+			// Bottom padding
+			item {
+				Spacer(
+					modifier =
+						Modifier
+							.height(80.dp)
+							.fillMaxWidth()
+							.background(VegafoXColors.BackgroundDeep),
+				)
 			}
 		}
 	}
+}
+
+private fun buildSeriesGenreTag(item: org.jellyfin.sdk.model.api.BaseItemDto): String {
+	val genre = item.genres?.firstOrNull()
+	return listOfNotNull("S\u00C9RIE", genre?.uppercase()).joinToString("  \u2022  ")
 }

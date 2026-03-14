@@ -1,5 +1,6 @@
 package org.jellyfin.androidtv.ui.search.compose
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -7,7 +8,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -22,17 +25,22 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.R
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
+import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.state.DisplayState
 import org.jellyfin.androidtv.ui.base.state.EmptyState
 import org.jellyfin.androidtv.ui.base.state.StateContainer
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.BrowseDimensions
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.base.tv.TvCardGrid
-import org.jellyfin.androidtv.ui.base.tv.TvHeader
 import org.jellyfin.androidtv.ui.base.tv.TvScaffold
 import org.jellyfin.androidtv.ui.browsing.compose.BrowseMediaCard
 import org.jellyfin.androidtv.ui.search.SearchViewModel
@@ -94,15 +102,39 @@ fun SearchScreen(
 	}
 
 	val isQueryEmpty = query.text.isBlank()
-	val displayState = when {
-		isQueryEmpty -> DisplayState.EMPTY
-		allItems.isEmpty() -> DisplayState.EMPTY
-		else -> DisplayState.CONTENT
-	}
+	val displayState =
+		when {
+			isQueryEmpty -> DisplayState.EMPTY
+			allItems.isEmpty() -> DisplayState.EMPTY
+			else -> DisplayState.CONTENT
+		}
 
 	TvScaffold {
-		Column(modifier = Modifier.fillMaxSize()) {
-			TvHeader(title = stringResource(R.string.lbl_search))
+		Column(
+			modifier =
+				Modifier
+					.fillMaxSize()
+					.background(VegafoXColors.BackgroundDeep),
+		) {
+			// VegafoX header
+			Column(
+				modifier =
+					Modifier
+						.fillMaxWidth()
+						.padding(top = 32.dp, start = BrowseDimensions.gridPaddingHorizontal, end = BrowseDimensions.gridPaddingHorizontal),
+			) {
+				Text(
+					text = stringResource(R.string.lbl_search),
+					style =
+						JellyfinTheme.typography.headlineLarge.copy(
+							fontSize = 40.sp,
+							fontWeight = FontWeight.Bold,
+							fontFamily = BebasNeue,
+							letterSpacing = 2.sp,
+						),
+					color = VegafoXColors.TextPrimary,
+				)
+			}
 
 			Spacer(modifier = Modifier.height(12.dp))
 
@@ -110,9 +142,10 @@ fun SearchScreen(
 			Row(
 				horizontalArrangement = Arrangement.spacedBy(12.dp),
 				verticalAlignment = Alignment.CenterVertically,
-				modifier = Modifier
-					.focusRestorer()
-					.focusGroup(),
+				modifier =
+					Modifier
+						.focusRestorer()
+						.focusGroup(),
 			) {
 				if (speechAvailable) {
 					SearchVoiceInput(
@@ -136,9 +169,10 @@ fun SearchScreen(
 						// a fullscreen keyboard otherwise, soft-locking the app.
 						resultsFocusRequester.requestFocus()
 					},
-					modifier = Modifier
-						.weight(1f)
-						.focusRequester(textInputFocusRequester),
+					modifier =
+						Modifier
+							.weight(1f)
+							.focusRequester(textInputFocusRequester),
 				)
 			}
 
@@ -147,21 +181,23 @@ fun SearchScreen(
 			// Results area
 			StateContainer(
 				state = displayState,
-				modifier = Modifier
-					.weight(1f)
-					.focusRequester(resultsFocusRequester)
-					.focusGroup()
-					.onFocusChanged { state ->
-						if (!state.hasFocus) onItemFocus(null)
-					},
+				modifier =
+					Modifier
+						.weight(1f)
+						.focusRequester(resultsFocusRequester)
+						.focusGroup()
+						.onFocusChanged { state ->
+							if (!state.hasFocus) onItemFocus(null)
+						},
 				emptyContent = {
 					EmptyState(
-						title = if (isQueryEmpty) {
-							stringResource(R.string.search_empty_hint)
-						} else {
-							stringResource(R.string.search_no_results)
-						},
-						icon = ImageVector.vectorResource(R.drawable.ic_search),
+						title =
+							if (isQueryEmpty) {
+								stringResource(R.string.search_empty_hint)
+							} else {
+								stringResource(R.string.search_no_results)
+							},
+						icon = VegafoXIcons.Search,
 					)
 				},
 				content = {
@@ -175,9 +211,10 @@ fun SearchScreen(
 							item = item,
 							api = api,
 							onClick = { onItemClick(item) },
-							modifier = Modifier.onFocusChanged { state ->
-								if (state.hasFocus) onItemFocus(item)
-							},
+							modifier =
+								Modifier.onFocusChanged { state ->
+									if (state.hasFocus) onItemFocus(item)
+								},
 						)
 					}
 				},

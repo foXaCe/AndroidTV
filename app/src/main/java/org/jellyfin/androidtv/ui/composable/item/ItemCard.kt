@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
@@ -26,17 +25,18 @@ fun ItemCard(
 ) {
 	val borderColor = focusBorderColor()
 	Box(
-		modifier = modifier
-			.then(if (focused) Modifier.border(2.dp, borderColor, shape) else Modifier)
-			.clip(shape)
-			.background(JellyfinTheme.colorScheme.surface, shape)
+		modifier =
+			modifier
+				.then(if (focused) Modifier.border(2.dp, borderColor, shape) else Modifier)
+				.clip(shape)
+				.background(JellyfinTheme.colorScheme.surface, shape),
 	) {
 		image()
 
 		if (overlay != null) {
 			Box(
 				modifier = Modifier.fillMaxSize(),
-				content = overlay
+				content = overlay,
 			)
 		}
 	}

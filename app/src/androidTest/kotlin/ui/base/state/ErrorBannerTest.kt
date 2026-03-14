@@ -1,10 +1,8 @@
 package org.jellyfin.androidtv.ui.base.state
 
-import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.jellyfin.androidtv.R
@@ -15,7 +13,6 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class ErrorBannerTest {
-
 	@get:Rule
 	val composeTestRule = createComposeRule()
 

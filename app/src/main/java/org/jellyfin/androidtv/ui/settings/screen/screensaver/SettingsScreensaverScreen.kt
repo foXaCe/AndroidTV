@@ -1,15 +1,20 @@
 package org.jellyfin.androidtv.ui.settings.screen.screensaver
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.form.Checkbox
 import org.jellyfin.androidtv.ui.base.list.ListButton
-import org.jellyfin.androidtv.ui.base.list.ListSection
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.navigation.LocalRouter
 import org.jellyfin.androidtv.ui.settings.Routes
 import org.jellyfin.androidtv.ui.settings.compat.rememberPreference
@@ -23,9 +28,12 @@ fun SettingsScreensaverScreen() {
 
 	SettingsColumn {
 		item {
-			ListSection(
-				overlineContent = { Text(stringResource(R.string.settings_title).uppercase()) },
-				headingContent = { Text(stringResource(R.string.pref_screensaver)) },
+			Text(
+				text = stringResource(R.string.pref_screensaver),
+				fontFamily = BebasNeue,
+				fontSize = 22.sp,
+				color = VegafoXColors.TextPrimary,
+				modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp),
 			)
 		}
 
@@ -36,35 +44,38 @@ fun SettingsScreensaverScreen() {
 				headingContent = { Text(stringResource(R.string.pref_screensaver_inapp_enabled)) },
 				trailingContent = { Checkbox(checked = screensaverInAppEnabled) },
 				captionContent = { Text(stringResource(R.string.pref_screensaver_inapp_enabled_description)) },
-				onClick = { screensaverInAppEnabled = !screensaverInAppEnabled }
+				onClick = { screensaverInAppEnabled = !screensaverInAppEnabled },
 			)
 		}
 
 		item {
 			var screensaverInAppTimeout by rememberPreference(userPreferences, UserPreferences.screensaverInAppTimeout)
-			val caption = getScreensaverTimeoutOptions()
-				.firstOrNull { (duration) -> duration.inWholeMilliseconds == screensaverInAppTimeout }
-				?.second.orEmpty()
+			val caption =
+				getScreensaverTimeoutOptions()
+					.firstOrNull { (duration) -> duration.inWholeMilliseconds == screensaverInAppTimeout }
+					?.second
+					.orEmpty()
 
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_screensaver_inapp_timeout)) },
 				captionContent = { Text(caption) },
-				onClick = { router.push(Routes.CUSTOMIZATION_SCREENSAVER_TIMEOUT) }
+				onClick = { router.push(Routes.CUSTOMIZATION_SCREENSAVER_TIMEOUT) },
 			)
 		}
 
 		item {
 			var screensaverMode by rememberPreference(userPreferences, UserPreferences.screensaverMode)
-			val caption = when (screensaverMode) {
-				"library" -> stringResource(R.string.pref_screensaver_mode_library)
-				"logo" -> stringResource(R.string.pref_screensaver_mode_logo)
-				else -> screensaverMode
-			}
+			val caption =
+				when (screensaverMode) {
+					"library" -> stringResource(R.string.pref_screensaver_mode_library)
+					"logo" -> stringResource(R.string.pref_screensaver_mode_logo)
+					else -> screensaverMode
+				}
 
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_screensaver_mode)) },
 				captionContent = { Text(caption) },
-				onClick = { router.push(Routes.CUSTOMIZATION_SCREENSAVER_MODE) }
+				onClick = { router.push(Routes.CUSTOMIZATION_SCREENSAVER_MODE) },
 			)
 		}
 
@@ -75,7 +86,7 @@ fun SettingsScreensaverScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_screensaver_dimming)) },
 				captionContent = { Text(caption) },
-				onClick = { router.push(Routes.CUSTOMIZATION_SCREENSAVER_DIMMING) }
+				onClick = { router.push(Routes.CUSTOMIZATION_SCREENSAVER_DIMMING) },
 			)
 		}
 
@@ -86,20 +97,22 @@ fun SettingsScreensaverScreen() {
 				headingContent = { Text(stringResource(R.string.pref_screensaver_ageratingrequired_title)) },
 				trailingContent = { Checkbox(checked = screensaverAgeRatingRequired) },
 				captionContent = { Text(stringResource(R.string.pref_screensaver_ageratingrequired_enabled)) },
-				onClick = { screensaverAgeRatingRequired = !screensaverAgeRatingRequired }
+				onClick = { screensaverAgeRatingRequired = !screensaverAgeRatingRequired },
 			)
 		}
 
 		item {
 			var screensaverAgeRatingMax by rememberPreference(userPreferences, UserPreferences.screensaverAgeRatingMax)
-			val caption = getScreensaverAgeRatingOptions()
-				.firstOrNull { (ageRating) -> ageRating == screensaverAgeRatingMax }
-				?.second.orEmpty()
+			val caption =
+				getScreensaverAgeRatingOptions()
+					.firstOrNull { (ageRating) -> ageRating == screensaverAgeRatingMax }
+					?.second
+					.orEmpty()
 
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_screensaver_ageratingmax)) },
 				captionContent = { Text(caption) },
-				onClick = { router.push(Routes.CUSTOMIZATION_SCREENSAVER_AGE_RATING) }
+				onClick = { router.push(Routes.CUSTOMIZATION_SCREENSAVER_AGE_RATING) },
 			)
 		}
 
@@ -110,7 +123,7 @@ fun SettingsScreensaverScreen() {
 				headingContent = { Text(stringResource(R.string.pref_screensaver_show_clock)) },
 				trailingContent = { Checkbox(checked = screensaverShowClock) },
 				captionContent = { Text(stringResource(R.string.pref_screensaver_show_clock_description)) },
-				onClick = { screensaverShowClock = !screensaverShowClock }
+				onClick = { screensaverShowClock = !screensaverShowClock },
 			)
 		}
 	}

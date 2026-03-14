@@ -1,6 +1,7 @@
 package org.jellyfin.androidtv.ui.jellyseerr
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
@@ -8,30 +9,33 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil3.load
 import org.jellyfin.androidtv.R
-import android.view.View
-import org.jellyfin.androidtv.databinding.ItemJellyseerrRequestBinding
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrRequestDto
+import org.jellyfin.androidtv.databinding.ItemJellyseerrRequestBinding
 
-class RequestsAdapter :
-	ListAdapter<JellyseerrRequestDto, RequestsAdapter.ViewHolder>(DiffCallback()) {
-
-	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-		val binding = ItemJellyseerrRequestBinding.inflate(
-			LayoutInflater.from(parent.context),
-			parent,
-			false
-		)
+class RequestsAdapter : ListAdapter<JellyseerrRequestDto, RequestsAdapter.ViewHolder>(DiffCallback()) {
+	override fun onCreateViewHolder(
+		parent: ViewGroup,
+		viewType: Int,
+	): ViewHolder {
+		val binding =
+			ItemJellyseerrRequestBinding.inflate(
+				LayoutInflater.from(parent.context),
+				parent,
+				false,
+			)
 		return ViewHolder(binding)
 	}
 
-	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+	override fun onBindViewHolder(
+		holder: ViewHolder,
+		position: Int,
+	) {
 		holder.bind(getItem(position))
 	}
 
 	class ViewHolder(
 		private val binding: ItemJellyseerrRequestBinding,
 	) : RecyclerView.ViewHolder(binding.root) {
-
 		fun bind(item: JellyseerrRequestDto) {
 			binding.apply {
 				// Poster
@@ -56,15 +60,26 @@ class RequestsAdapter :
 				val isAvailable = mediaStatus == 5
 
 				// Determine status text and icon
-				val (statusTextValue, statusColor, iconRes) = when {
-					item.status == 1 -> Triple(itemView.context.getString(R.string.jellyseerr_status_pending), R.color.grey_light, R.drawable.ic_pending)
-					item.status == 3 -> Triple(itemView.context.getString(R.string.jellyseerr_status_declined), R.color.red, R.drawable.ic_declined)
-					isAvailable -> Triple(itemView.context.getString(R.string.jellyseerr_status_available), R.color.white, R.drawable.ic_available)
-					isPartial -> Triple(itemView.context.getString(R.string.jellyseerr_status_partially_available), R.color.white, R.drawable.ic_partially_available)
-					isDownloading -> Triple(itemView.context.getString(R.string.jellyseerr_status_downloading), R.color.white, R.drawable.ic_indigo_spinner)
-					item.status == 2 -> Triple(itemView.context.getString(R.string.jellyseerr_status_approved), R.color.white, null)
-					else -> Triple(itemView.context.getString(R.string.jellyseerr_status_unknown), R.color.grey_light, null)
-				}
+				val (statusTextValue, statusColor, iconRes) =
+					when {
+						item.status == 1 -> Triple(itemView.context.getString(R.string.jellyseerr_status_pending), R.color.grey_light, R.drawable.ic_pending)
+						item.status == 3 -> Triple(itemView.context.getString(R.string.jellyseerr_status_declined), R.color.red, R.drawable.ic_declined)
+						isAvailable -> Triple(itemView.context.getString(R.string.jellyseerr_status_available), R.color.white, R.drawable.ic_available)
+						isPartial ->
+							Triple(
+								itemView.context.getString(R.string.jellyseerr_status_partially_available),
+								R.color.white,
+								R.drawable.ic_partially_available,
+							)
+						isDownloading ->
+							Triple(
+								itemView.context.getString(R.string.jellyseerr_status_downloading),
+								R.color.white,
+								R.drawable.ic_indigo_spinner,
+							)
+						item.status == 2 -> Triple(itemView.context.getString(R.string.jellyseerr_status_approved), R.color.white, null)
+						else -> Triple(itemView.context.getString(R.string.jellyseerr_status_unknown), R.color.grey_light, null)
+					}
 
 				statusText.text = statusTextValue
 				statusText.setTextColor(ContextCompat.getColor(root.context, statusColor))

@@ -1,6 +1,5 @@
 package org.jellyfin.androidtv.ui.player
 
-import android.view.KeyEvent as NativeKeyEvent
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.focusable
@@ -35,10 +34,10 @@ import org.jellyfin.androidtv.ui.player.base.rememberPlayerOverlayVisibility
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import android.view.KeyEvent as NativeKeyEvent
 
 @RunWith(AndroidJUnit4::class)
 class PlayerOverlayTest {
-
 	@get:Rule
 	val composeTestRule = createComposeRule()
 
@@ -84,12 +83,14 @@ class PlayerOverlayTest {
 		composeTestRule.onNodeWithTag("controls").assertDoesNotExist()
 
 		// Focus the overlay and send D-pad UP
-		composeTestRule.onNodeWithTag("overlay")
+		composeTestRule
+			.onNodeWithTag("overlay")
 			.performSemanticsAction(SemanticsActions.RequestFocus)
 
-		composeTestRule.onNodeWithTag("overlay")
+		composeTestRule
+			.onNodeWithTag("overlay")
 			.performKeyPress(
-				KeyEvent(NativeKeyEvent(NativeKeyEvent.ACTION_DOWN, NativeKeyEvent.KEYCODE_DPAD_UP))
+				KeyEvent(NativeKeyEvent(NativeKeyEvent.ACTION_DOWN, NativeKeyEvent.KEYCODE_DPAD_UP)),
 			)
 
 		composeTestRule.waitForIdle()
@@ -154,13 +155,14 @@ class PlayerOverlayTest {
 				)
 
 				Box(
-					modifier = Modifier
-						.testTag("seekbar")
-						.fillMaxWidth()
-						.height(seekbarHeight)
-						.focusRequester(focusRequester)
-						.onFocusChanged { seekbarFocused = it.hasFocus || it.isFocused }
-						.focusable()
+					modifier =
+						Modifier
+							.testTag("seekbar")
+							.fillMaxWidth()
+							.height(seekbarHeight)
+							.focusRequester(focusRequester)
+							.onFocusChanged { seekbarFocused = it.hasFocus || it.isFocused }
+							.focusable(),
 				)
 			}
 		}
@@ -168,7 +170,8 @@ class PlayerOverlayTest {
 		composeTestRule.waitForIdle()
 
 		// Initial height is 3dp
-		composeTestRule.onNodeWithTag("seekbar")
+		composeTestRule
+			.onNodeWithTag("seekbar")
 			.assertHeightIsEqualTo(3.dp)
 
 		// Focus the seekbar via FocusRequester
@@ -176,7 +179,8 @@ class PlayerOverlayTest {
 		composeTestRule.waitForIdle()
 
 		// Height should increase beyond 3dp (target: 8dp)
-		composeTestRule.onNodeWithTag("seekbar")
+		composeTestRule
+			.onNodeWithTag("seekbar")
 			.assertHeightIsAtLeast(4.dp)
 	}
 }

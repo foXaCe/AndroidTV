@@ -21,7 +21,10 @@ class EpisodeQueueSupplier(
 	override var size: Int = 0
 		private set
 
-	override suspend fun loadPage(offset: Int, size: Int): Collection<QueueEntry> {
+	override suspend fun loadPage(
+		offset: Int,
+		size: Int,
+	): Collection<QueueEntry> {
 		val result by api.itemsApi.getItems(
 			parentId = episode.parentId,
 			parentIndexNumber = episode.parentIndexNumber,

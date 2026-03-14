@@ -1,63 +1,84 @@
 package org.jellyfin.androidtv.ui.itemdetail.v2.content
 
-import androidx.compose.foundation.MutatePriority
+import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.focusRestorer
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
-import kotlinx.coroutines.delay
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.components.VegafoXButton
+import org.jellyfin.androidtv.ui.base.components.VegafoXButtonVariant
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.HeroDimensions
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.browsing.composable.inforow.InfoRowMultipleRatings
+import org.jellyfin.androidtv.ui.itemdetail.v2.CinemaActionChip
+import org.jellyfin.androidtv.ui.itemdetail.v2.CinemaGenreTag
+import org.jellyfin.androidtv.ui.itemdetail.v2.CinemaPill
+import org.jellyfin.androidtv.ui.itemdetail.v2.CinemaPosterColumn
 import org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsUiState
-import org.jellyfin.androidtv.ui.itemdetail.v2.PosterImage
-import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailActionButtonsRow
+import org.jellyfin.androidtv.ui.itemdetail.v2.MediaBadge
+import org.jellyfin.androidtv.ui.itemdetail.v2.TrackSelectorDialog
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailActionCallbacks
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailCastSection
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailCollectionItemsGrid
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailEpisodesHorizontalSection
-import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailInfoRow
-import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailMetadataSection
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailSectionWithCards
-import org.jellyfin.androidtv.ui.itemdetail.v2.shared.getLogoUrl
+import org.jellyfin.androidtv.ui.itemdetail.v2.shared.formatDuration
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.getPosterUrl
+import org.jellyfin.androidtv.util.sdk.compat.canResume
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.model.api.BaseItemKind
+import org.jellyfin.sdk.model.api.MediaStreamType
 import java.util.UUID
 
+private val EaseOutCubic = CubicBezierEasing(0.33f, 1f, 0.68f, 1f)
+
 /**
- * Detail content for Movie, Episode, Video, Recording, Trailer, MusicVideo, and BoxSet types.
+ * Cinema Immersive detail content for Movie, Episode, Video, Recording,
+ * Trailer, MusicVideo, and BoxSet types.
+ *
+ * Layout:
+ * - 580dp hero zone: backdrop visible through, genre tag, large title,
+ *   metadata pills, ratings, synopsis, action buttons, poster column
+ * - Below hero: episodes, cast, similar sections on deep background
  */
 @Composable
 fun MovieDetailsContent(
@@ -69,226 +90,579 @@ fun MovieDetailsContent(
 ) {
 	val item = uiState.item ?: return
 	val listState = rememberLazyListState()
-	val playButtonFocusRequester = remember { FocusRequester() }
-	val collectionFirstItemFocusRequester = remember { FocusRequester() }
+	val context = LocalContext.current
+	val density = LocalDensity.current
 	val titleFocusRequester = contentFocusRequester
 
 	val isEpisode = item.type == BaseItemKind.EPISODE
 	val isBoxSet = item.type == BaseItemKind.BOX_SET
 
 	val posterUrl = getPosterUrl(item, api)
-	val logoUrl = getLogoUrl(item, api)
+
+	// Playback state
+	val hasPlaybackPosition = item.canResume
+	val playbackPositionTicks = item.userData?.playbackPositionTicks ?: 0L
+	val playedPercentage = item.userData?.playedPercentage ?: 0.0
+	val watchedMinutes = (playbackPositionTicks / 10_000_000 / 60).toInt()
+
+	// Genre tag
+	val genreTag = buildGenreTag(item)
+
+	// Media streams for action chips
+	val firstSource = item.mediaSources?.firstOrNull()
+	val audioStreams =
+		firstSource
+			?.mediaStreams
+			?.filter { it.type == MediaStreamType.AUDIO } ?: emptyList()
+	val subtitleStreams =
+		firstSource
+			?.mediaStreams
+			?.filter { it.type == MediaStreamType.SUBTITLE } ?: emptyList()
+	val hasMultipleVersions = (item.mediaSources?.size ?: 0) > 1
+
+	// Dialog state
+	var showAudioDialog by remember { mutableStateOf(false) }
+	var showSubtitleDialog by remember { mutableStateOf(false) }
+	var showVersionDialog by remember { mutableStateOf(false) }
+
+	// Enter animation
+	var showContent by remember { mutableStateOf(false) }
+	LaunchedEffect(item.id) {
+		kotlinx.coroutines.delay(100)
+		showContent = true
+		kotlinx.coroutines.delay(500)
+		try {
+			titleFocusRequester.requestFocus()
+		} catch (_: Exception) {
+		}
+	}
+
+	val slideOffsetPx = with(density) { 20.dp.roundToPx() }
 
 	Box(modifier = Modifier.fillMaxSize()) {
 		LazyColumn(
 			state = listState,
-			contentPadding = PaddingValues(top = 100.dp, start = 48.dp, end = 48.dp, bottom = 48.dp),
 			modifier = Modifier.fillMaxSize(),
 		) {
-			// ---- Header + Action buttons in same item so they stay together ----
+			// ═══ HERO ZONE ═══
 			item {
 				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.focusRequester(titleFocusRequester)
-						.focusable()
-						.onKeyEvent { keyEvent ->
-							if (keyEvent.nativeKeyEvent.action == android.view.KeyEvent.ACTION_DOWN) {
-								when (keyEvent.key) {
-									Key.DirectionDown -> {
-										val focused = if (isBoxSet) {
-											try { collectionFirstItemFocusRequester.requestFocus(); true } catch (_: Exception) { false }
-										} else {
-											try { playButtonFocusRequester.requestFocus(); true } catch (_: Exception) { false }
-										}
-										focused
-									}
-									else -> false
-								}
-							} else false
-						},
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.height(HeroDimensions.backdropHeight),
+					contentAlignment = Alignment.CenterStart,
 				) {
-					Row(
-						modifier = Modifier.fillMaxWidth(),
-						horizontalArrangement = Arrangement.SpaceBetween,
+					AnimatedVisibility(
+						visible = showContent,
+						enter =
+							fadeIn(
+								animationSpec =
+									tween(
+										durationMillis = 350,
+										easing = EaseOutCubic,
+									),
+							) +
+								slideInVertically(
+									initialOffsetY = { slideOffsetPx },
+									animationSpec =
+										tween(
+											durationMillis = 350,
+											easing = EaseOutCubic,
+										),
+								),
 					) {
-						Column(
-							modifier = Modifier.weight(1f).padding(end = if (posterUrl != null) 24.dp else 0.dp),
+						Row(
+							modifier =
+								Modifier
+									.fillMaxSize()
+									.padding(horizontal = HeroDimensions.horizontalPadding),
+							verticalAlignment = Alignment.CenterVertically,
+							horizontalArrangement = Arrangement.spacedBy(48.dp),
 						) {
-							if (isEpisode) {
-								Row(verticalAlignment = Alignment.CenterVertically) {
-									item.seriesName?.let { seriesName ->
+							// ─── Left column ───
+							Column(
+								modifier = Modifier.weight(1f),
+							) {
+								// Focusable title area — DPAD anchor for scroll-to-top
+								Box(
+									modifier =
+										Modifier
+											.focusRequester(titleFocusRequester)
+											.focusable(),
+								) {
+									Column {
+										// Episode sub-header
+										if (isEpisode) {
+											val seriesName = item.seriesName ?: ""
+											val epLabel =
+												if (item.parentIndexNumber != null && item.indexNumber != null) {
+													"$seriesName  \u2022  S${item.parentIndexNumber}E${item.indexNumber}"
+												} else {
+													seriesName
+												}
+											CinemaGenreTag(text = epLabel)
+										} else {
+											CinemaGenreTag(text = genreTag)
+										}
+
+										Spacer(modifier = Modifier.height(12.dp))
+
+										// Title
 										Text(
-											text = seriesName,
-											style = JellyfinTheme.typography.titleMedium.copy(fontWeight = FontWeight.W500),
-											color = JellyfinTheme.colorScheme.textSecondary,
-										)
-									}
-									if (item.parentIndexNumber != null && item.indexNumber != null) {
-										Spacer(modifier = Modifier.width(8.dp))
-										Text(
-											text = stringResource(R.string.lbl_season_episode, item.parentIndexNumber ?: 0, item.indexNumber ?: 0),
-											style = JellyfinTheme.typography.bodySmall,
-											color = JellyfinTheme.colorScheme.textHint,
-											modifier = Modifier
-												.background(
-													JellyfinTheme.colorScheme.outlineVariant,
-													JellyfinTheme.shapes.extraSmall,
-												)
-												.padding(horizontal = 8.dp, vertical = 2.dp),
+											text = item.name ?: "",
+											style =
+												JellyfinTheme.typography.displayBold.copy(
+													fontSize = HeroDimensions.titleFontSize,
+													fontWeight = FontWeight.Black,
+													fontFamily = BebasNeue,
+													letterSpacing = 2.sp,
+												),
+											color = VegafoXColors.TextPrimary,
+											maxLines = 2,
+											overflow = TextOverflow.Ellipsis,
+											lineHeight = HeroDimensions.titleLineHeight,
 										)
 									}
 								}
-								Spacer(modifier = Modifier.height(8.dp))
+
+								Spacer(modifier = Modifier.height(16.dp))
+
+								// Pills row
+								CinemaPillsRow(item = item, badges = uiState.badges)
+
+								Spacer(modifier = Modifier.height(16.dp))
+
+								// Ratings
+								InfoRowMultipleRatings(item = item)
+
+								Spacer(modifier = Modifier.height(16.dp))
+
+								// Synopsis
+								item.overview?.let { overview ->
+									Text(
+										text = overview,
+										style =
+											JellyfinTheme.typography.bodyMedium.copy(
+												fontSize = 15.sp,
+											),
+										color = VegafoXColors.TextSecondary,
+										maxLines = 3,
+										overflow = TextOverflow.Ellipsis,
+										lineHeight = 26.sp,
+									)
+								}
+
+								Spacer(modifier = Modifier.height(32.dp))
+
+								// ─── Primary action buttons ───
+								Row(
+									horizontalArrangement = Arrangement.spacedBy(12.dp),
+									modifier = Modifier.focusGroup(),
+								) {
+									if (hasPlaybackPosition) {
+										val resumeTime = formatDuration(playbackPositionTicks)
+										VegafoXButton(
+											text = "${stringResource(R.string.lbl_resume)} \u2014 $resumeTime",
+											onClick = actionCallbacks.onResume,
+											variant = VegafoXButtonVariant.Primary,
+											icon = VegafoXIcons.Play,
+											iconEnd = false,
+										)
+										VegafoXButton(
+											text = stringResource(R.string.lbl_restart),
+											onClick = actionCallbacks.onPlay,
+											variant = VegafoXButtonVariant.Secondary,
+											icon = VegafoXIcons.Refresh,
+											iconEnd = false,
+											compact = true,
+										)
+									} else {
+										VegafoXButton(
+											text = stringResource(R.string.lbl_play),
+											onClick = { actionCallbacks.onPlay() },
+											variant = VegafoXButtonVariant.Primary,
+											icon = VegafoXIcons.Play,
+											iconEnd = false,
+										)
+									}
+								}
+
+								Spacer(modifier = Modifier.height(12.dp))
+
+								// ─── Secondary action chips ───
+								Row(
+									horizontalArrangement = Arrangement.spacedBy(10.dp),
+									modifier = Modifier.focusGroup(),
+								) {
+									if (audioStreams.size > 1) {
+										CinemaActionChip(
+											icon = VegafoXIcons.Audiotrack,
+											label = stringResource(R.string.pref_audio),
+											onClick = { showAudioDialog = true },
+										)
+									}
+
+									if (subtitleStreams.isNotEmpty()) {
+										CinemaActionChip(
+											icon = VegafoXIcons.Subtitles,
+											label = stringResource(R.string.pref_subtitles),
+											onClick = { showSubtitleDialog = true },
+										)
+									}
+
+									if (hasMultipleVersions) {
+										CinemaActionChip(
+											icon = VegafoXIcons.Guide,
+											label = stringResource(R.string.select_version),
+											onClick = { showVersionDialog = true },
+										)
+									}
+
+									if (actionCallbacks.hasPlayableTrailers) {
+										CinemaActionChip(
+											icon = VegafoXIcons.Trailer,
+											label = stringResource(R.string.lbl_trailers),
+											onClick = actionCallbacks.onPlayTrailers,
+										)
+									}
+
+									if (item.userData != null) {
+										CinemaActionChip(
+											icon = VegafoXIcons.Favorite,
+											label =
+												if (item.userData?.isFavorite == true) {
+													stringResource(R.string.lbl_favorited)
+												} else {
+													stringResource(R.string.lbl_favorite)
+												},
+											onClick = actionCallbacks.onToggleFavorite,
+											isActive = item.userData?.isFavorite == true,
+											activeColor = VegafoXColors.Error,
+										)
+									}
+
+									if (item.userData != null && item.type != BaseItemKind.PERSON) {
+										CinemaActionChip(
+											icon = VegafoXIcons.Visibility,
+											label =
+												if (item.userData?.played == true) {
+													stringResource(R.string.lbl_watched)
+												} else {
+													stringResource(R.string.lbl_unwatched)
+												},
+											onClick = actionCallbacks.onToggleWatched,
+											isActive = item.userData?.played == true,
+											activeColor = VegafoXColors.Info,
+										)
+									}
+
+									if (item.canDelete == true) {
+										CinemaActionChip(
+											icon = VegafoXIcons.Delete,
+											label = stringResource(R.string.lbl_delete),
+											onClick = actionCallbacks.onConfirmDelete,
+											activeColor = VegafoXColors.Error,
+										)
+									}
+								}
 							}
 
-							if (logoUrl != null) {
-								AsyncImage(
-									model = logoUrl,
-									contentDescription = item.name,
-									modifier = Modifier
-										.width(300.dp)
-										.height(80.dp),
-									contentScale = ContentScale.Fit,
-									alignment = Alignment.CenterStart,
-								)
-							} else {
-								Text(
-									text = item.name ?: "",
-									style = JellyfinTheme.typography.headlineLargeBold,
-									color = JellyfinTheme.colorScheme.onSurface,
-									maxLines = 2,
-									overflow = TextOverflow.Ellipsis,
-									lineHeight = 38.sp,
+							// ─── Right column: Poster ───
+							if (posterUrl != null || playedPercentage > 0) {
+								CinemaPosterColumn(
+									posterUrl = posterUrl,
+									playedPercentage = playedPercentage,
+									watchedMinutes = watchedMinutes,
 								)
 							}
-
-							Spacer(modifier = Modifier.height(10.dp))
-							DetailInfoRow(item, isSeries = false, uiState.badges)
-							Spacer(modifier = Modifier.height(6.dp))
-							InfoRowMultipleRatings(item = item)
-							Spacer(modifier = Modifier.height(10.dp))
-
-							item.taglines?.firstOrNull()?.let { tagline ->
-								Text(
-									text = "\u201C$tagline\u201D",
-									style = JellyfinTheme.typography.bodyLarge.copy(fontStyle = FontStyle.Italic),
-									color = JellyfinTheme.colorScheme.onSurfaceVariant,
-									lineHeight = 22.sp,
-								)
-								Spacer(modifier = Modifier.height(8.dp))
-							}
-
-							item.overview?.let { overview ->
-								Text(
-									text = overview,
-									style = JellyfinTheme.typography.bodyMedium,
-									color = JellyfinTheme.colorScheme.textPrimary,
-									lineHeight = 24.sp,
-									maxLines = 4,
-									overflow = TextOverflow.Ellipsis,
-								)
-							}
-						}
-
-						if (posterUrl != null) {
-							PosterImage(
-								imageUrl = posterUrl,
-								isLandscape = isEpisode,
-								isSquare = false,
-								item = item,
-							)
 						}
 					}
 				}
+			}
 
-				if (!isBoxSet) {
-					Spacer(modifier = Modifier.height(24.dp))
-					Row(
-						modifier = Modifier
+			// ═══ CONTENT BELOW HERO ═══
+
+			// Gradient transition
+			item {
+				Box(
+					modifier =
+						Modifier
 							.fillMaxWidth()
-							.focusRestorer(playButtonFocusRequester),
-						horizontalArrangement = Arrangement.Center,
+							.height(40.dp)
+							.background(
+								Brush.verticalGradient(
+									colors = listOf(Color.Transparent, VegafoXColors.BackgroundDeep),
+								),
+							),
+				)
+			}
+
+			// Episodes section (for EPISODE type — same season)
+			if (isEpisode && uiState.episodes.isNotEmpty()) {
+				item {
+					Box(
+						modifier =
+							Modifier
+								.fillMaxWidth()
+								.background(VegafoXColors.BackgroundDeep)
+								.padding(horizontal = 48.dp)
+								.padding(top = 16.dp),
 					) {
-						DetailActionButtonsRow(
-							item = item,
-							uiState = uiState,
-							playButtonFocusRequester = playButtonFocusRequester,
-							callbacks = actionCallbacks,
+						DetailEpisodesHorizontalSection(
+							title =
+								item.parentIndexNumber?.let {
+									stringResource(R.string.lbl_season_episodes, it)
+								} ?: stringResource(R.string.lbl_episodes),
+							episodes = uiState.episodes,
+							currentEpisodeId = item.id,
+							api = api,
+							onNavigateToItem = onNavigateToItem,
 						)
 					}
 				}
 			}
 
-			// ---- Metadata ----
-			item {
-				Spacer(modifier = Modifier.height(24.dp))
-				DetailMetadataSection(item, uiState)
-			}
-
-			// ---- Episodes (for episode type) ----
-			if (isEpisode && uiState.episodes.isNotEmpty()) {
-				item {
-					DetailEpisodesHorizontalSection(
-						title = item.parentIndexNumber?.let { stringResource(R.string.lbl_season_episodes, it) }
-							?: stringResource(R.string.lbl_episodes),
-						episodes = uiState.episodes,
-						currentEpisodeId = item.id,
-						api = api,
-						onNavigateToItem = onNavigateToItem,
-					)
-				}
-			}
-
-			// ---- Collection items (BoxSet) ----
+			// BoxSet collection items
 			if (isBoxSet && uiState.collectionItems.isNotEmpty()) {
 				item {
-					DetailCollectionItemsGrid(
-						items = uiState.collectionItems,
-						api = api,
-						onNavigateToItem = onNavigateToItem,
-						firstItemFocusRequester = collectionFirstItemFocusRequester,
-					)
+					Box(
+						modifier =
+							Modifier
+								.fillMaxWidth()
+								.background(VegafoXColors.BackgroundDeep)
+								.padding(horizontal = 48.dp)
+								.padding(top = 16.dp),
+					) {
+						DetailCollectionItemsGrid(
+							items = uiState.collectionItems,
+							api = api,
+							onNavigateToItem = onNavigateToItem,
+						)
+					}
 				}
 			}
 
-			// ---- Cast & Crew ----
+			// Cast & Crew
 			if (uiState.cast.isNotEmpty()) {
 				item {
-					DetailCastSection(uiState.cast, api, onNavigateToItem)
+					Box(
+						modifier =
+							Modifier
+								.fillMaxWidth()
+								.background(VegafoXColors.BackgroundDeep)
+								.padding(horizontal = 48.dp)
+								.padding(top = 24.dp),
+					) {
+						DetailCastSection(uiState.cast, api, onNavigateToItem)
+					}
 				}
 			}
 
-			// ---- More Like This ----
+			// More Like This
 			if (uiState.similar.isNotEmpty()) {
 				item {
-					DetailSectionWithCards(
-						title = stringResource(R.string.lbl_more_like_this),
-						items = uiState.similar,
-						api = api,
-						onNavigateToItem = onNavigateToItem,
-					)
+					Box(
+						modifier =
+							Modifier
+								.fillMaxWidth()
+								.background(VegafoXColors.BackgroundDeep)
+								.padding(horizontal = 48.dp)
+								.padding(top = 24.dp),
+					) {
+						DetailSectionWithCards(
+							title = stringResource(R.string.lbl_more_like_this),
+							items = uiState.similar,
+							api = api,
+							onNavigateToItem = onNavigateToItem,
+						)
+					}
 				}
+			}
+
+			// Bottom padding
+			item {
+				Spacer(
+					modifier =
+						Modifier
+							.height(80.dp)
+							.fillMaxWidth()
+							.background(VegafoXColors.BackgroundDeep),
+				)
 			}
 		}
 	}
 
-	LaunchedEffect(item.id) {
-		for (attempt in 1..5) {
-			delay(if (attempt == 1) 300L else 200L)
-			try {
-				if (!isBoxSet) {
-					playButtonFocusRequester.requestFocus()
-				} else {
-					titleFocusRequester.requestFocus()
-				}
-				delay(16)
-				listState.scroll(MutatePriority.UserInput) { scrollBy(0f) }
-				listState.scrollToItem(0)
-				break
-			} catch (_: Exception) {
-				// Composable not yet laid out, retry
+	// ═══ DIALOGS ═══
+
+	// Audio track selector
+	if (showAudioDialog) {
+		val trackSelector = actionCallbacks.trackSelector
+		val audioTracks = trackSelector.getAudioTracks(item)
+		if (audioTracks.isEmpty()) {
+			LaunchedEffect(Unit) {
+				Toast.makeText(context, context.getString(R.string.playback_no_audio_tracks), Toast.LENGTH_SHORT).show()
+				showAudioDialog = false
 			}
+		} else {
+			val selectedAudioIndex = trackSelector.getSelectedAudioTrack(item.id.toString())
+			val trackNames =
+				audioTracks.map { trackSelector.getAudioTrackDisplayName(it) } +
+					listOf(stringResource(R.string.lbl_default))
+			val checkedIndex =
+				audioTracks
+					.indexOfFirst { it.index == selectedAudioIndex }
+					.let { if (it == -1) trackNames.size - 1 else it }
+
+			TrackSelectorDialog(
+				title = stringResource(R.string.lbl_audio_track),
+				options = trackNames,
+				selectedIndex = checkedIndex,
+				onSelect = { which ->
+					if (which < audioTracks.size) {
+						val track = audioTracks[which]
+						trackSelector.setSelectedAudioTrack(item.id.toString(), track.index)
+						Toast
+							.makeText(
+								context,
+								context.getString(R.string.playback_audio_track, trackSelector.getAudioTrackDisplayName(track)),
+								Toast.LENGTH_SHORT,
+							).show()
+					} else {
+						trackSelector.setSelectedAudioTrack(item.id.toString(), null)
+						Toast.makeText(context, context.getString(R.string.playback_audio_default), Toast.LENGTH_SHORT).show()
+					}
+					showAudioDialog = false
+				},
+				onDismiss = { showAudioDialog = false },
+			)
 		}
 	}
+
+	// Subtitle track selector
+	if (showSubtitleDialog) {
+		val trackSelector = actionCallbacks.trackSelector
+		val subtitleTracks = trackSelector.getSubtitleTracks(item)
+		val selectedSubIndex = trackSelector.getSelectedSubtitleTrack(item.id.toString())
+		val noneLabel = stringResource(R.string.lbl_none)
+		val defaultLabel = stringResource(R.string.lbl_default)
+		val trackNames =
+			listOf(noneLabel) +
+				subtitleTracks.map { trackSelector.getSubtitleTrackDisplayName(it) } +
+				listOf(defaultLabel)
+		val checkedIndex =
+			when {
+				selectedSubIndex == -1 -> 0
+				selectedSubIndex == null -> trackNames.size - 1
+				else ->
+					subtitleTracks
+						.indexOfFirst { it.index == selectedSubIndex }
+						.let { if (it == -1) trackNames.size - 1 else it + 1 }
+			}
+
+		TrackSelectorDialog(
+			title = stringResource(R.string.lbl_subtitle_track),
+			options = trackNames,
+			selectedIndex = checkedIndex,
+			onSelect = { which ->
+				when (which) {
+					0 -> {
+						trackSelector.setSelectedSubtitleTrack(item.id.toString(), -1)
+						Toast.makeText(context, context.getString(R.string.playback_subtitles_none), Toast.LENGTH_SHORT).show()
+					}
+					trackNames.size - 1 -> {
+						trackSelector.setSelectedSubtitleTrack(item.id.toString(), null)
+						Toast.makeText(context, context.getString(R.string.playback_subtitles_default), Toast.LENGTH_SHORT).show()
+					}
+					else -> {
+						val track = subtitleTracks[which - 1]
+						trackSelector.setSelectedSubtitleTrack(item.id.toString(), track.index)
+						Toast
+							.makeText(
+								context,
+								context.getString(R.string.playback_subtitles_track, trackSelector.getSubtitleTrackDisplayName(track)),
+								Toast.LENGTH_SHORT,
+							).show()
+					}
+				}
+				showSubtitleDialog = false
+			},
+			onDismiss = { showSubtitleDialog = false },
+		)
+	}
+
+	// Version selector
+	if (showVersionDialog) {
+		val versions = item.mediaSources ?: emptyList()
+		val versionNames =
+			versions.mapIndexed { i, source ->
+				source.name ?: stringResource(R.string.lbl_version_number, i + 1)
+			}
+
+		TrackSelectorDialog(
+			title = stringResource(R.string.lbl_select_version),
+			options = versionNames,
+			selectedIndex = versions.indexOfFirst { it.id == item.mediaSources?.firstOrNull()?.id },
+			onSelect = { which ->
+				val selectedSource = versions[which]
+				val sourceId = selectedSource.id
+				if (sourceId != null) {
+					val sourceUUID = UUID.fromString(sourceId)
+					actionCallbacks.onLoadItem(sourceUUID)
+				}
+				showVersionDialog = false
+			},
+			onDismiss = { showVersionDialog = false },
+		)
+	}
+}
+
+// ─── Helper composables ───
+
+@Composable
+private fun CinemaPillsRow(
+	item: org.jellyfin.sdk.model.api.BaseItemDto,
+	badges: List<MediaBadge>,
+) {
+	Row(
+		horizontalArrangement = Arrangement.spacedBy(8.dp),
+		modifier = Modifier.fillMaxWidth(),
+	) {
+		// Year
+		item.productionYear?.let { year ->
+			CinemaPill(text = year.toString())
+		}
+
+		// Duration
+		item.runTimeTicks?.let { ticks ->
+			CinemaPill(text = formatDuration(ticks))
+		}
+
+		// Media badges with type-based colors
+		badges.forEach { badge ->
+			val (borderColor, textColor) =
+				when (badge.type) {
+					"badge4k" -> VegafoXColors.OrangePrimary to VegafoXColors.OrangePrimary
+					"badgeHdr", "badgeDv" -> Color(0xFFFFD700) to Color(0xFFFFD700)
+					"badgeHd" -> VegafoXColors.TextHint to VegafoXColors.TextSecondary
+					else -> VegafoXColors.Divider to VegafoXColors.TextHint
+				}
+			CinemaPill(
+				text = badge.label,
+				borderColor = borderColor,
+				textColor = textColor,
+			)
+		}
+	}
+}
+
+private fun buildGenreTag(item: org.jellyfin.sdk.model.api.BaseItemDto): String {
+	val type =
+		when (item.type) {
+			BaseItemKind.MOVIE -> "FILM"
+			BaseItemKind.SERIES -> "S\u00C9RIE"
+			else -> null
+		}
+	val genre = item.genres?.firstOrNull()
+	return listOfNotNull(type, genre?.uppercase()).joinToString("  \u2022  ")
 }

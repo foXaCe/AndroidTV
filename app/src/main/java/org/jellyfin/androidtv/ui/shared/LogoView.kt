@@ -34,102 +34,108 @@ import org.jellyfin.androidtv.util.isImagePrimarilyDark
 /**
  * Displays a logo image with an adaptive shadow effect.
  * The shadow color adjusts based on whether the logo is primarily dark or light.
- * 
+ *
  * The logo is shown immediately with a default black shadow (works for most logos),
  * and the shadow color updates once the image brightness is analyzed.
- * 
+ *
  * Uses the singleton ImageLoader configured in JellyfinApplication for proper
  * authentication and caching.
  */
 @Composable
 fun LogoView(
-    url: String,
-    modifier: Modifier = Modifier
+	url: String,
+	modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
-    // The singleton ImageLoader (configured in JellyfinApplication) is used automatically
-    val painter = rememberAsyncImagePainter(
-        model = ImageRequest.Builder(context)
-            .data(url)
-            .allowHardware(false)
-            .build()
-    )
-    LogoView(painter = painter, modifier = modifier)
+	val context = LocalContext.current
+	// The singleton ImageLoader (configured in JellyfinApplication) is used automatically
+	val painter =
+		rememberAsyncImagePainter(
+			model =
+				ImageRequest
+					.Builder(context)
+					.data(url)
+					.allowHardware(false)
+					.build(),
+		)
+	LogoView(painter = painter, modifier = modifier)
 }
 
 @Composable
 fun LogoView(
-    bitmap: Bitmap,
-    modifier: Modifier = Modifier
+	bitmap: Bitmap,
+	modifier: Modifier = Modifier,
 ) {
-    val painter = rememberAsyncImagePainter(model = bitmap)
-    LogoView(painter = painter, modifier = modifier)
+	val painter = rememberAsyncImagePainter(model = bitmap)
+	LogoView(painter = painter, modifier = modifier)
 }
 
 @Composable
 fun LogoView(
-    painter: AsyncImagePainter,
-    modifier: Modifier = Modifier
+	painter: AsyncImagePainter,
+	modifier: Modifier = Modifier,
 ) {
-    // Default to black shadow (color works for most logos)
-    var shadowColor by remember { mutableStateOf(Color.Black) }
-    val painterState = painter.state.collectAsState().value
+	// Default to black shadow (color works for most logos)
+	var shadowColor by remember { mutableStateOf(Color.Black) }
+	val painterState = painter.state.collectAsState().value
 
-    // Analyze brightness when image loads successfully
-    LaunchedEffect(painterState) {
-        if (painterState is AsyncImagePainter.State.Success) {
-            try {
-                val bitmap = painterState.result.image.toBitmap()
-                val isDark = withContext(Dispatchers.Default) {
-                    isImagePrimarilyDark(bitmap)
-                }
-                shadowColor = if (isDark) Color.White else Color.Black
-            } catch (_: Exception) {
-                // Keep default black shadow on error
-            }
-        }
-    }
+	// Analyze brightness when image loads successfully
+	LaunchedEffect(painterState) {
+		if (painterState is AsyncImagePainter.State.Success) {
+			try {
+				val bitmap = painterState.result.image.toBitmap()
+				val isDark =
+					withContext(Dispatchers.Default) {
+						isImagePrimarilyDark(bitmap)
+					}
+				shadowColor = if (isDark) Color.White else Color.Black
+			} catch (_: Exception) {
+				// Keep default black shadow on error
+			}
+		}
+	}
 
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
-    ) {
-        // Show logo as soon as it's loaded (don't wait for analysis)
-        if (painterState is AsyncImagePainter.State.Success) {
-            // Draw shadow behind with blur effect
-            val shadowModifier = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                Modifier.blurShadow()
-            } else {
-                Modifier
-            }
-            
-            Image(
-                painter = painter,
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(shadowColor, BlendMode.SrcIn),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(shadowModifier),
-                contentScale = ContentScale.Fit,
-                alpha = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) 1f else 0.7f
-            )
-            
-            // Draw the actual logo on top
-            Image(
-                painter = painter,
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Fit
-            )
-        }
-    }
+	Box(
+		modifier = modifier,
+		contentAlignment = Alignment.Center,
+	) {
+		// Show logo as soon as it's loaded (don't wait for analysis)
+		if (painterState is AsyncImagePainter.State.Success) {
+			// Draw shadow behind with blur effect
+			val shadowModifier =
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+					Modifier.blurShadow()
+				} else {
+					Modifier
+				}
+
+			Image(
+				painter = painter,
+				contentDescription = null,
+				colorFilter = ColorFilter.tint(shadowColor, BlendMode.SrcIn),
+				modifier =
+					Modifier
+						.fillMaxSize()
+						.then(shadowModifier),
+				contentScale = ContentScale.Fit,
+				alpha = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) 1f else 0.7f,
+			)
+
+			// Draw the actual logo on top
+			Image(
+				painter = painter,
+				contentDescription = null,
+				modifier = Modifier.fillMaxSize(),
+				contentScale = ContentScale.Fit,
+			)
+		}
+	}
 }
 
 @RequiresApi(Build.VERSION_CODES.S)
-private fun Modifier.blurShadow(): Modifier {
-    return graphicsLayer {
-        renderEffect = android.graphics.RenderEffect
-            .createBlurEffect(8f, 8f, android.graphics.Shader.TileMode.DECAL)
-            .asComposeRenderEffect()
-    }
-}
+private fun Modifier.blurShadow(): Modifier =
+	graphicsLayer {
+		renderEffect =
+			android.graphics.RenderEffect
+				.createBlurEffect(8f, 8f, android.graphics.Shader.TileMode.DECAL)
+				.asComposeRenderEffect()
+	}

@@ -12,7 +12,11 @@ abstract class PlayerService {
 	private lateinit var _job: Job
 	private lateinit var _coroutineScope: CoroutineScope
 
-	internal fun initialize(manager: PlaybackManager, state: PlayerState, job: Job) {
+	internal fun initialize(
+		manager: PlaybackManager,
+		state: PlayerState,
+		job: Job,
+	) {
 		_manager = manager
 		_state = state
 		_job = job

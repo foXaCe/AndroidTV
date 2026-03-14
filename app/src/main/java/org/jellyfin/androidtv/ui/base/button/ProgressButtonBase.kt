@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.colorResource
 import org.jellyfin.androidtv.R
@@ -21,10 +22,11 @@ fun ProgressButtonBase(
 	enabled: Boolean = true,
 	shape: Shape = ButtonDefaults.Shape,
 	colors: ButtonColors = ButtonDefaults.colors(),
+	progressColor: Color? = null,
 	interactionSource: MutableInteractionSource? = null,
-	content: @Composable BoxScope.() -> Unit
+	content: @Composable BoxScope.() -> Unit,
 ) {
-	val progressColor = colorResource(R.color.button_default_progress_background)
+	val resolvedProgressColor = progressColor ?: colorResource(R.color.button_default_progress_background)
 
 	ButtonBase(
 		onClick = onClick,
@@ -40,7 +42,7 @@ fun ProgressButtonBase(
 				Modifier
 					.fillMaxHeight()
 					.fillMaxWidth(progress)
-					.background(progressColor)
+					.background(resolvedProgressColor),
 			)
 		}
 

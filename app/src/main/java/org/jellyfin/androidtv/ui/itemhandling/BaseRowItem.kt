@@ -28,8 +28,11 @@ abstract class BaseRowItem protected constructor(
 	open fun getImage(imageType: ImageType): JellyfinImage? = null
 
 	open fun getFullName(context: Context): String? = null
+
 	open fun getName(context: Context): String? = null
+
 	open fun getSubText(context: Context): String? = null
+
 	open fun getSummary(context: Context): String? = null
 
 	override fun equals(other: Any?): Boolean {

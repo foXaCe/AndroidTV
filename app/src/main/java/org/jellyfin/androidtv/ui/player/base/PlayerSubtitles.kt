@@ -16,5 +16,5 @@ fun PlayerSubtitles(
 	modifier = modifier,
 	update = { view ->
 		view.playbackManager = playbackManager
-	}
+	},
 )

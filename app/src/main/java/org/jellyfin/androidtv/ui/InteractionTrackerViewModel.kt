@@ -14,13 +14,12 @@ import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.ui.playback.PlaybackControllerContainer
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.BaseItemKind
-import timber.log.Timber
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 class InteractionTrackerViewModel(
 	private val userPreferences: UserPreferences,
-	private val playbackControllerContainer: PlaybackControllerContainer
+	private val playbackControllerContainer: PlaybackControllerContainer,
 ) : ViewModel() {
 	// Screensaver
 
@@ -67,7 +66,10 @@ class InteractionTrackerViewModel(
 		return false
 	}
 
-	fun notifyStartSession(item: BaseItemDto, items: List<BaseItemDto>) {
+	fun notifyStartSession(
+		item: BaseItemDto,
+		items: List<BaseItemDto>,
+	) {
 		// No need to track when only watching 1 episode
 		if (item.type == BaseItemKind.EPISODE && items.size > 1) {
 			resetSession()
@@ -89,7 +91,10 @@ class InteractionTrackerViewModel(
 		if (item.type == BaseItemKind.EPISODE) isWatchingEpisodes = true
 	}
 
-	fun notifyInteraction(canCancel: Boolean, userInitiated: Boolean) {
+	fun notifyInteraction(
+		canCancel: Boolean,
+		userInitiated: Boolean,
+	) {
 		// Cancel pending screensaver timer (if any)
 		timer?.cancel()
 
@@ -106,13 +111,14 @@ class InteractionTrackerViewModel(
 
 		// Create new timer to show screensaver when enabled
 		if (inAppEnabled && !activityPaused) {
-			timer = viewModelScope.launch {
-				delay(timeout)
-				// Only show screensaver if no locks are active
-				if (locks == 0) {
-					_screensaverVisible.value = true
+			timer =
+				viewModelScope.launch {
+					delay(timeout)
+					// Only show screensaver if no locks are active
+					if (locks == 0) {
+						_screensaverVisible.value = true
+					}
 				}
-			}
 		}
 
 		// Update KEEP_SCREEN_ON flag value
@@ -133,10 +139,15 @@ class InteractionTrackerViewModel(
 		return lock::cancel
 	}
 
-	private inner class ScreensaverLock(private val lifecycle: Lifecycle) : LifecycleEventObserver {
+	private inner class ScreensaverLock(
+		private val lifecycle: Lifecycle,
+	) : LifecycleEventObserver {
 		private var active: Boolean = false
 
-		override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+		override fun onStateChanged(
+			source: LifecycleOwner,
+			event: Lifecycle.Event,
+		) {
 			if (event == Lifecycle.Event.ON_DESTROY) cancel()
 		}
 

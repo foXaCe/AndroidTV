@@ -38,7 +38,7 @@ fun SettingsPlaybackNextUpBehaviorScreen() {
 				onClick = {
 					nextUpBehavior = entry
 					router.back()
-				}
+				},
 			)
 		}
 	}

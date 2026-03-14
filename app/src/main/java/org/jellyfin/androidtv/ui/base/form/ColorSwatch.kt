@@ -20,13 +20,15 @@ fun ColorSwatch(
 	shape: Shape = CircleShape,
 ) {
 	Box(
-		modifier = modifier
-			.defaultMinSize(minWidth = 18.dp, minHeight = 18.dp)
-			.clip(shape)
+		modifier =
+			modifier
+				.defaultMinSize(minWidth = 18.dp, minHeight = 18.dp)
+				.clip(shape),
 	) {
 		Canvas(
-			modifier = Modifier
-				.matchParentSize()
+			modifier =
+				Modifier
+					.matchParentSize(),
 		) {
 			if (color.alpha < 1f) {
 				val squareSize = 6.dp.toPx()

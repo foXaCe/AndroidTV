@@ -40,23 +40,24 @@ fun TvSettingsToggle(
 	var isFocused by remember { mutableStateOf(false) }
 
 	Row(
-		modifier = modifier
-			.fillMaxWidth()
-			.defaultMinSize(minHeight = 56.dp)
-			.onFocusChanged { isFocused = it.isFocused }
-			.onKeyEvent { event ->
-				if (event.type == KeyEventType.KeyUp &&
-					(event.key == Key.DirectionCenter || event.key == Key.Enter)
-				) {
-					onCheckedChange(!checked)
-					true
-				} else false
-			}
-			.background(
-				color = if (isFocused) JellyfinTheme.colorScheme.surfaceBright else Color.Transparent,
-				shape = JellyfinTheme.shapes.small,
-			)
-			.padding(horizontal = 16.dp, vertical = 12.dp),
+		modifier =
+			modifier
+				.fillMaxWidth()
+				.defaultMinSize(minHeight = 56.dp)
+				.onFocusChanged { isFocused = it.isFocused }
+				.onKeyEvent { event ->
+					if (event.type == KeyEventType.KeyUp &&
+						(event.key == Key.DirectionCenter || event.key == Key.Enter)
+					) {
+						onCheckedChange(!checked)
+						true
+					} else {
+						false
+					}
+				}.background(
+					color = if (isFocused) JellyfinTheme.colorScheme.surfaceBright else Color.Transparent,
+					shape = JellyfinTheme.shapes.small,
+				).padding(horizontal = 16.dp, vertical = 12.dp),
 		horizontalArrangement = Arrangement.SpaceBetween,
 		verticalAlignment = Alignment.CenterVertically,
 	) {
@@ -83,13 +84,14 @@ fun TvSettingsToggle(
 			onCheckedChange = null,
 			enabled = enabled,
 			modifier = Modifier.scale(1.2f),
-			colors = SwitchDefaults.colors(
-				checkedThumbColor = JellyfinTheme.colorScheme.onPrimary,
-				checkedTrackColor = JellyfinTheme.colorScheme.primary,
-				uncheckedThumbColor = JellyfinTheme.colorScheme.onSurfaceVariant,
-				uncheckedTrackColor = JellyfinTheme.colorScheme.surfaceContainer,
-				uncheckedBorderColor = JellyfinTheme.colorScheme.onSurfaceVariant,
-			),
+			colors =
+				SwitchDefaults.colors(
+					checkedThumbColor = JellyfinTheme.colorScheme.onPrimary,
+					checkedTrackColor = JellyfinTheme.colorScheme.primary,
+					uncheckedThumbColor = JellyfinTheme.colorScheme.onSurfaceVariant,
+					uncheckedTrackColor = JellyfinTheme.colorScheme.surfaceContainer,
+					uncheckedBorderColor = JellyfinTheme.colorScheme.onSurfaceVariant,
+				),
 		)
 	}
 }

@@ -63,20 +63,21 @@ fun DetailHeroBackdrop(
 				AsyncImage(
 					model = url,
 					contentDescription = null,
-					modifier = Modifier
-						.fillMaxSize()
-						.graphicsLayer {
-							alpha = BACKDROP_ALPHA
-							if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && blurAmount > 0) {
-								renderEffect = RenderEffect
-									.createBlurEffect(
-										blurAmount.toFloat(),
-										blurAmount.toFloat(),
-										Shader.TileMode.CLAMP,
-									)
-									.asComposeRenderEffect()
-							}
-						},
+					modifier =
+						Modifier
+							.fillMaxSize()
+							.graphicsLayer {
+								alpha = BACKDROP_ALPHA
+								if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && blurAmount > 0) {
+									renderEffect =
+										RenderEffect
+											.createBlurEffect(
+												blurAmount.toFloat(),
+												blurAmount.toFloat(),
+												Shader.TileMode.CLAMP,
+											).asComposeRenderEffect()
+								}
+							},
 					contentScale = ContentScale.Crop,
 				)
 			}
@@ -84,35 +85,39 @@ fun DetailHeroBackdrop(
 
 		// Vertical gradient: transparent at top -> background at bottom
 		Box(
-			modifier = Modifier
-				.fillMaxSize()
-				.background(
-					Brush.verticalGradient(
-						colorStops = arrayOf(
-							0.0f to Color.Transparent,
-							0.3f to Color.Transparent,
-							0.5f to bgColor.copy(alpha = 0.25f),
-							0.65f to bgColor.copy(alpha = 0.63f),
-							0.8f to bgColor.copy(alpha = 0.88f),
-							1.0f to bgColor,
+			modifier =
+				Modifier
+					.fillMaxSize()
+					.background(
+						Brush.verticalGradient(
+							colorStops =
+								arrayOf(
+									0.0f to Color.Transparent,
+									0.3f to Color.Transparent,
+									0.5f to bgColor.copy(alpha = 0.25f),
+									0.65f to bgColor.copy(alpha = 0.63f),
+									0.8f to bgColor.copy(alpha = 0.88f),
+									1.0f to bgColor,
+								),
 						),
-					)
-				)
+					),
 		)
 
 		// Horizontal gradient: background at left -> transparent at right
 		Box(
-			modifier = Modifier
-				.fillMaxSize()
-				.background(
-					Brush.horizontalGradient(
-						colors = listOf(
-							bgColor.copy(alpha = 0.9f),
-							bgColor.copy(alpha = 0.3f),
-							Color.Transparent,
+			modifier =
+				Modifier
+					.fillMaxSize()
+					.background(
+						Brush.horizontalGradient(
+							colors =
+								listOf(
+									bgColor.copy(alpha = 0.9f),
+									bgColor.copy(alpha = 0.3f),
+									Color.Transparent,
+								),
 						),
-					)
-				)
+					),
 		)
 	}
 }

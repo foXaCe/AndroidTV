@@ -14,7 +14,7 @@ object InfoLayoutHelper {
 		item: BaseItemDto?,
 		mediaSource: MediaSourceInfo?,
 		layout: LinearLayout,
-		includeRuntime: Boolean
+		includeRuntime: Boolean,
 	) {
 		var baseItemInfoRowView: BaseItemInfoRowView? = null
 
@@ -42,14 +42,14 @@ object InfoLayoutHelper {
 		context: Context,
 		item: BaseItemDto?,
 		layout: LinearLayout,
-		includeRuntime: Boolean
+		includeRuntime: Boolean,
 	) = addInfoRow(context, item, null, layout, includeRuntime)
 
 	@JvmStatic
 	fun addRatingsRow(
 		context: Context,
 		item: BaseItemDto?,
-		layout: LinearLayout
+		layout: LinearLayout,
 	) {
 		var ratingsRowView: RatingsRowView? = null
 

@@ -47,7 +47,7 @@ fun SettingsSubtitleTextStrokeColorScreen() {
 			SubtitleColorPresetsControl(
 				presets = SubtitleTextStrokeColorPresets,
 				value = colorValue,
-				onValueChange = { subtitleTextStrokeColor = it.toArgb().toLong() }
+				onValueChange = { subtitleTextStrokeColor = it.toArgb().toLong() },
 			)
 		}
 
@@ -60,7 +60,7 @@ fun SettingsSubtitleTextStrokeColorScreen() {
 				headingContent = { Text(stringResource(R.string.color_red)) },
 				channel = Color.Red,
 				value = colorValue,
-				onValueChange = { subtitleTextStrokeColor = it.toArgb().toLong() }
+				onValueChange = { subtitleTextStrokeColor = it.toArgb().toLong() },
 			)
 		}
 
@@ -69,7 +69,7 @@ fun SettingsSubtitleTextStrokeColorScreen() {
 				headingContent = { Text(stringResource(R.string.color_green)) },
 				channel = Color.Green,
 				value = colorValue,
-				onValueChange = { subtitleTextStrokeColor = it.toArgb().toLong() }
+				onValueChange = { subtitleTextStrokeColor = it.toArgb().toLong() },
 			)
 		}
 
@@ -78,7 +78,7 @@ fun SettingsSubtitleTextStrokeColorScreen() {
 				headingContent = { Text(stringResource(R.string.color_blue)) },
 				channel = Color.Blue,
 				value = colorValue,
-				onValueChange = { subtitleTextStrokeColor = it.toArgb().toLong() }
+				onValueChange = { subtitleTextStrokeColor = it.toArgb().toLong() },
 			)
 		}
 
@@ -87,7 +87,7 @@ fun SettingsSubtitleTextStrokeColorScreen() {
 				headingContent = { Text(stringResource(R.string.color_alpha)) },
 				channel = Color.Transparent,
 				value = colorValue,
-				onValueChange = { subtitleTextStrokeColor = it.toArgb().toLong() }
+				onValueChange = { subtitleTextStrokeColor = it.toArgb().toLong() },
 			)
 		}
 	}

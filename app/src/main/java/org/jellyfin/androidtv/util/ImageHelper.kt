@@ -27,12 +27,15 @@ class ImageHelper(
 		const val MAX_PRIMARY_IMAGE_HEIGHT: Int = 370
 	}
 
-	fun getImageAspectRatio(item: BaseItemDto, preferParentThumb: Boolean): Double {
+	fun getImageAspectRatio(
+		item: BaseItemDto,
+		preferParentThumb: Boolean,
+	): Double {
 		if (preferParentThumb && (item.parentThumbItemId != null || item.seriesThumbImageTag != null)) {
 			return ASPECT_RATIO_16_9
 		}
 
-		val primaryAspectRatio = item.primaryImageAspectRatio;
+		val primaryAspectRatio = item.primaryImageAspectRatio
 		if (item.type == BaseItemKind.EPISODE) {
 			if (primaryAspectRatio != null) return primaryAspectRatio
 			if (item.parentThumbItemId != null || item.seriesThumbImageTag != null) return ASPECT_RATIO_16_9
@@ -52,15 +55,16 @@ class ImageHelper(
 		item: BaseItemDto,
 		preferParentThumb: Boolean,
 		fillWidth: Int? = null,
-		fillHeight: Int? = null
+		fillHeight: Int? = null,
 	): String? {
-		val image = when {
-			preferParentThumb && item.type == BaseItemKind.EPISODE -> item.parentImages[ImageType.THUMB] ?: item.seriesThumbImage
-			item.type == BaseItemKind.SEASON -> item.itemImages[ImageType.PRIMARY] ?: item.seriesPrimaryImage
-			item.type == BaseItemKind.PROGRAM && item.imageTags?.containsKey(ImageType.THUMB) == true -> item.itemImages[ImageType.THUMB]
-			item.type == BaseItemKind.AUDIO -> item.albumPrimaryImage
-			else -> null
-		} ?: item.itemImages[ImageType.PRIMARY]
+		val image =
+			when {
+				preferParentThumb && item.type == BaseItemKind.EPISODE -> item.parentImages[ImageType.THUMB] ?: item.seriesThumbImage
+				item.type == BaseItemKind.SEASON -> item.itemImages[ImageType.PRIMARY] ?: item.seriesPrimaryImage
+				item.type == BaseItemKind.PROGRAM && item.imageTags?.containsKey(ImageType.THUMB) == true -> item.itemImages[ImageType.THUMB]
+				item.type == BaseItemKind.AUDIO -> item.albumPrimaryImage
+				else -> null
+			} ?: item.itemImages[ImageType.PRIMARY]
 
 		return image?.getUrl(
 			api = api,
@@ -71,7 +75,7 @@ class ImageHelper(
 
 	fun getLogoImageUrl(
 		item: BaseItemDto?,
-		maxWidth: Int? = null
+		maxWidth: Int? = null,
 	): String? {
 		val image = item?.itemImages[ImageType.LOGO] ?: item?.parentImages[ImageType.LOGO]
 		return image?.getUrl(api, maxWidth = maxWidth)
@@ -86,10 +90,12 @@ class ImageHelper(
 	fun getResourceUrl(
 		context: Context,
 		@AnyRes resourceId: Int,
-	): String = Uri.Builder()
-		.scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
-		.authority(context.resources.getResourcePackageName(resourceId))
-		.appendPath(context.resources.getResourceTypeName(resourceId))
-		.appendPath(context.resources.getResourceEntryName(resourceId))
-		.toString()
+	): String =
+		Uri
+			.Builder()
+			.scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+			.authority(context.resources.getResourcePackageName(resourceId))
+			.appendPath(context.resources.getResourceTypeName(resourceId))
+			.appendPath(context.resources.getResourceEntryName(resourceId))
+			.toString()
 }

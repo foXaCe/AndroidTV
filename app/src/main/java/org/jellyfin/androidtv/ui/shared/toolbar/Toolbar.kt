@@ -10,10 +10,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -31,13 +29,14 @@ import kotlinx.coroutines.launch
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.theme.ToolbarDimensions
 import org.jellyfin.androidtv.ui.composable.modifier.overscan
 import org.jellyfin.androidtv.ui.composable.rememberCurrentTime
 
 @Composable
 fun Logo(modifier: Modifier = Modifier) {
 	Image(
-		painter = painterResource(R.drawable.ic_vegafox),
+		painter = painterResource(R.drawable.ic_vegafox_fox),
 		contentDescription = stringResource(R.string.app_name),
 		modifier = modifier,
 	)
@@ -51,9 +50,10 @@ fun Toolbar(
 	end: @Composable () -> Unit = { ToolbarClock() },
 ) {
 	ToolbarLayout(
-		modifier = modifier
-			.height(95.dp)
-			.overscan(),
+		modifier =
+			modifier
+				.height(ToolbarDimensions.height)
+				.overscan(),
 		start = start,
 		center = center,
 		end = end,
@@ -61,17 +61,15 @@ fun Toolbar(
 }
 
 @Composable
-fun ToolbarClock(
-	modifier: Modifier = Modifier,
-) {
+fun ToolbarClock(modifier: Modifier = Modifier) {
 	val currentTime by rememberCurrentTime()
 	Row(
-		modifier = modifier
-			.background(
-				color = JellyfinTheme.colorScheme.toolbarBackground,
-				shape = JellyfinTheme.shapes.extraLarge,
-			)
-			.padding(horizontal = 16.dp, vertical = 8.dp),
+		modifier =
+			modifier
+				.background(
+					color = JellyfinTheme.colorScheme.toolbarBackground,
+					shape = JellyfinTheme.shapes.extraLarge,
+				).padding(horizontal = 16.dp, vertical = 8.dp),
 		verticalAlignment = Alignment.CenterVertically,
 	) {
 		Text(
@@ -93,20 +91,23 @@ fun ToolbarLayout(
 	val startPlaceables = subcompose("start", content = start).map { it.measure(sideConstraints) }
 	val endPlaceables = subcompose("end", content = end).map { it.measure(sideConstraints) }
 
-	val sideWidth = maxOf(
-		startPlaceables.maxOfOrNull { it.width } ?: 0,
-		endPlaceables.maxOfOrNull { it.width } ?: 0,
-	)
+	val sideWidth =
+		maxOf(
+			startPlaceables.maxOfOrNull { it.width } ?: 0,
+			endPlaceables.maxOfOrNull { it.width } ?: 0,
+		)
 
 	val centerWidth = (constraints.maxWidth - 2 * sideWidth).coerceAtLeast(0)
-	val centerPlaceables = subcompose("center", content = center)
-		.map { it.measure(constraints.copy(minWidth = 0, maxWidth = centerWidth)) }
+	val centerPlaceables =
+		subcompose("center", content = center)
+			.map { it.measure(constraints.copy(minWidth = 0, maxWidth = centerWidth)) }
 
-	val height = listOf(
-		startPlaceables.maxOfOrNull { it.height } ?: 0,
-		centerPlaceables.maxOfOrNull { it.height } ?: 0,
-		endPlaceables.maxOfOrNull { it.height } ?: 0
-	).maxOrNull() ?: 0
+	val height =
+		listOf(
+			startPlaceables.maxOfOrNull { it.height } ?: 0,
+			centerPlaceables.maxOfOrNull { it.height } ?: 0,
+			endPlaceables.maxOfOrNull { it.height } ?: 0,
+		).maxOrNull() ?: 0
 
 	layout(constraints.maxWidth, height) {
 		startPlaceables.forEach { it.placeRelative(0, (height - it.height) / 2) }
@@ -127,35 +128,38 @@ fun ToolbarButtons(
 	val pillShape = JellyfinTheme.shapes.extraLarge
 
 	Row(
-		modifier = modifier
-			.background(
-				brush = Brush.verticalGradient(
-					colors = listOf(
-						backgroundColor.copy(alpha = alpha),
-						backgroundColor.copy(alpha = alpha)
-					)
-				),
-				shape = pillShape
-			)
-			.clip(pillShape)
-			.padding(horizontal = 0.dp, vertical = 0.dp)
-			.horizontalScroll(scrollState)
-			.focusRestorer()
-			.focusGroup()
-			.onFocusChanged { focusState ->
-				if (focusState.hasFocus) {
-					scope.launch {
-						scrollState.scrollBy(0f)
+		modifier =
+			modifier
+				.background(
+					brush =
+						Brush.verticalGradient(
+							colors =
+								listOf(
+									backgroundColor.copy(alpha = alpha),
+									backgroundColor.copy(alpha = alpha),
+								),
+						),
+					shape = pillShape,
+				).clip(pillShape)
+				.padding(horizontal = 0.dp, vertical = 0.dp)
+				.horizontalScroll(scrollState)
+				.focusRestorer()
+				.focusGroup()
+				.onFocusChanged { focusState ->
+					if (focusState.hasFocus) {
+						scope.launch {
+							scrollState.scrollBy(0f)
+						}
 					}
-				}
-			},
+				},
 		horizontalArrangement = Arrangement.spacedBy(0.dp),
 		verticalAlignment = Alignment.CenterVertically,
 	) {
 		JellyfinTheme(
-			colorScheme = JellyfinTheme.colorScheme.copy(
-				button = Color.Transparent
-			)
+			colorScheme =
+				JellyfinTheme.colorScheme.copy(
+					button = Color.Transparent,
+				),
 		) {
 			content()
 		}

@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.model.DataRefreshService
 import org.jellyfin.androidtv.preference.UserPreferences
@@ -45,7 +46,6 @@ import org.jellyfin.sdk.api.client.extensions.userLibraryApi
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.BaseItemKind
 import org.jellyfin.sdk.model.api.SeriesTimerInfoDto
-import kotlinx.serialization.json.Json
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
@@ -63,7 +63,6 @@ import timber.log.Timber
  * All UI is delegated to [ItemDetailScreen].
  */
 class ItemDetailComposeFragment : Fragment() {
-
 	private val viewModel: ItemDetailsViewModel by viewModel()
 	private val navigationRepository: NavigationRepository by inject()
 	private val playbackHelper: PlaybackHelper by inject()
@@ -79,21 +78,25 @@ class ItemDetailComposeFragment : Fragment() {
 		inflater: LayoutInflater,
 		container: ViewGroup?,
 		savedInstanceState: Bundle?,
-	): View = ComposeView(requireContext()).apply {
-		setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-		setContent {
-			JellyfinTheme {
-				ItemDetailScreen(
-					viewModel = viewModel,
-					playbackCallbacks = createPlaybackCallbacks(),
-					createActionCallbacks = ::createActionCallbacks,
-					userSettingPreferences = userSettingPreferences,
-				)
+	): View =
+		ComposeView(requireContext()).apply {
+			setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+			setContent {
+				JellyfinTheme {
+					ItemDetailScreen(
+						viewModel = viewModel,
+						playbackCallbacks = createPlaybackCallbacks(),
+						createActionCallbacks = ::createActionCallbacks,
+						userSettingPreferences = userSettingPreferences,
+					)
+				}
 			}
 		}
-	}
 
-	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+	override fun onViewCreated(
+		view: View,
+		savedInstanceState: Bundle?,
+	) {
 		super.onViewCreated(view, savedInstanceState)
 
 		val itemIdStr = arguments?.getString("ItemId")
@@ -110,23 +113,25 @@ class ItemDetailComposeFragment : Fragment() {
 			// Channel/Program details (Live TV)
 			channelIdStr != null && programInfoJson != null -> {
 				val channelId = Utils.uuidOrNull(channelIdStr) ?: return
-				val programInfo = try {
-					Json.Default.decodeFromString<BaseItemDto>(programInfoJson)
-				} catch (e: Exception) {
-					Timber.e(e, "Failed to parse ProgramInfo JSON")
-					return
-				}
+				val programInfo =
+					try {
+						Json.Default.decodeFromString<BaseItemDto>(programInfoJson)
+					} catch (e: Exception) {
+						Timber.e(e, "Failed to parse ProgramInfo JSON")
+						return
+					}
 				viewModel.loadChannelProgram(channelId, programInfo)
 			}
 
 			// Series timer details (Live TV)
 			seriesTimerJson != null -> {
-				val seriesTimer = try {
-					Json.Default.decodeFromString<SeriesTimerInfoDto>(seriesTimerJson)
-				} catch (e: Exception) {
-					Timber.e(e, "Failed to parse SeriesTimer JSON")
-					return
-				}
+				val seriesTimer =
+					try {
+						Json.Default.decodeFromString<SeriesTimerInfoDto>(seriesTimerJson)
+					} catch (e: Exception) {
+						Timber.e(e, "Failed to parse SeriesTimer JSON")
+						return
+					}
 				viewModel.loadSeriesTimer(seriesTimer)
 			}
 
@@ -142,8 +147,7 @@ class ItemDetailComposeFragment : Fragment() {
 				if (item != null) {
 					themeMusicPlayer.playThemeMusicForItem(item)
 				}
-			}
-			.launchIn(lifecycleScope)
+			}.launchIn(lifecycleScope)
 	}
 
 	override fun onDestroyView() {
@@ -153,57 +157,66 @@ class ItemDetailComposeFragment : Fragment() {
 
 	// ---- Callback factories ----
 
-	private fun createPlaybackCallbacks() = DetailPlaybackCallbacks(
-		onPlay = { item, positionMs, shuffle -> play(item, positionMs, shuffle) },
-		onPlayFromHere = { trackIds ->
-			playbackHelper.retrieveAndPlay(trackIds, false, null, null, requireContext())
-		},
-		onPlaySingle = { trackId ->
-			playbackHelper.retrieveAndPlay(trackId, false, requireContext())
-		},
-		onPlayInstantMix = { item ->
-			playbackHelper.playInstantMix(requireContext(), item)
-		},
-		onQueueAudioItem = { item ->
-			mediaManager.queueAudioItem(item)
-		},
-		onPlayTrailers = { item -> playTrailers(item) },
-		onConfirmDelete = { item -> confirmDeleteItem(item) },
-		onAddToPlaylist = { item -> showAddToPlaylistDialog(requireContext(), item.id) },
-		onNavigateToItem = { id ->
-			navigationRepository.navigate(Destinations.itemDetails(id, viewModel.serverId))
-		},
-	)
+	private fun createPlaybackCallbacks() =
+		DetailPlaybackCallbacks(
+			onPlay = { item, positionMs, shuffle -> play(item, positionMs, shuffle) },
+			onPlayFromHere = { trackIds ->
+				playbackHelper.retrieveAndPlay(trackIds, false, null, null, requireContext())
+			},
+			onPlaySingle = { trackId ->
+				playbackHelper.retrieveAndPlay(trackId, false, requireContext())
+			},
+			onPlayInstantMix = { item ->
+				playbackHelper.playInstantMix(requireContext(), item)
+			},
+			onQueueAudioItem = { item ->
+				mediaManager.queueAudioItem(item)
+			},
+			onPlayTrailers = { item -> playTrailers(item) },
+			onConfirmDelete = { item -> confirmDeleteItem(item) },
+			onAddToPlaylist = { item -> showAddToPlaylistDialog(requireContext(), item.id) },
+			onNavigateToItem = { id ->
+				navigationRepository.navigate(Destinations.itemDetails(id, viewModel.serverId))
+			},
+		)
 
 	private fun createActionCallbacks(
 		item: BaseItemDto,
 		uiState: ItemDetailsUiState,
 		context: android.content.Context,
-	): DetailActionCallbacks = DetailActionCallbacks(
-		trackSelector = trackSelector,
-		hasPlayableTrailers = hasPlayableTrailers(context, item),
-		onPlay = { handlePlay(item, uiState) },
-		onResume = { handleResume(item) },
-		onShuffle = { handleShuffle(item) },
-		onPlayTrailers = { playTrailers(item) },
-		onPlayInstantMix = { playbackHelper.playInstantMix(context, item) },
-		onToggleWatched = { viewModel.toggleWatched() },
-		onToggleFavorite = { viewModel.toggleFavorite() },
-		onConfirmDelete = { confirmDeleteItem(item) },
-		onAddToPlaylist = { showAddToPlaylistDialog(context, item.id) },
-		onGoToSeries = if (item.type == BaseItemKind.EPISODE && item.seriesId != null) {
-			{
-				item.seriesId?.let { seriesId ->
-					navigationRepository.navigate(Destinations.itemDetails(seriesId, viewModel.serverId))
-				}
-			}
-		} else null,
-		onLoadItem = { id -> viewModel.loadItem(id) },
-	)
+	): DetailActionCallbacks =
+		DetailActionCallbacks(
+			trackSelector = trackSelector,
+			hasPlayableTrailers = hasPlayableTrailers(context, item),
+			onPlay = { handlePlay(item, uiState) },
+			onResume = { handleResume(item) },
+			onShuffle = { handleShuffle(item) },
+			onPlayTrailers = { playTrailers(item) },
+			onPlayInstantMix = { playbackHelper.playInstantMix(context, item) },
+			onToggleWatched = { viewModel.toggleWatched() },
+			onToggleFavorite = { viewModel.toggleFavorite() },
+			onConfirmDelete = { confirmDeleteItem(item) },
+			onAddToPlaylist = { showAddToPlaylistDialog(context, item.id) },
+			onGoToSeries =
+				if (item.type == BaseItemKind.EPISODE && item.seriesId != null) {
+					{
+						item.seriesId?.let { seriesId ->
+							navigationRepository.navigate(Destinations.itemDetails(seriesId, viewModel.serverId))
+						}
+					}
+				} else {
+					null
+				},
+			onLoadItem = { id -> viewModel.loadItem(id) },
+		)
 
 	// ---- Playback helpers ----
 
-	private fun play(item: BaseItemDto, positionMs: Int, shuffle: Boolean) {
+	private fun play(
+		item: BaseItemDto,
+		positionMs: Int,
+		shuffle: Boolean,
+	) {
 		playbackHelper.getItemsToPlay(
 			requireContext(),
 			item,
@@ -218,11 +231,14 @@ class ItemDetailComposeFragment : Fragment() {
 					}
 					playbackLauncher.launch(requireContext(), response, positionMs, false, 0, shuffle)
 				}
-			}
+			},
 		)
 	}
 
-	private fun handlePlay(item: BaseItemDto, uiState: ItemDetailsUiState) {
+	private fun handlePlay(
+		item: BaseItemDto,
+		uiState: ItemDetailsUiState,
+	) {
 		when (item.type) {
 			BaseItemKind.SERIES -> {
 				if (uiState.nextUp.isNotEmpty()) {
@@ -259,19 +275,23 @@ class ItemDetailComposeFragment : Fragment() {
 		if (localTrailerCount < 1) {
 			lifecycleScope.launch {
 				try {
-					val trailerInfo = withContext(Dispatchers.IO) {
-						TrailerResolver.resolveTrailerFromItem(item)
-					}
+					val trailerInfo =
+						withContext(Dispatchers.IO) {
+							TrailerResolver.resolveTrailerFromItem(item)
+						}
 
 					if (trailerInfo != null) {
-						val segmentsJson = trailerInfo.segments.joinToString(",", "[", "]") { seg ->
-							"""{"start":${seg.startTime},"end":${seg.endTime},"category":"${seg.category}","action":"${seg.actionType}"}"""
-						}
-						navigationRepository.navigate(Destinations.trailerPlayer(
-							videoId = trailerInfo.youtubeVideoId,
-							startSeconds = trailerInfo.startSeconds,
-							segmentsJson = segmentsJson,
-						))
+						val segmentsJson =
+							trailerInfo.segments.joinToString(",", "[", "]") { seg ->
+								"""{"start":${seg.startTime},"end":${seg.endTime},"category":"${seg.category}","action":"${seg.actionType}"}"""
+							}
+						navigationRepository.navigate(
+							Destinations.trailerPlayer(
+								videoId = trailerInfo.youtubeVideoId,
+								startSeconds = trailerInfo.startSeconds,
+								segmentsJson = segmentsJson,
+							),
+						)
 					} else {
 						val intent = getExternalTrailerIntent(requireContext(), item)
 						if (intent != null) {
@@ -296,9 +316,12 @@ class ItemDetailComposeFragment : Fragment() {
 		} else {
 			lifecycleScope.launch {
 				try {
-					val trailers = withContext(Dispatchers.IO) {
-						viewModel.effectiveApi.userLibraryApi.getLocalTrailers(itemId = item.id).content
-					}
+					val trailers =
+						withContext(Dispatchers.IO) {
+							viewModel.effectiveApi.userLibraryApi
+								.getLocalTrailers(itemId = item.id)
+								.content
+						}
 					if (trailers.isNotEmpty()) {
 						playbackHelper.retrieveAndPlay(trailers.map { it.id }, false, null, null, requireContext())
 					}
@@ -311,7 +334,8 @@ class ItemDetailComposeFragment : Fragment() {
 	}
 
 	private fun confirmDeleteItem(item: BaseItemDto) {
-		android.app.AlertDialog.Builder(requireContext())
+		android.app.AlertDialog
+			.Builder(requireContext())
 			.setTitle(R.string.item_delete_confirm_title)
 			.setMessage(R.string.item_delete_confirm_message)
 			.setNegativeButton(R.string.lbl_no, null)
@@ -331,8 +355,11 @@ class ItemDetailComposeFragment : Fragment() {
 				return@launch
 			}
 			dataRefreshService.lastDeletedItemId = item.id
-			if (navigationRepository.canGoBack) navigationRepository.goBack()
-			else navigationRepository.navigate(Destinations.home)
+			if (navigationRepository.canGoBack) {
+				navigationRepository.goBack()
+			} else {
+				navigationRepository.navigate(Destinations.home)
+			}
 			Toast.makeText(requireContext(), getString(R.string.item_deleted, item.name), Toast.LENGTH_LONG).show()
 		}
 	}

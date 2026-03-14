@@ -56,13 +56,14 @@ fun DonateDialog(onDismiss: () -> Unit) {
 		) {
 			Column(
 				horizontalAlignment = Alignment.CenterHorizontally,
-				modifier = Modifier
-					.widthIn(min = 340.dp, max = 480.dp)
-					.clip(JellyfinTheme.shapes.dialog)
-					.background(JellyfinTheme.colorScheme.dialogScrim)
-					.border(1.dp, Color.White.copy(alpha = 0.1f), JellyfinTheme.shapes.dialog)
-					.padding(vertical = 20.dp)
-					.verticalScroll(rememberScrollState()),
+				modifier =
+					Modifier
+						.widthIn(min = 340.dp, max = 480.dp)
+						.clip(JellyfinTheme.shapes.dialog)
+						.background(JellyfinTheme.colorScheme.dialogScrim)
+						.border(1.dp, Color.White.copy(alpha = 0.1f), JellyfinTheme.shapes.dialog)
+						.padding(vertical = 20.dp)
+						.verticalScroll(rememberScrollState()),
 			) {
 				// Title
 				Text(
@@ -70,17 +71,19 @@ fun DonateDialog(onDismiss: () -> Unit) {
 					style = JellyfinTheme.typography.titleLarge,
 					color = JellyfinTheme.colorScheme.textPrimary,
 					textAlign = TextAlign.Center,
-					modifier = Modifier
-						.padding(horizontal = 24.dp)
-						.padding(bottom = 12.dp),
+					modifier =
+						Modifier
+							.padding(horizontal = 24.dp)
+							.padding(bottom = 12.dp),
 				)
 
 				// Divider
 				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.height(1.dp)
-						.background(JellyfinTheme.colorScheme.divider),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.height(1.dp)
+							.background(JellyfinTheme.colorScheme.divider),
 				)
 
 				Spacer(modifier = Modifier.height(16.dp))
@@ -99,11 +102,12 @@ fun DonateDialog(onDismiss: () -> Unit) {
 
 				// QR Code
 				Box(
-					modifier = Modifier
-						.size(260.dp)
-						.clip(JellyfinTheme.shapes.medium)
-						.background(Color.White)
-						.padding(12.dp),
+					modifier =
+						Modifier
+							.size(260.dp)
+							.clip(JellyfinTheme.shapes.medium)
+							.background(Color.White)
+							.padding(12.dp),
 					contentAlignment = Alignment.Center,
 				) {
 					Image(
@@ -141,10 +145,11 @@ fun DonateDialog(onDismiss: () -> Unit) {
 
 				// Divider
 				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.height(1.dp)
-						.background(JellyfinTheme.colorScheme.divider),
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.height(1.dp)
+							.background(JellyfinTheme.colorScheme.divider),
 				)
 
 				Spacer(modifier = Modifier.height(16.dp))
@@ -153,9 +158,10 @@ fun DonateDialog(onDismiss: () -> Unit) {
 				GlassDialogButton(
 					text = stringResource(R.string.btn_close),
 					onClick = onDismiss,
-					modifier = Modifier
-						.padding(horizontal = 24.dp)
-						.focusRequester(closeFocusRequester),
+					modifier =
+						Modifier
+							.padding(horizontal = 24.dp)
+							.focusRequester(closeFocusRequester),
 				)
 			}
 		}
@@ -176,31 +182,33 @@ fun GlassDialogButton(
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
 
-	val bgColor = when {
-		isFocused -> if (isPrimary) JellyfinTheme.colorScheme.primary else Color.White.copy(alpha = 0.15f)
-		isPrimary -> JellyfinTheme.colorScheme.primary.copy(alpha = 0.8f)
-		else -> Color.White.copy(alpha = 0.06f)
-	}
-	val textColor = when {
-		isFocused && isPrimary -> JellyfinTheme.colorScheme.onPrimary
-		isFocused -> JellyfinTheme.colorScheme.textPrimary
-		isPrimary -> JellyfinTheme.colorScheme.onPrimary
-		else -> JellyfinTheme.colorScheme.textSecondary
-	}
+	val bgColor =
+		when {
+			isFocused -> if (isPrimary) JellyfinTheme.colorScheme.primary else Color.White.copy(alpha = 0.15f)
+			isPrimary -> JellyfinTheme.colorScheme.primary.copy(alpha = 0.8f)
+			else -> Color.White.copy(alpha = 0.06f)
+		}
+	val textColor =
+		when {
+			isFocused && isPrimary -> JellyfinTheme.colorScheme.onPrimary
+			isFocused -> JellyfinTheme.colorScheme.textPrimary
+			isPrimary -> JellyfinTheme.colorScheme.onPrimary
+			else -> JellyfinTheme.colorScheme.textSecondary
+		}
 
 	Box(
-		modifier = modifier
-			.fillMaxWidth()
-			.clip(JellyfinTheme.shapes.small)
-			.background(bgColor)
-			.border(
-				1.dp,
-				if (isFocused) JellyfinTheme.colorScheme.textDisabled else JellyfinTheme.colorScheme.divider,
-				JellyfinTheme.shapes.small,
-			)
-			.clickable(interactionSource = interactionSource, indication = null) { onClick() }
-			.focusable(interactionSource = interactionSource)
-			.padding(vertical = 12.dp),
+		modifier =
+			modifier
+				.fillMaxWidth()
+				.clip(JellyfinTheme.shapes.small)
+				.background(bgColor)
+				.border(
+					1.dp,
+					if (isFocused) JellyfinTheme.colorScheme.textDisabled else JellyfinTheme.colorScheme.divider,
+					JellyfinTheme.shapes.small,
+				).clickable(interactionSource = interactionSource, indication = null) { onClick() }
+				.focusable(interactionSource = interactionSource)
+				.padding(vertical = 12.dp),
 		contentAlignment = Alignment.Center,
 	) {
 		Text(

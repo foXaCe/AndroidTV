@@ -13,25 +13,21 @@
     <string name="max_resolution_1080p">1080p (Full HD)</string>
     <string name="max_resolution_2160p">2160p (4K UHD)</string>
     <string name="settings_title">Préférences</string>
-    <string name="chapters">Chapitres</string>
-    <string name="lbl_settings">Préférences</string>
+<string name="lbl_settings">Préférences</string>
     <string name="lbl_continue_watching">Continuer de regarder</string>
     <string name="lbl_next_up">À suivre</string>
-    <string name="lbl_on_now">En cours</string>
-    <string name="lbl_views">Vues</string>
-    <string name="lbl_by_letter">Par lettre</string>
-    <string name="lbl_suggested">Suggestions</string>
-    <string name="lbl_genres">Genres</string>
+<string name="lbl_views">Vues</string>
+<string name="lbl_genres">Genres</string>
     <string name="lbl_search">Rechercher</string>
-    <string name="msg_not_implemented">" non implémenté"</string>
-    <string name="lbl_latest">Récemment ajouté</string>
+<string name="lbl_latest">Récemment ajouté</string>
     <string name="lbl_by_name">Par nom</string>
     <string name="lbl_favorites">Favoris</string>
+    <string name="lbl_my_list">Ma liste</string>
     <string name="lbl_coming_up">À venir</string>
-    <string name="lbl_favorite_channels">Chaînes favorites</string>
-    <string name="lbl_other_channels">Autres chaînes</string>
-    <string name="lbl_collections">Collections</string>
+<string name="lbl_collections">Collections</string>
     <string name="lbl_movies">Films</string>
+    <string name="lbl_music">Musique</string>
+    <string name="lbl_live_tv">TV en direct</string>
     <string name="lbl_tv_series">Séries TV</string>
     <string name="lbl_other">Autre</string>
     <string name="because_you_watched">Parce que tu as regardé %1$s</string>
@@ -46,47 +42,36 @@
     <string name="lbl_record_series">Enregistrer la série</string>
     <string name="lbl_record">Enregistrer</string>
     <string name="msg_set_to_record">Programme marqué pour l\'enregistrement</string>
-    <string name="msg_unable_to_create_recording">Impossible de créer l\'enregistrement</string>
-    <string name="msg_recording_cancelled">Enregistrement annulé</string>
-    <string name="msg_unable_to_cancel">Impossible d\'annuler l\'enregistrement</string>
-    <string name="lbl_cast_crew">Distribution et équipe</string>
+<string name="msg_recording_cancelled">Enregistrement annulé</string>
+<string name="lbl_cast_crew">Distribution et équipe</string>
     <string name="lbl_cast">Distribution</string>
-    <string name="lbl_additional_parts">Parties additionnelles</string>
-    <string name="lbl_chapters">Chapitres</string>
+<string name="lbl_chapters">Chapitres</string>
     <string name="lbl_specials">Épisodes spéciaux</string>
     <string name="lbl_trailers">Bandes-annonces</string>
-    <string name="lbl_items">Éléments</string>
-    <string name="lbl_item">Élément</string>
-    <string name="lbl_series">Séries</string>
+<string name="lbl_series">Séries</string>
     <string name="lbl_seasons">Saisons</string>
-    <string name="lbl_upcoming">À venir</string>
-    <string name="lbl_favorite">Favori</string>
+<string name="lbl_favorite">Favori</string>
     <string name="lbl_watched">Vu</string>
     <string name="lbl_sd">SD</string>
     <string name="lbl_runs">Durée</string>
     <string name="runtime_hours_minutes">%1$dh %2$dm</string>
     <string name="runtime_minutes">%1$dm</string>
     <string name="lbl_ends">Fin</string>
-    <string name="lbl_directed_by">Réalisé par</string>
-    <string name="lbl_last_played">"Dernière lecture "</string>
+<string name="lbl_last_played">"Dernière lecture "</string>
     <string name="lbl_runtime">Durée de lecture</string>
     <string name="lbl_other_options">Autres options</string>
     <string name="lbl_people">Personnes</string>
-    <string name="lbl_performers">Interprètes</string>
-    <string name="lbl_videos">Vidéos</string>
-    <string name="lbl_recordings">Enregistrements</string>
-    <string name="lbl_none">Aucun</string>
+<string name="lbl_videos">Vidéos</string>
+<string name="lbl_none">Aucun</string>
     <string name="msg_video_playback_error">"Erreur de lecture de la vidéo - "</string>
-    <string name="lbl_bracket_unknown">Inconnu</string>
-    <string name="lbl_trailer">"Bande-annonce "</string>
-    <string name="lbl_play_trailers">Bande-annonce</string>
+<string name="lbl_play_trailers">Bande-annonce</string>
     <string name="lbl_no">Non</string>
     <string name="lbl_yes">Oui</string>
     <string name="lbl_enter_server_address">Saisir l\'adresse du serveur</string>
+    <string name="lbl_connect_to_server">Se connecter au serveur</string>
     <string name="lbl_valid_server_address">Saisis une adresse de serveur valide (IP ou nom de machine/domaine)</string>
     <string name="lbl_ok">Ok</string>
-    <string name="lbl_born">"Né(e) "</string>
-    <string name="lbl_loading_elipses">Chargement…</string>
+<string name="lbl_loading_elipses">Chargement…</string>
     <string name="msg_playback_not_allowed">Lecture non autorisée pour l\'instant</string>
     <string name="msg_playback_restricted">L\'administrateur a restreint la lecture de cet élément pour le moment</string>
     <string name="msg_playback_incompatible">Impossible de lire ce format vidéo</string>
@@ -95,16 +80,12 @@
     <string name="msg_cannot_play">Impossible de lire cet élément</string>
     <string name="lbl_no_items">Aucun élément</string>
     <string name="lbl_empty">Vide</string>
-    <string name="lbl_tv_queuing">Lire l\'épisode suivant automatiquement</string>
-    <string name="lbl_search_hint">Texte à rechercher (sélectionner pour afficher le clavier)</string>
-    <string name="lbl_play_first_unwatched">Lire le premier élément non vu</string>
+<string name="lbl_play_first_unwatched">Lire le premier élément non vu</string>
     <string name="lbl_mark_unplayed">Marquer comme non vu</string>
     <string name="lbl_mark_played">Marquer comme vu</string>
     <string name="lbl_remove_favorite">Supprimer des favoris</string>
     <string name="lbl_add_favorite">Ajouter aux favoris</string>
-    <string name="lbl_now_playing_track">%1$s sur %2$s</string>
-    <string name="lbl_now_playing_album">de %1$s</string>
-    <string name="msg_no_playable_items">Aucun élément à lire</string>
+<string name="msg_no_playable_items">Aucun élément à lire</string>
     <string name="lbl_unwatched">Non vu</string>
     <string name="lbl_load_channels">"Charger les chaînes "</string>
     <string name="lbl_today">Aujourd\'hui</string>
@@ -116,8 +97,7 @@
     <string name="lbl_begin_padding">Marge de début</string>
     <string name="lbl_program_ended">Programme terminé</string>
     <string name="lbl_end_padding">Marge de fin</string>
-    <string name="lbl_similar_items_library">Éléments semblables dans ta bibliothèque</string>
-    <string name="lbl_record_any_channel">Enregistrer n\'importe quelle chaîne</string>
+<string name="lbl_record_any_channel">Enregistrer n\'importe quelle chaîne</string>
     <string name="lbl_record_any_time">Enregistrer à n\'importe quelle heure</string>
     <string name="lbl_only_new_episodes">Uniquement les nouveaux épisodes</string>
     <string name="lbl_repeat_options">Options de répétition</string>
@@ -139,18 +119,17 @@
     <string name="lbl_critic_rating">Note des critiques</string>
     <string name="lbl_community_rating">Note de la communauté</string>
     <string name="lbl_rating">Note</string>
-    <string name="lbl_starting_with">Commençant par ceux dont le nom débute par</string>
-    <string name="lbl_display_preferences">Préférences d\'affichage</string>
-    <string name="lbl__continuing"> EN PRODUCTION </string>
+<string name="lbl__continuing"> EN PRODUCTION </string>
     <string name="lbl__continuing_title">En production</string>
     <string name="lbl_ended"> TERMINÉ </string>
     <string name="lbl_ended_title">Terminé</string>
     <string name="lbl_filters">Filtres TV en direct</string>
-    <string name="msg_subtitles_loading">Chargement des sous-titres…</string>
-    <string name="msg_unable_load_subs">Impossible de charger les sous-titres</string>
-    <string name="msg_burn_sub_warning">Incrustation des sous-titres en cours. Cela peut prendre quelques secondes…</string>
-    <string name="lbl_no_recordings">Aucun enregistrement disponible</string>
-    <string name="lbl_live_tv_guide">Guide des programmes TV</string>
+<string name="lbl_live_tv_guide">Guide des programmes TV</string>
+    <string name="lbl_choose_section">Choisir une section</string>
+    <string name="lbl_epg_grid">Guide des programmes</string>
+    <string name="lbl_your_recordings">Vos enregistrements</string>
+    <string name="lbl_x_channels">%1$d chaînes</string>
+    <string name="lbl_guide_hours">%1$d heures</string>
     <string name="lbl_recorded_tv">TV enregistrée</string>
     <string name="pref_live_tv_cat">TV en direct</string>
     <string name="msg_error_live_stream">Erreur du flux TV en direct. Nouvel essai en cours…</string>
@@ -158,24 +137,12 @@
     <string name="lbl_programs">Programmes</string>
     <string name="lbl_albums">Albums</string>
     <string name="lbl_artists">Artistes</string>
-    <string name="lbl_song">Chanson</string>
-    <string name="lbl_songs">Chansons</string>
-    <string name="lbl_album">Album</string>
-    <string name="lbl_episodes">Épisodes</string>
-    <string name="lbl_enable_cinema_mode">Mode Cinéma</string>
-    <string name="sum_enable_cinema_mode">Lire les introductions et extraits disponibles avant le visionnage d\'un film</string>
-    <string name="lbl_playlists">Listes de lecture</string>
-    <string name="lbl_watch_list">Liste de suivi</string>
-    <string name="msg_items_added">" éléments ajoutés"</string>
-    <string name="lbl_add_to_queue">Ajouter à la file d\'attente</string>
-    <string name="lbl_add_to_watch_list">Ajouter à la liste de suivi</string>
-    <string name="lbl_remove_from_watch_list">Retirer de la liste de suivi</string>
-    <string name="lbl_remove_from_playlist">Retirer de la liste de lecture</string>
-    <string name="msg_added_to_watch_list">Ajouté à la liste de suivi</string>
-    <string name="msg_removed_from_watch_list">Retiré de la liste de suivi</string>
-    <string name="msg_failed_to_add_to_watch_list">Échec de l\'ajout à la liste de suivi</string>
-    <string name="msg_failed_to_remove_from_watch_list">Échec du retrait de la liste de suivi</string>
-    <string name="lbl_add_to_playlist">Ajouter à une liste de lecture</string>
+<string name="lbl_songs">Chansons</string>
+<string name="lbl_episodes">Épisodes</string>
+<string name="lbl_playlists">Listes de lecture</string>
+<string name="lbl_add_to_queue">Ajouter à la file d\'attente</string>
+<string name="lbl_remove_from_playlist">Retirer de la liste de lecture</string>
+<string name="lbl_add_to_playlist">Ajouter à une liste de lecture</string>
     <string name="lbl_create_new_playlist">Créer une liste de lecture</string>
     <string name="lbl_playlist_name">Nom de la liste de lecture</string>
     <string name="lbl_select_playlist">Choisir une liste de lecture</string>
@@ -186,27 +153,21 @@
     <string name="msg_playlist_created">Liste de lecture créée</string>
     <string name="msg_failed_to_create_playlist">Échec de la création de la liste de lecture</string>
     <string name="msg_enter_playlist_name">Saisis un nom de liste de lecture</string>
-    <string name="lbl_create">Créer</string>
-    <string name="lbl_create_and_add">Créer et ajouter</string>
+<string name="lbl_create_and_add">Créer et ajouter</string>
     <string name="lbl_back">Retour</string>
     <string name="lbl_open_artist">Ouvrir la fiche de l\'artiste</string>
     <string name="lbl_open_album">Ouvrir l\'album</string>
     <string name="lbl_shuffle_queue">Mode aléatoire</string>
     <string name="lbl_next_item">Élément suivant</string>
     <string name="lbl_prev_item">Élément précédent</string>
-    <string name="lbl_now_playing">En cours de lecture</string>
-    <string name="lbl_play_from_here">Lire à partir d\'ici</string>
+<string name="lbl_play_from_here">Lire à partir d\'ici</string>
     <string name="lbl_remove_from_queue">Retirer de la file d\'attente</string>
     <string name="lbl_goto_now_playing">Aller à la lecture en cours</string>
     <string name="lbl_instant_mix">Mix instantané</string>
     <string name="lbl_delete">Supprimer</string>
-    <string name="msg_item_added">" élément ajouté"</string>
-    <string name="desc_automatic_fav_songs">Liste de lecture automatique des chansons favorites</string>
-    <string name="lbl_new_premieres">Nouvelles saisons</string>
-    <string name="lbl_bitstream_ac3">Flux audio Dolby Digital</string>
-    <string name="desc_bitstream_ac3">Nécessite un matériel compatible</string>
-    <string name="desc_audio_night_mode">Nivellement automatique du volume audio</string>
-    <string name="lbl_zoom">Zoom</string>
+<string name="desc_automatic_fav_songs">Liste de lecture automatique des chansons favorites</string>
+<string name="lbl_bitstream_ac3">Flux audio Dolby Digital</string>
+<string name="lbl_zoom">Zoom</string>
     <string name="lbl_auto_crop">Recadrage automatique</string>
     <string name="lbl_stretch">Étirer</string>
     <string name="lbl_fit">Normal</string>
@@ -214,21 +175,15 @@
     <string name="lbl_playback_speed">Vitesse de lecture</string>
     <string name="lbl_quality_profile">Profil de qualité</string>
     <string name="lbl_subtitle_track">Choisir la piste de sous-titres</string>
-    <string name="lbl_subtitle_delay">Décalage des sous-titres</string>
-    <string name="lbl_audio_delay">Décalage audio</string>
-    <string name="btn_got_it">Compris</string>
+<string name="btn_got_it">Compris</string>
     <string name="lbl_clear_queue">Vider la file d\'attente</string>
     <string name="lbl_play_next_up">Lire la prochaine vidéo</string>
     <string name="lbl_open">Ouvrir</string>
     <string name="lbl_show_backdrop">Afficher les fonds</string>
     <string name="pref_show_backdrop_description">Changer l\'image de fond pour les éléments sélectionnés</string>
-    <string name="lbl_show_premieres">Afficher les épisodes de début de saison</string>
-    <string name="desc_premieres">Afficher une ligne des épisodes de début de saison pour les séries que tu regardes</string>
-    <string name="lbl_in_x_days">Dans %d jours</string>
+<string name="lbl_in_x_days">Dans %d jours</string>
     <string name="lbl_select_date">Choisir la date</string>
-    <string name="lbl_just_this_once">Juste cette fois</string>
-    <string name="msg_record_entire_series">Enregistrer la série entière \?</string>
-    <string name="no_program_data">Aucune donnée disponible pour ce programme</string>
+<string name="no_program_data">Aucune donnée disponible pour ce programme</string>
     <string name="lbl_sports">Sports</string>
     <string name="lbl_kids">Enfants</string>
     <string name="lbl_recent_recordings">Enregistrements récents</string>
@@ -243,8 +198,7 @@
     <string name="lbl_series_recordings">Enregistrement des séries</string>
     <string name="lbl_at_any_time">À tout moment</string>
     <string name="lbl_on_schedule">Programmée</string>
-    <string name="lbl_guest_stars">Stars invitées</string>
-    <string name="lbl_premiere">Première</string>
+<string name="lbl_premiere">Première</string>
     <string name="lbl_sort_by">Trier par</string>
     <string name="lbl_show_indicators">Afficher les indicateurs pour</string>
     <string name="lbl_guide_option_played">Dernier élément joué</string>
@@ -253,16 +207,8 @@
     <string name="lbl_subtitle_text_color">Couleur du texte</string>
     <string name="lbl_subtitle_background_color">Couleur d\'arrière-plan</string>
     <string name="lbl_subtitle_text_stroke_color">Couleur du contour</string>
-    <string name="lbl_resume_from">Reprendre à partir de %1$s</string>
-    <string name="lbl_from_beginning">Lire depuis le début</string>
-    <string name="lbl_more_like_this">Plus comme ceci</string>
-    <string name="lbl_previous_episode">Épisode précédent</string>
-    <string name="lbl_next_episode">Épisode suivant</string>
-    <string name="lbl_album_name">Nom de l\'album</string>
-    <string name="lbl_song_title">Titre de la chanson</string>
-    <string name="lbl_tv_channel_status">%1$d sur %2$d chaînes</string>
-    <string name="lbl_tv_filter_status">pour les %1$d prochaines heures</string>
-    <string name="lbl_news">Actualités</string>
+<string name="lbl_more_like_this">Plus comme ceci</string>
+<string name="lbl_news">Actualités</string>
     <string name="lbl_new_only">Nouveau uniquement</string>
     <string name="lbl_new_episodes">Nouveaux épisodes</string>
     <string name="lbl_premieres">Avant-premières</string>
@@ -283,55 +229,32 @@
     <string name="pref_poster_size_large">Grand</string>
     <string name="pref_poster_size_extra_large">Très grand</string>
     <string name="pref_about_title">À propos</string>
-    <string name="pref_donate_title">Soutenir VegafoX</string>
-    <string name="pref_donate_description">Aide à maintenir ce projet en vie</string>
-    <string name="donate_dialog_title">Soutenir le développement de VegafoX</string>
+<string name="donate_dialog_title">Soutenir le développement de VegafoX</string>
     <string name="donate_dialog_message">Merci d\'envisager un don ! Ton soutien permet de maintenir VegafoX en vie et de continuer le développement de nouvelles fonctionnalités et améliorations.\n\nScanne le QR code ci-dessous pour faire un don :</string>
     <string name="donate_dialog_thanks">Chaque contribution fait la différence. Merci !</string>
-    <string name="pref_external_player">Utiliser un lecteur externe</string>
-    <string name="pref_next_up_timeout_summary">Combien de temps attendre avant de lire l\'élément suivant</string>
+<string name="pref_next_up_timeout_summary">Combien de temps attendre avant de lire l\'élément suivant</string>
     <string name="pref_next_up_timeout_title">Durée d\'attente avant la lecture du suivant</string>
     <string name="pref_next_up_timeout_disabled">∞</string>
     <string name="watch_now">Regarder maintenant</string>
     <string name="pref_next_up_behavior_title">Afficher les infos de la prochaine vidéo</string>
-    <string name="pref_still_watching_behavior_title">Afficher la fenêtre contextuelle d\'inactivité</string>
-    <string name="pref_device_model">Modèle de l\'appareil</string>
+<string name="pref_device_model">Modèle de l\'appareil</string>
     <string name="grid_direction">Sens de la grille</string>
     <string name="grid_direction_horizontal">Horizontal</string>
     <string name="grid_direction_vertical">Vertical</string>
-    <string name="lbl_unknown_key">Inconnu (%1s)</string>
-    <string name="pref_audio_track_button">Bouton piste audio</string>
-    <string name="pref_subtitle_track_button">Bouton piste de sous-titres</string>
-    <string name="pref_button_remapping_description">Appuie sur n\'importe quel bouton de la télécommande pour l\'associer</string>
-    <string name="lbl_Reset">Réinitialiser</string>
-    <string name="bitrate_mbit">%1$,.0f Mbit/s</string>
+<string name="bitrate_mbit">%1$,.0f Mbit/s</string>
     <string name="bitrate_kbit">%1$,.0f Kbit/s</string>
-    <string name="mark_watched">Marquer comme vu</string>
-    <string name="mark_watched_message">L\'élément ne semble pas avoir été lu aussi longtemps que sa durée. Marquer comme vu \?</string>
-    <string name="no_player">Aucun lecteur</string>
-    <string name="no_player_message">Aucune application capable de lire des vidéos ne semble installée. Cette option nécessite l\'installation d\'une application tierce de lecture vidéo.</string>
+<string name="no_player_message">Aucune application capable de lire des vidéos ne semble installée. Cette option nécessite l\'installation d\'une application tierce de lecture vidéo.</string>
     <string name="episode_missing">Épisode manquant</string>
     <string name="episode_missing_message">Cet épisode manque dans ta bibliothèque. Veux-tu le passer et continuer avec le suivant ?</string>
     <string name="episode_missing_message_2">Cet épisode manque dans ta bibliothèque. La lecture sera arrêtée.</string>
-    <string name="lbl_load_guide_data">Charger les données du guide</string>
-    <string name="msg_live_tv_next">Charger les %1$d prochaines heures ?</string>
-    <string name="msg_live_tv_prev">Charger les %1$d précédentes heures ?</string>
-    <string name="seek_error">Impossible de se repositionner</string>
+<string name="seek_error">Impossible de se repositionner</string>
     <string name="player_error">Une erreur de lecture est survenue. Nouvel essai en cours…</string>
     <string name="too_many_errors">Trop d\'erreurs. Abandon</string>
-    <string name="subtitle_error">Impossible de sélectionner le sous-titre</string>
-    <string name="msg_no_items">Aucun élément à lire</string>
-    <string name="audio_error">Impossible de lire l\'audio %1$s</string>
-    <string name="turn_off">Désactiver cette option</string>
-    <string name="just_one">Celui-ci uniquement</string>
-    <string name="lbl_sign_in">Connecte-toi</string>
-    <string name="lbl_playback_control_ends">Se termine à %1$s</string>
+<string name="msg_no_items">Aucun élément à lire</string>
+<string name="lbl_playback_control_ends">Se termine à %1$s</string>
     <string name="lbl_stars">Stars</string>
     <string name="lbl_tomatoes">Tomatoes</string>
-    <string name="pref_default_rating">Type de note par défaut</string>
-    <string name="pref_enabled_ratings">Notes activées</string>
-    <string name="pref_enabled_ratings_description">Sélectionne les notes à afficher. Plusieurs notes apparaîtront sur une ligne séparée sous les métadonnées.</string>
-    <string name="pref_clock_display">Afficher l\'horloge</string>
+<string name="pref_clock_display">Afficher l\'horloge</string>
     <string name="lbl_always">Toujours</string>
     <string name="pref_clock_display_browsing">Pendant la navigation</string>
     <string name="pref_clock_display_playback">Pendant la lecture</string>
@@ -342,15 +265,13 @@
     <string name="login_authenticating">Authentification…</string>
     <string name="login_invalid_credentials">Nom d\'utilisateur ou mot de passe incorrect</string>
     <string name="login_server_unavailable">Impossible de se connecter au serveur</string>
-    <string name="login_username_field_empty">Le nom d\'utilisateur ne peut pas être vide</string>
-    <string name="lbl_manage_servers">Gérer les serveurs</string>
+<string name="lbl_manage_servers">Gérer les serveurs</string>
     <string name="lbl_remove_users">Cela supprimera également les comptes associés</string>
     <string name="lbl_remove_user_content">Supprimer le compte</string>
     <string name="lbl_sign_out_content">Demande une connexion à la prochaine utilisation</string>
     <string name="lbl_remove_server">Supprimer le serveur</string>
     <string name="lbl_user_last_used">Dernière utilisation le %1$s à %2$s</string>
-    <string name="lbl_user_server">%1$s sur %2$s</string>
-    <string name="lbl_server">Serveur</string>
+<string name="lbl_server">Serveur</string>
     <string name="lbl_remove">Supprimer</string>
     <string name="lbl_sign_out">Se déconnecter</string>
     <string name="image_type_poster">Affiche</string>
@@ -363,14 +284,8 @@
     <string name="image_size_large">Grand</string>
     <string name="image_size_xlarge">Très grand</string>
     <string name="pref_developer_link">Options de développement</string>
-    <string name="pref_developer_link_description">Fonctionnalités avancées et expérimentales</string>
-    <string name="lbl_hidden">Caché</string>
-    <string name="lbl_visible">Visible</string>
-    <string name="lbl_library_visibility_description">Afficher cette bibliothèque sur l\'écran d\'accueil et la barre d\'outils</string>
-    <string name="discovered_servers_title">Serveurs découverts</string>
-    <string name="discovered_servers_empty">Aucun serveur n\'a été trouvé sur le réseau local.</string>
-    <string name="connect_manually_by_address">Entre l\'adresse du serveur</string>
-    <string name="login_help_title">Besoin d\'aide \?</string>
+<string name="lbl_hidden">Caché</string>
+<string name="login_help_title">Besoin d\'aide \?</string>
     <string name="login_help_description">Jellyfin a besoin d\'un serveur auquel se connecter. Visite la documentation sur docs.jellyfin.org ou scanne le QR code pour commencer.</string>
     <string name="pref_watched_indicator">Afficher les indicateurs de visionnage</string>
     <string name="lbl_hide_unwatched_count">Quand l\'élément est visionné</string>
@@ -386,17 +301,11 @@
     <string name="user_picker_disable_summary">Toujours afficher l\'écran de connexion</string>
     <string name="user_picker_last_user_title">Plus récent</string>
     <string name="user_picker_last_user_summary">Utiliser le dernier compte actif</string>
-    <string name="lbl_switch_user">Changer de compte</string>
-    <string name="no_network_permissions">VegafoX a besoin des permissions réseau pour fonctionner</string>
+<string name="no_network_permissions">VegafoX a besoin des permissions réseau pour fonctionner</string>
     <string name="press_to_close">Appuyer pour fermer</string>
-    <string name="saved_servers">Serveurs sauvegardés</string>
-    <string name="welcome_title">Bienvenue sur VegafoX !</string>
-    <string name="welcome_content">Connecte-toi à ton serveur pour commencer.</string>
-    <string name="no_user_warning">Nous n\'avons trouvé aucun compte !\nAjoute un nouveau compte en appuyant sur le bouton \"Ajouter un compte\".</string>
-    <string name="who_is_watching">Qui regarde \?</string>
+<string name="who_is_watching">Qui regarde \?</string>
     <string name="add_user">Ajouter un compte</string>
-    <string name="lbl_edit">Modifier</string>
-    <string name="help">Aide</string>
+<string name="help">Aide</string>
     <string name="lbl_special">Spécial</string>
     <string name="lbl_season_number">S%1$d</string>
     <string name="lbl_episode_number">E%1$d</string>
@@ -423,10 +332,8 @@
     <string name="always_authenticate">Toujours demander les identifiants</string>
     <string name="always_authenticate_description">L\'activation de cette fonctionnalité désactive la connexion automatique</string>
     <string name="advanced_settings">Avancé</string>
-    <string name="lbl_security">Sécurité</string>
-    <string name="lbl_pin_code">Code PIN</string>
-    <string name="lbl_pin_code_description">Définir un code PIN optionnel pour protéger ton compte</string>
-    <string name="lbl_pin_code_enabled">Activer la protection par code PIN</string>
+<string name="lbl_pin_code">Code PIN</string>
+<string name="lbl_pin_code_enabled">Activer la protection par code PIN</string>
     <string name="lbl_pin_code_enabled_description">Exiger un code PIN lors du changement de compte</string>
     <string name="lbl_set_pin_code">Définir le code PIN</string>
     <string name="lbl_set_pin_code_description">Créer un nouveau code PIN pour ton compte</string>
@@ -448,8 +355,7 @@
     <string name="lbl_forgot_pin">Code PIN oublié \?</string>
     <string name="select_version">Version</string>
     <string name="licenses_link">Licences</string>
-    <string name="licenses_link_description">Voir les licences des bibliothèques utilisées par VegafoX</string>
-    <string name="license_description">Description</string>
+<string name="license_description">Description</string>
     <string name="license_version">Version</string>
     <string name="license_artifact">Artefact</string>
     <string name="license_website">Site internet</string>
@@ -457,8 +363,7 @@
     <string name="license_author">Auteur</string>
     <string name="license_license">Licence</string>
     <string name="home_prefs">Accueil</string>
-    <string name="home_sections">Sections de l\'accueil</string>
-    <string name="home_sections_description">Sélectionne les lignes à afficher sur l\'écran d\'accueil et leur ordre avec les boutons gauche et droite du pavé directionnel</string>
+<string name="home_sections_description">Sélectionne les lignes à afficher sur l\'écran d\'accueil et leur ordre avec les boutons gauche et droite du pavé directionnel</string>
     <string name="home_sections_move_up">Déplacer vers le haut</string>
     <string name="home_sections_move_down">Déplacer vers le bas</string>
     <string name="home_sections_reset">Réinitialiser les valeurs par défaut</string>
@@ -473,55 +378,37 @@
     <string name="home_section_next_up">À suivre</string>
     <string name="home_section_playlists">Listes de lecture</string>
     <string name="home_section_livetv">TV en direct</string>
+    <string name="home_section_latest">Récemment ajouté dans %1$s</string>
+    <string name="home_section_my_media">Mes médias</string>
+    <string name="home_section_recordings">Enregistrements</string>
+    <string name="home_section_live_tv">TV en direct</string>
     <string name="home_section_resume_book">Continuer à lire</string>
     <string name="home_section_none">Aucun</string>
     <string name="home_section_i">Section d\'accueil %1$d</string>
-    <string name="home_toolbar">Barre d\'outils</string>
-    <string name="pref_home_shuffle_button_title">Afficher le bouton aléatoire</string>
-    <string name="pref_home_shuffle_button_summary">Activer/désactiver le bouton de lecture aléatoire dans la barre d\'outils</string>
-    <string name="pref_home_shuffle_content_type_title">Type de contenu aléatoire</string>
-    <string name="pref_home_shuffle_content_type_summary">Choisir le type de contenu pour la lecture aléatoire : films, séries, ou les deux</string>
-    <string name="shuffle_content_movies">Films uniquement</string>
+<string name="shuffle_content_movies">Films uniquement</string>
     <string name="shuffle_content_tv_shows">Séries uniquement</string>
     <string name="shuffle_content_both">Films et séries</string>
-    <string name="pref_home_genres_button_title">Afficher le bouton genres</string>
-    <string name="pref_home_genres_button_summary">Activer/désactiver le bouton genres dans la barre d\'outils</string>
-    <string name="pref_home_favorites_button_title">Afficher le bouton favoris</string>
-    <string name="pref_home_favorites_button_summary">Activer/désactiver le bouton favoris dans la barre d\'outils</string>
-    <string name="pref_show_libraries_in_toolbar">Afficher les bibliothèques dans la barre d\'outils</string>
+<string name="pref_show_libraries_in_toolbar">Afficher les bibliothèques dans la barre d\'outils</string>
     <string name="pref_show_libraries_in_toolbar_description">Activer/désactiver les boutons de bibliothèques dans la barre d\'outils</string>
     <string name="searchable_hint">Rechercher dans VegafoX</string>
     <string name="searchable_settings_description">Média</string>
-    <string name="pref_subtitles_background_title">Activer le fond pour les sous-titres</string>
-    <string name="pref_subtitles_background_summary">Affiche un fond noir derrière les sous-titres</string>
-    <string name="color_white">Blanc</string>
-    <string name="color_black">Noir</string>
-    <string name="color_darkgrey">Gris foncé</string>
-    <string name="color_red">Rouge</string>
+<string name="color_red">Rouge</string>
     <string name="color_green">Vert</string>
     <string name="color_blue">Bleu</string>
-    <string name="color_yellow">Jaune</string>
-    <string name="color_pink">Rose</string>
-    <string name="color_cyan">Cyan</string>
-    <string name="pref_subtitles_size">Taille du texte</string>
+<string name="pref_subtitles_size">Taille du texte</string>
     <string name="pref_subtitles_position">Décalage par rapport au bas</string>
-    <string name="pref_subtitles_bold">Caractères gras</string>
-    <string name="server_issue_unable_to_connect">Impossible de se connecter</string>
+<string name="server_issue_unable_to_connect">Impossible de se connecter</string>
     <string name="server_issue_invalid_product">Serveur incompatible</string>
     <string name="server_issue_missing_version">Impossible de déterminer la version du serveur</string>
     <string name="server_issue_unsupported_version">Le serveur utilise la version %1$s qui n\'est pas prise en charge</string>
     <string name="server_issue_outdated_version">Le serveur utilise la version %1$s qui n\'est pas prise en charge. Mets à jour vers la version %2$s ou supérieure</string>
     <string name="server_issue_timeout">Délai de connexion dépassé</string>
-    <string name="server_issue_ssl_handshake">La négociation SSL a échoué</string>
-    <string name="pref_customization">Personnalisation</string>
+<string name="pref_customization">Personnalisation</string>
     <string name="sort_accounts_by">Trier les comptes par</string>
     <string name="pref_accounts">Comptes</string>
     <string name="pref_browsing">Navigation</string>
-    <string name="pref_theme">Thème</string>
-    <string name="pref_home_description">Configurer les sections affichées</string>
-    <string name="pref_libraries">Bibliothèques</string>
-    <string name="pref_libraries_description">Changer le type d\'affichage des bibliothèques</string>
-    <string name="lbl_hide_from_navbar">Masquer de la navigation</string>
+<string name="pref_libraries">Bibliothèques</string>
+<string name="lbl_hide_from_navbar">Masquer de la navigation</string>
     <string name="lbl_hide_from_navbar_description">Masquer cette bibliothèque de la navigation de l\'écran d\'accueil</string>
 
     <!-- Préférences de type d'image des lignes d'accueil -->
@@ -532,58 +419,38 @@
     <string name="pref_home_rows_universal_image_type">Type d\'image universel</string>
     <string name="pref_home_rows_per_row">Paramètres par ligne</string>
     <string name="pref_login">Se connecter</string>
-    <string name="pref_login_description">Serveurs, comptes, connexion automatique</string>
-    <string name="pref_customization_description">Thème, accueil, remappage</string>
-    <string name="pref_playback_description">Vidéo, sous-titres, TV en direct, à suivre</string>
-    <string name="pref_video">Vidéo</string>
+<string name="pref_video">Vidéo</string>
     <string name="pref_subtitles">Sous-titres</string>
     <string name="pref_subtitles_default_to_none">Sous-titres désactivés par défaut</string>
     <string name="pref_subtitles_default_to_none_description">Toujours commencer la lecture sans sous-titres, en ignorant le réglage du serveur</string>
     <string name="pref_audio">Audio</string>
-    <string name="pref_direct_stream_live_off">Le transcodage est activé si nécessaire</string>
-    <string name="pref_direct_stream_live_on">Le transcodage est désactivé</string>
-    <string name="action_login">Se connecter</string>
-    <string name="action_use_password">Utiliser un mot de passe</string>
-    <string name="action_use_quickconnect">Utiliser Quick Connect</string>
-    <string name="input_username">Nom d\'utilisateur</string>
+<string name="action_login">Se connecter</string>
+<string name="input_username">Nom d\'utilisateur</string>
     <string name="input_password">Mot de passe</string>
-    <string name="login_connect_to">En attente de connexion à %1$s</string>
-    <string name="login_other_options">Autres options :</string>
-    <string name="login_quickconnect_step_1">1. Ouvrir l\'application Jellyfin sur ton téléphone ou navigateur et te connecter avec ton compte</string>
-    <string name="login_quickconnect_step_2">2. Ouvrir le menu utilisateur et aller sur la page Connexion rapide</string>
-    <string name="login_quickconnect_step_3">3. Saisir le code suivant :</string>
-    <string name="lbl_refresh_switching">Fréquence de rafraîchissement automatique</string>
+<string name="lbl_refresh_switching">Fréquence de rafraîchissement automatique</string>
     <string name="pref_refresh_rate_scale_on_tv">Mise à l\'échelle sur la TV</string>
     <string name="pref_refresh_rate_scale_on_device">Mise à l\'échelle sur l\'appareil</string>
     <string name="action_connect">Connecter</string>
-    <string name="live_tv_preferences">Options TV en direct</string>
-    <string name="app_notification_uimode_invalid">Cette application est optimisée pour un usage sur une télévision. Nous te recommandons d\'utiliser notre application mobile sur un autre appareil.</string>
-    <string name="server_unsupported_notification">Ce serveur utilise la version %1$s de Jellyfin qui n\'est pas prise en charge. Mets à jour le serveur vers la version %2$s ou supérieure pour continuer à utiliser l\'application.</string>
-    <string name="pref_telemetry_category">Rapport de plantage</string>
-    <string name="pref_telemetry_description">Envoyer les rapports de plantage, inclure les journaux</string>
-    <string name="pref_crash_reports">Envoyer les rapports de plantage au serveur</string>
+<string name="app_notification_uimode_invalid">Cette application est optimisée pour un usage sur une télévision. Nous te recommandons d\'utiliser notre application mobile sur un autre appareil.</string>
+<string name="pref_telemetry_category">Rapport de plantage</string>
+<string name="pref_crash_reports">Envoyer les rapports de plantage au serveur</string>
     <string name="pref_crash_reports_enabled">Les rapports de plantage seront envoyés à ton dernier serveur utilisé</string>
     <string name="pref_crash_reports_disabled">Les rapports de plantage ne seront pas envoyés</string>
     <string name="pref_crash_report_logs">Inclure les journaux</string>
     <string name="pref_crash_report_logs_enabled">Les journaux seront inclus avec les rapports de plantage</string>
     <string name="pref_crash_report_logs_disabled">Les journaux ne seront pas inclus avec les rapports de plantage</string>
     <string name="crash_report_toast">Oups ! Il y a eu un problème. Un rapport de plantage a été envoyé à ton serveur Jellyfin.</string>
-    <string name="server_setup_incomplete">La configuration de ce serveur est incomplète. Ouvre Jellyfin dans un navigateur Web pour terminer la configuration avant de te connecter.</string>
-    <string name="episode_name_special">spécial</string>
+<string name="episode_name_special">spécial</string>
     <string name="app_notification_beta">Application mise à jour en %1$s\nMerci de participer au programme bêta de VegafoX.</string>
     <string name="item_deleted">%1$s supprimé</string>
     <string name="item_deletion_failed">Impossible de supprimer %1$s</string>
-    <string name="pref_enable_media_management">Activer la gestion des médias</string>
-    <string name="pref_enable_media_management_description">Afficher l\'option pour gérer les médias pendant la navigation</string>
-    <string name="item_delete_confirm_title">Supprimer l\'élément</string>
+<string name="item_delete_confirm_title">Supprimer l\'élément</string>
     <string name="item_delete_confirm_message">Es-tu sûr de vouloir supprimer cet élément du serveur \? Cette action est irréversible.</string>
-    <string name="lbl_latest_in">Récemment ajouté dans %1$s</string>
-    <string name="pref_screensaver">Économiseur d\'écran</string>
+<string name="pref_screensaver">Économiseur d\'écran</string>
     <string name="pref_screensaver_inapp_enabled">Utiliser l\'économiseur d\'écran intégré</string>
     <string name="pref_screensaver_inapp_enabled_description">Afficher l\'économiseur d\'écran VegafoX lorsque l\'application est ouverte</string>
     <string name="pref_screensaver_inapp_timeout">Lancer l\'économiseur d\'écran après</string>
-    <string name="enable_reactive_homepage">Activer la page d\'accueil réactive</string>
-    <string name="lbl_album_artists">Artistes d\'albums</string>
+<string name="lbl_album_artists">Artistes d\'albums</string>
     <string name="disable_ui_mode_warning">Désactiver l\'avertissement du type d\'appareil</string>
     <string name="channels">Chaînes</string>
     <string name="photo_albums">Albums photo</string>
@@ -609,29 +476,23 @@
     <string name="pref_screensaver_ageratingmax_unlimited">Sans limite</string>
     <string name="pref_screensaver_ageratingrequired_title">Requiert une restriction d\'âge</string>
     <string name="pref_screensaver_ageratingrequired_enabled">Ne montrer que les éléments avec une restriction d\'âge définie</string>
-    <string name="pref_screensaver_ageratingrequired_disabled">Afficher tous les éléments</string>
-    <string name="pref_screensaver_mode">Mode de l\'économiseur d\'écran</string>
+<string name="pref_screensaver_mode">Mode de l\'économiseur d\'écran</string>
     <string name="pref_screensaver_mode_library">Images de la bibliothèque</string>
     <string name="pref_screensaver_mode_logo">Logo VegafoX</string>
     <string name="pref_screensaver_dimming">Niveau d\'assombrissement</string>
     <string name="pref_screensaver_dimming_level_description">Ajuster l\'assombrissement de l\'économiseur d\'écran. Le logo et l\'horloge se déplacent toutes les 60 secondes pour éviter les marques.</string>
-    <string name="pref_screensaver_dimming_description">Assombrir l\'économiseur d\'écran</string>
-    <string name="pref_screensaver_show_clock">Afficher l\'horloge dans l\'économiseur d\'écran</string>
+<string name="pref_screensaver_show_clock">Afficher l\'horloge dans l\'économiseur d\'écran</string>
     <string name="pref_screensaver_show_clock_description">Afficher une horloge flottante dans l\'économiseur d\'écran. La luminosité de l\'horloge correspond au niveau d\'assombrissement.</string>
     <string name="lbl_home">Accueil</string>
     <string name="all_channels">Toutes les chaînes</string>
     <string name="app_notification_update_soon">Mets à jour ton serveur de %1$s à %2$s minimum pour pouvoir continuer à utiliser l\'application après la prochaine mise à jour.</string>
     <string name="current_queue">File d\'attente actuelle</string>
-    <string name="past_week">Semaine dernière</string>
-    <string name="scheduled_in_next_24_hours">Programmé dans les prochaines 24 heures</string>
-    <string name="past_24_hours">Dernières 24 heures</string>
-    <string name="continue_listening">Poursuivre l\'écoute</string>
-    <string name="prefer_exoplayer_ffmpeg">Préférer FFmpeg pour la lecture audio</string>
+<string name="scheduled_in_next_24_hours">Programmé dans les prochaines 24 heures</string>
+<string name="prefer_exoplayer_ffmpeg">Préférer FFmpeg pour la lecture audio</string>
     <string name="prefer_exoplayer_ffmpeg_content">Utiliser FFmpeg pour décoder l\'audio, même si des codecs de plate-forme sont disponibles.</string>
     <string name="default_video_zoom">Mode zoom par défaut</string>
     <string name="video_start_delay">Délai de démarrage de la vidéo</string>
-    <string name="pref_mediasegment_actions">Actions sur les segments des médias</string>
-    <string name="segment_action_ask_to_skip">Demander de passer</string>
+<string name="segment_action_ask_to_skip">Demander de passer</string>
     <string name="segment_action_nothing">Ne rien faire</string>
     <string name="segment_action_skip">Passer</string>
     <string name="skip_intro">Passer l\'intro</string>
@@ -650,8 +511,7 @@
     <string name="unpause_rewind_duration">Rembobinage à la reprise</string>
     <string name="show_description_on_pause">Afficher la description en pause</string>
     <string name="preference_enable_trickplay">Activer le trickplay dans le lecteur vidéo</string>
-    <string name="pref_subtitles_background_opacity">Opacité du fond des sous-titres</string>
-    <string name="pref_troubleshooting">Dépannage</string>
+<string name="pref_troubleshooting">Dépannage</string>
     <string name="pref_report_device_profile_title">Transmettre les capacités de lecture au serveur</string>
     <string name="pref_report_device_profile_summary">Transmettre un fichier de diagnostic au serveur Jellyfin contenant les capacités de lecture</string>
     <string name="pref_report_device_profile_success">Fichier de diagnostic transmis sous le nom %1$s</string>
@@ -665,8 +525,7 @@
     <string name="speech_error_unknown">Une erreur inattendue s\'est produite lors de la reconnaissance vocale.</string>
     <string name="still_watching_label">Tu regardes toujours ?</string>
     <string name="settings">Paramètres</string>
-    <string name="settings_description">Personnalise l\'application selon tes préférences</string>
-    <string name="copied_to_clipboard">Copié dans le presse-papier</string>
+<string name="copied_to_clipboard">Copié dans le presse-papier</string>
     <string name="pref_playback_next_up">À suivre</string>
     <string name="pref_playback_media_segments">Segments média</string>
     <string name="pref_customization_subtitles">Sous-titres</string>
@@ -697,15 +556,13 @@
     <string name="filters">Filtres</string>
     <string name="lbl_sort_and_filter">Trier et filtrer</string>
     <string name="lbl_status_title">Statut</string>
-    <string name="lbl_status">%1$s / %2$s</string>
-    <string name="lbl_pause">Pause</string>
+<string name="lbl_pause">Pause</string>
     <string name="lbl_exit">Quitter</string>
     <string name="exit_confirmation_title">Quitter VegafoX \?</string>
     <string name="exit_confirmation_message">Es-tu sûr de vouloir quitter l\'application \?</string>
     <string name="loading">Chargement…</string>
     <string name="state_disabled">Désactivé</string>
-    <string name="pref_authentication_cat">Authentification</string>
-    <!-- Pluriels -->
+<!-- Pluriels -->
     <plurals name="seconds">
         <item quantity="one">%1$s seconde</item>
         <item quantity="other">%1$s secondes</item>
@@ -753,20 +610,13 @@
     <string name="pref_media_bar_enable_summary">Afficher un diaporama de contenu à la une en haut de l\'écran d\'accueil</string>
     <string name="pref_media_bar_content_type">Type de contenu à la une</string>
     <string name="pref_media_bar_item_count">Nombre d\'éléments du carrousel</string>
-    <string name="pref_media_bar_item_count_summary">Combien d\'éléments à la une afficher dans le carrousel</string>
-    <string name="pref_media_bar_5_items">5 éléments</string>
+<string name="pref_media_bar_5_items">5 éléments</string>
     <string name="pref_media_bar_10_items">10 éléments</string>
     <string name="pref_media_bar_15_items">15 éléments</string>
     <string name="pref_media_bar_overlay_opacity">Opacité de la superposition</string>
     <string name="pref_media_bar_overlay_opacity_summary">Niveau de transparence pour le cadre d\'info, les flèches et les points</string>
-    <string name="pref_media_bar_opacity_30">30% - Léger</string>
-    <string name="pref_media_bar_opacity_40">40%</string>
-    <string name="pref_media_bar_opacity_50">50% - Par défaut</string>
-    <string name="pref_media_bar_opacity_60">60%</string>
-    <string name="pref_media_bar_opacity_70">70% - Foncé</string>
-    <string name="pref_media_bar_overlay_color">Couleur de la superposition</string>
-    <string name="pref_media_bar_overlay_color_summary">Couleur de fond des superpositions</string>
-    <string name="pref_media_bar_color_black">Noir</string>
+<string name="pref_media_bar_overlay_color">Couleur de la superposition</string>
+<string name="pref_media_bar_color_black">Noir</string>
     <string name="pref_media_bar_color_gray">Gris</string>
     <string name="pref_media_bar_color_dark_blue">Bleu foncé</string>
     <string name="pref_media_bar_color_purple">Violet</string>
@@ -778,13 +628,7 @@
     <string name="pref_media_bar_color_dark_green">Vert foncé</string>
     <string name="pref_media_bar_color_slate">Ardoise</string>
     <string name="pref_media_bar_color_indigo">Indigo</string>
-    <string name="lbl_media_bar_loading">Chargement du contenu à la une…</string>
-    <string name="lbl_media_bar_error">Échec du chargement du contenu à la une</string>
-    <string name="lbl_media_bar_previous">Diapositive précédente</string>
-    <string name="lbl_media_bar_next">Diapositive suivante</string>
-    <string name="lbl_media_bar_pause">Mettre en pause le diaporama</string>
-    <string name="lbl_media_bar_play">Reprendre le diaporama</string>
-    <string name="pref_media_bar_trailer_preview">Aperçu des bandes-annonces</string>
+<string name="pref_media_bar_trailer_preview">Aperçu des bandes-annonces</string>
     <string name="pref_media_bar_trailer_preview_summary">Lire les bandes-annonces YouTube en sourdine après 4 secondes, en utilisant SponsorBlock pour passer les intros</string>
     <string name="pref_episode_preview">Aperçu des épisodes</string>
     <string name="pref_episode_preview_summary">Lire un aperçu vidéo en sourdine sur les cartes au focus, en passant les intros</string>
@@ -803,29 +647,21 @@
     <!-- Jellyseerr -->
     <string name="jellyseerr">Jellyseerr</string>
     <string name="home">Accueil</string>
-    <string name="search">Rechercher</string>
-    <string name="jellyseerr_settings">Jellyseerr</string>
+<string name="jellyseerr_settings">Jellyseerr</string>
     <string name="jellyseerr_settings_description">Authentification, lignes et configuration complète</string>
     <string name="jellyseerr_server_settings">Configuration du serveur</string>
     <string name="jellyseerr_enabled">Activer Jellyseerr</string>
     <string name="jellyseerr_enabled_description">Afficher l\'intégration Jellyseerr dans l\'application</string>
     <string name="jellyseerr_server_url">URL du serveur</string>
     <string name="jellyseerr_server_url_description">Adresse du serveur Jellyseerr (ex. : http://192.168.1.100:5055)</string>
-    <string name="jellyseerr_password">Mot de passe</string>
-    <string name="jellyseerr_password_description">Ton mot de passe Jellyfin pour l\'authentification Jellyseerr</string>
-    <string name="jellyseerr_test_connection">Tester la connexion</string>
-    <string name="jellyseerr_test_connection_description">Tester la connexion à ton serveur Jellyseerr</string>
-    <string name="jellyseerr_connection_success">Connexion réussie à Jellyseerr !</string>
-    <string name="jellyseerr_fill_fields">Saisis l\'URL du serveur et la clé API</string>
-    <string name="jellyseerr_search_results">Jellyseerr</string>
+<string name="jellyseerr_test_connection">Tester la connexion</string>
+<string name="jellyseerr_search_results">Jellyseerr</string>
     <string name="jellyseerr_connect_jellyfin">Se connecter avec Jellyfin</string>
     <string name="jellyseerr_connect_jellyfin_description">S\'authentifier automatiquement avec ton compte Jellyfin actuel pour environ 30 jours</string>
     <string name="jellyseerr_connection_error">Impossible de se connecter à Jellyseerr. Reconnecte-toi depuis les paramètres pour restaurer ta session.</string>
     <string name="jellyseerr_setup_title">Comment se connecter</string>
     <string name="jellyseerr_setup_info">Saisis l\'URL de ton serveur Jellyseerr et ton mot de passe Jellyfin ci-dessus. Teste la connexion pour t\'authentifier et sauvegarder ta session.</string>
-    <string name="jellyseerr_show_in_toolbar">Afficher Jellyseerr dans la barre d\'outils</string>
-    <string name="jellyseerr_show_in_toolbar_description">Afficher le bouton Jellyseerr dans la barre de navigation principale</string>
-    <string name="jellyseerr_fetch_limit_title">Éléments par ligne (3 pages chargées par catégorie)</string>
+<string name="jellyseerr_fetch_limit_title">Éléments par ligne (3 pages chargées par catégorie)</string>
     <string name="jellyseerr_fetch_limit_description">Nombre d\'éléments à récupérer par requête API (3 pages sont chargées à la fois)</string>
     <string name="jellyseerr_fetch_limit_25">25 éléments</string>
     <string name="jellyseerr_fetch_limit_50">50 éléments</string>
@@ -841,28 +677,12 @@
 
     <!-- Paramètres VegafoX -->
     <string name="vegafox_settings">Paramètres VegafoX</string>
-    <string name="vegafox_settings_description">Personnaliser les fonctionnalités de VegafoX</string>
-    <string name="vegafox_general_settings">Général</string>
-    <string name="settings_available_after_login">Paramètres disponibles après la connexion</string>
+<string name="settings_available_after_login">Paramètres disponibles après la connexion</string>
 
     <!-- Authentification Jellyseerr -->
     <string name="jellyseerr_auth_method">Méthode d\'authentification</string>
-    <string name="jellyseerr_auth_method_description">Choisir comment s\'authentifier avec Jellyseerr</string>
-    <string name="jellyseerr_auth_jellyfin">SSO Jellyfin</string>
-    <string name="jellyseerr_auth_jellyfin_description">Se connecter avec ton compte Jellyfin (cookie, expiration 30 jours)</string>
-    <string name="jellyseerr_auth_local">Compte local</string>
-    <string name="jellyseerr_auth_local_description">Se connecter avec un email/mot de passe Jellyseerr (clé API permanente)</string>
-    <string name="jellyseerr_auto_api_key">Générer automatiquement la clé API</string>
-    <string name="jellyseerr_auto_api_key_description">Après la connexion Jellyfin, générer une clé API permanente (nécessite des droits administrateur)</string>
-    <string name="jellyseerr_regenerate_api_key">Régénérer la clé API</string>
-    <string name="jellyseerr_regenerate_api_key_description">Générer une clé API permanente (nécessite des droits administrateur dans Jellyseerr)</string>
-    <string name="jellyseerr_local_email">Email</string>
-    <string name="jellyseerr_local_email_description">L\'email de ton compte Jellyseerr</string>
-    <string name="jellyseerr_local_password">Mot de passe local</string>
-    <string name="jellyseerr_local_password_description">Ton mot de passe Jellyseerr (pas Jellyfin)</string>
-    <string name="jellyseerr_api_key_status">Statut de la clé API</string>
-    <string name="jellyseerr_api_key_present">Clé API permanente active</string>
-    <string name="jellyseerr_api_key_absent">Authentification par cookie (expire dans environ 30 jours)</string>
+<string name="jellyseerr_api_key_status">Statut de la clé API</string>
+<string name="jellyseerr_api_key_absent">Authentification par cookie (expire dans environ 30 jours)</string>
     <string name="jellyseerr_not_logged_in">Non connecté</string>
     <string name="jellyseerr_login_local">Se connecter avec un compte local</string>
     <string name="jellyseerr_login_local_description">S\'authentifier avec un email et un mot de passe</string>
@@ -890,22 +710,7 @@
     <string name="jellyseerr_vegafox_not_enabled">Jellyseerr n\'est pas activé sur le plugin serveur</string>
 
     <!-- Paramètres avancés Jellyseerr -->
-    <string name="jellyseerr_advanced_settings">Paramètres avancés de requête</string>
-    <string name="jellyseerr_advanced_settings_description">Configure les profils de qualité, dossiers racine et serveurs pour les requêtes</string>
-    <string name="jellyseerr_hd_movie_profile">Profil film HD</string>
-    <string name="jellyseerr_hd_movie_profile_description">Profil de qualité pour les requêtes de films HD (par défaut du serveur si non défini)</string>
-    <string name="jellyseerr_4k_movie_profile">Profil film 4K</string>
-    <string name="jellyseerr_4k_movie_profile_description">Profil de qualité pour les requêtes de films 4K (par défaut du serveur si non défini)</string>
-    <string name="jellyseerr_hd_tv_profile">Profil TV HD</string>
-    <string name="jellyseerr_hd_tv_profile_description">Profil de qualité pour les requêtes de séries HD (par défaut du serveur si non défini)</string>
-    <string name="jellyseerr_4k_tv_profile">Profil TV 4K</string>
-    <string name="jellyseerr_4k_tv_profile_description">Profil de qualité pour les requêtes de séries 4K (par défaut du serveur si non défini)</string>
-    <string name="jellyseerr_profile_default">Par défaut du serveur</string>
-    <string name="jellyseerr_profile_loading">Chargement des profils…</string>
-    <string name="jellyseerr_profile_error">Impossible de charger les profils. Vérifie la connexion.</string>
-    <string name="jellyseerr_profile_admin_required">Droits administrateur requis pour configurer les profils de qualité</string>
-
-    <!-- Configuration des lignes Jellyseerr -->
+<!-- Configuration des lignes Jellyseerr -->
     <string name="jellyseerr_rows_title">Lignes de découverte</string>
     <string name="jellyseerr_rows_description">Activer, désactiver et réordonner les lignes de l\'écran de découverte Jellyseerr</string>
     <string name="jellyseerr_rows_reset">Réinitialiser les valeurs par défaut</string>
@@ -919,16 +724,9 @@
     <string name="jellyseerr_row_series_genres">Genres de séries</string>
     <string name="jellyseerr_row_upcoming_series">Séries à venir</string>
     <string name="jellyseerr_row_networks">Chaînes</string>
-
-    <string name="enabled">Activé</string>
-    <string name="disabled">Désactivé</string>
-
-    <!-- Apparence -->
+<!-- Apparence -->
     <string name="pref_appearance">Apparence</string>
-    <string name="pref_visual_settings">Paramètres visuels</string>
-    <string name="pref_background_blur_amount">Niveau de flou de l\'arrière-plan</string>
-    <string name="pref_background_blur_amount_description">Contrôler l\'intensité du flou pour toutes les images d\'arrière-plan de l\'application</string>
-    <string name="pref_browsing_background_blur_amount">Flou de l\'accueil et de Jellyseerr</string>
+<string name="pref_browsing_background_blur_amount">Flou de l\'accueil et de Jellyseerr</string>
     <string name="pref_browsing_background_blur_amount_description">Intensité du flou pour les arrière-plans de l\'accueil et de la découverte</string>
     <string name="pref_details_background_blur_amount">Flou des détails du média</string>
     <string name="pref_details_background_blur_amount_description">Intensité du flou pour les pages de détails des films, séries et épisodes</string>
@@ -941,10 +739,7 @@
     <!-- Notes additionnelles -->
     <string name="pref_enable_additional_ratings">Activer les notes additionnelles</string>
     <string name="pref_enable_additional_ratings_description">Récupérer les notes depuis l\'API MDBList (IMDB, TMDB, Metacritic, Trakt, Letterboxd, etc.)</string>
-    <string name="pref_mdblist_api_key">Clé API MDBList</string>
-    <string name="pref_mdblist_api_key_description">Obtiens une clé API gratuite sur mdblist.com/preferences</string>
-    <string name="pref_additional_ratings_no_api_key">Ajoute ta clé API MDBList dans les paramètres VegafoX</string>
-    <string name="pref_rating_source_imdb">IMDB</string>
+<string name="pref_rating_source_imdb">IMDB</string>
     <string name="pref_rating_source_rt_audience">Rotten Tomatoes Audience</string>
     <string name="pref_rating_source_tmdb">The Movie Database</string>
     <string name="pref_rating_source_metacritic">Metacritic</string>
@@ -960,16 +755,7 @@
     <!-- Notes des épisodes -->
     <string name="pref_episode_ratings">Notes des épisodes</string>
     <string name="pref_episode_ratings_description">Afficher les notes TMDB pour chaque épisode de série</string>
-    <string name="pref_tmdb_api_key">Clé API TMDB</string>
-    <string name="pref_tmdb_api_key_description">Obtiens une clé API gratuite sur themoviedb.org</string>
-    <string name="pref_tmdb_api_key_label">Clé API</string>
-    <string name="pref_tmdb_api_key_hint">Saisis ta clé API TMDB</string>
-    <string name="lbl_clear">Effacer</string>
-    <string name="msg_api_key_saved">Clé API enregistrée</string>
-    <string name="msg_api_key_cleared">Clé API supprimée</string>
-    <string name="msg_api_key_invalid">La clé API doit contenir au moins 16 caractères</string>
-
-    <!-- Personnalisation de la barre d'outils -->
+<!-- Personnalisation de la barre d'outils -->
     <string name="pref_toolbar_customization">Personnalisation de la barre d\'outils</string>
     <string name="pref_navbar_position">Position de la barre de navigation</string>
     <string name="pref_navbar_position_description">Choisir l\'emplacement de la barre de navigation</string>
@@ -991,39 +777,16 @@
     <string name="pref_show_favorites_button">Afficher le bouton favoris</string>
     <string name="pref_show_favorites_button_description">Afficher le bouton favoris dans la barre d\'outils</string>
     <string name="pref_shuffle_content_type">Type de contenu aléatoire</string>
-    <string name="pref_shuffle_content_type_description">Choisir les types de contenu à inclure lors de la lecture aléatoire</string>
-    <string name="pref_shuffle_movies">Films uniquement</string>
+<string name="pref_shuffle_movies">Films uniquement</string>
     <string name="pref_shuffle_tv">Séries uniquement</string>
     <string name="pref_shuffle_both">Films et séries</string>
 
     <!-- Mises à jour -->
-    <string name="pref_updates_title">Mises à jour de l\'application</string>
-    <string name="pref_updates_info">Informations de version</string>
-    <string name="pref_updates_check">Vérification des mises à jour</string>
-    <string name="pref_current_version">Version actuelle</string>
-    <string name="pref_check_for_updates">Vérifier les mises à jour</string>
-    <string name="pref_check_for_updates_description">Vérifier sur GitHub les nouvelles versions</string>
-    <string name="msg_checking_for_updates">Vérification des mises à jour…</string>
-    <string name="msg_update_check_failed">Échec de la vérification des mises à jour</string>
-    <string name="msg_no_updates_available">Tu es à jour</string>
-    <string name="msg_update_available">Mise à jour disponible : v%s</string>
-    <string name="msg_update_size">Taille : %s Mo</string>
-    <string name="msg_release_notes">Notes de version :</string>
-    <string name="title_update_available">Mise à jour disponible</string>
-    <string name="btn_download">Télécharger</string>
-    <string name="btn_view_release_notes">Voir les notes de version</string>
-    <string name="btn_download_and_install">Télécharger et installer</string>
-    <string name="btn_later">Plus tard</string>
+<string name="btn_download">Télécharger</string>
+<string name="btn_later">Plus tard</string>
     <string name="btn_view_on_github">Voir sur GitHub</string>
-    <string name="msg_downloading_update">Téléchargement de la mise à jour…</string>
-    <string name="msg_update_downloaded">Mise à jour téléchargée. Ouverture de l\'installateur…</string>
-    <string name="msg_download_failed">Échec du téléchargement de la mise à jour</string>
-    <string name="msg_install_permission_required">Autorisation d\'installation requise</string>
-    <string name="msg_install_permission_required_description">Pour installer les mises à jour, tu dois autoriser l\'installation depuis des sources inconnues. Après activation, appuie sur retour pour revenir et réessayer.</string>
-    <string name="btn_open_settings">Ouvrir les paramètres</string>
-    <string name="msg_failed_to_open_url">Impossible d\'ouvrir l\'URL</string>
-    <string name="msg_failed_to_open_settings">Impossible d\'ouvrir les paramètres</string>
-    <string name="notification_channel_updates">Mises à jour de l\'application</string>
+<string name="btn_open_settings">Ouvrir les paramètres</string>
+<string name="notification_channel_updates">Mises à jour de l\'application</string>
     <string name="notification_channel_updates_description">Notifications concernant les mises à jour de l\'application</string>
     <string name="notification_update_available_title">Mise à jour disponible</string>
     <string name="notification_update_available_text">La version %s est disponible. Appuie pour mettre à jour.</string>
@@ -1033,16 +796,14 @@
     <string name="pref_parental_controls_description">Masquer le contenu selon la classification</string>
     <string name="pref_parental_controls_category_ratings">Classifications du contenu</string>
     <string name="pref_parental_controls_loading">Chargement des classifications…</string>
-    <string name="pref_parental_controls_no_ratings">Aucune classification trouvée dans tes bibliothèques</string>
-    <string name="pref_parental_controls_rating_blocked">Bloqué</string>
+<string name="pref_parental_controls_rating_blocked">Bloqué</string>
     <string name="pref_parental_controls_rating_allowed">Autorisé</string>
     <string name="pref_parental_controls_category_info">Informations</string>
     <string name="pref_parental_controls_info_description">Les classifications sélectionnées seront masquées des lignes d\'accueil, bibliothèques, recherche et barre média sur tous les serveurs</string>
 
     <!-- Thème saisonnier -->
     <string name="pref_seasonal_surprise">Thème saisonnier</string>
-    <string name="pref_seasonal_surprise_description">Animations saisonnières décoratives sur l\'accueil. Désactive en cas de ralentissements.</string>
-    <string name="pref_seasonal_auto">Automatique</string>
+<string name="pref_seasonal_auto">Automatique</string>
     <string name="pref_seasonal_none">Aucun</string>
     <string name="pref_seasonal_winter">Hiver</string>
     <string name="pref_seasonal_spring">Printemps</string>
@@ -1051,10 +812,8 @@
     <string name="pref_seasonal_fall">Automne</string>
 
     <!-- SyncPlay -->
-    <string name="pref_syncplay">SyncPlay</string>
-    <string name="pref_syncplay_settings">Paramètres SyncPlay</string>
-    <string name="pref_syncplay_description">Regarder ensemble et en synchronisation avec tes amis</string>
-    <string name="pref_syncplay_enabled">Activer SyncPlay</string>
+<string name="pref_syncplay_settings">Paramètres SyncPlay</string>
+<string name="pref_syncplay_enabled">Activer SyncPlay</string>
     <string name="pref_syncplay_enabled_description">Autoriser la lecture synchronisée avec d\'autres utilisateurs</string>
     <string name="pref_syncplay_playback_settings">Synchronisation de la lecture</string>
     <string name="pref_syncplay_sync_correction">Activer la correction de synchronisation</string>
@@ -1075,9 +834,7 @@
     <string name="pref_syncplay_extra_time_offset">Décalage temporel supplémentaire</string>
     <string name="pref_syncplay_extra_time_offset_description">Ajustement manuel du décalage temporel : %d ms</string>
     <string name="syncplay">SyncPlay</string>
-    <string name="syncplay_enabled">SyncPlay activé</string>
-    <string name="syncplay_disabled">SyncPlay désactivé</string>
-    <string name="syncplay_in_group">Dans un groupe</string>
+<string name="syncplay_in_group">Dans un groupe</string>
     <string name="syncplay_not_in_group">Pas dans un groupe</string>
     <string name="syncplay_group_info">%1$s • %2$d participants</string>
     <string name="syncplay_description">Regarder ensemble et en synchronisation avec tes amis</string>
@@ -1085,25 +842,17 @@
     <string name="syncplay_participants_count">%1$d participants</string>
     <string name="syncplay_create_group">Créer un nouveau groupe</string>
     <string name="syncplay_create_group_description">Démarrer une session de visionnage partagée</string>
-    <string name="syncplay_join_group">Rejoindre le groupe</string>
-    <string name="syncplay_leave_group">Quitter le groupe</string>
+<string name="syncplay_leave_group">Quitter le groupe</string>
     <string name="syncplay_leave_group_description">Quitter la session de visionnage partagée</string>
     <string name="syncplay_refresh_groups">Actualiser les groupes</string>
     <string name="syncplay_refresh_groups_description">Rechercher les sessions de visionnage disponibles</string>
     <string name="syncplay_available_groups">Groupes disponibles</string>
     <string name="syncplay_join_existing">Rejoindre un groupe existant</string>
     <string name="syncplay_groups_found">%1$d groupes trouvés</string>
-    <string name="syncplay_group_name">Nom du groupe</string>
-    <string name="syncplay_no_groups">Aucun groupe disponible</string>
+<string name="syncplay_no_groups">Aucun groupe disponible</string>
     <string name="syncplay_no_groups_description">Crée un nouveau groupe pour démarrer une session de visionnage</string>
     <string name="lbl_close">Fermer</string>
-    <string name="syncplay_settings">Paramètres</string>
-    <string name="syncplay_settings_description">Configurer les paramètres SyncPlay</string>
-    <string name="syncplay_resume_playback">Reprendre la lecture</string>
-    <string name="syncplay_resume_playback_description">Commencer à lire le contenu du groupe</string>
-    <string name="syncplay_halt_playback">Mettre en pause</string>
-    <string name="syncplay_halt_playback_description">Arrêter temporairement de suivre la lecture du groupe</string>
-    <string name="syncplay_user_joined">%s a rejoint le groupe SyncPlay</string>
+<string name="syncplay_user_joined">%s a rejoint le groupe SyncPlay</string>
     <string name="syncplay_user_left">%s a quitté le groupe SyncPlay</string>
     <string name="syncplay_group_default_name">Groupe de %s</string>
 
@@ -1115,8 +864,7 @@
     <string name="sort_most_items">Plus d\'éléments</string>
     <string name="sort_least_items">Moins d\'éléments</string>
     <string name="sort_random">Aléatoire</string>
-    <string name="msg_error_loading_data">Échec du chargement des éléments</string>
-    <string name="lbl_resume">Reprendre</string>
+<string name="lbl_resume">Reprendre</string>
     <string name="lbl_restart">Recommencer</string>
     <string name="lbl_library">Bibliothèque</string>
     <string name="lbl_genre">Genre</string>
@@ -1146,8 +894,7 @@
     <string name="lbl_appearances">Filmographie</string>
     <string name="lbl_tracks">Pistes</string>
     <string name="lbl_unknown">Inconnu</string>
-    <string name="lbl_season_episode">S%1$d É%2$d</string>
-    <string name="lbl_episode_number_str">É%1$s</string>
+<string name="lbl_episode_number_str">É%1$s</string>
     <string name="lbl_episode_label">Épisode %1$s</string>
     <string name="lbl_born_date">Né(e) le %1$s (%2$d ans)</string>
     <string name="lbl_no_playlists_found">Aucune liste de lecture. Crée-en une !</string>
@@ -1203,25 +950,13 @@
     <string name="jellyseerr_all_fields_required">Tous les champs sont requis</string>
     <string name="jellyseerr_connected_auth_type">Connecté avec %s !</string>
     <string name="jellyseerr_login_failed">Échec de la connexion : %s</string>
-    <string name="jellyseerr_login_error">Erreur de connexion : %s</string>
-    <string name="jellyseerr_permanent_key_success">Connecté avec la clé API permanente !</string>
+<string name="jellyseerr_permanent_key_success">Connecté avec la clé API permanente !</string>
     <string name="jellyseerr_login_local_hint">Connecte-toi avec ton compte local Jellyseerr pour obtenir une clé API permanente</string>
     <string name="jellyseerr_placeholder_email">E-mail</string>
     <string name="jellyseerr_placeholder_password">Mot de passe</string>
 
     <!-- Chaînes hardcodées - Gestion des erreurs -->
-    <string name="error_cannot_connect">Impossible de se connecter au serveur. Vérifie ta connexion réseau.</string>
-    <string name="error_connection_timeout">Délai de connexion dépassé. Le serveur met trop de temps à répondre.</string>
-    <string name="error_network">Erreur réseau. Vérifie ta connexion.</string>
-    <string name="error_permission_denied">Accès refusé. Tu n\'as peut-être pas les droits sur cette ressource.</string>
-    <string name="error_authentication_failed">Échec de l\'authentification. Reconnecte-toi.</string>
-    <string name="error_not_found">Ressource introuvable. Elle a peut-être été supprimée.</string>
-    <string name="error_server">Erreur du serveur. Réessaie plus tard.</string>
-    <string name="error_service_unavailable">Service temporairement indisponible. Réessaie plus tard.</string>
-    <string name="error_failed_to_context">Impossible de %1$s : %2$s</string>
-    <string name="error_unknown">Erreur inconnue</string>
-
-    <!-- Chaînes hardcodées - SyncPlay -->
+<!-- Chaînes hardcodées - SyncPlay -->
     <string name="syncplay_group_disbanded">Le groupe SyncPlay a été dissous</string>
     <string name="syncplay_unnamed_group">Groupe sans nom</string>
     <string name="syncplay_default_group_name">Groupe SyncPlay</string>
@@ -1266,18 +1001,14 @@
     <string name="settings_support_vegafox_desc">Aide-nous à poursuivre le développement</string>
     <string name="settings_install_permission_title">Autorisation d\'installation requise</string>
     <string name="settings_install_permission_message">Cette application a besoin d\'installer des mises à jour. Accorde la permission dans les paramètres.</string>
-    <string name="settings_enable_new_playback">Activer le nouveau module de lecture vidéo</string>
-
-    <!-- Chaînes hardcodées - Lecture -->
+<!-- Chaînes hardcodées - Lecture -->
     <string name="playback_no_audio_tracks">Aucune piste audio disponible</string>
     <string name="playback_audio_track">Audio : %s</string>
     <string name="playback_audio_default">Audio : par défaut</string>
     <string name="playback_subtitles_none">Sous-titres : aucun</string>
     <string name="playback_subtitles_track">Sous-titres : %s</string>
     <string name="playback_subtitles_default">Sous-titres : par défaut</string>
-    <string name="playback_subtitle_info_error">Impossible d\'obtenir les infos des sous-titres</string>
-    <string name="playback_subtitle_delay_error">Impossible d\'appliquer le décalage des sous-titres</string>
-    <string name="playback_trailer_error">Impossible d\'ouvrir la bande-annonce</string>
+<string name="playback_trailer_error">Impossible d\'ouvrir la bande-annonce</string>
     <string name="playback_item_not_found">Élément introuvable dans ta bibliothèque VegafoX</string>
     <string name="playback_search_error">Erreur lors de la recherche dans la bibliothèque</string>
 
@@ -1294,44 +1025,31 @@
     <string name="donate_url">buymeacoffee.com/vegafox</string>
 
     <!-- Chaînes hardcodées - Descriptions d\'accessibilité -->
-    <string name="cd_previous">Précédent</string>
-    <string name="cd_next">Suivant</string>
-    <string name="cd_move_up">Déplacer vers le haut</string>
+<string name="cd_move_up">Déplacer vers le haut</string>
     <string name="cd_move_down">Déplacer vers le bas</string>
     <string name="cd_libraries">Bibliothèques</string>
     <string name="cd_connection_status">Icône de statut de connexion</string>
 
     <!-- Chaînes hardcodées - Étiquettes de métadonnées -->
     <string name="lbl_default">Par défaut</string>
-    <string name="lbl_default_checked">✓ Par défaut</string>
-    <string name="lbl_none_checked">✓ Aucun</string>
-    <string name="lbl_director">Réalisateur</string>
+<string name="lbl_director">Réalisateur</string>
     <string name="lbl_writers">Scénaristes</string>
     <string name="lbl_studio">Studio</string>
     <string name="lbl_studios">Studios</string>
     <string name="lbl_release_date">Date de sortie</string>
     <string name="lbl_revenue">Recettes</string>
     <string name="lbl_status_label">Statut</string>
-    <string name="lbl_availability">Disponibilité</string>
-    <string name="lbl_movie_type">Film</string>
+<string name="lbl_movie_type">Film</string>
     <string name="lbl_movie_type_upper">FILM</string>
     <string name="lbl_series_type_upper">SÉRIE</string>
     <string name="lbl_tv_show_type">Série TV</string>
-    <string name="lbl_series_type">Série</string>
-    <string name="lbl_stereo">Stéréo</string>
-    <string name="lbl_season_episodes">Saison %1$d - Épisodes</string>
+<string name="lbl_season_episodes">Saison %1$d - Épisodes</string>
     <string name="lbl_version_number">Version %1$d</string>
     <string name="lbl_select_version">Choisir la version</string>
     <string name="lbl_movies_count">Films (%1$d)</string>
     <string name="lbl_series_count">Séries (%1$d)</string>
-    <string name="lbl_genres_in_library">Genres — %1$s</string>
-    <string name="app_version_display">VegafoX version %1$s %2$s</string>
-
-    <!-- Chaînes hardcodées - Décalage audio/sous-titres -->
-    <string name="audio_delay_none">Pas de décalage</string>
-    <string name="subtitle_delay_none">Pas de décalage</string>
-
-    <!-- Chaînes hardcodées - Tri/filtres Jellyseerr -->
+<!-- Chaînes hardcodées - Décalage audio/sous-titres -->
+<!-- Chaînes hardcodées - Tri/filtres Jellyseerr -->
     <string name="jellyseerr_sort_popularity">Popularité</string>
     <string name="jellyseerr_sort_rating">Note</string>
     <string name="jellyseerr_sort_release_date">Date de sortie</string>
@@ -1355,10 +1073,7 @@
     <string name="btn_refresh">Actualiser</string>
 
     <!-- Chaînes hardcodées - Tri genres -->
-    <string name="sort_popularity">Popularité</string>
-    <string name="sort_release_date">Date de sortie</string>
-
-    <!-- Chaînes hardcodées - Serveur -->
+<!-- Chaînes hardcodées - Serveur -->
     <string name="server_address_hint">192.168.1.100 ou jellyfin.example.com</string>
 
     <!-- Chaînes hardcodées - Actions Jellyseerr -->
@@ -1405,13 +1120,23 @@
     <string name="jellyseerr_requests_cancelled">%1$d demandes annulées</string>
     <string name="jellyseerr_cancel_failed">Échec de l\'annulation</string>
     <string name="jellyseerr_cancel_failed_plural">Échec de l\'annulation des demandes</string>
-    <string name="jellyseerr_cancel_partial">%1$d annulée(s), %2$d échouée(s)</string>
+<plurals name="jellyseerr_cancelled_count">
+        <item quantity="one">%1$d annulée</item>
+        <item quantity="other">%1$d annulées</item>
+    </plurals>
+    <plurals name="jellyseerr_failed_count">
+        <item quantity="one">%1$d échouée</item>
+        <item quantity="other">%1$d échouées</item>
+    </plurals>
 
     <!-- Chaînes hardcodées - Écran de veille -->
     <string name="lbl_off">Désactivé</string>
 
     <!-- Chaînes hardcodées - À propos -->
     <string name="lbl_app_version_heading">Version de l\'application VegafoX</string>
+    <string name="powered_by_jellyfin">Propulsé par Jellyfin</string>
+    <string name="lbl_app_tagline">MEDIA CENTER</string>
+    <string name="lbl_version">Version %1$s</string>
 
     <!-- Chaînes hardcodées - Erreurs SyncPlay -->
     <string name="syncplay_access_denied">Accès SyncPlay refusé. Active la permission SyncPlay pour cet utilisateur dans les paramètres du serveur Jellyfin.</string>
@@ -1424,13 +1149,8 @@
     <string name="lbl_unknown_error">Erreur inconnue</string>
 
     <!-- Chaînes hardcodées - Délai sous-titres -->
-    <string name="subtitle_delay_reset">Délai des sous-titres réinitialisé</string>
-    <string name="subtitle_delay_value">Délai sous-titres : %1$s</string>
-
-    <!-- Chaînes hardcodées - Erreur permissions Jellyseerr -->
-    <string name="jellyseerr_permission_denied_message">Accès refusé : ton compte Jellyfin n\'a pas les permissions Jellyseerr nécessaires.\n\nPour corriger :\n1. Ouvre l\'interface web Jellyseerr\n2. Va dans Utilisateurs\n3. Trouve ton compte et accorde les permissions</string>
-
-    <!-- États UI -->
+<!-- Chaînes hardcodées - Erreur permissions Jellyseerr -->
+<!-- États UI -->
     <string name="lbl_retry">Réessayer</string>
     <string name="state_error_network">Impossible de se connecter. Vérifie ta connexion réseau.</string>
     <string name="state_error_timeout">Connexion expirée. Le serveur ne répond pas.</string>
@@ -1438,8 +1158,7 @@
     <string name="state_error_not_found">Ce contenu n\'est plus disponible.</string>
     <string name="state_error_auth">Ta session a expiré. Reconnecte-toi.</string>
     <string name="state_error_generic">Une erreur est survenue. Réessaie.</string>
-    <string name="state_error_loading_data">Échec du chargement du contenu</string>
-    <string name="state_empty_library">Ta bibliothèque est vide</string>
+<string name="state_empty_library">Ta bibliothèque est vide</string>
     <string name="state_empty_library_message">Ajoute des médias à ton serveur pour les voir ici</string>
     <string name="state_empty_recordings">Aucun enregistrement</string>
     <string name="state_empty_recordings_message">Les programmes enregistrés apparaîtront ici</string>
@@ -1447,13 +1166,8 @@
     <string name="state_empty_schedule_message">Programme des enregistrements depuis le guide TV</string>
     <string name="state_empty_music">Aucune musique trouvée</string>
     <string name="state_empty_music_message">Ajoute de la musique à ton serveur pour la parcourir ici</string>
-    <string name="state_empty_live_tv">Aucune chaîne TV en direct</string>
-    <string name="state_empty_live_tv_message">Configure la TV en direct dans les paramètres de ton serveur</string>
-    <string name="state_empty_genres">Aucun genre trouvé</string>
-    <string name="state_empty_search">Aucun résultat</string>
-    <string name="state_empty_search_message">Essaie un autre terme de recherche</string>
-
-    <!-- Chaînes hardcodées - Statuts HD/4K Jellyseerr -->
+<string name="state_empty_genres">Aucun genre trouvé</string>
+<!-- Chaînes hardcodées - Statuts HD/4K Jellyseerr -->
     <string name="jellyseerr_status_hd_4k_declined">HD + 4K REFUSÉ</string>
     <string name="jellyseerr_status_4k_declined">4K REFUSÉ</string>
     <string name="jellyseerr_status_hd_declined">HD REFUSÉ</string>
@@ -1510,4 +1224,30 @@
     <string name="jellyseerr_error_auth_failed">Échec d\'authentification\n\n%1$s</string>
     <string name="jellyseerr_error_connection">Connexion échouée : %1$s</string>
     <string name="jellyseerr_login_cookie_success">Connexion réussie via authentification cookie (expire ~30 jours)</string>
+
+    <!-- Quick Connect -->
+    <string name="quickconnect_title">Connexion rapide</string>
+    <string name="quickconnect_connecting">Connexion à %1$s…</string>
+    <string name="quickconnect_instructions">Ouvrez l\'application Jellyfin sur un autre appareil et accédez aux paramètres Connexion rapide pour entrer le code ci-dessous.</string>
+    <string name="quickconnect_waiting">En attente de confirmation…</string>
+    <string name="quickconnect_confirm">Démarrer la connexion rapide</string>
+    <string name="quickconnect_timeout">La connexion rapide a expiré. Veuillez réessayer.</string>
+    <string name="quickconnect_back">Retour</string>
+    <string name="quickconnect_connected">Connecté !</string>
+
+    <!-- Server Discovery -->
+    <string name="discovery_title">Trouver votre serveur</string>
+    <string name="discovery_subtitle">Nous allons scanner votre réseau pour trouver les serveurs Jellyfin.</string>
+    <string name="discovery_scanning">Recherche en cours…</string>
+    <plurals name="discovery_servers_found">
+        <item quantity="one">%1$d serveur trouvé</item>
+        <item quantity="other">%1$d serveurs trouvés</item>
+    </plurals>
+    <string name="discovery_manual_entry">Entrer l\'adresse manuellement</string>
+    <string name="discovery_or">OU</string>
+    <string name="lbl_no_server_detected">Aucun serveur détecté sur votre réseau</string>
+    <string name="lbl_mdns_lan">mDNS · LAN</string>
+    <string name="lbl_server_address">Adresse du serveur</string>
+    <string name="btn_continue">Continuer</string>
+    <string name="change_server">Changer de serveur</string>
 </resources>

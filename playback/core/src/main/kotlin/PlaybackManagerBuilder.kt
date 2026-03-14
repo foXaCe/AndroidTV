@@ -12,10 +12,16 @@ import org.jellyfin.playback.core.queue.QueueService
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-class PlaybackManagerBuilder(context: Context) {
+class PlaybackManagerBuilder(
+	context: Context,
+) {
 	private val factories = mutableListOf<PlaybackPlugin>()
-	private val volumeState = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) NoOpPlayerVolumeState()
-	else AndroidPlayerVolumeState(audioManager = requireNotNull(context.getSystemService()))
+	private val volumeState =
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+			NoOpPlayerVolumeState()
+		} else {
+			AndroidPlayerVolumeState(audioManager = requireNotNull(context.getSystemService()))
+		}
 
 	// Options
 	var defaultRewindAmount: (() -> Duration)? = null
@@ -32,19 +38,20 @@ class PlaybackManagerBuilder(context: Context) {
 		val mediaStreamResolvers = mutableListOf<MediaStreamResolver>()
 
 		// Add plugins
-		val installContext = object : PlaybackPlugin.InstallContext {
-			override fun provide(backend: PlayerBackend) {
-				backends.add(backend)
-			}
+		val installContext =
+			object : PlaybackPlugin.InstallContext {
+				override fun provide(backend: PlayerBackend) {
+					backends.add(backend)
+				}
 
-			override fun provide(service: PlayerService) {
-				services.add(service)
-			}
+				override fun provide(service: PlayerService) {
+					services.add(service)
+				}
 
-			override fun provide(mediaStreamResolver: MediaStreamResolver) {
-				mediaStreamResolvers.add(mediaStreamResolver)
+				override fun provide(mediaStreamResolver: MediaStreamResolver) {
+					mediaStreamResolvers.add(mediaStreamResolver)
+				}
 			}
-		}
 
 		for (factory in factories) factory.install(installContext)
 
@@ -54,15 +61,18 @@ class PlaybackManagerBuilder(context: Context) {
 
 		// Only support a single backend right now
 		require(backends.size == 1)
-		val options = PlaybackManagerOptions(
-			playerVolumeState = volumeState,
-			defaultRewindAmount = defaultRewindAmount ?: { 10.seconds },
-			defaultFastForwardAmount = defaultFastForwardAmount ?: { 10.seconds },
-			unpauseRewindAmount = unpauseRewindAmount ?: { Duration.ZERO },
-		)
+		val options =
+			PlaybackManagerOptions(
+				playerVolumeState = volumeState,
+				defaultRewindAmount = defaultRewindAmount ?: { 10.seconds },
+				defaultFastForwardAmount = defaultFastForwardAmount ?: { 10.seconds },
+				unpauseRewindAmount = unpauseRewindAmount ?: { Duration.ZERO },
+			)
 		return PlaybackManager(backends.first(), services, options)
 	}
 }
 
-fun playbackManager(context: Context, init: PlaybackManagerBuilder.() -> Unit): PlaybackManager =
-	PlaybackManagerBuilder(context).apply { init() }.build()
+fun playbackManager(
+	context: Context,
+	init: PlaybackManagerBuilder.() -> Unit,
+): PlaybackManager = PlaybackManagerBuilder(context).apply { init() }.build()

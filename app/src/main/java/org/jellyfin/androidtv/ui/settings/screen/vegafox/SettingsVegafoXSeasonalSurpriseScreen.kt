@@ -22,15 +22,16 @@ fun SettingsVegafoXSeasonalSurpriseScreen() {
 	val userPreferences = koinInject<UserPreferences>()
 	var seasonalSurprise by rememberPreference(userPreferences, UserPreferences.seasonalSurprise)
 
-	val options = listOf(
-		"auto" to stringResource(R.string.pref_seasonal_auto),
-		"none" to stringResource(R.string.pref_seasonal_none),
-		"winter" to stringResource(R.string.pref_seasonal_winter),
-		"spring" to stringResource(R.string.pref_seasonal_spring),
-		"summer" to stringResource(R.string.pref_seasonal_summer),
-		"halloween" to stringResource(R.string.pref_seasonal_halloween),
-		"fall" to stringResource(R.string.pref_seasonal_fall)
-	)
+	val options =
+		listOf(
+			"auto" to stringResource(R.string.pref_seasonal_auto),
+			"none" to stringResource(R.string.pref_seasonal_none),
+			"winter" to stringResource(R.string.pref_seasonal_winter),
+			"spring" to stringResource(R.string.pref_seasonal_spring),
+			"summer" to stringResource(R.string.pref_seasonal_summer),
+			"halloween" to stringResource(R.string.pref_seasonal_halloween),
+			"fall" to stringResource(R.string.pref_seasonal_fall),
+		)
 
 	SettingsColumn {
 		item {
@@ -47,7 +48,7 @@ fun SettingsVegafoXSeasonalSurpriseScreen() {
 				onClick = {
 					seasonalSurprise = value
 					router.back()
-				}
+				},
 			)
 		}
 	}

@@ -35,68 +35,75 @@ fun DetailInfoRow(
 			verticalAlignment = Alignment.CenterVertically,
 			horizontalArrangement = Arrangement.spacedBy(0.dp),
 		) {
-			val metadataItems = buildList<@Composable () -> Unit> {
-				// Year
-				item.productionYear?.let { add { InfoItemText(text = it.toString()) } }
+			val metadataItems =
+				buildList<@Composable () -> Unit> {
+					// Year
+					item.productionYear?.let { add { InfoItemText(text = it.toString()) } }
 
-				// Runtime + Ends At (movies only)
-				if (!isSeries) {
-					item.runTimeTicks?.let {
-						add { RuntimeInfo(it) }
-						add {
-							InfoItemText(
-								text = stringResource(
-									R.string.lbl_playback_control_ends,
-									getEndsAt(it)
-								)
-							)
-						}
-					}
-				}
-
-				// Series-specific: Season count + status badge
-				if (isSeries) {
-					val seasonCount = item.childCount ?: 0
-					if (seasonCount > 0) {
-						add {
-							InfoItemText(
-								text = pluralStringResource(
-									R.plurals.season_count,
-									seasonCount,
-									seasonCount
-								)
-							)
-						}
-					}
-
-					item.status?.lowercase()?.let { status ->
-						if (status == "continuing" || status == "ended") {
-							val labelRes = if (status == "continuing")
-								R.string.lbl__continuing
-							else
-								R.string.lbl_ended
-
-							val bgColor = if (status == "continuing")
-								InfoRowColors.Green.first
-							else
-								InfoRowColors.Red.first
-
+					// Runtime + Ends At (movies only)
+					if (!isSeries) {
+						item.runTimeTicks?.let {
+							add { RuntimeInfo(it) }
 							add {
-								InfoItemBadge(
-									text = stringResource(labelRes),
-									bgColor = bgColor,
-									color = JellyfinTheme.colorScheme.onSurface
+								InfoItemText(
+									text =
+										stringResource(
+											R.string.lbl_playback_control_ends,
+											getEndsAt(it),
+										),
 								)
 							}
 						}
 					}
-				}
 
-				// Rating
-				item.officialRating?.let { rating ->
-					add { InfoItemBadge(text = rating) }
+					// Series-specific: Season count + status badge
+					if (isSeries) {
+						val seasonCount = item.childCount ?: 0
+						if (seasonCount > 0) {
+							add {
+								InfoItemText(
+									text =
+										pluralStringResource(
+											R.plurals.season_count,
+											seasonCount,
+											seasonCount,
+										),
+								)
+							}
+						}
+
+						item.status?.lowercase()?.let { status ->
+							if (status == "continuing" || status == "ended") {
+								val labelRes =
+									if (status == "continuing") {
+										R.string.lbl__continuing
+									} else {
+										R.string.lbl_ended
+									}
+
+								val bgColor =
+									if (status == "continuing") {
+										InfoRowColors.Green.first
+									} else {
+										InfoRowColors.Red.first
+									}
+
+								add {
+									InfoItemBadge(
+										text = stringResource(labelRes),
+										bgColor = bgColor,
+										color = JellyfinTheme.colorScheme.onSurface,
+									)
+								}
+							}
+						}
+					}
+
+					// Rating
+					item.officialRating?.let { rating ->
+						add { InfoItemBadge(text = rating) }
+					}
 				}
-			}
 			metadataItems.forEachIndexed { index, content ->
 				content()
 				if (index < metadataItems.size - 1) {

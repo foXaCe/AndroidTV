@@ -7,12 +7,10 @@ data class PositionInfo(
 	 * The current position. Cannot exceed [duration] unless [duration] is unknown.
 	 */
 	val active: Duration,
-
 	/**
 	 * The buffered position. Cannot exceed [duration] unless [duration] is unknown.
 	 */
 	val buffer: Duration,
-
 	/**
 	 * The maximum position.
 	 */

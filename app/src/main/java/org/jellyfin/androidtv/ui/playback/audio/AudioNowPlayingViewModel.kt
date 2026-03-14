@@ -20,7 +20,6 @@ import org.jellyfin.playback.core.queue.QueueEntry
 import org.jellyfin.playback.core.queue.queue
 import org.jellyfin.playback.jellyfin.queue.baseItem
 import org.jellyfin.sdk.model.api.BaseItemDto
-import java.util.UUID
 
 data class AudioNowPlayingUiState(
 	val item: BaseItemDto? = null,
@@ -54,27 +53,33 @@ class AudioNowPlayingViewModel(
 	private val backgroundService: BackgroundService,
 	private val navigationRepository: NavigationRepository,
 ) : ViewModel() {
-
 	private val _uiState = MutableStateFlow(AudioNowPlayingUiState())
 	val uiState: StateFlow<AudioNowPlayingUiState> = _uiState.asStateFlow()
 
-	private val audioEventListener = object : AudioEventListener {
-		override fun onPlaybackStateChange(newState: PlaybackController.PlaybackState, currentItem: BaseItemDto?) {
-			if (currentItem != _uiState.value.item) loadItem()
-			updateButtons()
-		}
+	private val audioEventListener =
+		object : AudioEventListener {
+			override fun onPlaybackStateChange(
+				newState: PlaybackController.PlaybackState,
+				currentItem: BaseItemDto?,
+			) {
+				if (currentItem != _uiState.value.item) loadItem()
+				updateButtons()
+			}
 
-		override fun onProgress(pos: Long, duration: Long) {
-			_uiState.update { it.copy(currentPosition = pos, duration = duration) }
-		}
+			override fun onProgress(
+				pos: Long,
+				duration: Long,
+			) {
+				_uiState.update { it.copy(currentPosition = pos, duration = duration) }
+			}
 
-		override fun onQueueStatusChanged(hasQueue: Boolean) {
-			loadItem()
-			if (mediaManager.isAudioPlayerInitialized) updateButtons()
-		}
+			override fun onQueueStatusChanged(hasQueue: Boolean) {
+				loadItem()
+				if (mediaManager.isAudioPlayerInitialized) updateButtons()
+			}
 
-		override fun onQueueReplaced() = Unit
-	}
+			override fun onQueueReplaced() = Unit
+		}
 
 	init {
 		mediaManager.addAudioEventListener(audioEventListener)
@@ -82,9 +87,15 @@ class AudioNowPlayingViewModel(
 		updateButtons()
 
 		// Watch queue changes for the queue list
-		playbackManager.queue.entry.onEach { updateQueue() }.launchIn(viewModelScope)
-		playbackManager.queue.entries.onEach { updateQueue() }.launchIn(viewModelScope)
-		playbackManager.state.playbackOrder.onEach { updateQueue() }.launchIn(viewModelScope)
+		playbackManager.queue.entry
+			.onEach { updateQueue() }
+			.launchIn(viewModelScope)
+		playbackManager.queue.entries
+			.onEach { updateQueue() }
+			.launchIn(viewModelScope)
+		playbackManager.state.playbackOrder
+			.onEach { updateQueue() }
+			.launchIn(viewModelScope)
 	}
 
 	override fun onCleared() {
@@ -112,8 +123,11 @@ class AudioNowPlayingViewModel(
 			}
 			backgroundService.setBackground(item, BlurContext.DETAILS)
 		} else {
-			if (navigationRepository.canGoBack) navigationRepository.goBack()
-			else navigationRepository.navigate(Destinations.home)
+			if (navigationRepository.canGoBack) {
+				navigationRepository.goBack()
+			} else {
+				navigationRepository.navigate(Destinations.home)
+			}
 		}
 	}
 
@@ -136,11 +150,14 @@ class AudioNowPlayingViewModel(
 
 	private suspend fun updateQueue() {
 		val currentEntry = playbackManager.queue.entry.value
-		val currentItem = currentEntry?.let { entry ->
-			entry.baseItem?.let { AudioQueueItem(entry, it, isCurrent = true) }
-		}
-		val upcoming = playbackManager.queue.peekNext(100)
-			.mapNotNull { entry -> entry.baseItem?.let { AudioQueueItem(entry, it) } }
+		val currentItem =
+			currentEntry?.let { entry ->
+				entry.baseItem?.let { AudioQueueItem(entry, it, isCurrent = true) }
+			}
+		val upcoming =
+			playbackManager.queue
+				.peekNext(100)
+				.mapNotNull { entry -> entry.baseItem?.let { AudioQueueItem(entry, it) } }
 
 		val items = listOfNotNull(currentItem) + upcoming
 
@@ -191,7 +208,11 @@ class AudioNowPlayingViewModel(
 	}
 
 	fun openArtist() {
-		val artistId = _uiState.value.item?.albumArtists?.firstOrNull()?.id ?: return
+		val artistId =
+			_uiState.value.item
+				?.albumArtists
+				?.firstOrNull()
+				?.id ?: return
 		navigationRepository.navigate(Destinations.itemDetails(artistId))
 	}
 

@@ -14,7 +14,12 @@ class SpacingItemDecoration(
 	private val horizontalSpacing: Int,
 	private val verticalSpacing: Int,
 ) : RecyclerView.ItemDecoration() {
-	override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
+	override fun getItemOffsets(
+		outRect: Rect,
+		view: View,
+		parent: RecyclerView,
+		state: RecyclerView.State,
+	) {
 		val horizontalPx = (horizontalSpacing * parent.context.resources.displayMetrics.density / 2).roundToInt()
 		val verticalPx = (verticalSpacing * parent.context.resources.displayMetrics.density / 2).roundToInt()
 

@@ -37,7 +37,7 @@ object BrowsingUtils {
 		lifecycle: LifecycleOwner,
 		library: BaseItemDto,
 		type: BaseItemKind,
-		callback: (item: BaseItemDto?) -> Unit
+		callback: (item: BaseItemDto?) -> Unit,
 	) {
 		lifecycle.lifecycleScope.launch(Dispatchers.IO) {
 			try {
@@ -63,25 +63,27 @@ object BrowsingUtils {
 	}
 
 	@JvmStatic
-	fun createGetNextUpRequest(parentId: UUID) = GetNextUpRequest(
-		limit = 50,
-		parentId = parentId,
-		imageTypeLimit = 1,
-		fields = ItemRepository.itemFields
-	)
+	fun createGetNextUpRequest(parentId: UUID) =
+		GetNextUpRequest(
+			limit = 50,
+			parentId = parentId,
+			imageTypeLimit = 1,
+			fields = ItemRepository.itemFields,
+		)
 
 	@JvmStatic
-	fun createSeriesGetNextUpRequest(parentId: UUID) = GetNextUpRequest(
-		seriesId = parentId,
-		fields = ItemRepository.itemFields
-	)
+	fun createSeriesGetNextUpRequest(parentId: UUID) =
+		GetNextUpRequest(
+			seriesId = parentId,
+			fields = ItemRepository.itemFields,
+		)
 
 	@JvmStatic
 	@JvmOverloads
 	fun createLatestMediaRequest(
 		parentId: UUID,
 		itemType: BaseItemKind? = null,
-		groupItems: Boolean? = null
+		groupItems: Boolean? = null,
 	) = GetLatestMediaRequest(
 		fields = ItemRepository.itemFields,
 		parentId = parentId,
@@ -92,102 +94,118 @@ object BrowsingUtils {
 	)
 
 	@JvmStatic
-	fun createSeasonsRequest(seriesId: UUID) = GetSeasonsRequest(
-		seriesId = seriesId,
-		fields = ItemRepository.itemFields,
-	)
+	fun createSeasonsRequest(seriesId: UUID) =
+		GetSeasonsRequest(
+			seriesId = seriesId,
+			fields = ItemRepository.itemFields,
+		)
 
 	@JvmStatic
-	fun createUpcomingEpisodesRequest(parentId: UUID) = GetUpcomingEpisodesRequest(
-		parentId = parentId,
-		fields = ItemRepository.itemFields,
-	)
+	fun createUpcomingEpisodesRequest(parentId: UUID) =
+		GetUpcomingEpisodesRequest(
+			parentId = parentId,
+			fields = ItemRepository.itemFields,
+		)
 
 	@JvmStatic
-	fun createSimilarItemsRequest(itemId: UUID) = GetSimilarItemsRequest(
-		itemId = itemId,
-		fields = ItemRepository.itemFields,
-		limit = 20,
-	)
+	fun createSimilarItemsRequest(itemId: UUID) =
+		GetSimilarItemsRequest(
+			itemId = itemId,
+			fields = ItemRepository.itemFields,
+			limit = 20,
+		)
 
 	@JvmStatic
-	fun createLiveTVOnNowRequest() = GetRecommendedProgramsRequest(
-		isAiring = true,
-		fields = ItemRepository.itemFields,
-		imageTypeLimit = 1,
-		enableTotalRecordCount = false,
-		limit = 150,
-	)
+	fun createLiveTVOnNowRequest() =
+		GetRecommendedProgramsRequest(
+			isAiring = true,
+			fields = ItemRepository.itemFields,
+			imageTypeLimit = 1,
+			enableTotalRecordCount = false,
+			limit = 150,
+		)
 
 	@JvmStatic
-	fun createLiveTVUpcomingRequest() = GetRecommendedProgramsRequest(
-		isAiring = false,
-		hasAired = false,
-		fields = ItemRepository.itemFields,
-		imageTypeLimit = 1,
-		enableTotalRecordCount = false,
-		limit = 150,
-	)
+	fun createLiveTVUpcomingRequest() =
+		GetRecommendedProgramsRequest(
+			isAiring = false,
+			hasAired = false,
+			fields = ItemRepository.itemFields,
+			imageTypeLimit = 1,
+			enableTotalRecordCount = false,
+			limit = 150,
+		)
 
 	@JvmStatic
 	@JvmOverloads
-	fun createLiveTVRecordingsRequest(limit: Int? = null) = GetRecordingsRequest(
-		fields = ItemRepository.itemFields,
-		enableImages = true,
-		limit = limit,
-	)
+	fun createLiveTVRecordingsRequest(limit: Int? = null) =
+		GetRecordingsRequest(
+			fields = ItemRepository.itemFields,
+			enableImages = true,
+			limit = limit,
+		)
 
 	@JvmStatic
-	fun createLiveTVMovieRecordingsRequest() = GetRecordingsRequest(
-		fields = ItemRepository.itemFields,
-		enableImages = true,
-		limit = 60,
-		isMovie = true,
-	)
+	fun createLiveTVMovieRecordingsRequest() =
+		GetRecordingsRequest(
+			fields = ItemRepository.itemFields,
+			enableImages = true,
+			limit = 60,
+			isMovie = true,
+		)
 
 	@JvmStatic
-	fun createLiveTVSeriesRecordingsRequest() = GetRecordingsRequest(
-		fields = ItemRepository.itemFields,
-		enableImages = true,
-		limit = 60,
-		isSeries = true,
-	)
+	fun createLiveTVSeriesRecordingsRequest() =
+		GetRecordingsRequest(
+			fields = ItemRepository.itemFields,
+			enableImages = true,
+			limit = 60,
+			isSeries = true,
+		)
 
 	@JvmStatic
-	fun createLiveTVSportsRecordingsRequest() = GetRecordingsRequest(
-		fields = ItemRepository.itemFields,
-		enableImages = true,
-		limit = 60,
-		isSports = true,
-	)
+	fun createLiveTVSportsRecordingsRequest() =
+		GetRecordingsRequest(
+			fields = ItemRepository.itemFields,
+			enableImages = true,
+			limit = 60,
+			isSports = true,
+		)
 
 	@JvmStatic
-	fun createLiveTVKidsRecordingsRequest() = GetRecordingsRequest(
-		fields = ItemRepository.itemFields,
-		enableImages = true,
-		limit = 60,
-		isKids = true,
-	)
+	fun createLiveTVKidsRecordingsRequest() =
+		GetRecordingsRequest(
+			fields = ItemRepository.itemFields,
+			enableImages = true,
+			limit = 60,
+			isKids = true,
+		)
 
 	@JvmStatic
-	fun createLiveTVChannelsRequest(isFavorite: Boolean) = GetLiveTvChannelsRequest(
-		isFavorite = isFavorite,
-	)
+	fun createLiveTVChannelsRequest(isFavorite: Boolean) =
+		GetLiveTvChannelsRequest(
+			isFavorite = isFavorite,
+		)
 
 	@JvmStatic
-	fun createAlbumArtistsRequest(parentId: UUID) = GetAlbumArtistsRequest(
-		fields = ItemRepository.itemFields,
-		parentId = parentId,
-	)
+	fun createAlbumArtistsRequest(parentId: UUID) =
+		GetAlbumArtistsRequest(
+			fields = ItemRepository.itemFields,
+			parentId = parentId,
+		)
 
 	@JvmStatic
-	fun createArtistsRequest(parentId: UUID) = GetArtistsRequest(
-		fields = ItemRepository.itemFields,
-		parentId = parentId,
-	)
+	fun createArtistsRequest(parentId: UUID) =
+		GetArtistsRequest(
+			fields = ItemRepository.itemFields,
+			parentId = parentId,
+		)
 
 	@JvmStatic
-	fun createPersonItemsRequest(personId: UUID, itemType: BaseItemKind) = GetItemsRequest(
+	fun createPersonItemsRequest(
+		personId: UUID,
+		itemType: BaseItemKind,
+	) = GetItemsRequest(
 		fields = ItemRepository.itemFields,
 		personIds = setOf(personId),
 		recursive = true,
@@ -196,7 +214,10 @@ object BrowsingUtils {
 	)
 
 	@JvmStatic
-	fun createArtistItemsRequest(artistId: UUID, itemType: BaseItemKind) = GetItemsRequest(
+	fun createArtistItemsRequest(
+		artistId: UUID,
+		itemType: BaseItemKind,
+	) = GetItemsRequest(
 		fields = ItemRepository.itemFields,
 		artistIds = setOf(artistId),
 		recursive = true,
@@ -205,7 +226,10 @@ object BrowsingUtils {
 	)
 
 	@JvmStatic
-	fun createNextEpisodesRequest(seasonId: UUID, indexNumber: Int) = GetItemsRequest(
+	fun createNextEpisodesRequest(
+		seasonId: UUID,
+		indexNumber: Int,
+	) = GetItemsRequest(
 		fields = ItemRepository.itemFields,
 		parentId = seasonId,
 		includeItemTypes = setOf(BaseItemKind.EPISODE),
@@ -214,7 +238,10 @@ object BrowsingUtils {
 	)
 
 	@JvmStatic
-	fun createResumeItemsRequest(parentId: UUID, itemType: BaseItemKind) = GetItemsRequest(
+	fun createResumeItemsRequest(
+		parentId: UUID,
+		itemType: BaseItemKind,
+	) = GetItemsRequest(
 		fields = ItemRepository.itemFields,
 		includeItemTypes = setOf(itemType),
 		recursive = true,
@@ -229,7 +256,10 @@ object BrowsingUtils {
 	)
 
 	@JvmStatic
-	fun createFavoriteItemsRequest(parentId: UUID, itemType: BaseItemKind) = GetItemsRequest(
+	fun createFavoriteItemsRequest(
+		parentId: UUID,
+		itemType: BaseItemKind,
+	) = GetItemsRequest(
 		fields = ItemRepository.itemFields,
 		includeItemTypes = setOf(itemType),
 		recursive = true,
@@ -240,64 +270,71 @@ object BrowsingUtils {
 	)
 
 	@JvmStatic
-	fun createCollectionsRequest(parentId: UUID) = GetItemsRequest(
-		fields = ItemRepository.itemFields,
-		includeItemTypes = setOf(BaseItemKind.BOX_SET),
-		recursive = true,
-		imageTypeLimit = 1,
-		parentId = parentId,
-		sortBy = setOf(ItemSortBy.SORT_NAME),
-	)
+	fun createCollectionsRequest(parentId: UUID) =
+		GetItemsRequest(
+			fields = ItemRepository.itemFields,
+			includeItemTypes = setOf(BaseItemKind.BOX_SET),
+			recursive = true,
+			imageTypeLimit = 1,
+			parentId = parentId,
+			sortBy = setOf(ItemSortBy.SORT_NAME),
+		)
 
 	@JvmStatic
-	fun createLastPlayedRequest(parentId: UUID) = GetItemsRequest(
-		fields = ItemRepository.itemFields,
-		includeItemTypes = setOf(BaseItemKind.AUDIO),
-		recursive = true,
-		parentId = parentId,
-		imageTypeLimit = 1,
-		filters = setOf(ItemFilter.IS_PLAYED),
-		sortBy = setOf(ItemSortBy.DATE_PLAYED),
-		sortOrder = setOf(SortOrder.DESCENDING),
-		enableTotalRecordCount = false,
-		limit = 50,
-	)
+	fun createLastPlayedRequest(parentId: UUID) =
+		GetItemsRequest(
+			fields = ItemRepository.itemFields,
+			includeItemTypes = setOf(BaseItemKind.AUDIO),
+			recursive = true,
+			parentId = parentId,
+			imageTypeLimit = 1,
+			filters = setOf(ItemFilter.IS_PLAYED),
+			sortBy = setOf(ItemSortBy.DATE_PLAYED),
+			sortOrder = setOf(SortOrder.DESCENDING),
+			enableTotalRecordCount = false,
+			limit = 50,
+		)
 
 	@JvmStatic
-	fun createPlaylistsRequest() = GetItemsRequest(
-		fields = ItemRepository.itemFields + ItemFields.CAN_DELETE,
-		includeItemTypes = setOf(BaseItemKind.PLAYLIST),
-		imageTypeLimit = 1,
-		recursive = true,
-		sortBy = setOf(ItemSortBy.DATE_CREATED),
-		sortOrder = setOf(SortOrder.DESCENDING),
-	)
+	fun createPlaylistsRequest() =
+		GetItemsRequest(
+			fields = ItemRepository.itemFields + ItemFields.CAN_DELETE,
+			includeItemTypes = setOf(BaseItemKind.PLAYLIST),
+			imageTypeLimit = 1,
+			recursive = true,
+			sortBy = setOf(ItemSortBy.DATE_CREATED),
+			sortOrder = setOf(SortOrder.DESCENDING),
+		)
 
 	@JvmStatic
 	fun createBrowseGridItemsRequest(parent: BaseItemDto): GetItemsRequest {
-		val baseRequest = GetItemsRequest(
-			fields = ItemRepository.itemFields,
-			parentId = parent.id,
-		)
+		val baseRequest =
+			GetItemsRequest(
+				fields = ItemRepository.itemFields,
+				parentId = parent.id,
+			)
 
 		if (parent.type == BaseItemKind.USER_VIEW || parent.type == BaseItemKind.COLLECTION_FOLDER) {
 			return when (parent.collectionType) {
-				CollectionType.MOVIES -> baseRequest.copy(
-					includeItemTypes = setOf(BaseItemKind.MOVIE),
-					excludeItemTypes = setOf(BaseItemKind.BOX_SET),
-					collapseBoxSetItems = false,
-					recursive = true,
-				)
+				CollectionType.MOVIES ->
+					baseRequest.copy(
+						includeItemTypes = setOf(BaseItemKind.MOVIE),
+						excludeItemTypes = setOf(BaseItemKind.BOX_SET),
+						collapseBoxSetItems = false,
+						recursive = true,
+					)
 
-				CollectionType.TVSHOWS -> baseRequest.copy(
-					includeItemTypes = setOf(BaseItemKind.SERIES),
-					recursive = true,
-				)
+				CollectionType.TVSHOWS ->
+					baseRequest.copy(
+						includeItemTypes = setOf(BaseItemKind.SERIES),
+						recursive = true,
+					)
 
-				CollectionType.MUSIC -> baseRequest.copy(
-					includeItemTypes = setOf(BaseItemKind.MUSIC_ALBUM),
-					recursive = true,
-				)
+				CollectionType.MUSIC ->
+					baseRequest.copy(
+						includeItemTypes = setOf(BaseItemKind.MUSIC_ALBUM),
+						recursive = true,
+					)
 
 				else -> baseRequest
 			}

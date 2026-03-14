@@ -10,11 +10,12 @@ import org.jellyfin.sdk.model.api.UserDto
 import org.jellyfin.sdk.model.serializer.toUUID
 import org.jellyfin.sdk.model.serializer.toUUIDOrNull
 
-fun ServerDiscoveryInfo.toServer(): Server = Server(
-	id = id.toUUID(),
-	name = name,
-	address = address,
-)
+fun ServerDiscoveryInfo.toServer(): Server =
+	Server(
+		id = id.toUUID(),
+		name = name,
+		address = address,
+	)
 
 fun UserDto.toPublicUser(): PublicUser? {
 	return PublicUser(
@@ -22,6 +23,6 @@ fun UserDto.toPublicUser(): PublicUser? {
 		name = name ?: return null,
 		serverId = serverId?.toUUIDOrNull() ?: return null,
 		accessToken = null,
-		imageTag = primaryImage?.tag
+		imageTag = primaryImage?.tag,
 	)
 }

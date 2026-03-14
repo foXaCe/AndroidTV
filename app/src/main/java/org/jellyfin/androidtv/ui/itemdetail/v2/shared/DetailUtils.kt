@@ -11,14 +11,21 @@ import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.BaseItemKind
 import org.jellyfin.sdk.model.api.ImageType
 
-fun getBackdropUrl(item: BaseItemDto, api: ApiClient): String? {
-	val backdropImage = item.itemBackdropImages.firstOrNull()
-		?: item.parentBackdropImages.firstOrNull()
+fun getBackdropUrl(
+	item: BaseItemDto,
+	api: ApiClient,
+): String? {
+	val backdropImage =
+		item.itemBackdropImages.firstOrNull()
+			?: item.parentBackdropImages.firstOrNull()
 	return backdropImage?.getUrl(api, maxWidth = 1920)
 }
 
-fun getPosterUrl(item: BaseItemDto, api: ApiClient): String? {
-	return when {
+fun getPosterUrl(
+	item: BaseItemDto,
+	api: ApiClient,
+): String? =
+	when {
 		item.type == BaseItemKind.EPISODE -> {
 			val thumbImage = item.itemImages[ImageType.THUMB]
 			val primaryImage = item.itemImages[ImageType.PRIMARY]
@@ -33,14 +40,19 @@ fun getPosterUrl(item: BaseItemDto, api: ApiClient): String? {
 			item.itemImages[ImageType.PRIMARY]?.getUrl(api, maxHeight = 600)
 		}
 	}
-}
 
-fun getLogoUrl(item: BaseItemDto, api: ApiClient): String? {
+fun getLogoUrl(
+	item: BaseItemDto,
+	api: ApiClient,
+): String? {
 	val logoImage = item.getLogoImage()
 	return logoImage?.getUrl(api, maxWidth = 400)
 }
 
-fun getEpisodeThumbnailUrl(ep: BaseItemDto, api: ApiClient): String? {
+fun getEpisodeThumbnailUrl(
+	ep: BaseItemDto,
+	api: ApiClient,
+): String? {
 	val primaryImage = ep.itemImages[ImageType.PRIMARY]
 	return primaryImage?.getUrl(api, maxWidth = 400)
 }
@@ -54,7 +66,10 @@ fun formatDuration(ticks: Long): String {
 
 fun getEndsAt(ticks: Long): String {
 	val endTime = java.util.Date(System.currentTimeMillis() + ticks / 10_000)
-	val cal = java.util.Calendar.getInstance().apply { time = endTime }
+	val cal =
+		java.util.Calendar
+			.getInstance()
+			.apply { time = endTime }
 	val hours = cal.get(java.util.Calendar.HOUR)
 	val minutes = cal.get(java.util.Calendar.MINUTE)
 	val ampm = if (cal.get(java.util.Calendar.AM_PM) == java.util.Calendar.AM) "AM" else "PM"

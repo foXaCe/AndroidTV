@@ -45,15 +45,18 @@ object TelemetryService {
 		}
 	}
 
-	class AcraPluginLoader(vararg plugins: Class<out Plugin>) : PluginLoader {
+	class AcraPluginLoader(
+		vararg plugins: Class<out Plugin>,
+	) : PluginLoader {
 		private val simplePluginLoader = SimplePluginLoader(*plugins)
 		private val servicePluginLoader = ServicePluginLoader()
 
-		override fun <T : Plugin> load(clazz: Class<T>): List<T> =
-			simplePluginLoader.load(clazz) + servicePluginLoader.load(clazz)
+		override fun <T : Plugin> load(clazz: Class<T>): List<T> = simplePluginLoader.load(clazz) + servicePluginLoader.load(clazz)
 
-		override fun <T : Plugin> loadEnabled(config: CoreConfiguration, clazz: Class<T>): List<T> =
-			simplePluginLoader.loadEnabled(config, clazz) + servicePluginLoader.loadEnabled(config, clazz)
+		override fun <T : Plugin> loadEnabled(
+			config: CoreConfiguration,
+			clazz: Class<T>,
+		): List<T> = simplePluginLoader.loadEnabled(config, clazz) + servicePluginLoader.loadEnabled(config, clazz)
 	}
 
 	class AcraReportSender(
@@ -61,24 +64,29 @@ object TelemetryService {
 		private val token: String?,
 		private val includeLogs: Boolean,
 	) : ReportSender {
-		override fun send(context: Context, errorContent: CrashReportData) = try {
+		override fun send(
+			context: Context,
+			errorContent: CrashReportData,
+		) = try {
 			if (url.isNullOrBlank()) throw ReportSenderException("No telemetry crash report URL available.")
 			if (token.isNullOrBlank()) throw ReportSenderException("No telemetry crash report token available.")
 
 			// Create connection
 			val connection = URL(url).openConnection() as HttpURLConnection
 			// Add authorization
-			val clientName = buildString {
-				append("VegafoX Android TV")
-				if (BuildConfig.DEBUG) append(" (debug)")
-			}
-			val authorization = AuthorizationHeaderBuilder.buildHeader(
-				clientName = clientName,
-				clientVersion = BuildConfig.VERSION_NAME,
-				deviceId = "",
-				deviceName = "",
-				accessToken = token,
-			)
+			val clientName =
+				buildString {
+					append("VegafoX Android TV")
+					if (BuildConfig.DEBUG) append(" (debug)")
+				}
+			val authorization =
+				AuthorizationHeaderBuilder.buildHeader(
+					clientName = clientName,
+					clientVersion = BuildConfig.VERSION_NAME,
+					deviceId = "",
+					deviceName = "",
+					accessToken = token,
+				)
 			connection.setRequestProperty("Authorization", authorization)
 			// Write POST body
 			connection.requestMethod = "POST"
@@ -90,65 +98,74 @@ object TelemetryService {
 			}
 			// Close
 			connection.inputStream.close()
-		} catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+		} catch (
+			@Suppress("TooGenericExceptionCaught") e: Exception,
+		) {
 			throw ReportSenderException("Unable to send crash report to server", e)
 		}
 
-			private fun CrashReportData.toReport(): String = buildMarkdown {
-			// Header
-			appendLine("---")
-			appendLine("client: VegafoX for Android TV")
-			appendLine("client_version: ${BuildConfig.VERSION_NAME}")
-			appendLine("client_repository: https://github.com/foXaCe/AndroidTV")
-			appendLine("type: crash_report")
-			appendLine("format: markdown")
-			appendLine("---")
-			appendLine()
+		private fun CrashReportData.toReport(): String =
+			buildMarkdown {
+				// Header
+				appendLine("---")
+				appendLine("client: VegafoX for Android TV")
+				appendLine("client_version: ${BuildConfig.VERSION_NAME}")
+				appendLine("client_repository: https://github.com/foXaCe/AndroidTV")
+				appendLine("type: crash_report")
+				appendLine("format: markdown")
+				appendLine("---")
+				appendLine()
 
-			// Content
-			appendSection("Logs") {
-				appendItem("Stack Trace") { appendCodeBlock("log", getString(ReportField.STACK_TRACE)) }
-				appendItem("Logcat") {
-					if (includeLogs) appendCodeBlock("log", getString(ReportField.LOGCAT))
-					else append("Logs are disabled")
+				// Content
+				appendSection("Logs") {
+					appendItem("Stack Trace") { appendCodeBlock("log", getString(ReportField.STACK_TRACE)) }
+					appendItem("Logcat") {
+						if (includeLogs) {
+							appendCodeBlock("log", getString(ReportField.LOGCAT))
+						} else {
+							append("Logs are disabled")
+						}
+					}
+				}
+
+				appendSection("App information") {
+					appendItem("App version") {
+						appendValue(getString(ReportField.APP_VERSION_NAME))
+						append(" (")
+						appendValue(getString(ReportField.APP_VERSION_CODE))
+						append(")")
+					}
+					appendItem("Package name") { appendValue(getString(ReportField.PACKAGE_NAME)) }
+					appendItem("Build") { appendCodeBlock("json", getString(ReportField.BUILD)) }
+					appendItem("Build config") { appendCodeBlock("json", getString(ReportField.BUILD_CONFIG)) }
+				}
+
+				appendSection("Device information") {
+					appendItem("Android version") { appendValue(getString(ReportField.ANDROID_VERSION)) }
+					appendItem("Device brand") { appendValue(getString(ReportField.BRAND)) }
+					appendItem("Device product") { appendValue(getString(ReportField.PRODUCT)) }
+					appendItem("Device model") { appendValue(getString(ReportField.PHONE_MODEL)) }
+				}
+
+				appendSection("Crash information") {
+					appendItem("Start time") { appendValue(getString(ReportField.USER_APP_START_DATE)) }
+					appendItem("Crash time") { appendValue(getString(ReportField.USER_CRASH_DATE)) }
+				}
+
+				// Dump
+				if (BuildConfig.DEVELOPMENT) {
+					appendSection("Dump") {
+						appendCodeBlock("json", toJSON())
+					}
 				}
 			}
-
-			appendSection("App information") {
-				appendItem("App version") {
-					appendValue(getString(ReportField.APP_VERSION_NAME))
-					append(" (")
-					appendValue(getString(ReportField.APP_VERSION_CODE))
-					append(")")
-				}
-				appendItem("Package name") { appendValue(getString(ReportField.PACKAGE_NAME)) }
-				appendItem("Build") { appendCodeBlock("json", getString(ReportField.BUILD)) }
-				appendItem("Build config") { appendCodeBlock("json", getString(ReportField.BUILD_CONFIG)) }
-			}
-
-			appendSection("Device information") {
-				appendItem("Android version") { appendValue(getString(ReportField.ANDROID_VERSION)) }
-				appendItem("Device brand") { appendValue(getString(ReportField.BRAND)) }
-				appendItem("Device product") { appendValue(getString(ReportField.PRODUCT)) }
-				appendItem("Device model") { appendValue(getString(ReportField.PHONE_MODEL)) }
-			}
-
-			appendSection("Crash information") {
-				appendItem("Start time") { appendValue(getString(ReportField.USER_APP_START_DATE)) }
-				appendItem("Crash time") { appendValue(getString(ReportField.USER_CRASH_DATE)) }
-			}
-
-			// Dump
-			if (BuildConfig.DEVELOPMENT) {
-				appendSection("Dump") {
-					appendCodeBlock("json", toJSON())
-				}
-			}
-		}
 	}
 
 	class AcraReportSenderFactory : ReportSenderFactory {
-		override fun create(context: Context, config: CoreConfiguration): ReportSender {
+		override fun create(
+			context: Context,
+			config: CoreConfiguration,
+		): ReportSender {
 			val preferences = context.getSharedPreferences(TelemetryPreferences.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
 			val url = preferences?.getString(TelemetryPreferences.crashReportUrl.key, null)
 			val token = preferences?.getString(TelemetryPreferences.crashReportToken.key, null)

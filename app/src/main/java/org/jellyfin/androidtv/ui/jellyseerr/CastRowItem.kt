@@ -12,9 +12,9 @@ import java.util.UUID
 class CastRowItem(
 	private val cast: JellyseerrCastMemberDto,
 ) : BaseRowItem(
-	baseRowType = BaseRowType.Person,
-	staticHeight = true,
-) {
+		baseRowType = BaseRowType.Person,
+		staticHeight = true,
+	) {
 	override fun getImage(imageType: ImageType): JellyfinImage? {
 		val profileUrl = cast.profilePath?.let { "https://image.tmdb.org/t/p/w185$it" } ?: return null
 		return JellyfinImage(
@@ -29,6 +29,8 @@ class CastRowItem(
 	}
 
 	override fun getFullName(context: Context) = cast.name
+
 	override fun getName(context: Context) = cast.name
+
 	override fun getSubText(context: Context) = cast.character
 }

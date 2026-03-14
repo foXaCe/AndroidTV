@@ -3,11 +3,11 @@ package org.jellyfin.androidtv.preference
 import android.content.Context
 import androidx.preference.PreferenceManager
 import org.jellyfin.androidtv.preference.UserPreferences.Companion.screensaverInAppEnabled
-import org.jellyfin.androidtv.preference.constant.PosterSize
 import org.jellyfin.androidtv.preference.constant.AudioBehavior
 import org.jellyfin.androidtv.preference.constant.ClockBehavior
 import org.jellyfin.androidtv.preference.constant.MaxVideoResolution
 import org.jellyfin.androidtv.preference.constant.NextUpBehavior
+import org.jellyfin.androidtv.preference.constant.PosterSize
 import org.jellyfin.androidtv.preference.constant.RefreshRateSwitchingBehavior
 import org.jellyfin.androidtv.preference.constant.StillWatchingBehavior
 import org.jellyfin.androidtv.preference.constant.WatchedIndicatorBehavior
@@ -30,11 +30,13 @@ import kotlin.time.Duration.Companion.minutes
  *
  * @param context Context to get the SharedPreferences from
  */
-class UserPreferences(context: Context) : SharedPreferenceStore(
-	sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-) {
+class UserPreferences(
+	context: Context,
+) : SharedPreferenceStore(
+		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context),
+	) {
 	companion object {
-		/* Display */
+		// Display
 		var posterSize = enumPreference("poster_size", PosterSize.DEFAULT)
 
 		/**
@@ -48,13 +50,13 @@ class UserPreferences(context: Context) : SharedPreferenceStore(
 		 */
 		var backdropEnabled = booleanPreference("pref_show_backdrop", true)
 
-		/* Plugin Sync */
+		// Plugin Sync
 		/**
 		 * Enable syncing settings with the VegafoX server plugin
 		 */
 		var pluginSyncEnabled = booleanPreference("pref_plugin_sync_enabled", false)
 
-		/* Toolbar Customization */
+		// Toolbar Customization
 		/**
 		 * Show shuffle button in toolbar
 		 */
@@ -87,7 +89,7 @@ class UserPreferences(context: Context) : SharedPreferenceStore(
 		 */
 		var shuffleContentType = stringPreference("pref_shuffle_content_type", "both")
 
-		/* SyncPlay Settings */
+		// SyncPlay Settings
 		/**
 		 * Enable sync correction during playback
 		 */
@@ -155,7 +157,7 @@ class UserPreferences(context: Context) : SharedPreferenceStore(
 		 */
 		var enableFolderView = booleanPreference("enable_folder_view", false)
 
-		/* Playback - General*/
+		// Playback - General
 		/**
 		 * Maximum bitrate in megabit for playback.
 		 */
@@ -198,7 +200,7 @@ class UserPreferences(context: Context) : SharedPreferenceStore(
 		 */
 		var stillWatchingBehavior = enumPreference("enable_still_watching", StillWatchingBehavior.DISABLED)
 
-		/* Playback - Video */
+		// Playback - Video
 		/**
 		 * Whether to use an external playback application or not.
 		 */
@@ -219,7 +221,7 @@ class UserPreferences(context: Context) : SharedPreferenceStore(
 		 */
 		var preferExoPlayerFfmpeg = booleanPreference("exoplayer_prefer_ffmpeg", defaultValue = false)
 
-		/* Playback - Audio related */
+		// Playback - Audio related
 		/**
 		 * Preferred behavior for audio streaming.
 		 */
@@ -235,22 +237,17 @@ class UserPreferences(context: Context) : SharedPreferenceStore(
 		 */
 		var ac3Enabled = booleanPreference("pref_bitstream_ac3", true)
 
-		/* Live TV */
+		// Live TV
 		/**
 		 * Use direct play
 		 */
 		var liveTvDirectPlayEnabled = booleanPreference("pref_live_direct", true)
 
-		/* Developer options */
+		// Developer options
 		/**
 		 * Show additional debug information
 		 */
 		var debuggingEnabled = booleanPreference("pref_enable_debug", false)
-
-		/**
-		 * Use playback rewrite module for video
-		 */
-		var playbackRewriteVideoEnabled = booleanPreference("playback_new", false)
 
 		/**
 		 * When to show the clock.
@@ -303,24 +300,24 @@ class UserPreferences(context: Context) : SharedPreferenceStore(
 		var subtitlesOffsetPosition = floatPreference("subtitles_offset_position", 0.08f)
 
 		/**
-	 * Force subtitles to default to None instead of server default
-	 */
-	var subtitlesDefaultToNone = booleanPreference("subtitles_default_to_none", false)
+		 * Force subtitles to default to None instead of server default
+		 */
+		var subtitlesDefaultToNone = booleanPreference("subtitles_default_to_none", false)
 
-	/**
-	 * Show screensaver in app
-	 */
-	var screensaverInAppEnabled = booleanPreference("screensaver_inapp_enabled", true)
+		/**
+		 * Show screensaver in app
+		 */
+		var screensaverInAppEnabled = booleanPreference("screensaver_inapp_enabled", true)
 
-	/**
-	 * Screensaver mode (library or logo)
-	 */
-	var screensaverMode = stringPreference("pref_screensaver_mode", "library")
+		/**
+		 * Screensaver mode (library or logo)
+		 */
+		var screensaverMode = stringPreference("pref_screensaver_mode", "library")
 
-	/**
-	 * Screen dimming level for the screensaver (1-100%).
-	 * 0 means no dimming.
-	 */
+		/**
+		 * Screen dimming level for the screensaver (1-100%).
+		 * 0 means no dimming.
+		 */
 		var screensaverDimmingLevel = intPreference("pref_screensaver_dimming_level", 0)
 
 		/**
@@ -351,13 +348,15 @@ class UserPreferences(context: Context) : SharedPreferenceStore(
 		/**
 		 * The actions to take for each media segment type. Managed by the [MediaSegmentRepository].
 		 */
-		var mediaSegmentActions = stringPreference(
-			key = "media_segment_actions",
-			defaultValue = mapOf(
-				MediaSegmentType.INTRO to MediaSegmentAction.ASK_TO_SKIP,
-				MediaSegmentType.OUTRO to MediaSegmentAction.ASK_TO_SKIP,
-			).toMediaSegmentActionsString()
-		)
+		var mediaSegmentActions =
+			stringPreference(
+				key = "media_segment_actions",
+				defaultValue =
+					mapOf(
+						MediaSegmentType.INTRO to MediaSegmentAction.ASK_TO_SKIP,
+						MediaSegmentType.OUTRO to MediaSegmentAction.ASK_TO_SKIP,
+					).toMediaSegmentActionsString(),
+			)
 
 		/**
 		 * Preferred behavior for player aspect ratio (zoom mode).
@@ -370,7 +369,7 @@ class UserPreferences(context: Context) : SharedPreferenceStore(
 		var trickPlayEnabled = booleanPreference("trick_play_enabled", false)
 
 		/**
-  		 * Enable PGS subtitle direct-play.
+		 * Enable PGS subtitle direct-play.
 		 */
 		var pgsDirectPlay = booleanPreference("pgs_enabled", true)
 

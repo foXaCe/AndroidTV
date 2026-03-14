@@ -31,7 +31,7 @@ fun SubtitleColorPresetsControl(
 ) {
 	Row(
 		horizontalArrangement = Arrangement.spacedBy(Tokens.Space.spaceSm, Alignment.CenterHorizontally),
-		modifier = Modifier.fillMaxWidth()
+		modifier = Modifier.fillMaxWidth(),
 	) {
 		for (color in presets) {
 			val interactionSource = remember { MutableInteractionSource() }
@@ -40,15 +40,16 @@ fun SubtitleColorPresetsControl(
 
 			ColorSwatch(
 				color = color,
-				modifier = Modifier
-					.size(26.dp)
-					.scale(scale)
-					.clickable(
-						interactionSource = interactionSource,
-						role = Role.Button,
-						indication = null,
-						onClick = { onValueChange(color) },
-					)
+				modifier =
+					Modifier
+						.size(26.dp)
+						.scale(scale)
+						.clickable(
+							interactionSource = interactionSource,
+							role = Role.Button,
+							indication = null,
+							onClick = { onValueChange(color) },
+						),
 			)
 		}
 	}

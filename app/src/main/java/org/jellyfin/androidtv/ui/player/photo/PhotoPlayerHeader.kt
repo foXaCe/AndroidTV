@@ -10,18 +10,17 @@ import org.jellyfin.sdk.model.api.BaseItemDto
 
 @Composable
 @Stable
-fun PhotoPlayerHeader(
-	item: BaseItemDto?,
-) {
+fun PhotoPlayerHeader(item: BaseItemDto?) {
 	PlayerHeader {
 		if (item != null) {
 			Text(
 				text = item.name.orEmpty(),
 				overflow = TextOverflow.Ellipsis,
 				maxLines = 1,
-				style = JellyfinTheme.typography.titleMedium.copy(
-					color = JellyfinTheme.colorScheme.onSurface,
-				)
+				style =
+					JellyfinTheme.typography.titleMedium.copy(
+						color = JellyfinTheme.colorScheme.onSurface,
+					),
 			)
 
 			item.album?.let { album ->
@@ -29,9 +28,10 @@ fun PhotoPlayerHeader(
 					text = album,
 					overflow = TextOverflow.Ellipsis,
 					maxLines = 1,
-					style = JellyfinTheme.typography.titleSmall.copy(
-						color = JellyfinTheme.colorScheme.onSurfaceVariant,
-					)
+					style =
+						JellyfinTheme.typography.titleSmall.copy(
+							color = JellyfinTheme.colorScheme.onSurfaceVariant,
+						),
 				)
 			}
 		}

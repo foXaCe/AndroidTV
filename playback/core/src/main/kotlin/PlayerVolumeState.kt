@@ -63,10 +63,13 @@ class NoOpPlayerVolumeState : PlayerVolumeState {
 	override val modifiable = false
 
 	override fun mute() = Unit
+
 	override fun unmute() = Unit
 
 	override fun increaseVolume() = Unit
+
 	override fun decreaseVolume() = Unit
+
 	override fun setVolume(volume: Float) = Unit
 }
 
@@ -89,7 +92,7 @@ class AndroidPlayerVolumeState(
 		audioManager.adjustStreamVolume(
 			stream,
 			AudioManager.ADJUST_MUTE,
-			AudioManager.FLAG_SHOW_UI
+			AudioManager.FLAG_SHOW_UI,
 		)
 	}
 
@@ -98,7 +101,7 @@ class AndroidPlayerVolumeState(
 		audioManager.adjustStreamVolume(
 			stream,
 			AudioManager.ADJUST_UNMUTE,
-			AudioManager.FLAG_SHOW_UI
+			AudioManager.FLAG_SHOW_UI,
 		)
 	}
 
@@ -107,7 +110,7 @@ class AndroidPlayerVolumeState(
 		audioManager.adjustStreamVolume(
 			stream,
 			AudioManager.ADJUST_RAISE,
-			AudioManager.FLAG_SHOW_UI
+			AudioManager.FLAG_SHOW_UI,
 		)
 	}
 
@@ -116,11 +119,13 @@ class AndroidPlayerVolumeState(
 		audioManager.adjustStreamVolume(
 			stream,
 			AudioManager.ADJUST_LOWER,
-			AudioManager.FLAG_SHOW_UI
+			AudioManager.FLAG_SHOW_UI,
 		)
 	}
 
-	override fun setVolume(@FloatRange(0.0, 1.0) volume: Float) {
+	override fun setVolume(
+		@FloatRange(0.0, 1.0) volume: Float,
+	) {
 		require(volume in 0f..1f)
 		if (!modifiable) return
 		val maxVolume = audioManager.getStreamMaxVolume(stream)

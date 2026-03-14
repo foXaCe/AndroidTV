@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import org.jellyfin.androidtv.R
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.composable.rememberQueueEntry
 import org.jellyfin.androidtv.ui.player.base.PlayerOverlayLayout
 import org.jellyfin.androidtv.ui.player.base.rememberPlayerOverlayVisibility
@@ -34,25 +34,25 @@ fun VideoPlayerOverlay(
 			when (playbackManager.state.playState.value) {
 				PlayState.PLAYING -> {
 					playbackManager.state.pause()
-					mediaToastRegistry.emit(R.drawable.ic_pause)
+					mediaToastRegistry.emit(VegafoXIcons.Pause)
 				}
 				PlayState.PAUSED -> {
 					playbackManager.state.unpause()
-					mediaToastRegistry.emit(R.drawable.ic_play)
+					mediaToastRegistry.emit(VegafoXIcons.Play)
 				}
 				PlayState.STOPPED, PlayState.ERROR -> {
 					playbackManager.state.play()
-					mediaToastRegistry.emit(R.drawable.ic_play)
+					mediaToastRegistry.emit(VegafoXIcons.Play)
 				}
 			}
 		},
 		onSeekForward = {
 			playbackManager.state.fastForward()
-			mediaToastRegistry.emit(R.drawable.ic_fast_forward)
+			mediaToastRegistry.emit(VegafoXIcons.FastForward)
 		},
 		onSeekBackward = {
 			playbackManager.state.rewind()
-			mediaToastRegistry.emit(R.drawable.ic_rewind)
+			mediaToastRegistry.emit(VegafoXIcons.Rewind)
 		},
 		header = {
 			VideoPlayerHeader(
@@ -62,6 +62,7 @@ fun VideoPlayerOverlay(
 		controls = {
 			VideoPlayerControls(
 				playbackManager = playbackManager,
+				item = item,
 			)
 		},
 	)

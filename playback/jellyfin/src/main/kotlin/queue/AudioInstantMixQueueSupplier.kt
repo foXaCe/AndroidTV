@@ -13,14 +13,15 @@ class AudioInstantMixQueueSupplier(
 	private val api: ApiClient,
 ) : PagedQueueSupplier() {
 	companion object {
-		val instantMixableItems = arrayOf(
-			BaseItemKind.MUSIC_GENRE,
-			BaseItemKind.PLAYLIST,
-			BaseItemKind.MUSIC_ALBUM,
-			BaseItemKind.MUSIC_ARTIST,
-			BaseItemKind.AUDIO,
-			BaseItemKind.FOLDER,
-		)
+		val instantMixableItems =
+			arrayOf(
+				BaseItemKind.MUSIC_GENRE,
+				BaseItemKind.PLAYLIST,
+				BaseItemKind.MUSIC_ALBUM,
+				BaseItemKind.MUSIC_ARTIST,
+				BaseItemKind.AUDIO,
+				BaseItemKind.FOLDER,
+			)
 	}
 
 	init {
@@ -30,7 +31,10 @@ class AudioInstantMixQueueSupplier(
 	override var size: Int = 0
 		private set
 
-	override suspend fun loadPage(offset: Int, size: Int): Collection<QueueEntry> {
+	override suspend fun loadPage(
+		offset: Int,
+		size: Int,
+	): Collection<QueueEntry> {
 		// API doesn't support paging for instant mix
 		if (offset > 0) return emptyList()
 

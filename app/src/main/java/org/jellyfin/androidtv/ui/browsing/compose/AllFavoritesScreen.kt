@@ -1,16 +1,21 @@
 package org.jellyfin.androidtv.ui.browsing.compose
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +28,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.repository.ItemRepository
+import org.jellyfin.androidtv.ui.base.JellyfinTheme
+import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.skeleton.SkeletonCardRow
 import org.jellyfin.androidtv.ui.base.state.DisplayState
 import org.jellyfin.androidtv.ui.base.state.EmptyState
@@ -30,7 +37,9 @@ import org.jellyfin.androidtv.ui.base.state.ErrorState
 import org.jellyfin.androidtv.ui.base.state.StateContainer
 import org.jellyfin.androidtv.ui.base.state.UiError
 import org.jellyfin.androidtv.ui.base.state.toUiError
-import org.jellyfin.androidtv.ui.base.tv.TvHeader
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.BrowseDimensions
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.base.tv.TvRow
 import org.jellyfin.androidtv.ui.base.tv.TvRowList
 import org.jellyfin.androidtv.ui.base.tv.TvScaffold
@@ -52,7 +61,6 @@ data class AllFavoritesUiState(
 class AllFavoritesViewModel(
 	val api: ApiClient,
 ) : ViewModel() {
-
 	private val _uiState = MutableStateFlow(AllFavoritesUiState())
 	val uiState: StateFlow<AllFavoritesUiState> = _uiState.asStateFlow()
 
@@ -67,48 +75,58 @@ class AllFavoritesViewModel(
 				val rows = mutableListOf<TvRow<BaseItemDto>>()
 
 				withContext(Dispatchers.IO) {
-					val castDef = async {
-						api.personsApi.getPersons(
-							isFavorite = true,
-							fields = ItemRepository.itemFields,
-						).content.items
-					}
-					val moviesDef = async {
-						api.itemsApi.getItems(
-							sortBy = setOf(ItemSortBy.SORT_NAME),
-							filters = setOf(ItemFilter.IS_FAVORITE),
-							includeItemTypes = setOf(BaseItemKind.MOVIE),
-							recursive = true,
-							fields = ItemRepository.itemFields,
-						).content.items
-					}
-					val showsDef = async {
-						api.itemsApi.getItems(
-							sortBy = setOf(ItemSortBy.SORT_NAME),
-							filters = setOf(ItemFilter.IS_FAVORITE),
-							includeItemTypes = setOf(BaseItemKind.SERIES),
-							recursive = true,
-							fields = ItemRepository.itemFields,
-						).content.items
-					}
-					val episodesDef = async {
-						api.itemsApi.getItems(
-							sortBy = setOf(ItemSortBy.SORT_NAME),
-							filters = setOf(ItemFilter.IS_FAVORITE),
-							includeItemTypes = setOf(BaseItemKind.EPISODE),
-							recursive = true,
-							fields = ItemRepository.itemFields,
-						).content.items
-					}
-					val playlistsDef = async {
-						api.itemsApi.getItems(
-							sortBy = setOf(ItemSortBy.SORT_NAME),
-							filters = setOf(ItemFilter.IS_FAVORITE),
-							includeItemTypes = setOf(BaseItemKind.PLAYLIST),
-							recursive = true,
-							fields = ItemRepository.itemFields,
-						).content.items
-					}
+					val castDef =
+						async {
+							api.personsApi
+								.getPersons(
+									isFavorite = true,
+									fields = ItemRepository.itemFields,
+								).content.items
+						}
+					val moviesDef =
+						async {
+							api.itemsApi
+								.getItems(
+									sortBy = setOf(ItemSortBy.SORT_NAME),
+									filters = setOf(ItemFilter.IS_FAVORITE),
+									includeItemTypes = setOf(BaseItemKind.MOVIE),
+									recursive = true,
+									fields = ItemRepository.itemFields,
+								).content.items
+						}
+					val showsDef =
+						async {
+							api.itemsApi
+								.getItems(
+									sortBy = setOf(ItemSortBy.SORT_NAME),
+									filters = setOf(ItemFilter.IS_FAVORITE),
+									includeItemTypes = setOf(BaseItemKind.SERIES),
+									recursive = true,
+									fields = ItemRepository.itemFields,
+								).content.items
+						}
+					val episodesDef =
+						async {
+							api.itemsApi
+								.getItems(
+									sortBy = setOf(ItemSortBy.SORT_NAME),
+									filters = setOf(ItemFilter.IS_FAVORITE),
+									includeItemTypes = setOf(BaseItemKind.EPISODE),
+									recursive = true,
+									fields = ItemRepository.itemFields,
+								).content.items
+						}
+					val playlistsDef =
+						async {
+							api.itemsApi
+								.getItems(
+									sortBy = setOf(ItemSortBy.SORT_NAME),
+									filters = setOf(ItemFilter.IS_FAVORITE),
+									includeItemTypes = setOf(BaseItemKind.PLAYLIST),
+									recursive = true,
+									fields = ItemRepository.itemFields,
+								).content.items
+						}
 
 					val cast = castDef.await()
 					val movies = moviesDef.await()
@@ -151,26 +169,51 @@ fun AllFavoritesScreen(
 ) {
 	val uiState by viewModel.uiState.collectAsState()
 	val title = stringResource(R.string.lbl_favorites)
-	val labels = FavoriteLabels(
-		cast = stringResource(R.string.lbl_cast),
-		movies = stringResource(R.string.lbl_movies),
-		shows = stringResource(R.string.lbl_tv_series),
-		episodes = stringResource(R.string.lbl_episodes),
-		playlists = stringResource(R.string.lbl_playlists),
-	)
+	val labels =
+		FavoriteLabels(
+			cast = stringResource(R.string.lbl_cast),
+			movies = stringResource(R.string.lbl_movies),
+			shows = stringResource(R.string.lbl_tv_series),
+			episodes = stringResource(R.string.lbl_episodes),
+			playlists = stringResource(R.string.lbl_playlists),
+		)
 
 	TvScaffold {
-		Column(modifier = Modifier.fillMaxSize()) {
-			TvHeader(title = title)
+		Column(
+			modifier =
+				Modifier
+					.fillMaxSize()
+					.background(VegafoXColors.BackgroundDeep),
+		) {
+			// VegafoX header
+			Column(
+				modifier =
+					Modifier
+						.fillMaxWidth()
+						.padding(top = 32.dp, start = BrowseDimensions.gridPaddingHorizontal, end = BrowseDimensions.gridPaddingHorizontal),
+			) {
+				Text(
+					text = title,
+					style =
+						JellyfinTheme.typography.headlineLarge.copy(
+							fontSize = 40.sp,
+							fontWeight = FontWeight.Bold,
+							fontFamily = BebasNeue,
+							letterSpacing = 2.sp,
+						),
+					color = VegafoXColors.TextPrimary,
+				)
+			}
 
 			Spacer(modifier = Modifier.height(16.dp))
 
-			val displayState = when {
-				uiState.isLoading -> DisplayState.LOADING
-				uiState.error != null -> DisplayState.ERROR
-				uiState.rows.isEmpty() -> DisplayState.EMPTY
-				else -> DisplayState.CONTENT
-			}
+			val displayState =
+				when {
+					uiState.isLoading -> DisplayState.LOADING
+					uiState.error != null -> DisplayState.ERROR
+					uiState.rows.isEmpty() -> DisplayState.EMPTY
+					else -> DisplayState.CONTENT
+				}
 
 			StateContainer(
 				state = displayState,

@@ -1,13 +1,17 @@
 package org.jellyfin.androidtv.ui.settings.screen.customization
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.auth.repository.UserRepository
 import org.jellyfin.androidtv.preference.UserPreferences
@@ -15,8 +19,11 @@ import org.jellyfin.androidtv.preference.UserSettingPreferences
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.form.Checkbox
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.list.ListButton
 import org.jellyfin.androidtv.ui.base.list.ListSection
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.navigation.LocalRouter
 import org.jellyfin.androidtv.ui.settings.Routes
 import org.jellyfin.androidtv.ui.settings.compat.rememberPreference
@@ -27,19 +34,27 @@ import org.jellyfin.androidtv.ui.settings.screen.vegafox.getShuffleContentTypeLa
 import org.koin.compose.koinInject
 
 @Composable
-fun SettingsCustomizationScreen() {
+fun SettingsCustomizationScreen(
+	userPreferences: UserPreferences = koinInject(),
+	userRepository: UserRepository = koinInject(),
+) {
 	val router = LocalRouter.current
 	val context = LocalContext.current
-	val userPreferences = koinInject<UserPreferences>()
-	val userRepository = koinInject<UserRepository>()
-	val userId = userRepository.currentUser.collectAsState().value?.id
+	val userId =
+		userRepository.currentUser
+			.collectAsState()
+			.value
+			?.id
 	val userSettingPreferences = remember(userId) { UserSettingPreferences(context, userId) }
 
 	SettingsColumn {
 		item {
-			ListSection(
-				overlineContent = { Text(stringResource(R.string.app_name).uppercase()) },
-				headingContent = { Text(stringResource(R.string.pref_customization)) },
+			Text(
+				text = stringResource(R.string.pref_customization),
+				fontFamily = BebasNeue,
+				fontSize = 22.sp,
+				color = VegafoXColors.TextPrimary,
+				modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp),
 			)
 		}
 
@@ -49,17 +64,17 @@ fun SettingsCustomizationScreen() {
 
 		item {
 			ListButton(
-				leadingContent = { Icon(painterResource(R.drawable.ic_grid), contentDescription = null) },
+				leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.GridView), contentDescription = null) },
 				headingContent = { Text(stringResource(R.string.pref_libraries)) },
-				onClick = { router.push(Routes.LIBRARIES) }
+				onClick = { router.push(Routes.LIBRARIES) },
 			)
 		}
 
 		item {
 			ListButton(
-				leadingContent = { Icon(painterResource(R.drawable.ic_house), contentDescription = null) },
+				leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Home), contentDescription = null) },
 				headingContent = { Text(stringResource(R.string.home_prefs)) },
-				onClick = { router.push(Routes.HOME) }
+				onClick = { router.push(Routes.HOME) },
 			)
 		}
 
@@ -69,7 +84,7 @@ fun SettingsCustomizationScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_focus_color)) },
 				captionContent = { Text(stringResource(focusColor.nameRes)) },
-				onClick = { router.push(Routes.CUSTOMIZATION_THEME) }
+				onClick = { router.push(Routes.CUSTOMIZATION_THEME) },
 			)
 		}
 
@@ -79,7 +94,7 @@ fun SettingsCustomizationScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_clock_display)) },
 				captionContent = { Text(stringResource(clockBehavior.nameRes)) },
-				onClick = { router.push(Routes.CUSTOMIZATION_CLOCK) }
+				onClick = { router.push(Routes.CUSTOMIZATION_CLOCK) },
 			)
 		}
 
@@ -89,7 +104,7 @@ fun SettingsCustomizationScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_watched_indicator)) },
 				captionContent = { Text(stringResource(watchedIndicatorBehavior.nameRes)) },
-				onClick = { router.push(Routes.CUSTOMIZATION_WATCHED_INDICATOR) }
+				onClick = { router.push(Routes.CUSTOMIZATION_WATCHED_INDICATOR) },
 			)
 		}
 
@@ -100,7 +115,7 @@ fun SettingsCustomizationScreen() {
 				headingContent = { Text(stringResource(R.string.lbl_show_backdrop)) },
 				trailingContent = { Checkbox(checked = backdropEnabled) },
 				captionContent = { Text(stringResource(R.string.pref_show_backdrop_description)) },
-				onClick = { backdropEnabled = !backdropEnabled }
+				onClick = { backdropEnabled = !backdropEnabled },
 			)
 		}
 
@@ -111,7 +126,7 @@ fun SettingsCustomizationScreen() {
 				headingContent = { Text(stringResource(R.string.lbl_use_series_thumbnails)) },
 				trailingContent = { Checkbox(checked = seriesThumbnailsEnabled) },
 				captionContent = { Text(stringResource(R.string.lbl_use_series_thumbnails_description)) },
-				onClick = { seriesThumbnailsEnabled = !seriesThumbnailsEnabled }
+				onClick = { seriesThumbnailsEnabled = !seriesThumbnailsEnabled },
 			)
 		}
 
@@ -122,7 +137,7 @@ fun SettingsCustomizationScreen() {
 				headingContent = { Text(stringResource(R.string.lbl_card_focus_expansion)) },
 				trailingContent = { Checkbox(checked = cardFocusExpansion) },
 				captionContent = { Text(stringResource(R.string.lbl_card_focus_expansion_description)) },
-				onClick = { cardFocusExpansion = !cardFocusExpansion }
+				onClick = { cardFocusExpansion = !cardFocusExpansion },
 			)
 		}
 
@@ -132,14 +147,15 @@ fun SettingsCustomizationScreen() {
 
 		item {
 			val navbarPosition by rememberPreference(userPreferences, UserPreferences.navbarPosition)
-			val navbarLabel = when (navbarPosition) {
-				org.jellyfin.androidtv.preference.constant.NavbarPosition.TOP -> stringResource(R.string.pref_navbar_position_top)
-				org.jellyfin.androidtv.preference.constant.NavbarPosition.LEFT -> stringResource(R.string.pref_navbar_position_left)
-			}
+			val navbarLabel =
+				when (navbarPosition) {
+					org.jellyfin.androidtv.preference.constant.NavbarPosition.TOP -> stringResource(R.string.pref_navbar_position_top)
+					org.jellyfin.androidtv.preference.constant.NavbarPosition.LEFT -> stringResource(R.string.pref_navbar_position_left)
+				}
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_navbar_position)) },
 				captionContent = { Text(navbarLabel) },
-				onClick = { router.push(Routes.VEGAFOX_NAVBAR_POSITION) }
+				onClick = { router.push(Routes.VEGAFOX_NAVBAR_POSITION) },
 			)
 		}
 
@@ -149,7 +165,7 @@ fun SettingsCustomizationScreen() {
 				headingContent = { Text(stringResource(R.string.pref_show_shuffle_button)) },
 				captionContent = { Text(stringResource(R.string.pref_show_shuffle_button_description)) },
 				trailingContent = { Checkbox(checked = showShuffleButton) },
-				onClick = { showShuffleButton = !showShuffleButton }
+				onClick = { showShuffleButton = !showShuffleButton },
 			)
 		}
 
@@ -159,7 +175,7 @@ fun SettingsCustomizationScreen() {
 				headingContent = { Text(stringResource(R.string.pref_show_genres_button)) },
 				captionContent = { Text(stringResource(R.string.pref_show_genres_button_description)) },
 				trailingContent = { Checkbox(checked = showGenresButton) },
-				onClick = { showGenresButton = !showGenresButton }
+				onClick = { showGenresButton = !showGenresButton },
 			)
 		}
 
@@ -169,7 +185,7 @@ fun SettingsCustomizationScreen() {
 				headingContent = { Text(stringResource(R.string.pref_show_favorites_button)) },
 				captionContent = { Text(stringResource(R.string.pref_show_favorites_button_description)) },
 				trailingContent = { Checkbox(checked = showFavoritesButton) },
-				onClick = { showFavoritesButton = !showFavoritesButton }
+				onClick = { showFavoritesButton = !showFavoritesButton },
 			)
 		}
 
@@ -179,7 +195,7 @@ fun SettingsCustomizationScreen() {
 				headingContent = { Text(stringResource(R.string.pref_show_libraries_in_toolbar)) },
 				captionContent = { Text(stringResource(R.string.pref_show_libraries_in_toolbar_description)) },
 				trailingContent = { Checkbox(checked = showLibrariesInToolbar) },
-				onClick = { showLibrariesInToolbar = !showLibrariesInToolbar }
+				onClick = { showLibrariesInToolbar = !showLibrariesInToolbar },
 			)
 		}
 
@@ -188,7 +204,7 @@ fun SettingsCustomizationScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_shuffle_content_type)) },
 				captionContent = { Text(getShuffleContentTypeLabel(shuffleContentType)) },
-				onClick = { router.push(Routes.VEGAFOX_SHUFFLE_CONTENT_TYPE) }
+				onClick = { router.push(Routes.VEGAFOX_SHUFFLE_CONTENT_TYPE) },
 			)
 		}
 
@@ -202,7 +218,7 @@ fun SettingsCustomizationScreen() {
 				headingContent = { Text(stringResource(R.string.lbl_merge_continue_watching_next_up)) },
 				captionContent = { Text(stringResource(R.string.lbl_merge_continue_watching_next_up_description)) },
 				trailingContent = { Checkbox(checked = mergeContinueWatchingNextUp) },
-				onClick = { mergeContinueWatchingNextUp = !mergeContinueWatchingNextUp }
+				onClick = { mergeContinueWatchingNextUp = !mergeContinueWatchingNextUp },
 			)
 		}
 
@@ -212,7 +228,7 @@ fun SettingsCustomizationScreen() {
 				headingContent = { Text(stringResource(R.string.pref_multi_server_libraries)) },
 				captionContent = { Text(stringResource(R.string.pref_multi_server_libraries_description)) },
 				trailingContent = { Checkbox(checked = enableMultiServerLibraries) },
-				onClick = { enableMultiServerLibraries = !enableMultiServerLibraries }
+				onClick = { enableMultiServerLibraries = !enableMultiServerLibraries },
 			)
 		}
 
@@ -222,7 +238,7 @@ fun SettingsCustomizationScreen() {
 				headingContent = { Text(stringResource(R.string.pref_enable_folder_view)) },
 				captionContent = { Text(stringResource(R.string.pref_enable_folder_view_description)) },
 				trailingContent = { Checkbox(checked = enableFolderView) },
-				onClick = { enableFolderView = !enableFolderView }
+				onClick = { enableFolderView = !enableFolderView },
 			)
 		}
 
@@ -232,7 +248,7 @@ fun SettingsCustomizationScreen() {
 				headingContent = { Text(stringResource(R.string.pref_confirm_exit)) },
 				captionContent = { Text(stringResource(R.string.pref_confirm_exit_description)) },
 				trailingContent = { Checkbox(checked = confirmExit) },
-				onClick = { confirmExit = !confirmExit }
+				onClick = { confirmExit = !confirmExit },
 			)
 		}
 
@@ -245,7 +261,7 @@ fun SettingsCustomizationScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_seasonal_surprise)) },
 				captionContent = { Text(getSeasonalLabel(seasonalSurprise)) },
-				onClick = { router.push(Routes.VEGAFOX_SEASONAL_SURPRISE) }
+				onClick = { router.push(Routes.VEGAFOX_SEASONAL_SURPRISE) },
 			)
 		}
 
@@ -254,7 +270,7 @@ fun SettingsCustomizationScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_details_background_blur_amount)) },
 				captionContent = { Text(getBlurLabel(detailsBlur)) },
-				onClick = { router.push(Routes.VEGAFOX_DETAILS_BLUR) }
+				onClick = { router.push(Routes.VEGAFOX_DETAILS_BLUR) },
 			)
 		}
 
@@ -263,7 +279,7 @@ fun SettingsCustomizationScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_browsing_background_blur_amount)) },
 				captionContent = { Text(getBlurLabel(browsingBlur)) },
-				onClick = { router.push(Routes.VEGAFOX_BROWSING_BLUR) }
+				onClick = { router.push(Routes.VEGAFOX_BROWSING_BLUR) },
 			)
 		}
 	}

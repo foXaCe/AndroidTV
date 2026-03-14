@@ -43,13 +43,11 @@ fun BaseItemDto.getBannerImage() = itemImages[ImageType.BANNER]
  * Useful for episodes that might use series artwork.
  * @return The primary image from the item or its parent, or null if neither exists
  */
-fun BaseItemDto.getPrimaryImageWithFallback() = 
-	itemImages[ImageType.PRIMARY] ?: parentImages[ImageType.PRIMARY]
+fun BaseItemDto.getPrimaryImageWithFallback() = itemImages[ImageType.PRIMARY] ?: parentImages[ImageType.PRIMARY]
 
 /**
  * Get the thumb image with fallback to parent's thumb image.
  * Useful for episodes that might use series thumbnails.
  * @return The thumb image from the item or its parent, or null if neither exists
  */
-fun BaseItemDto.getThumbImageWithFallback() = 
-	itemImages[ImageType.THUMB] ?: parentImages[ImageType.THUMB]
+fun BaseItemDto.getThumbImageWithFallback() = itemImages[ImageType.THUMB] ?: parentImages[ImageType.THUMB]

@@ -12,14 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onVisibilityChanged
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.button.IconButton
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -29,9 +28,10 @@ fun PhotoPlayerControls() {
 
 	Row(
 		horizontalArrangement = Arrangement.spacedBy(12.dp),
-		modifier = Modifier
-			.focusRestorer()
-			.focusGroup()
+		modifier =
+			Modifier
+				.focusRestorer()
+				.focusGroup(),
 	) {
 		PreviousButton(
 			onClick = { viewModel.showPrevious() },
@@ -40,9 +40,12 @@ fun PhotoPlayerControls() {
 		PlayPauseButton(
 			presentationActive = presentationActive,
 			onSetPresentationActive = { presentationActive ->
-				if (presentationActive) viewModel.startPresentation()
-				else viewModel.stopPresentation()
-			}
+				if (presentationActive) {
+					viewModel.startPresentation()
+				} else {
+					viewModel.stopPresentation()
+				}
+			},
 		)
 
 		NextButton(
@@ -52,28 +55,24 @@ fun PhotoPlayerControls() {
 }
 
 @Composable
-private fun PreviousButton(
-	onClick: () -> Unit,
-) {
+private fun PreviousButton(onClick: () -> Unit) {
 	IconButton(
 		onClick = onClick,
 	) {
 		Icon(
-			imageVector = ImageVector.vectorResource(R.drawable.ic_previous),
+			imageVector = VegafoXIcons.SkipPrevious,
 			contentDescription = stringResource(R.string.lbl_prev_item),
 		)
 	}
 }
 
 @Composable
-private fun NextButton(
-	onClick: () -> Unit,
-) {
+private fun NextButton(onClick: () -> Unit) {
 	IconButton(
 		onClick = onClick,
 	) {
 		Icon(
-			imageVector = ImageVector.vectorResource(R.drawable.ic_next),
+			imageVector = VegafoXIcons.SkipNext,
 			contentDescription = stringResource(R.string.lbl_next_item),
 		)
 	}
@@ -89,21 +88,22 @@ private fun PlayPauseButton(
 		onClick = {
 			onSetPresentationActive(!presentationActive)
 		},
-		modifier = Modifier
-			.focusRequester(focusRequester)
-			.onVisibilityChanged {
-				focusRequester.requestFocus()
-			}
+		modifier =
+			Modifier
+				.focusRequester(focusRequester)
+				.onVisibilityChanged {
+					focusRequester.requestFocus()
+				},
 	) {
 		AnimatedContent(presentationActive) { presentationActive ->
 			if (presentationActive) {
 				Icon(
-					imageVector = ImageVector.vectorResource(R.drawable.ic_pause),
+					imageVector = VegafoXIcons.Pause,
 					contentDescription = stringResource(R.string.lbl_pause),
 				)
 			} else {
 				Icon(
-					imageVector = ImageVector.vectorResource(R.drawable.ic_play),
+					imageVector = VegafoXIcons.Play,
 					contentDescription = stringResource(R.string.lbl_play),
 				)
 			}

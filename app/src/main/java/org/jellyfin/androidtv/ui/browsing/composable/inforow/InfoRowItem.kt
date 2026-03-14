@@ -35,19 +35,22 @@ fun InfoRowItem(
 ) {
 	val (backgroundColor, foregroundColor) = colors
 
-	val modifier = when {
-		backgroundColor.alpha > 0f -> Modifier
-			.background(backgroundColor, JellyfinTheme.shapes.extraSmall)
-			.padding(horizontal = 5.dp)
+	val modifier =
+		when {
+			backgroundColor.alpha > 0f ->
+				Modifier
+					.background(backgroundColor, JellyfinTheme.shapes.extraSmall)
+					.padding(horizontal = 5.dp)
 
-		else -> Modifier
-	}
+			else -> Modifier
+		}
 
 	ProvideTextStyle(
-		value = (if (backgroundColor.alpha > 0f) JellyfinTheme.typography.bodySmall else JellyfinTheme.typography.titleMedium).copy(
-			color = foregroundColor,
-			fontWeight = if (backgroundColor.alpha > 0f) FontWeight.W600 else FontWeight.W500,
-		)
+		value =
+			(if (backgroundColor.alpha > 0f) JellyfinTheme.typography.bodySmall else JellyfinTheme.typography.titleMedium).copy(
+				color = foregroundColor,
+				fontWeight = if (backgroundColor.alpha > 0f) FontWeight.W600 else FontWeight.W500,
+			),
 	) {
 		Row(
 			horizontalArrangement = Arrangement.spacedBy(3.dp),

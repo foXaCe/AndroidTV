@@ -10,12 +10,12 @@ class NextUpViewModel(
 	api: ApiClient,
 	userPreferences: UserPreferences,
 ) : PlaybackPromptViewModel<NextUpState>(
-	context,
-	api,
-	userPreferences,
-	initialState = NextUpState.INITIALIZED,
-	noDataState = NextUpState.NO_DATA,
-) {
+		context,
+		api,
+		userPreferences,
+		initialState = NextUpState.INITIALIZED,
+		noDataState = NextUpState.NO_DATA,
+	) {
 	fun playNext() {
 		setState(NextUpState.PLAY_NEXT)
 	}

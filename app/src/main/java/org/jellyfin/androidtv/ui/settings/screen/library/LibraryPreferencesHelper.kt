@@ -28,7 +28,7 @@ import java.util.UUID
 fun rememberLibraryPreferences(
 	displayPreferencesId: String,
 	serverId: UUID,
-	userId: UUID
+	userId: UUID,
 ): LibraryPreferences? {
 	val preferencesRepository = koinInject<PreferencesRepository>()
 	val serverRepository = koinInject<ServerRepository>()
@@ -44,20 +44,22 @@ fun rememberLibraryPreferences(
 		val serverStore = authenticationStore.getServer(serverId)
 		val userInfo = serverStore?.users?.get(userId)
 		
-		libraryPreferences = withContext(Dispatchers.IO) {
-			if (server != null && userInfo != null && !userInfo.accessToken.isNullOrBlank()) {
-				val userDeviceInfo = deviceInfo.forUser(userId)
-				val apiClient = jellyfin.createApi(
-					baseUrl = server.address,
-					accessToken = userInfo.accessToken,
-					deviceInfo = userDeviceInfo
-				)
-				preferencesRepository.getLibraryPreferences(displayPreferencesId, apiClient)
-			} else {
-				// Fallback to current session's API client
-				preferencesRepository.getLibraryPreferences(displayPreferencesId, currentApi)
+		libraryPreferences =
+			withContext(Dispatchers.IO) {
+				if (server != null && userInfo != null && !userInfo.accessToken.isNullOrBlank()) {
+					val userDeviceInfo = deviceInfo.forUser(userId)
+					val apiClient =
+						jellyfin.createApi(
+							baseUrl = server.address,
+							accessToken = userInfo.accessToken,
+							deviceInfo = userDeviceInfo,
+						)
+					preferencesRepository.getLibraryPreferences(displayPreferencesId, apiClient)
+				} else {
+					// Fallback to current session's API client
+					preferencesRepository.getLibraryPreferences(displayPreferencesId, currentApi)
+				}
 			}
-		}
 	}
 	
 	return libraryPreferences

@@ -37,11 +37,12 @@ fun FragmentActivity.playFirstUnwatchedItem(parentId: UUID) {
 				val item = response.content.items?.firstOrNull()
 				withContext(Dispatchers.Main) {
 					if (item == null) {
-						Toast.makeText(
-							this@playFirstUnwatchedItem,
-							R.string.msg_no_items,
-							Toast.LENGTH_LONG
-						).show()
+						Toast
+							.makeText(
+								this@playFirstUnwatchedItem,
+								R.string.msg_no_items,
+								Toast.LENGTH_LONG,
+							).show()
 					} else {
 						playbackHelper.retrieveAndPlay(item.id, false, this@playFirstUnwatchedItem)
 					}
@@ -49,11 +50,12 @@ fun FragmentActivity.playFirstUnwatchedItem(parentId: UUID) {
 			},
 			onFailure = { error ->
 				Timber.e(error, "Error trying to play first unwatched")
-				Toast.makeText(
-					this@playFirstUnwatchedItem,
-					R.string.msg_video_playback_error,
-					Toast.LENGTH_LONG
-				).show()
+				Toast
+					.makeText(
+						this@playFirstUnwatchedItem,
+						R.string.msg_video_playback_error,
+						Toast.LENGTH_LONG,
+					).show()
 			},
 		)
 	}

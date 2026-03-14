@@ -99,8 +99,9 @@ fun ItemDetailScreen(
 	val blurAmount = userSettingPreferences[UserSettingPreferences.detailsBackgroundBlurAmount]
 
 	// Show the Compose backdrop for types that don't have their own slideshow
-	val showHeroBackdrop = item.type != BaseItemKind.PERSON &&
-		item.type != BaseItemKind.PLAYLIST
+	val showHeroBackdrop =
+		item.type != BaseItemKind.PERSON &&
+			item.type != BaseItemKind.PLAYLIST
 
 	Box(modifier = Modifier.fillMaxSize()) {
 		// Layer 1: Hero backdrop
@@ -114,27 +115,29 @@ fun ItemDetailScreen(
 
 		// Layer 2: Content dispatch by type
 		when (item.type) {
-			BaseItemKind.PERSON -> PersonDetailsContent(
-				uiState = uiState,
-				contentFocusRequester = contentFocusRequester,
-				showBackdrop = true,
-				api = api,
-				onNavigateToItem = playbackCallbacks.onNavigateToItem,
-			)
+			BaseItemKind.PERSON ->
+				PersonDetailsContent(
+					uiState = uiState,
+					contentFocusRequester = contentFocusRequester,
+					showBackdrop = true,
+					api = api,
+					onNavigateToItem = playbackCallbacks.onNavigateToItem,
+				)
 
-			BaseItemKind.SEASON -> SeasonDetailsContent(
-				uiState = uiState,
-				contentFocusRequester = contentFocusRequester,
-				showBackdrop = false,
-				api = api,
-				blurAmount = blurAmount,
-				onNavigateToItem = playbackCallbacks.onNavigateToItem,
-				onPlayEpisode = { episode ->
-					playbackCallbacks.onPlay(episode, 0, false)
-				},
-				onToggleWatched = { viewModel.toggleWatched() },
-				onToggleFavorite = { viewModel.toggleFavorite() },
-			)
+			BaseItemKind.SEASON ->
+				SeasonDetailsContent(
+					uiState = uiState,
+					contentFocusRequester = contentFocusRequester,
+					showBackdrop = false,
+					api = api,
+					blurAmount = blurAmount,
+					onNavigateToItem = playbackCallbacks.onNavigateToItem,
+					onPlayEpisode = { episode ->
+						playbackCallbacks.onPlay(episode, 0, false)
+					},
+					onToggleWatched = { viewModel.toggleWatched() },
+					onToggleFavorite = { viewModel.toggleFavorite() },
+				)
 
 			BaseItemKind.SERIES -> {
 				val actionCallbacks = createActionCallbacks(item, uiState, context)
@@ -168,38 +171,41 @@ fun ItemDetailScreen(
 				)
 			}
 
-			else -> when {
-				// Series timer details (detected by presence of seriesTimerInfo)
-				uiState.seriesTimerInfo != null -> SeriesTimerDetailsContent(
-					uiState = uiState,
-					contentFocusRequester = contentFocusRequester,
-					api = api,
-					onCancelSeriesTimer = { viewModel.cancelSeriesTimer() },
-					onNavigateToItem = playbackCallbacks.onNavigateToItem,
-				)
+			else ->
+				when {
+					// Series timer details (detected by presence of seriesTimerInfo)
+					uiState.seriesTimerInfo != null ->
+						SeriesTimerDetailsContent(
+							uiState = uiState,
+							contentFocusRequester = contentFocusRequester,
+							api = api,
+							onCancelSeriesTimer = { viewModel.cancelSeriesTimer() },
+							onNavigateToItem = playbackCallbacks.onNavigateToItem,
+						)
 
-				// Live TV program details
-				item.type == BaseItemKind.PROGRAM -> LiveTvDetailsContent(
-					uiState = uiState,
-					contentFocusRequester = contentFocusRequester,
-					api = api,
-					onPlay = { playbackCallbacks.onPlay(item, 0, false) },
-					onToggleRecord = { viewModel.toggleRecord() },
-					onToggleRecordSeries = { viewModel.toggleRecordSeries() },
-					onNavigateToItem = playbackCallbacks.onNavigateToItem,
-				)
+					// Live TV program details
+					item.type == BaseItemKind.PROGRAM ->
+						LiveTvDetailsContent(
+							uiState = uiState,
+							contentFocusRequester = contentFocusRequester,
+							api = api,
+							onPlay = { playbackCallbacks.onPlay(item, 0, false) },
+							onToggleRecord = { viewModel.toggleRecord() },
+							onToggleRecordSeries = { viewModel.toggleRecordSeries() },
+							onNavigateToItem = playbackCallbacks.onNavigateToItem,
+						)
 
-				else -> {
-					val actionCallbacks = createActionCallbacks(item, uiState, context)
-					MovieDetailsContent(
-						uiState = uiState,
-						contentFocusRequester = contentFocusRequester,
-						api = api,
-						actionCallbacks = actionCallbacks,
-						onNavigateToItem = playbackCallbacks.onNavigateToItem,
-					)
+					else -> {
+						val actionCallbacks = createActionCallbacks(item, uiState, context)
+						MovieDetailsContent(
+							uiState = uiState,
+							contentFocusRequester = contentFocusRequester,
+							api = api,
+							actionCallbacks = actionCallbacks,
+							onNavigateToItem = playbackCallbacks.onNavigateToItem,
+						)
+					}
 				}
-			}
 		}
 	}
 }

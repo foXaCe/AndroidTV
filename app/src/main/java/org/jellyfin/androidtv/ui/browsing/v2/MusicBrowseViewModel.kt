@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jellyfin.androidtv.data.repository.ItemRepository
+import org.jellyfin.androidtv.ui.base.state.UiError
+import org.jellyfin.androidtv.ui.base.state.toUiError
 import org.jellyfin.androidtv.util.sdk.ApiClientFactory
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.exception.ApiClientException
@@ -19,8 +21,6 @@ import org.jellyfin.sdk.model.api.BaseItemKind
 import org.jellyfin.sdk.model.api.ItemFilter
 import org.jellyfin.sdk.model.api.ItemSortBy
 import org.jellyfin.sdk.model.api.SortOrder
-import org.jellyfin.androidtv.ui.base.state.UiError
-import org.jellyfin.androidtv.ui.base.state.toUiError
 import timber.log.Timber
 import java.util.UUID
 
@@ -39,7 +39,6 @@ class MusicBrowseViewModel(
 	private val api: ApiClient,
 	private val apiClientFactory: ApiClientFactory,
 ) : ViewModel() {
-
 	private val _uiState = MutableStateFlow(MusicBrowseUiState())
 	val uiState: StateFlow<MusicBrowseUiState> = _uiState.asStateFlow()
 
@@ -48,26 +47,34 @@ class MusicBrowseViewModel(
 
 	private var folder: BaseItemDto? = null
 
-	fun initialize(folderJson: String, serverId: UUID?, userId: UUID?) {
-		val folder = kotlinx.serialization.json.Json.decodeFromString(
-			BaseItemDto.serializer(), folderJson
-		)
+	fun initialize(
+		folderJson: String,
+		serverId: UUID?,
+		userId: UUID?,
+	) {
+		val folder =
+			kotlinx.serialization.json.Json.decodeFromString(
+				BaseItemDto.serializer(),
+				folderJson,
+			)
 		this.folder = folder
 
 		// Resolve correct API client for multi-server
 		if (serverId != null) {
-			val serverApi = if (userId != null) {
-				apiClientFactory.getApiClient(serverId, userId)
-			} else {
-				apiClientFactory.getApiClientForServer(serverId)
-			}
+			val serverApi =
+				if (userId != null) {
+					apiClientFactory.getApiClient(serverId, userId)
+				} else {
+					apiClientFactory.getApiClientForServer(serverId)
+				}
 			if (serverApi != null) effectiveApi = serverApi
 		}
 
-		_uiState.value = MusicBrowseUiState(
-			isLoading = true,
-			libraryName = folder.name ?: "",
-		)
+		_uiState.value =
+			MusicBrowseUiState(
+				isLoading = true,
+				libraryName = folder.name ?: "",
+			)
 
 		loadAllRows()
 	}
@@ -102,16 +109,18 @@ class MusicBrowseViewModel(
 
 	private suspend fun loadLatestAudio(parentId: UUID) {
 		try {
-			val items = withContext(Dispatchers.IO) {
-				effectiveApi.userLibraryApi.getLatestMedia(
-					fields = ItemRepository.itemFields,
-					parentId = parentId,
-					limit = 50,
-					imageTypeLimit = 1,
-					includeItemTypes = setOf(BaseItemKind.AUDIO),
-					groupItems = true,
-				).content
-			}
+			val items =
+				withContext(Dispatchers.IO) {
+					effectiveApi.userLibraryApi
+						.getLatestMedia(
+							fields = ItemRepository.itemFields,
+							parentId = parentId,
+							limit = 50,
+							imageTypeLimit = 1,
+							includeItemTypes = setOf(BaseItemKind.AUDIO),
+							groupItems = true,
+						).content
+				}
 			_uiState.value = _uiState.value.copy(latestAudio = items)
 		} catch (err: ApiClientException) {
 			Timber.e(err, "Failed to load latest audio")
@@ -120,20 +129,22 @@ class MusicBrowseViewModel(
 
 	private suspend fun loadLastPlayed(parentId: UUID) {
 		try {
-			val response = withContext(Dispatchers.IO) {
-				effectiveApi.itemsApi.getItems(
-					fields = ItemRepository.itemFields,
-					includeItemTypes = setOf(BaseItemKind.AUDIO),
-					recursive = true,
-					parentId = parentId,
-					imageTypeLimit = 1,
-					filters = setOf(ItemFilter.IS_PLAYED),
-					sortBy = setOf(ItemSortBy.DATE_PLAYED),
-					sortOrder = setOf(SortOrder.DESCENDING),
-					enableTotalRecordCount = false,
-					limit = 50,
-				).content
-			}
+			val response =
+				withContext(Dispatchers.IO) {
+					effectiveApi.itemsApi
+						.getItems(
+							fields = ItemRepository.itemFields,
+							includeItemTypes = setOf(BaseItemKind.AUDIO),
+							recursive = true,
+							parentId = parentId,
+							imageTypeLimit = 1,
+							filters = setOf(ItemFilter.IS_PLAYED),
+							sortBy = setOf(ItemSortBy.DATE_PLAYED),
+							sortOrder = setOf(SortOrder.DESCENDING),
+							enableTotalRecordCount = false,
+							limit = 50,
+						).content
+				}
 			_uiState.value = _uiState.value.copy(lastPlayed = response.items)
 		} catch (err: ApiClientException) {
 			Timber.e(err, "Failed to load last played")
@@ -142,17 +153,19 @@ class MusicBrowseViewModel(
 
 	private suspend fun loadFavoriteAlbums(parentId: UUID) {
 		try {
-			val response = withContext(Dispatchers.IO) {
-				effectiveApi.itemsApi.getItems(
-					fields = ItemRepository.itemFields,
-					includeItemTypes = setOf(BaseItemKind.MUSIC_ALBUM),
-					recursive = true,
-					parentId = parentId,
-					imageTypeLimit = 1,
-					filters = setOf(ItemFilter.IS_FAVORITE),
-					sortBy = setOf(ItemSortBy.SORT_NAME),
-				).content
-			}
+			val response =
+				withContext(Dispatchers.IO) {
+					effectiveApi.itemsApi
+						.getItems(
+							fields = ItemRepository.itemFields,
+							includeItemTypes = setOf(BaseItemKind.MUSIC_ALBUM),
+							recursive = true,
+							parentId = parentId,
+							imageTypeLimit = 1,
+							filters = setOf(ItemFilter.IS_FAVORITE),
+							sortBy = setOf(ItemSortBy.SORT_NAME),
+						).content
+				}
 			_uiState.value = _uiState.value.copy(favoriteAlbums = response.items)
 		} catch (err: ApiClientException) {
 			Timber.e(err, "Failed to load favorite albums")
@@ -161,16 +174,18 @@ class MusicBrowseViewModel(
 
 	private suspend fun loadPlaylists() {
 		try {
-			val response = withContext(Dispatchers.IO) {
-				effectiveApi.itemsApi.getItems(
-					fields = ItemRepository.itemFields,
-					includeItemTypes = setOf(BaseItemKind.PLAYLIST),
-					imageTypeLimit = 1,
-					recursive = true,
-					sortBy = setOf(ItemSortBy.DATE_CREATED),
-					sortOrder = setOf(SortOrder.DESCENDING),
-				).content
-			}
+			val response =
+				withContext(Dispatchers.IO) {
+					effectiveApi.itemsApi
+						.getItems(
+							fields = ItemRepository.itemFields,
+							includeItemTypes = setOf(BaseItemKind.PLAYLIST),
+							imageTypeLimit = 1,
+							recursive = true,
+							sortBy = setOf(ItemSortBy.DATE_CREATED),
+							sortOrder = setOf(SortOrder.DESCENDING),
+						).content
+				}
 			_uiState.value = _uiState.value.copy(playlists = response.items)
 		} catch (err: ApiClientException) {
 			Timber.e(err, "Failed to load playlists")

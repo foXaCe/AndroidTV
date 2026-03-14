@@ -14,27 +14,39 @@ sealed class UiError {
 	abstract val cause: Throwable?
 	abstract val messageRes: Int
 
-	data class Network(override val cause: Throwable? = null) : UiError() {
+	data class Network(
+		override val cause: Throwable? = null,
+	) : UiError() {
 		override val messageRes: Int = R.string.state_error_network
 	}
 
-	data class Timeout(override val cause: Throwable? = null) : UiError() {
+	data class Timeout(
+		override val cause: Throwable? = null,
+	) : UiError() {
 		override val messageRes: Int = R.string.state_error_timeout
 	}
 
-	data class Server(override val cause: Throwable? = null) : UiError() {
+	data class Server(
+		override val cause: Throwable? = null,
+	) : UiError() {
 		override val messageRes: Int = R.string.state_error_server
 	}
 
-	data class Auth(override val cause: Throwable? = null) : UiError() {
+	data class Auth(
+		override val cause: Throwable? = null,
+	) : UiError() {
 		override val messageRes: Int = R.string.state_error_auth
 	}
 
-	data class NotFound(override val cause: Throwable? = null) : UiError() {
+	data class NotFound(
+		override val cause: Throwable? = null,
+	) : UiError() {
 		override val messageRes: Int = R.string.state_error_not_found
 	}
 
-	data class Unknown(override val cause: Throwable? = null) : UiError() {
+	data class Unknown(
+		override val cause: Throwable? = null,
+	) : UiError() {
 		override val messageRes: Int = R.string.state_error_generic
 	}
 }
@@ -47,18 +59,19 @@ sealed class UiError {
  * - [ApiClientException] → inspects cause chain for network/timeout, otherwise [UiError.Server]
  * - Everything else → [UiError.Unknown]
  */
-fun Throwable.toUiError(): UiError = when {
-	this is SocketTimeoutException -> UiError.Timeout(this)
-	this is UnknownHostException -> UiError.Network(this)
-	this is IOException -> UiError.Network(this)
-	this is ApiClientException -> {
-		val rootCause = cause
-		when {
-			rootCause is SocketTimeoutException -> UiError.Timeout(this)
-			rootCause is UnknownHostException -> UiError.Network(this)
-			rootCause is IOException -> UiError.Network(this)
-			else -> UiError.Server(this)
+fun Throwable.toUiError(): UiError =
+	when {
+		this is SocketTimeoutException -> UiError.Timeout(this)
+		this is UnknownHostException -> UiError.Network(this)
+		this is IOException -> UiError.Network(this)
+		this is ApiClientException -> {
+			val rootCause = cause
+			when {
+				rootCause is SocketTimeoutException -> UiError.Timeout(this)
+				rootCause is UnknownHostException -> UiError.Network(this)
+				rootCause is IOException -> UiError.Network(this)
+				else -> UiError.Server(this)
+			}
 		}
+		else -> UiError.Unknown(this)
 	}
-	else -> UiError.Unknown(this)
-}

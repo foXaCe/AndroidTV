@@ -3,6 +3,7 @@ package org.jellyfin.androidtv.ui.settings.screen.vegafox
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -15,16 +16,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.constant.JellyseerrRowType
 import org.jellyfin.androidtv.preference.JellyseerrPreferences
@@ -32,8 +33,10 @@ import org.jellyfin.androidtv.preference.JellyseerrRowConfig
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.form.Checkbox
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.list.ListButton
-import org.jellyfin.androidtv.ui.base.list.ListSection
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.settings.composable.SettingsColumn
 import org.koin.compose.koinInject
 import org.koin.core.qualifier.named
@@ -61,10 +64,12 @@ fun SettingsJellyseerrRowsScreen() {
 
 	SettingsColumn {
 		item {
-			ListSection(
-				overlineContent = { Text(stringResource(R.string.jellyseerr_settings).uppercase()) },
-				headingContent = { Text(stringResource(R.string.jellyseerr_rows_title)) },
-				captionContent = { Text(stringResource(R.string.jellyseerr_rows_description)) },
+			Text(
+				text = stringResource(R.string.jellyseerr_rows_title),
+				fontFamily = BebasNeue,
+				fontSize = 22.sp,
+				color = VegafoXColors.TextPrimary,
+				modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp),
 			)
 		}
 		
@@ -82,10 +87,14 @@ fun SettingsJellyseerrRowsScreen() {
 						if (focused) focusedRowType = section.type
 					},
 					onToggle = {
-						val updated = sections.map {
-							if (it.type == section.type) it.copy(enabled = !it.enabled)
-							else it
-						}
+						val updated =
+							sections.map {
+								if (it.type == section.type) {
+									it.copy(enabled = !it.enabled)
+								} else {
+									it
+								}
+							}
 						saveSections(updated)
 					},
 					onMoveUp = {
@@ -113,7 +122,7 @@ fun SettingsJellyseerrRowsScreen() {
 							
 							saveSections(sorted)
 						}
-					}
+					},
 				)
 			}
 		}
@@ -122,14 +131,14 @@ fun SettingsJellyseerrRowsScreen() {
 			ListButton(
 				leadingContent = {
 					Icon(
-						painterResource(R.drawable.ic_refresh),
-						contentDescription = null
+						rememberVectorPainter(VegafoXIcons.Refresh),
+						contentDescription = null,
 					)
 				},
 				headingContent = { Text(stringResource(R.string.jellyseerr_rows_reset)) },
 				onClick = {
 					saveSections(JellyseerrRowConfig.defaults())
-				}
+				},
 			)
 		}
 	}
@@ -159,36 +168,42 @@ private fun JellyseerrRowRow(
 	
 	// Single button for the entire row - left/right keys move the item up/down
 	ListButton(
-		modifier = Modifier
-			.fillMaxWidth()
-			.focusRequester(focusRequester)
-			.onFocusChanged { 
-				isFocused = it.isFocused
-				onFocusChanged(it.isFocused)
-			}
-			.onKeyEvent { keyEvent ->
-				if (keyEvent.type == KeyEventType.KeyDown) {
-					when (keyEvent.key) {
-						Key.DirectionLeft -> {
-							if (canMoveUp) {
-								onMoveUp()
-								true
-							} else false
+		modifier =
+			Modifier
+				.fillMaxWidth()
+				.focusRequester(focusRequester)
+				.onFocusChanged {
+					isFocused = it.isFocused
+					onFocusChanged(it.isFocused)
+				}.onKeyEvent { keyEvent ->
+					if (keyEvent.type == KeyEventType.KeyDown) {
+						when (keyEvent.key) {
+							Key.DirectionLeft -> {
+								if (canMoveUp) {
+									onMoveUp()
+									true
+								} else {
+									false
+								}
+							}
+							Key.DirectionRight -> {
+								if (canMoveDown) {
+									onMoveDown()
+									true
+								} else {
+									false
+								}
+							}
+							else -> false
 						}
-						Key.DirectionRight -> {
-							if (canMoveDown) {
-								onMoveDown()
-								true
-							} else false
-						}
-						else -> false
+					} else {
+						false
 					}
-				} else false
-			},
+				},
 		leadingContent = {
 			Checkbox(
 				checked = section.enabled,
-				onCheckedChange = { onToggle() }
+				onCheckedChange = { onToggle() },
 			)
 		},
 		headingContent = {
@@ -198,22 +213,22 @@ private fun JellyseerrRowRow(
 			// Visual indicators for up/down (not interactive)
 			Row(
 				horizontalArrangement = Arrangement.spacedBy(4.dp),
-				verticalAlignment = Alignment.CenterVertically
+				verticalAlignment = Alignment.CenterVertically,
 			) {
 				Icon(
-					painterResource(R.drawable.ic_up),
+					rememberVectorPainter(VegafoXIcons.KeyboardArrowUp),
 					contentDescription = null,
 					modifier = Modifier.size(24.dp),
-					tint = if (canMoveUp && isFocused) Color.White else Color.Gray
+					tint = if (canMoveUp && isFocused) VegafoXColors.TextPrimary else VegafoXColors.TextHint,
 				)
 				Icon(
-					painterResource(R.drawable.ic_down),
+					rememberVectorPainter(VegafoXIcons.KeyboardArrowDown),
 					contentDescription = null,
 					modifier = Modifier.size(24.dp),
-					tint = if (canMoveDown && isFocused) Color.White else Color.Gray
+					tint = if (canMoveDown && isFocused) VegafoXColors.TextPrimary else VegafoXColors.TextHint,
 				)
 			}
 		},
-		onClick = onToggle
+		onClick = onToggle,
 	)
 }

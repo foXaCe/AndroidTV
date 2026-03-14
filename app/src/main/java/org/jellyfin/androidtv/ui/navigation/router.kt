@@ -33,18 +33,28 @@ class Router(
 	// Route resolving
 
 	fun resolve(route: String): RouteComposable? = routes[route]
-	fun verifyRoute(route: String, parameters: RouteParameters = emptyMap()) = require(resolve(route) != null) { "Invalid route $route" }
+
+	fun verifyRoute(
+		route: String,
+		parameters: RouteParameters = emptyMap(),
+	) = require(resolve(route) != null) { "Invalid route $route" }
 
 	// Route manipulation
 
-	fun push(route: String, parameters: RouteParameters = emptyMap()) {
+	fun push(
+		route: String,
+		parameters: RouteParameters = emptyMap(),
+	) {
 		verifyRoute(route, parameters)
 
 		val context = RouteContext(route, parameters)
 		backStack.add(context)
 	}
 
-	fun replace(route: String, parameters: RouteParameters = emptyMap()) {
+	fun replace(
+		route: String,
+		parameters: RouteParameters = emptyMap(),
+	) {
 		verifyRoute(route, parameters)
 
 		val context = RouteContext(route, parameters)
@@ -68,16 +78,17 @@ fun ProvideRouter(
 	content: @Composable () -> Unit,
 ) {
 	val backStack = remember { mutableStateListOf(RouteContext(defaultRoute, defaultRouteParameters)) }
-	val router = remember(routes, backStack) {
-		Router(
-			routes = routes,
-			backStack = backStack,
-		)
-	}
+	val router =
+		remember(routes, backStack) {
+			Router(
+				routes = routes,
+				backStack = backStack,
+			)
+		}
 
 	CompositionLocalProvider(
 		LocalRouter provides router,
-		content = content
+		content = content,
 	)
 }
 
@@ -87,16 +98,19 @@ fun RouterContent(
 	fallbackRoute: String = "/",
 	transitionSpec: AnimatedContentTransitionScope<Scene<RouteContext>>.() -> ContentTransform = defaultTransitionSpec(),
 	popTransitionSpec: AnimatedContentTransitionScope<Scene<RouteContext>>.() -> ContentTransform = defaultPopTransitionSpec(),
-	predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<RouteContext>>.(@NavigationEvent.SwipeEdge Int) -> ContentTransform = { popTransitionSpec() },
+	predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<RouteContext>>.(
+		@NavigationEvent.SwipeEdge Int,
+	) -> ContentTransform = { popTransitionSpec() },
 ) {
 	SharedTransitionLayout {
 		CompositionLocalProvider(LocalRouterTransitionScope provides this@SharedTransitionLayout) {
 			NavDisplay(
 				backStack = router.backStack,
 				onBack = { router.back() },
-				entryDecorators = listOf(
-					rememberSaveableStateHolderNavEntryDecorator(),
-				),
+				entryDecorators =
+					listOf(
+						rememberSaveableStateHolderNavEntryDecorator(),
+					),
 				transitionSpec = transitionSpec,
 				popTransitionSpec = popTransitionSpec,
 				predictivePopTransitionSpec = predictivePopTransitionSpec,
@@ -105,15 +119,16 @@ fun RouterContent(
 						val route = backStackEntry.route
 						val composable = router.resolve(route)
 						if (composable == null) {
-							val fallbackComposable = router.resolve(fallbackRoute)
-								?: error("Unknown route $route, fallback $fallbackRoute is invalid")
+							val fallbackComposable =
+								router.resolve(fallbackRoute)
+									?: error("Unknown route $route, fallback $fallbackRoute is invalid")
 							val context = backStackEntry.copy(route = fallbackRoute)
 							fallbackComposable(context)
 						} else {
 							composable(backStackEntry)
 						}
 					}
-				}
+				},
 			)
 		}
 	}

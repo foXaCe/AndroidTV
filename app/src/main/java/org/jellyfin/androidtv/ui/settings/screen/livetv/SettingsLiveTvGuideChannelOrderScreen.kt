@@ -39,7 +39,7 @@ fun SettingsLiveTvGuideChannelOrderScreen() {
 				onClick = {
 					channelOrder = entry.stringValue
 					router.back()
-				}
+				},
 			)
 		}
 	}

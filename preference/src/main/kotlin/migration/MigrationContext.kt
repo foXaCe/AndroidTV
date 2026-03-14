@@ -22,7 +22,10 @@ class MigrationContext<E, V> {
 	 * @param toVersion The new version to upgrade to
 	 * @param body Actual migration code
 	 */
-	inline fun migration(toVersion: Int, noinline body: E.(V) -> Unit) = migration(Migration(toVersion, body))
+	inline fun migration(
+		toVersion: Int,
+		noinline body: E.(V) -> Unit,
+	) = migration(Migration(toVersion, body))
 
 	fun migration(definition: Migration<E, V>) {
 		if (definition.toVersion > highVersion) highVersion = definition.toVersion
@@ -35,7 +38,10 @@ class MigrationContext<E, V> {
 	 *
 	 * @return The new version of the store. This is the highest "toVersion" number.
 	 */
-	fun applyMigrations(currentVersion: Int, executeMigration: (Migration<E, V>) -> Unit): Int {
+	fun applyMigrations(
+		currentVersion: Int,
+		executeMigration: (Migration<E, V>) -> Unit,
+	): Int {
 		Timber.i("Requested migration from $currentVersion to $highVersion. Found ${migrations.size} migrations in total.")
 		return when {
 			// No migrations
@@ -45,20 +51,21 @@ class MigrationContext<E, V> {
 			// Skip migrations (fresh install)
 			currentVersion == -1 -> highVersion
 			// Run migrations
-			else -> migrations
-				// Filter out old migrations
-				.filter { it.toVersion > currentVersion }
-				// Execute in order
-				.sortedBy { it.toVersion }
-				// Call executor
-				.forEach { executeMigration(it) }
-				// Return highest version
-				.let { max(highVersion, currentVersion) }
+			else ->
+				migrations
+					// Filter out old migrations
+					.filter { it.toVersion > currentVersion }
+					// Execute in order
+					.sortedBy { it.toVersion }
+					// Call executor
+					.forEach { executeMigration(it) }
+					// Return highest version
+					.let { max(highVersion, currentVersion) }
 		}
 	}
 
 	data class Migration<E, V>(
 		val toVersion: Int,
-		val body: E.(V) -> Unit
+		val body: E.(V) -> Unit,
 	)
 }

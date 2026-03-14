@@ -52,7 +52,7 @@ fun SettingsPlaybackNextUpScreen() {
 				headingContent = { Text(stringResource(R.string.pref_media_queueing)) },
 				trailingContent = { Checkbox(checked = mediaQueuingEnabled) },
 				captionContent = { Text(stringResource(R.string.pref_media_queueing_description)) },
-				onClick = { mediaQueuingEnabled = !mediaQueuingEnabled }
+				onClick = { mediaQueuingEnabled = !mediaQueuingEnabled },
 			)
 		}
 
@@ -62,7 +62,7 @@ fun SettingsPlaybackNextUpScreen() {
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_next_up_behavior_title)) },
 				captionContent = { Text(stringResource(nextUpBehavior.nameRes)) },
-				onClick = { router.push(Routes.PLAYBACK_NEXT_UP_BEHAVIOR) }
+				onClick = { router.push(Routes.PLAYBACK_NEXT_UP_BEHAVIOR) },
 			)
 		}
 
@@ -79,26 +79,30 @@ fun SettingsPlaybackNextUpScreen() {
 					verticalAlignment = Alignment.CenterVertically,
 				) {
 					RangeControl(
-						modifier = Modifier
-							.height(4.dp)
-							.weight(1f),
+						modifier =
+							Modifier
+								.height(4.dp)
+								.weight(1f),
 						interactionSource = interactionSource,
 						// 0 - 30 seconds with 1 second increment
 						min = 0f,
 						max = 30_000f,
 						stepForward = 1_000f,
 						value = nextUpTimeout.toFloat(),
-						onValueChange = { nextUpTimeout = it.roundToInt() }
+						onValueChange = { nextUpTimeout = it.roundToInt() },
 					)
 
 					Spacer(Modifier.width(Tokens.Space.spaceSm))
 
 					Box(
 						modifier = Modifier.sizeIn(minWidth = 32.dp),
-						contentAlignment = Alignment.CenterEnd
+						contentAlignment = Alignment.CenterEnd,
 					) {
-						if (nextUpTimeout == NEXTUP_TIMER_DISABLED) Text(stringResource(R.string.pref_next_up_timeout_disabled))
-						else Text("${nextUpTimeout / 1000}s")
+						if (nextUpTimeout == NEXTUP_TIMER_DISABLED) {
+							Text(stringResource(R.string.pref_next_up_timeout_disabled))
+						} else {
+							Text("${nextUpTimeout / 1000}s")
+						}
 					}
 				}
 			}

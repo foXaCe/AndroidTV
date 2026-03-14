@@ -16,9 +16,7 @@ import org.jellyfin.sdk.model.api.MediaSegmentType
 import org.koin.compose.koinInject
 
 @Composable
-fun SettingsPlaybackMediaSegmentScreen(
-	segmentType: MediaSegmentType
-) {
+fun SettingsPlaybackMediaSegmentScreen(segmentType: MediaSegmentType) {
 	val router = LocalRouter.current
 	val mediaSegmentRepository = koinInject<MediaSegmentRepository>()
 	val action = mediaSegmentRepository.getDefaultSegmentTypeAction(segmentType)
@@ -38,7 +36,7 @@ fun SettingsPlaybackMediaSegmentScreen(
 				onClick = {
 					mediaSegmentRepository.setDefaultSegmentTypeAction(segmentType, entry)
 					router.back()
-				}
+				},
 			)
 		}
 	}

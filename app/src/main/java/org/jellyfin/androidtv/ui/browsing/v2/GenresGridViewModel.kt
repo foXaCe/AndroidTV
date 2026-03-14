@@ -11,10 +11,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.jellyfin.androidtv.constant.Extras
+import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.repository.ItemRepository
 import org.jellyfin.androidtv.data.repository.MultiServerRepository
 import org.jellyfin.androidtv.preference.UserPreferences
+import org.jellyfin.androidtv.ui.base.state.UiError
+import org.jellyfin.androidtv.ui.base.state.toUiError
 import org.jellyfin.androidtv.ui.browsing.genre.JellyfinGenreItem
 import org.jellyfin.androidtv.util.sdk.ApiClientFactory
 import org.jellyfin.sdk.api.client.ApiClient
@@ -27,13 +29,12 @@ import org.jellyfin.sdk.model.api.BaseItemKind
 import org.jellyfin.sdk.model.api.CollectionType
 import org.jellyfin.sdk.model.api.ImageType
 import org.jellyfin.sdk.model.api.ItemSortBy
-import org.jellyfin.androidtv.R
-import org.jellyfin.androidtv.ui.base.state.UiError
-import org.jellyfin.androidtv.ui.base.state.toUiError
 import timber.log.Timber
 import java.util.UUID
 
-enum class GenreSortOption(@androidx.annotation.StringRes val labelRes: Int) {
+enum class GenreSortOption(
+	@androidx.annotation.StringRes val labelRes: Int,
+) {
 	NAME_ASC(R.string.sort_a_z),
 	NAME_DESC(R.string.sort_z_a),
 	MOST_ITEMS(R.string.sort_most_items),
@@ -61,7 +62,6 @@ class GenresGridViewModel(
 	private val multiServerRepository: MultiServerRepository,
 	private val userPreferences: UserPreferences,
 ) : ViewModel() {
-
 	private val _uiState = MutableStateFlow(GenresGridUiState())
 	val uiState: StateFlow<GenresGridUiState> = _uiState.asStateFlow()
 
@@ -72,17 +72,21 @@ class GenresGridViewModel(
 
 	val sortOptions = GenreSortOption.entries.toList()
 
-	fun initialize(folder: BaseItemDto?, includeType: String?) {
+	fun initialize(
+		folder: BaseItemDto?,
+		includeType: String?,
+	) {
 		this.folder = folder
 		this.includeType = includeType
 
 		val libraryName = folder?.name
-		_uiState.value = GenresGridUiState(
-			isLoading = true,
-			title = if (libraryName != null) "Genres — $libraryName" else "Genres",
-			selectedLibraryId = folder?.id,
-			selectedLibraryName = libraryName,
-		)
+		_uiState.value =
+			GenresGridUiState(
+				isLoading = true,
+				title = if (libraryName != null) "Genres — $libraryName" else "Genres",
+				selectedLibraryId = folder?.id,
+				selectedLibraryName = libraryName,
+			)
 
 		viewModelScope.launch {
 			loadData()
@@ -95,11 +99,12 @@ class GenresGridViewModel(
 	}
 
 	fun setLibraryFilter(library: BaseItemDto?) {
-		_uiState.value = _uiState.value.copy(
-			selectedLibraryId = library?.id,
-			selectedLibraryName = library?.name,
-			isLoading = true,
-		)
+		_uiState.value =
+			_uiState.value.copy(
+				selectedLibraryId = library?.id,
+				selectedLibraryName = library?.name,
+				isLoading = true,
+			)
 		viewModelScope.launch {
 			loadGenres()
 		}
@@ -133,9 +138,12 @@ class GenresGridViewModel(
 			val serverNames = mutableMapOf<UUID, String>()
 			sessions.forEach { session ->
 				try {
-					val views = withContext(Dispatchers.IO) {
-						session.apiClient.userViewsApi.getUserViews().content
-					}
+					val views =
+						withContext(Dispatchers.IO) {
+							session.apiClient.userViewsApi
+								.getUserViews()
+								.content
+						}
 					views.items
 						.filter { it.collectionType in listOf(CollectionType.MOVIES, CollectionType.TVSHOWS) }
 						.forEach {
@@ -150,36 +158,45 @@ class GenresGridViewModel(
 
 			allGenres.clear()
 
-			val allServerGenres = coroutineScope {
-				sessions.map { session ->
-					async(Dispatchers.IO) {
-						try {
-							val genresResponse = session.apiClient.genresApi.getGenres(
-								sortBy = setOf(ItemSortBy.SORT_NAME),
-							).content
-							genresResponse.items.map { genre ->
-								async(Dispatchers.IO) {
-									createGenreItem(genre, session.apiClient, session.server.id)
+			val allServerGenres =
+				coroutineScope {
+					sessions
+						.map { session ->
+							async(Dispatchers.IO) {
+								try {
+									val genresResponse =
+										session.apiClient.genresApi
+											.getGenres(
+												sortBy = setOf(ItemSortBy.SORT_NAME),
+											).content
+									genresResponse.items
+										.map { genre ->
+											async(Dispatchers.IO) {
+												createGenreItem(genre, session.apiClient, session.server.id)
+											}
+										}.awaitAll()
+										.filterNotNull()
+								} catch (e: Exception) {
+									Timber.e(e, "Failed to load genres from server ${session.server.name}")
+									emptyList()
 								}
-							}.awaitAll().filterNotNull()
-						} catch (e: Exception) {
-							Timber.e(e, "Failed to load genres from server ${session.server.name}")
-							emptyList()
-						}
-					}
-				}.awaitAll().flatten()
-			}
+							}
+						}.awaitAll()
+						.flatten()
+				}
 
 			// Merge genres with the same name
-			val mergedGenres = allServerGenres
-				.groupBy { it.name.lowercase() }
-				.map { (_, genres) ->
-					if (genres.size == 1) genres.first()
-					else {
-						val first = genres.first()
-						first.copy(itemCount = genres.sumOf { it.itemCount }, serverId = null)
+			val mergedGenres =
+				allServerGenres
+					.groupBy { it.name.lowercase() }
+					.map { (_, genres) ->
+						if (genres.size == 1) {
+							genres.first()
+						} else {
+							val first = genres.first()
+							first.copy(itemCount = genres.sumOf { it.itemCount }, serverId = null)
+						}
 					}
-				}
 
 			allGenres.addAll(mergedGenres)
 			applySortAndFilter()
@@ -191,11 +208,13 @@ class GenresGridViewModel(
 
 	private suspend fun loadUserLibraries() {
 		try {
-			val response = withContext(Dispatchers.IO) {
-				api.userViewsApi.getUserViews().content
-			}
-			val libraries = response.items
-				.filter { it.collectionType in listOf(CollectionType.MOVIES, CollectionType.TVSHOWS) }
+			val response =
+				withContext(Dispatchers.IO) {
+					api.userViewsApi.getUserViews().content
+				}
+			val libraries =
+				response.items
+					.filter { it.collectionType in listOf(CollectionType.MOVIES, CollectionType.TVSHOWS) }
 			_uiState.value = _uiState.value.copy(libraries = libraries)
 		} catch (e: Exception) {
 			Timber.e(e, "Failed to load user libraries")
@@ -207,22 +226,27 @@ class GenresGridViewModel(
 
 		try {
 			val selectedLibraryId = _uiState.value.selectedLibraryId
-			val genresResponse = withContext(Dispatchers.IO) {
-				api.genresApi.getGenres(
-					parentId = selectedLibraryId,
-					sortBy = setOf(ItemSortBy.SORT_NAME),
-				).content
-			}
+			val genresResponse =
+				withContext(Dispatchers.IO) {
+					api.genresApi
+						.getGenres(
+							parentId = selectedLibraryId,
+							sortBy = setOf(ItemSortBy.SORT_NAME),
+						).content
+				}
 
 			allGenres.clear()
 
-			val genreItems = coroutineScope {
-				genresResponse.items.map { genre ->
-					async(Dispatchers.IO) {
-						createGenreItem(genre, api, null)
-					}
-				}.awaitAll().filterNotNull()
-			}
+			val genreItems =
+				coroutineScope {
+					genresResponse.items
+						.map { genre ->
+							async(Dispatchers.IO) {
+								createGenreItem(genre, api, null)
+							}
+						}.awaitAll()
+						.filterNotNull()
+				}
 
 			allGenres.addAll(genreItems)
 			applySortAndFilter()
@@ -239,32 +263,37 @@ class GenresGridViewModel(
 	): JellyfinGenreItem? {
 		return try {
 			val selectedLibraryId = _uiState.value.selectedLibraryId
-			val itemsResponse = client.itemsApi.getItems(
-				parentId = selectedLibraryId,
-				genres = setOf(genre.name.orEmpty()),
-				includeItemTypes = setOf(BaseItemKind.MOVIE, BaseItemKind.SERIES),
-				recursive = true,
-				sortBy = setOf(ItemSortBy.RANDOM),
-				limit = 1,
-				imageTypes = setOf(ImageType.BACKDROP),
-				enableTotalRecordCount = true,
-				fields = ItemRepository.itemFields,
-			).content
+			val itemsResponse =
+				client.itemsApi
+					.getItems(
+						parentId = selectedLibraryId,
+						genres = setOf(genre.name.orEmpty()),
+						includeItemTypes = setOf(BaseItemKind.MOVIE, BaseItemKind.SERIES),
+						recursive = true,
+						sortBy = setOf(ItemSortBy.RANDOM),
+						limit = 1,
+						imageTypes = setOf(ImageType.BACKDROP),
+						enableTotalRecordCount = true,
+						fields = ItemRepository.itemFields,
+					).content
 
 			val itemCount = itemsResponse.totalRecordCount ?: 0
 			if (itemCount == 0) return null
 
-			val backdropUrl = itemsResponse.items.firstOrNull()?.let { item ->
-				if (!item.backdropImageTags.isNullOrEmpty()) {
-					client.imageApi.getItemImageUrl(
-						itemId = item.id,
-						imageType = ImageType.BACKDROP,
-						tag = item.backdropImageTags!!.first(),
-						maxWidth = 480,
-						quality = 80,
-					)
-				} else null
-			}
+			val backdropUrl =
+				itemsResponse.items.firstOrNull()?.let { item ->
+					if (!item.backdropImageTags.isNullOrEmpty()) {
+						client.imageApi.getItemImageUrl(
+							itemId = item.id,
+							imageType = ImageType.BACKDROP,
+							tag = item.backdropImageTags!!.first(),
+							maxWidth = 480,
+							quality = 80,
+						)
+					} else {
+						null
+					}
+				}
 
 			JellyfinGenreItem(
 				id = genre.id,
@@ -286,17 +315,19 @@ class GenresGridViewModel(
 	}
 
 	private fun applySortAndFilter() {
-		val sorted = when (_uiState.value.currentSort) {
-			GenreSortOption.NAME_ASC -> allGenres.sortedBy { it.name.lowercase() }
-			GenreSortOption.NAME_DESC -> allGenres.sortedByDescending { it.name.lowercase() }
-			GenreSortOption.MOST_ITEMS -> allGenres.sortedByDescending { it.itemCount }
-			GenreSortOption.LEAST_ITEMS -> allGenres.sortedBy { it.itemCount }
-			GenreSortOption.RANDOM -> allGenres.shuffled()
-		}
-		_uiState.value = _uiState.value.copy(
-			isLoading = false,
-			genres = sorted,
-			totalGenres = sorted.size,
-		)
+		val sorted =
+			when (_uiState.value.currentSort) {
+				GenreSortOption.NAME_ASC -> allGenres.sortedBy { it.name.lowercase() }
+				GenreSortOption.NAME_DESC -> allGenres.sortedByDescending { it.name.lowercase() }
+				GenreSortOption.MOST_ITEMS -> allGenres.sortedByDescending { it.itemCount }
+				GenreSortOption.LEAST_ITEMS -> allGenres.sortedBy { it.itemCount }
+				GenreSortOption.RANDOM -> allGenres.shuffled()
+			}
+		_uiState.value =
+			_uiState.value.copy(
+				isLoading = false,
+				genres = sorted,
+				totalGenres = sorted.size,
+			)
 	}
 }

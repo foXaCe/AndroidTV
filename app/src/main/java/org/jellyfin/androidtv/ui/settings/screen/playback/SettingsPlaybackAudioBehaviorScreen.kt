@@ -38,7 +38,7 @@ fun SettingsPlaybackAudioBehaviorScreen() {
 				onClick = {
 					audioBehaviour = entry
 					router.back()
-				}
+				},
 			)
 		}
 	}
