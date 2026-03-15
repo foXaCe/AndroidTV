@@ -9,10 +9,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -46,7 +49,8 @@ fun SettingsAboutScreen(launchedFromLogin: Boolean = false) {
 				Image(
 					painter = painterResource(R.drawable.ic_vegafox_fox),
 					contentDescription = null,
-					modifier = Modifier.size(80.dp),
+					contentScale = ContentScale.Fit,
+					modifier = Modifier.size(80.dp).clip(CircleShape),
 				)
 				Spacer(Modifier.height(12.dp))
 				Text(
@@ -73,7 +77,7 @@ fun SettingsAboutScreen(launchedFromLogin: Boolean = false) {
 			val heading = stringResource(R.string.lbl_app_version_heading)
 			val caption = "vegafox-androidtv ${BuildConfig.VERSION_NAME} ${BuildConfig.BUILD_TYPE}"
 			ListButton(
-				leadingContent = { Icon(painterResource(R.drawable.ic_vegafox_fox), contentDescription = null) },
+				leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Info), contentDescription = null) },
 				headingContent = { Text(heading) },
 				captionContent = { Text(caption) },
 				onClick = copyAction(ClipData.newPlainText(heading, caption)),

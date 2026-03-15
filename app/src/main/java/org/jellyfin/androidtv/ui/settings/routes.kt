@@ -61,7 +61,6 @@ object Routes {
 	const val VEGAFOX_MEDIA_BAR_OPACITY = "/vegafox/media-bar-opacity"
 	const val VEGAFOX_MEDIA_BAR_COLOR = "/vegafox/media-bar-color"
 	const val VEGAFOX_THEME_MUSIC_VOLUME = "/vegafox/theme-music-volume"
-	const val VEGAFOX_SEASONAL_SURPRISE = "/vegafox/seasonal-surprise"
 
 	@Deprecated("Moved to HOME_ROWS_IMAGE_TYPE", replaceWith = ReplaceWith("HOME_ROWS_IMAGE_TYPE"))
 	const val VEGAFOX_HOME_ROWS_IMAGE = "/vegafox/home-rows-image"

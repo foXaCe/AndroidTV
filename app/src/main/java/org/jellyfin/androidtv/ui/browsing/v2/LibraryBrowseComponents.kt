@@ -367,7 +367,7 @@ fun LibraryToolbarButton(
 
 	val bgColor =
 		when {
-			isFocused -> Color.White.copy(alpha = 0.08f)
+			isFocused -> VegafoXColors.Divider
 			else -> Color.Transparent
 		}
 
@@ -427,7 +427,7 @@ fun AlphaPickerBar(
 	LazyRow(
 		modifier =
 			modifier
-				.background(Color.White.copy(alpha = 0.04f), RoundedCornerShape(6.dp)),
+				.background(VegafoXColors.Divider, RoundedCornerShape(6.dp)),
 		horizontalArrangement = Arrangement.spacedBy(0.dp),
 		contentPadding = PaddingValues(horizontal = 2.dp),
 		verticalAlignment = Alignment.CenterVertically,

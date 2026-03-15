@@ -74,6 +74,7 @@ fun <T> TvRowList(
 	modifier: Modifier = Modifier,
 	staggerEntrance: Boolean = false,
 	prefetchContent: ((items: List<T>) -> Unit)? = null,
+	itemKey: ((T) -> Any)? = null,
 	itemContent: @Composable (T) -> Unit,
 ) {
 	val columnState = rememberLazyListState()
@@ -132,7 +133,7 @@ fun <T> TvRowList(
 						color = JellyfinTheme.colorScheme.textPrimary,
 						maxLines = 1,
 						overflow = TextOverflow.Ellipsis,
-						modifier = Modifier.padding(bottom = Tokens.Space.spaceSm),
+						modifier = Modifier.padding(bottom = 4.dp),
 					)
 
 					LazyRow(
@@ -142,15 +143,15 @@ fun <T> TvRowList(
 							PaddingValues(
 								start = Tokens.Space.spaceSm,
 								end = Tokens.Space.spaceSm,
-								bottom = 42.dp,
+								bottom = 8.dp,
 							),
 					) {
-						items(items = row.items) { item ->
+						items(items = row.items, key = itemKey) { item ->
 							itemContent(item)
 						}
 					}
 
-					Spacer(modifier = Modifier.height(Tokens.Space.spaceMd))
+					Spacer(modifier = Modifier.height(2.dp))
 				}
 			}
 		}

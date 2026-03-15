@@ -98,14 +98,14 @@ object YouTubeStreamResolver {
 	}
 
 	private fun pickBestVideo(streams: List<VideoStream>): VideoStream? {
-		// Only consider streams that are at least 1080p
-		val hdStreams = streams.filter { it.height >= 1080 }
+		// Only consider streams that are at least 720p
+		val hdStreams = streams.filter { it.height >= 720 }
 		if (hdStreams.isEmpty()) {
-			Timber.d("$TAG: No streams >= 1080p available, skipping trailer")
+			Timber.d("$TAG: No streams >= 720p available, skipping trailer")
 			return null
 		}
 
-		// Pick the best 1080p stream (prefer H.264, then closest to 1080p)
+		// Pick the best stream (prefer H.264, then closest to 1080p)
 		return hdStreams
 			.sortedWith(compareBy<VideoStream> { codecPriority(it.codec) }.thenBy { it.height })
 			.firstOrNull()

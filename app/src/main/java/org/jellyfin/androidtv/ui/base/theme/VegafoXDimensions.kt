@@ -37,6 +37,19 @@ object HeroDimensions {
 
 // endregion
 
+// region — Detail screens
+
+object DetailDimensions {
+	val contentPaddingHorizontal = 48.dp
+	val sectionPaddingTop = 16.dp
+	val sectionSpacing = 24.dp
+	val bottomPadding = 80.dp
+	val gradientHeight = 40.dp
+	val actionsSpacing = 48.dp
+}
+
+// endregion
+
 // region — Cards
 
 object CardDimensions {

@@ -1,8 +1,6 @@
 package org.jellyfin.androidtv.ui.home.compose
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -33,9 +30,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil3.SingletonImageLoader
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
@@ -43,14 +38,12 @@ import coil3.request.crossfade
 import coil3.size.Scale
 import kotlinx.coroutines.delay
 import org.jellyfin.androidtv.R
-import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.skeleton.SkeletonLandscapeCardRow
 import org.jellyfin.androidtv.ui.base.state.DisplayState
 import org.jellyfin.androidtv.ui.base.state.EmptyState
 import org.jellyfin.androidtv.ui.base.state.ErrorState
 import org.jellyfin.androidtv.ui.base.state.StateContainer
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
-import org.jellyfin.androidtv.ui.base.tv.TvFocusCard
 import org.jellyfin.androidtv.ui.base.tv.TvRowList
 import org.jellyfin.androidtv.ui.browsing.compose.BrowseMediaCard
 import org.jellyfin.androidtv.ui.browsing.compose.getItemImageUrl
@@ -92,25 +85,55 @@ fun HomeScreen(
 	val uiState by viewModel.uiState.collectAsState()
 	val focusedItem by viewModel.focusedItem.collectAsState()
 	val trailerState by viewModel.trailerState.collectAsState()
+	val progressMap by viewModel.progressMap.collectAsState()
 
-	// Initial focus: target "Continue watching" row first, else first row
-	val initialFocusRequester = remember { FocusRequester() }
+	// Focus management: initial + restore on return from detail
+	val focusRequester = remember { FocusRequester() }
 	var hasRequestedInitialFocus by rememberSaveable { mutableStateOf(false) }
-	val targetRow =
+	val lastFocusedId by viewModel.lastFocusedItemId.collectAsState()
+
+	// Determine focus target: last focused item (return from detail) or default first item
+	val defaultRow =
 		uiState.rows.firstOrNull { it.key == "resume" || it.key == "continue_watching" }
 			?: uiState.rows.firstOrNull()
-	val firstItemId = targetRow?.items?.firstOrNull()?.id
+	val defaultItemId = defaultRow?.items?.firstOrNull()?.id
+	val focusTargetId = lastFocusedId ?: defaultItemId
 
-	// Request focus on first card after composition
-	LaunchedEffect(firstItemId) {
-		if (firstItemId != null && !hasRequestedInitialFocus) {
+	// Initial focus on first load
+	LaunchedEffect(focusTargetId) {
+		if (focusTargetId != null && !hasRequestedInitialFocus) {
 			delay(400)
 			try {
-				initialFocusRequester.requestFocus()
+				focusRequester.requestFocus()
 				hasRequestedInitialFocus = true
 			} catch (_: Exception) {
 				// FocusRequester not yet attached
 			}
+		}
+	}
+
+	// Restore focus when returning from detail screen
+	var needsRestoreFocus by remember { mutableStateOf(false) }
+	val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+	androidx.compose.runtime.DisposableEffect(lifecycleOwner) {
+		val observer =
+			androidx.lifecycle.LifecycleEventObserver { _, event ->
+				if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME && hasRequestedInitialFocus) {
+					needsRestoreFocus = true
+				}
+			}
+		lifecycleOwner.lifecycle.addObserver(observer)
+		onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+	}
+
+	LaunchedEffect(needsRestoreFocus) {
+		if (needsRestoreFocus && focusTargetId != null) {
+			delay(200)
+			try {
+				focusRequester.requestFocus()
+			} catch (_: Exception) {
+			}
+			needsRestoreFocus = false
 		}
 	}
 
@@ -153,18 +176,6 @@ fun HomeScreen(
 								.align(Alignment.CenterStart)
 								.padding(start = 16.dp),
 					)
-
-					// Mute badge — visible only when trailer is playing
-					if (trailerState.isPlaying) {
-						MuteBadge(
-							isMuted = trailerState.isMuted,
-							onToggle = { viewModel.toggleMute() },
-							modifier =
-								Modifier
-									.align(Alignment.TopEnd)
-									.padding(12.dp),
-						)
-					}
 				}
 
 				// Rows content with state handling
@@ -233,6 +244,7 @@ fun HomeScreen(
 									bottom = Tokens.Space.spaceLg,
 								),
 							prefetchContent = prefetchCallback,
+							itemKey = { it.id },
 						) { item ->
 							BrowseMediaCard(
 								item = item,
@@ -241,9 +253,10 @@ fun HomeScreen(
 								onBlur = { viewModel.stopTrailer() },
 								onClick = { onItemClick(item) },
 								onPlayClick = { onPlayClick(item) },
+								hasProgress = progressMap[item.id] ?: false,
 								initialFocusRequester =
-									if (item.id == firstItemId && !hasRequestedInitialFocus) {
-										initialFocusRequester
+									if (item.id == focusTargetId) {
+										focusRequester
 									} else {
 										null
 									},
@@ -252,45 +265,6 @@ fun HomeScreen(
 					},
 				)
 			}
-		}
-	}
-}
-
-/**
- * Mute badge — small focusable badge to toggle trailer audio.
- * Visible only when a trailer is playing in the hero backdrop.
- */
-@Composable
-private fun MuteBadge(
-	isMuted: Boolean,
-	onToggle: () -> Unit,
-	modifier: Modifier = Modifier,
-) {
-	TvFocusCard(
-		onClick = onToggle,
-		focusedScale = 1f,
-		focusColor = VegafoXColors.OrangePrimary,
-		shape = RoundedCornerShape(20.dp),
-		modifier = modifier,
-	) {
-		Box(
-			modifier =
-				Modifier
-					.background(
-						Color.Black.copy(alpha = 0.45f),
-						shape = RoundedCornerShape(20.dp),
-					).border(
-						1.dp,
-						Color.White.copy(alpha = 0.12f),
-						RoundedCornerShape(20.dp),
-					).padding(horizontal = 10.dp, vertical = 4.dp),
-		) {
-			Text(
-				text = if (isMuted) "\uD83D\uDD07 sourdine" else "\uD83D\uDD0A son",
-				fontSize = 10.sp,
-				fontWeight = FontWeight.Medium,
-				color = Color.White.copy(alpha = 0.55f),
-			)
 		}
 	}
 }

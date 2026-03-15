@@ -10,10 +10,14 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -52,7 +56,6 @@ import kotlin.time.Duration.Companion.seconds
 data class TrailerState(
 	val isCountingDown: Boolean = false,
 	val isPlaying: Boolean = false,
-	val isMuted: Boolean = true,
 	val streamInfo: YouTubeStreamResolver.StreamInfo? = null,
 	val startSeconds: Double = 0.0,
 	val segments: List<SponsorBlockApi.Segment> = emptyList(),
@@ -82,8 +85,27 @@ class HomeViewModel(
 	private val _focusedItem = MutableStateFlow<BaseItemDto?>(null)
 	val focusedItem: StateFlow<BaseItemDto?> = _focusedItem.asStateFlow()
 
+	/** Last focused item ID — survives navigation to detail and back. */
+	private val _lastFocusedItemId = MutableStateFlow<java.util.UUID?>(null)
+	val lastFocusedItemId: StateFlow<java.util.UUID?> = _lastFocusedItemId.asStateFlow()
+
 	private val _trailerState = MutableStateFlow(TrailerState())
 	val trailerState: StateFlow<TrailerState> = _trailerState.asStateFlow()
+
+	/** Pre-computed progress map: itemId → hasProgress (playedPercentage > 0). */
+	val progressMap: StateFlow<Map<java.util.UUID, Boolean>> =
+		_uiState
+			.map { it.rows }
+			.distinctUntilChanged()
+			.map { rows ->
+				buildMap {
+					for (row in rows) {
+						for (item in row.items) {
+							put(item.id, (item.userData?.playedPercentage ?: 0.0) > 0)
+						}
+					}
+				}
+			}.stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
 
 	private var trailerJob: Job? = null
 
@@ -96,6 +118,7 @@ class HomeViewModel(
 
 	fun setFocusedItem(item: BaseItemDto) {
 		_focusedItem.value = item
+		_lastFocusedItemId.value = item.id
 		startTrailerCountdown(item)
 	}
 
@@ -105,56 +128,71 @@ class HomeViewModel(
 		_trailerState.value = TrailerState()
 	}
 
-	fun toggleMute() {
-		_trailerState.update { it.copy(isMuted = !it.isMuted) }
-	}
-
 	private fun startTrailerCountdown(item: BaseItemDto) {
 		trailerJob?.cancel()
 		_trailerState.value = TrailerState()
 
+		Timber.d("TRAILER_DBG: startTrailerCountdown item='${item.name}' remoteTrailers.size=${item.remoteTrailers?.size}")
+
 		val trailers = item.remoteTrailers.orEmpty()
-		if (trailers.isEmpty()) return
+		if (trailers.isEmpty()) {
+			Timber.d("TRAILER_DBG: no remoteTrailers, returning early")
+			return
+		}
 
 		// Quick check: at least one YouTube trailer exists (instant, no I/O)
 		val hasYoutubeTrailer =
 			trailers.any { trailer ->
-				trailer.url?.let { TrailerResolver.extractYoutubeVideoId(it) } != null
+				val videoId = trailer.url?.let { TrailerResolver.extractYoutubeVideoId(it) }
+				Timber.d("TRAILER_DBG: trailer url='${trailer.url}' → videoId='$videoId'")
+				videoId != null
 			}
-		if (!hasYoutubeTrailer) return
+		if (!hasYoutubeTrailer) {
+			Timber.d("TRAILER_DBG: no YouTube trailer found, returning early")
+			return
+		}
 
 		trailerJob =
 			viewModelScope.launch {
 				_trailerState.value = TrailerState(isCountingDown = true)
+				Timber.d("TRAILER_DBG: countdown started (5s)")
 
 				// Start resolution in parallel with countdown
 				val resolveDeferred =
 					async(Dispatchers.IO) {
 						try {
-							TrailerResolver.resolveTrailerFromItem(item)
+							Timber.d("TRAILER_DBG: resolveTrailerFromItem starting...")
+							val result = TrailerResolver.resolveTrailerFromItem(item)
+							Timber.d(
+								"TRAILER_DBG: resolveTrailerFromItem done → streamInfo=${result?.streamInfo != null}, videoUrl=${result?.streamInfo?.videoUrl?.take(
+									80,
+								)}, startSec=${result?.startSeconds}",
+							)
+							result
 						} catch (e: Exception) {
-							Timber.w(e, "TrailerResolver: Failed to resolve trailer for hero")
+							Timber.w(e, "TRAILER_DBG: resolveTrailerFromItem FAILED")
 							null
 						}
 					}
 
 				// 5-second countdown
 				delay(TRAILER_COUNTDOWN_MS)
+				Timber.d("TRAILER_DBG: countdown done (5s elapsed)")
 
 				// Wait for resolution result (may already be done)
 				val preview = resolveDeferred.await()
+				Timber.d("TRAILER_DBG: resolveDeferred.await() → preview null=${preview == null}, streamInfo null=${preview?.streamInfo == null}")
 				if (preview?.streamInfo == null) {
-					Timber.d("TrailerResolver: No stream resolved, cancelling hero trailer")
+					Timber.d("TRAILER_DBG: No stream resolved, cancelling hero trailer")
 					_trailerState.value = TrailerState()
 					return@launch
 				}
 
-				Timber.d("TrailerResolver: Hero trailer ready — starting playback")
+				Timber.d("TRAILER_DBG: Hero trailer ready — starting playback, videoUrl=${preview.streamInfo.videoUrl.take(80)}")
 				_trailerState.value =
 					TrailerState(
 						isCountingDown = false,
 						isPlaying = true,
-						isMuted = true,
 						streamInfo = preview.streamInfo,
 						startSeconds = preview.startSeconds,
 						segments = preview.segments,
@@ -417,9 +455,11 @@ class HomeViewModel(
 				fields = ItemRepository.itemFields,
 			)
 		val items =
-			api.tvShowsApi
-				.getNextUp(query)
-				.content.items
+			enrichEpisodesWithSeriesGenres(
+				api.tvShowsApi
+					.getNextUp(query)
+					.content.items,
+			)
 		if (items.isEmpty()) return emptyList()
 		return listOf(TvRow(title = application.getString(R.string.home_section_next_up), items = items, key = "nextup"))
 	}
@@ -460,7 +500,10 @@ class HomeViewModel(
 
 			// Merge: resume items first, then next up items not already in resume
 			val resumeIds = resumeItems.map { it.id }.toSet()
-			val merged = resumeItems + nextUpItems.filter { it.id !in resumeIds }
+			val merged =
+				enrichEpisodesWithSeriesGenres(
+					resumeItems + nextUpItems.filter { it.id !in resumeIds },
+				)
 
 			if (merged.isEmpty()) return@coroutineScope emptyList()
 			listOf(TvRow(title = application.getString(R.string.home_section_resume), items = merged, key = "continue_watching"))
@@ -582,6 +625,48 @@ class HomeViewModel(
 		val items = response.items
 		if (items.isEmpty()) return emptyList()
 		return listOf(TvRow(title = application.getString(R.string.home_section_playlists), items = items, key = "playlists"))
+	}
+
+	/** In-memory cache: seriesId → genres (survives refresh, cleared on user switch) */
+	private val seriesGenresCache = mutableMapOf<java.util.UUID, List<String>>()
+
+	/**
+	 * Enrich episodes with genres from their parent series.
+	 * Uses cache first, only fetches missing series in a single batch call.
+	 */
+	private suspend fun enrichEpisodesWithSeriesGenres(items: List<BaseItemDto>): List<BaseItemDto> {
+		val episodesWithoutGenres =
+			items.filter {
+				it.type == BaseItemKind.EPISODE && it.genres.isNullOrEmpty() && it.seriesId != null
+			}
+		if (episodesWithoutGenres.isEmpty()) return items
+
+		val seriesIds = episodesWithoutGenres.mapNotNull { it.seriesId }.distinct()
+		val uncachedIds = seriesIds.filter { it !in seriesGenresCache }
+
+		if (uncachedIds.isNotEmpty()) {
+			try {
+				val response by api.itemsApi.getItems(
+					ids = uncachedIds,
+					fields = setOf(ItemFields.GENRES),
+					enableTotalRecordCount = false,
+				)
+				response.items.forEach { series ->
+					seriesGenresCache[series.id] = series.genres.orEmpty()
+				}
+			} catch (e: Exception) {
+				Timber.w(e, "Failed to fetch series genres for episodes")
+			}
+		}
+
+		return items.map { item ->
+			if (item.type == BaseItemKind.EPISODE && item.genres.isNullOrEmpty() && item.seriesId != null) {
+				val seriesGenres = seriesGenresCache[item.seriesId]
+				if (!seriesGenres.isNullOrEmpty()) item.copy(genres = seriesGenres) else item
+			} else {
+				item
+			}
+		}
 	}
 
 	companion object {

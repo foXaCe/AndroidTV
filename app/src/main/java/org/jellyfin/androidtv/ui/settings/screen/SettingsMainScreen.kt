@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -15,7 +16,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -34,7 +34,6 @@ import org.jellyfin.androidtv.ui.base.list.ListSection
 import org.jellyfin.androidtv.ui.base.theme.BebasNeue
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.navigation.LocalRouter
-import org.jellyfin.androidtv.ui.preference.category.DonateDialog
 import org.jellyfin.androidtv.ui.settings.Routes
 import org.jellyfin.androidtv.ui.settings.compat.rememberPreference
 import org.jellyfin.androidtv.ui.settings.composable.SettingsColumn
@@ -48,64 +47,54 @@ fun SettingsMainScreen(
 	val router = LocalRouter.current
 	val context = LocalContext.current
 
-	var showDonateDialog by remember { mutableStateOf(false) }
 	var updateInfoForDialog by remember { mutableStateOf<UpdateCheckerService.UpdateInfo?>(null) }
 	var showReleaseNotes by remember { mutableStateOf(false) }
 
 	SettingsColumn {
+		// ── Header (logo + title, fixed 48dp max) ──
 		item {
 			Row(
-				modifier = Modifier.padding(24.dp),
-				horizontalArrangement = Arrangement.spacedBy(16.dp),
+				modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp).height(48.dp),
+				horizontalArrangement = Arrangement.spacedBy(14.dp),
 				verticalAlignment = Alignment.CenterVertically,
 			) {
 				Image(
 					painter = painterResource(R.drawable.ic_vegafox_fox),
 					contentDescription = null,
-					modifier =
-						Modifier
-							.size(40.dp)
-							.clip(CircleShape),
+					modifier = Modifier.size(36.dp).clip(CircleShape),
 				)
 				Column {
 					Text(
 						text = "VegafoX",
 						fontFamily = BebasNeue,
-						fontSize = 22.sp,
+						fontSize = 20.sp,
 						letterSpacing = 2.sp,
 						color = VegafoXColors.OrangePrimary,
 					)
 					Text(
 						text = stringResource(R.string.settings),
-						fontSize = 13.sp,
+						fontSize = 12.sp,
 						color = VegafoXColors.TextSecondary,
 					)
 				}
 			}
 		}
 
-		item {
-			ListButton(
-				leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Group), contentDescription = null) },
-				headingContent = { Text(stringResource(R.string.pref_login)) },
-				onClick = { router.push(Routes.AUTHENTICATION) },
-			)
-		}
+		// ── Apparence ──
+		item { ListSection(headingContent = { Text(stringResource(R.string.pref_appearance)) }) }
 
 		item {
 			ListButton(
 				leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Tune), contentDescription = null) },
 				headingContent = { Text(stringResource(R.string.pref_customization)) },
+				trailingContent = {
+					Icon(
+						rememberVectorPainter(VegafoXIcons.ArrowForward),
+						contentDescription = null,
+						tint = VegafoXColors.TextSecondary,
+					)
+				},
 				onClick = { router.push(Routes.CUSTOMIZATION) },
-			)
-		}
-
-		item {
-			ListButton(
-				leadingContent = { Icon(painterResource(R.drawable.ic_vegafox_fox), contentDescription = null) },
-				headingContent = { Text(stringResource(R.string.pref_plugin_settings)) },
-				captionContent = { Text(stringResource(R.string.pref_plugin_description)) },
-				onClick = { router.push(Routes.PLUGIN) },
 			)
 		}
 
@@ -113,49 +102,79 @@ fun SettingsMainScreen(
 			ListButton(
 				leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.PhotoLibrary), contentDescription = null) },
 				headingContent = { Text(stringResource(R.string.pref_screensaver)) },
+				trailingContent = {
+					Icon(
+						rememberVectorPainter(VegafoXIcons.ArrowForward),
+						contentDescription = null,
+						tint = VegafoXColors.TextSecondary,
+					)
+				},
 				onClick = { router.push(Routes.CUSTOMIZATION_SCREENSAVER) },
 			)
 		}
+
+		// ── Lecture ──
+		item { ListSection(headingContent = { Text(stringResource(R.string.pref_playback)) }) }
 
 		item {
 			ListButton(
 				leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.SkipNext), contentDescription = null) },
 				headingContent = { Text(stringResource(R.string.pref_playback)) },
+				trailingContent = {
+					Icon(
+						rememberVectorPainter(VegafoXIcons.ArrowForward),
+						contentDescription = null,
+						tint = VegafoXColors.TextSecondary,
+					)
+				},
 				onClick = { router.push(Routes.PLAYBACK) },
 			)
 		}
 
-		item {
-			ListButton(
-				leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Error), contentDescription = null) },
-				headingContent = { Text(stringResource(R.string.pref_telemetry_category)) },
-				onClick = { router.push(Routes.TELEMETRY) },
-			)
-		}
+		// ── Extensions ──
+		item { ListSection(headingContent = { Text(stringResource(R.string.pref_plugin_settings)) }) }
 
 		item {
 			ListButton(
-				leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Science), contentDescription = null) },
-				headingContent = { Text(stringResource(R.string.pref_developer_link)) },
-				onClick = { router.push(Routes.DEVELOPER) },
+				leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Tune), contentDescription = null) },
+				headingContent = { Text(stringResource(R.string.pref_plugin_settings)) },
+				captionContent = { Text(stringResource(R.string.pref_plugin_description)) },
+				trailingContent = {
+					Icon(
+						rememberVectorPainter(VegafoXIcons.ArrowForward),
+						contentDescription = null,
+						tint = VegafoXColors.TextSecondary,
+					)
+				},
+				onClick = { router.push(Routes.PLUGIN) },
 			)
 		}
 
+		// ── Compte ──
+		item { ListSection(headingContent = { Text(stringResource(R.string.pref_login)) }) }
+
 		item {
-			ListSection(
-				headingContent = { Text(stringResource(R.string.settings_support_updates)) },
+			ListButton(
+				leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Group), contentDescription = null) },
+				headingContent = { Text(stringResource(R.string.pref_login)) },
+				trailingContent = {
+					Icon(
+						rememberVectorPainter(VegafoXIcons.ArrowForward),
+						contentDescription = null,
+						tint = VegafoXColors.TextSecondary,
+					)
+				},
+				onClick = { router.push(Routes.AUTHENTICATION) },
 			)
 		}
+
+		// ── Informations ──
+		item { ListSection(headingContent = { Text(stringResource(R.string.pref_about_title)) }) }
 
 		if (org.jellyfin.androidtv.BuildConfig.ENABLE_OTA_UPDATES) {
 			item {
 				ListButton(
-					leadingContent = {
-						Icon(
-							rememberVectorPainter(VegafoXIcons.Download),
-							contentDescription = null,
-						)
-					},
+					leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Download), contentDescription = null) },
 					headingContent = { Text(stringResource(R.string.settings_check_updates)) },
 					captionContent = { Text(stringResource(R.string.settings_check_updates_desc)) },
 					onClick = {
@@ -179,18 +198,16 @@ fun SettingsMainScreen(
 
 		item {
 			ListButton(
-				leadingContent = {
+				leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Science), contentDescription = null) },
+				headingContent = { Text(stringResource(R.string.pref_developer_link)) },
+				trailingContent = {
 					Icon(
-						rememberVectorPainter(VegafoXIcons.Favorite),
+						rememberVectorPainter(VegafoXIcons.ArrowForward),
 						contentDescription = null,
-						tint = Color.Red,
+						tint = VegafoXColors.TextSecondary,
 					)
 				},
-				headingContent = { Text(stringResource(R.string.settings_support_vegafox)) },
-				captionContent = { Text(stringResource(R.string.settings_support_vegafox_desc)) },
-				onClick = {
-					showDonateDialog = true
-				},
+				onClick = { router.push(Routes.DEVELOPER) },
 			)
 		}
 
@@ -198,16 +215,19 @@ fun SettingsMainScreen(
 			ListButton(
 				leadingContent = { Icon(painterResource(R.drawable.ic_jellyfin), contentDescription = null) },
 				headingContent = { Text(stringResource(R.string.pref_about_title)) },
+				trailingContent = {
+					Icon(
+						rememberVectorPainter(VegafoXIcons.ArrowForward),
+						contentDescription = null,
+						tint = VegafoXColors.TextSecondary,
+					)
+				},
 				onClick = { router.push(Routes.ABOUT) },
 			)
 		}
 	}
 
 	// Dialogs
-	if (showDonateDialog) {
-		DonateDialog(onDismiss = { showDonateDialog = false })
-	}
-
 	val currentUpdateInfo = updateInfoForDialog
 	if (currentUpdateInfo != null && !showReleaseNotes) {
 		UpdateAvailableDialog(

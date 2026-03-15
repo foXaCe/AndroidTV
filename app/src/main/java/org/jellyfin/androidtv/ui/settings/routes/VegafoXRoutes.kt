@@ -19,7 +19,6 @@ import org.jellyfin.androidtv.ui.settings.screen.vegafox.mediaBarContentTypeEntr
 import org.jellyfin.androidtv.ui.settings.screen.vegafox.mediaBarItemCountEntry
 import org.jellyfin.androidtv.ui.settings.screen.vegafox.mediaBarOpacityEntry
 import org.jellyfin.androidtv.ui.settings.screen.vegafox.navbarPositionEntry
-import org.jellyfin.androidtv.ui.settings.screen.vegafox.seasonalSurpriseEntry
 import org.jellyfin.androidtv.ui.settings.screen.vegafox.shuffleContentTypeEntry
 import org.jellyfin.androidtv.ui.settings.screen.vegafox.themeMusicVolumeEntry
 import org.koin.compose.koinInject
@@ -61,9 +60,6 @@ val vegafoXRoutes =
 		},
 		Routes.VEGAFOX_THEME_MUSIC_VOLUME to {
 			OptionListScreen(themeMusicVolumeEntry, koinInject<UserSettingPreferences>())
-		},
-		Routes.VEGAFOX_SEASONAL_SURPRISE to {
-			OptionListScreen(seasonalSurpriseEntry, koinInject<UserPreferences>())
 		},
 		Routes.VEGAFOX_DETAILS_BLUR to {
 			OptionListScreen(detailsBlurEntry, koinInject<UserSettingPreferences>())

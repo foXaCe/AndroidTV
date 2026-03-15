@@ -1,7 +1,7 @@
 package org.jellyfin.androidtv.ui.livetv.compose
 
-import android.app.AlertDialog
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -72,6 +72,7 @@ fun LiveTvGuideScreen(
 
 	var showOptionsDialog by remember { mutableStateOf(false) }
 	var showFiltersDialog by remember { mutableStateOf(false) }
+	var showDateDialog by remember { mutableStateOf(false) }
 	var showProgramDetail by remember { mutableStateOf(false) }
 	var detailProgram by remember { mutableStateOf<BaseItemDto?>(null) }
 
@@ -93,11 +94,7 @@ fun LiveTvGuideScreen(
 				imageHelper = imageHelper,
 				onOptionsClick = { showOptionsDialog = true },
 				onFiltersClick = { showFiltersDialog = true },
-				onDateClick = {
-					showDatePicker(context) { date ->
-						viewModel.pageGuideTo(date)
-					}
-				},
+				onDateClick = { showDateDialog = true },
 				onResetClick = { viewModel.pageGuideTo(LocalDateTime.now()) },
 			)
 
@@ -236,6 +233,17 @@ fun LiveTvGuideScreen(
 			) {
 				SettingsRouterContent()
 			}
+		}
+
+		// Date picker dialog (pure Compose — replaces native AlertDialog+FriendlyDateButton)
+		if (showDateDialog) {
+			GuideDatePickerDialog(
+				onDatePicked = { date ->
+					showDateDialog = false
+					viewModel.pageGuideTo(date)
+				},
+				onDismiss = { showDateDialog = false },
+			)
 		}
 	}
 }
@@ -462,29 +470,70 @@ private fun GuideStatusBar(uiState: LiveTvGuideUiState) {
 	}
 }
 
-private fun showDatePicker(
-	context: android.content.Context,
+@Composable
+private fun GuideDatePickerDialog(
 	onDatePicked: (LocalDateTime) -> Unit,
+	onDismiss: () -> Unit,
 ) {
-	val scrollPane =
-		android.view.LayoutInflater
-			.from(context)
-			.inflate(R.layout.horizontal_scroll_pane, null) as android.widget.FrameLayout
-	val scrollItems = scrollPane.findViewById<android.widget.LinearLayout>(R.id.scrollItems)
+	val dates = remember { (0L until 15L).map { LocalDateTime.now().plusDays(it) } }
+	val formatter =
+		remember {
+			java.time.format.DateTimeFormatter
+				.ofPattern("EEE d MMM")
+		}
 
-	for (increment in 0L until 15L) {
-		val date = LocalDateTime.now().plusDays(increment)
-		val button =
-			org.jellyfin.androidtv.ui.FriendlyDateButton(context, date) {
-				onDatePicked(date)
+	androidx.compose.material3.AlertDialog(
+		onDismissRequest = onDismiss,
+		containerColor = VegafoXColors.Surface,
+		titleContentColor = VegafoXColors.TextPrimary,
+		title = {
+			Text(
+				text = stringResource(R.string.lbl_select_date),
+				fontFamily = BebasNeue,
+				fontSize = 24.sp,
+				fontWeight = FontWeight.Bold,
+				color = VegafoXColors.TextPrimary,
+			)
+		},
+		text = {
+			androidx.compose.foundation.lazy.LazyColumn(
+				modifier = Modifier.height(LiveTvDimensions.guideHeaderHeight * 3),
+			) {
+				items(dates.size) { index ->
+					val date = dates[index]
+					val isToday = index == 0
+					val label =
+						if (isToday) {
+							stringResource(R.string.lbl_today)
+						} else {
+							date.format(formatter).replaceFirstChar { it.uppercase() }
+						}
+					Row(
+						modifier =
+							Modifier
+								.fillMaxWidth()
+								.clickable { onDatePicked(date) }
+								.padding(vertical = 12.dp, horizontal = 16.dp),
+						verticalAlignment = Alignment.CenterVertically,
+					) {
+						Text(
+							text = label,
+							color = if (isToday) VegafoXColors.OrangePrimary else VegafoXColors.TextPrimary,
+							fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
+							fontSize = 16.sp,
+						)
+					}
+				}
 			}
-		scrollItems.addView(button)
-	}
-
-	AlertDialog
-		.Builder(context)
-		.setTitle(R.string.lbl_select_date)
-		.setView(scrollPane)
-		.setNegativeButton(R.string.btn_cancel) { _, _ -> }
-		.show()
+		},
+		confirmButton = {},
+		dismissButton = {
+			androidx.compose.material3.TextButton(onClick = onDismiss) {
+				Text(
+					text = stringResource(R.string.btn_cancel),
+					color = VegafoXColors.TextSecondary,
+				)
+			}
+		},
+	)
 }

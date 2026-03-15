@@ -46,11 +46,12 @@ fun DetailMetadataSection(
 	item: BaseItemDto,
 	uiState: ItemDetailsUiState,
 ) {
+	val context = androidx.compose.ui.platform.LocalContext.current
 	val metaItems = mutableListOf<Pair<String, String>>()
 
 	val genres = item.genres ?: emptyList()
 	if (genres.isNotEmpty()) {
-		metaItems.add(stringResource(R.string.lbl_genres) to genres.take(3).joinToString(", "))
+		metaItems.add(stringResource(R.string.lbl_genres) to genres.take(3).joinToString(", ") { translateGenre(context, it) })
 	}
 	if (uiState.directors.isNotEmpty()) {
 		metaItems.add(stringResource(R.string.lbl_director) to uiState.directors.joinToString(", ") { it.name ?: "" })

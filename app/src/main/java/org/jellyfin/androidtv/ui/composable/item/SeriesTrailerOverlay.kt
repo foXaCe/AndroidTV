@@ -97,7 +97,6 @@ fun SeriesTrailerOverlay(
 			startSeconds = info.startSeconds,
 			segments = info.segments,
 			muted = muted,
-			isVisible = true,
 			onVideoEnded = { trailerInfo = null },
 			modifier =
 				modifier

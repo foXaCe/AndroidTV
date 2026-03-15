@@ -1,5 +1,7 @@
 package org.jellyfin.androidtv.ui.itemdetail.v2.shared
 
+import android.content.Context
+import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.util.apiclient.getLogoImage
 import org.jellyfin.androidtv.util.apiclient.getUrl
 import org.jellyfin.androidtv.util.apiclient.itemBackdropImages
@@ -18,7 +20,7 @@ fun getBackdropUrl(
 	val backdropImage =
 		item.itemBackdropImages.firstOrNull()
 			?: item.parentBackdropImages.firstOrNull()
-	return backdropImage?.getUrl(api, maxWidth = 1920)
+	return backdropImage?.getUrl(api, maxWidth = 3840, quality = 96)
 }
 
 fun getPosterUrl(
@@ -61,8 +63,56 @@ fun formatDuration(ticks: Long): String {
 	val totalMinutes = (ticks / 10_000_000 / 60).toInt()
 	val hours = totalMinutes / 60
 	val minutes = totalMinutes % 60
-	return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
+	return if (hours > 0) "${hours}h%02dm".format(minutes) else "${minutes}min"
 }
+
+private val genreResIds =
+	mapOf(
+		"action" to R.string.genre_action,
+		"action & adventure" to R.string.genre_action_adventure,
+		"action adventure" to R.string.genre_action_adventure,
+		"adventure" to R.string.genre_adventure,
+		"animation" to R.string.genre_animation,
+		"anime" to R.string.genre_anime,
+		"biography" to R.string.genre_biography,
+		"comedy" to R.string.genre_comedy,
+		"crime" to R.string.genre_crime,
+		"documentary" to R.string.genre_documentary,
+		"drama" to R.string.genre_drama,
+		"family" to R.string.genre_family,
+		"fantasy" to R.string.genre_fantasy,
+		"history" to R.string.genre_history,
+		"horror" to R.string.genre_horror,
+		"kids" to R.string.genre_kids,
+		"music" to R.string.genre_music,
+		"musical" to R.string.genre_musical,
+		"mystery" to R.string.genre_mystery,
+		"news" to R.string.genre_news,
+		"reality" to R.string.genre_reality,
+		"romance" to R.string.genre_romance,
+		"science fiction" to R.string.genre_science_fiction,
+		"sci-fi & fantasy" to R.string.genre_scifi_fantasy,
+		"short" to R.string.genre_short,
+		"sport" to R.string.genre_sport,
+		"superhero" to R.string.genre_superhero,
+		"thriller" to R.string.genre_thriller,
+		"war" to R.string.genre_war,
+		"war & politics" to R.string.genre_war_politics,
+		"western" to R.string.genre_western,
+	)
+
+fun translateGenre(
+	context: Context,
+	genre: String,
+): String {
+	val resId = genreResIds[genre.trim().lowercase()]
+	return if (resId != null) context.getString(resId) else genre.trim()
+}
+
+fun translateGenreUpper(
+	context: Context,
+	genre: String,
+): String = translateGenre(context, genre).uppercase()
 
 fun getEndsAt(ticks: Long): String {
 	val endTime = java.util.Date(System.currentTimeMillis() + ticks / 10_000)

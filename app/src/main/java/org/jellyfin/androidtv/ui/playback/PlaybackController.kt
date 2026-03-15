@@ -448,7 +448,8 @@ class PlaybackController(
 
 			// Skip unwanted display modes
 			if (mode.physicalWidth < 1280 || mode.physicalHeight < 720) continue // Skip non-HD
-			if (mode.physicalWidth < (videoStream.width ?: 0) || mode.physicalHeight < (videoStream.height ?: 0)) continue // Disallow resolution downgrade
+			// Disallow resolution downgrade
+			if (mode.physicalWidth < (videoStream.width ?: 0) || mode.physicalHeight < (videoStream.height ?: 0)) continue
 
 			val rate = (mode.refreshRate * 100).roundToInt()
 			if (rate != sourceRate && rate != sourceRate * 2 && rate != (sourceRate * 2.5).roundToInt()) continue // Skip inappropriate rates

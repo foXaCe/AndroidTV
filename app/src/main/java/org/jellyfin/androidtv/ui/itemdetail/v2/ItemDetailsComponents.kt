@@ -176,7 +176,7 @@ fun MediaBadgeChip(
 				).padding(horizontal = 6.dp, vertical = 2.dp),
 		style = JellyfinTheme.typography.labelSmall,
 		fontWeight = FontWeight.W700,
-		color = Color.Black,
+		color = VegafoXColors.Background,
 		letterSpacing = 0.5.sp,
 	)
 }
@@ -198,7 +198,7 @@ fun InfoItemText(
 fun InfoItemBadge(
 	text: String,
 	bgColor: Color = InfoRowColors.Default.first,
-	color: Color = Color.Black,
+	color: Color = VegafoXColors.Background,
 ) {
 	Text(
 		text = text,
@@ -320,7 +320,7 @@ fun CastCard(
 						if (isFocused) {
 							Modifier.border(2.dp, focusBorderColor(), CircleShape)
 						} else {
-							Modifier.border(1.dp, Color.White.copy(alpha = 0.08f), CircleShape)
+							Modifier.border(1.dp, VegafoXColors.Divider, CircleShape)
 						},
 					).background(JellyfinTheme.colorScheme.outlineVariant),
 			contentAlignment = Alignment.Center,
@@ -587,7 +587,7 @@ fun EpisodeCard(
 							.align(Alignment.BottomStart)
 							.fillMaxWidth()
 							.height(2.dp)
-							.background(Color.Black.copy(alpha = 0.5f)),
+							.background(VegafoXColors.Background.copy(alpha = 0.5f)),
 				) {
 					Box(
 						modifier =
@@ -700,7 +700,7 @@ fun SeasonEpisodeItem(
 							.align(Alignment.BottomStart)
 							.fillMaxWidth()
 							.height(3.dp)
-							.background(Color.Black.copy(alpha = 0.5f)),
+							.background(VegafoXColors.Background.copy(alpha = 0.5f)),
 				) {
 					Box(
 						modifier =
@@ -1660,14 +1660,14 @@ fun CinemaActionChip(
 	val bgColor =
 		when {
 			isActive -> VegafoXColors.OrangeSoft
-			else -> Color.White.copy(alpha = 0.06f)
+			else -> VegafoXColors.Divider
 		}
 
 	val chipBorderColor =
 		when {
 			isFocused -> VegafoXColors.OrangePrimary
 			isActive -> activeColor
-			else -> Color.White.copy(alpha = 0.10f)
+			else -> VegafoXColors.Divider
 		}
 
 	val iconTint =
@@ -1762,7 +1762,7 @@ fun CinemaPosterColumn(
 					.fillMaxWidth()
 					.aspectRatio(2f / 3f)
 					.clip(RoundedCornerShape(16.dp))
-					.border(1.dp, Color.White.copy(alpha = 0.06f), RoundedCornerShape(16.dp))
+					.border(1.dp, VegafoXColors.Divider, RoundedCornerShape(16.dp))
 					.background(JellyfinTheme.colorScheme.surfaceDim),
 		) {
 			if (posterUrl != null) {

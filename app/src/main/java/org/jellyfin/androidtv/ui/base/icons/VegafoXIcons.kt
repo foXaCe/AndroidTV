@@ -212,4 +212,8 @@ object VegafoXIcons {
 	val Declined: ImageVector = Icons.Default.Cancel
 	val Pending: ImageVector = Icons.Default.Pending
 	val Spinner: ImageVector = Icons.Default.HourglassEmpty
+
+	// ── Ratings ─────────────────────────────────────────────────
+	val RottenTomatoFresh: ImageVector = Icons.Default.CheckCircle
+	val RottenTomatoRotten: ImageVector = Icons.Default.Cancel
 }

@@ -29,7 +29,6 @@ import org.jellyfin.androidtv.ui.settings.Routes
 import org.jellyfin.androidtv.ui.settings.compat.rememberPreference
 import org.jellyfin.androidtv.ui.settings.composable.SettingsColumn
 import org.jellyfin.androidtv.ui.settings.screen.vegafox.getBlurLabel
-import org.jellyfin.androidtv.ui.settings.screen.vegafox.getSeasonalLabel
 import org.jellyfin.androidtv.ui.settings.screen.vegafox.getShuffleContentTypeLabel
 import org.koin.compose.koinInject
 
@@ -255,15 +254,6 @@ fun SettingsCustomizationScreen(
 		// ── Appearance ──
 
 		item { ListSection(headingContent = { Text(stringResource(R.string.pref_appearance)) }) }
-
-		item {
-			val seasonalSurprise by rememberPreference(userPreferences, UserPreferences.seasonalSurprise)
-			ListButton(
-				headingContent = { Text(stringResource(R.string.pref_seasonal_surprise)) },
-				captionContent = { Text(getSeasonalLabel(seasonalSurprise)) },
-				onClick = { router.push(Routes.VEGAFOX_SEASONAL_SURPRISE) },
-			)
-		}
 
 		item {
 			val detailsBlur by rememberPreference(userSettingPreferences, UserSettingPreferences.detailsBackgroundBlurAmount)

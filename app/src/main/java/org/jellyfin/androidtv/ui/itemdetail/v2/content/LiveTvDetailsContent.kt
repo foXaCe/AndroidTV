@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
@@ -35,7 +34,9 @@ import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
+import org.jellyfin.androidtv.ui.base.theme.DetailDimensions
 import org.jellyfin.androidtv.ui.base.theme.HeroDimensions
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.itemdetail.v2.DetailActionButton
 import org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsUiState
 import org.jellyfin.androidtv.ui.itemdetail.v2.PosterImage
@@ -70,7 +71,13 @@ fun LiveTvDetailsContent(
 	Box(modifier = Modifier.fillMaxSize()) {
 		LazyColumn(
 			state = listState,
-			contentPadding = PaddingValues(top = HeroDimensions.contentTopPadding, start = 48.dp, end = 48.dp, bottom = 48.dp),
+			contentPadding =
+				PaddingValues(
+					top = HeroDimensions.contentTopPadding,
+					start = DetailDimensions.contentPaddingHorizontal,
+					end = DetailDimensions.contentPaddingHorizontal,
+					bottom = DetailDimensions.contentPaddingHorizontal,
+				),
 			modifier = Modifier.fillMaxSize(),
 		) {
 			// Header
@@ -194,7 +201,7 @@ fun LiveTvDetailsContent(
 								icon = VegafoXIcons.Record,
 								onClick = onToggleRecord,
 								isActive = uiState.isRecording,
-								activeColor = Color.Red,
+								activeColor = VegafoXColors.Recording,
 							)
 
 							// Record Series (only if program is a series)
@@ -204,7 +211,7 @@ fun LiveTvDetailsContent(
 									icon = VegafoXIcons.RecordSeries,
 									onClick = onToggleRecordSeries,
 									isActive = uiState.isRecordingSeries,
-									activeColor = Color.Red,
+									activeColor = VegafoXColors.Recording,
 								)
 							}
 						}

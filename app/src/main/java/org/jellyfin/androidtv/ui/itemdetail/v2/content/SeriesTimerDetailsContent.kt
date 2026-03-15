@@ -33,6 +33,7 @@ import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
+import org.jellyfin.androidtv.ui.base.theme.DetailDimensions
 import org.jellyfin.androidtv.ui.base.theme.HeroDimensions
 import org.jellyfin.androidtv.ui.itemdetail.v2.DetailActionButton
 import org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsUiState
@@ -66,7 +67,13 @@ fun SeriesTimerDetailsContent(
 	Box(modifier = Modifier.fillMaxSize()) {
 		LazyColumn(
 			state = listState,
-			contentPadding = PaddingValues(top = HeroDimensions.contentTopPadding, start = 48.dp, end = 48.dp, bottom = 48.dp),
+			contentPadding =
+				PaddingValues(
+					top = HeroDimensions.contentTopPadding,
+					start = DetailDimensions.contentPaddingHorizontal,
+					end = DetailDimensions.contentPaddingHorizontal,
+					bottom = DetailDimensions.contentPaddingHorizontal,
+				),
 			modifier = Modifier.fillMaxSize(),
 		) {
 			// Header

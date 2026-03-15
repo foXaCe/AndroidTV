@@ -73,7 +73,7 @@ private val SidebarBackgroundCollapsed = Color(0xFF060A0F).copy(alpha = 0.95f)
 private val SidebarBackgroundExpanded = Color(0xFF060A0F)
 private val SeparatorColor = VegafoXColors.OrangePrimary.copy(alpha = 0.40f)
 private val EaseOutCubic = CubicBezierEasing(0.33f, 1f, 0.68f, 1f)
-private const val NAV_ITEM_COUNT = 9
+private const val NAV_ITEM_COUNT = 10
 private const val SHIMMER_RESUME_DELAY_MS = 3000L
 private const val SHIMMER_CYCLE_MS = 1500
 private const val SHIMMER_STAGGER_MS = 300
@@ -307,12 +307,12 @@ fun PremiumSideBar(modifier: Modifier = Modifier) {
 				Spacer(modifier = Modifier.height(6.dp))
 
 				NavItem(
-					icon = VegafoXIcons.LiveTv,
-					label = "Live TV",
+					icon = VegafoXIcons.MusicLibrary,
+					label = "Musique",
 					isSelected = selectedIndex == 4,
 					onSelect = {
 						selectedIndex = 4
-						val library = userViews.firstOrNull { it.collectionType == CollectionType.LIVETV }
+						val library = userViews.firstOrNull { it.collectionType == CollectionType.MUSIC }
 						if (library != null) {
 							navigationRepository.navigate(itemLauncher.getUserViewDestination(library))
 						}
@@ -324,17 +324,12 @@ fun PremiumSideBar(modifier: Modifier = Modifier) {
 				Spacer(modifier = Modifier.height(6.dp))
 
 				NavItem(
-					icon = VegafoXIcons.VideoLibrary,
-					label = "Média",
+					icon = VegafoXIcons.LiveTv,
+					label = "Live TV",
 					isSelected = selectedIndex == 5,
 					onSelect = {
 						selectedIndex = 5
-						val library =
-							userViews.firstOrNull {
-								it.collectionType != CollectionType.MOVIES &&
-									it.collectionType != CollectionType.TVSHOWS &&
-									it.collectionType != CollectionType.LIVETV
-							} ?: userViews.firstOrNull()
+						val library = userViews.firstOrNull { it.collectionType == CollectionType.LIVETV }
 						if (library != null) {
 							navigationRepository.navigate(itemLauncher.getUserViewDestination(library))
 						}

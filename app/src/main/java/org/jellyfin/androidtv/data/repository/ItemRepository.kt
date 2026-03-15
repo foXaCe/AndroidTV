@@ -21,6 +21,7 @@ object ItemRepository {
 			ItemFields.PATH,
 			ItemFields.PRIMARY_IMAGE_ASPECT_RATIO,
 			ItemFields.PROVIDER_IDS,
+			ItemFields.REMOTE_TRAILERS,
 			ItemFields.TAGLINES,
 			ItemFields.TRICKPLAY,
 		)

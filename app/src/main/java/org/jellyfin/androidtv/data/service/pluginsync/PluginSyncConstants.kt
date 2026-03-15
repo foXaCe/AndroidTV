@@ -46,8 +46,6 @@ object PluginSyncConstants {
 			SyncablePreference(UserPreferences.enableMultiServerLibraries, SyncType.BOOLEAN, "enableMultiServerLibraries"),
 			SyncablePreference(UserPreferences.enableFolderView, SyncType.BOOLEAN, "enableFolderView"),
 			SyncablePreference(UserPreferences.confirmExit, SyncType.BOOLEAN, "confirmExit"),
-			// Display & Appearance
-			SyncablePreference(UserPreferences.seasonalSurprise, SyncType.STRING, "seasonalSurprise"),
 		)
 
 	/** Preference keys from [UserSettingPreferences] that should be synced. */

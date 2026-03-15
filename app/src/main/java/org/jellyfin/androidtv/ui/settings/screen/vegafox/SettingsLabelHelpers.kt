@@ -41,18 +41,6 @@ fun getOverlayColorLabel(color: String): String =
 	}
 
 @Composable
-fun getSeasonalLabel(season: String): String =
-	when (season) {
-		"none" -> stringResource(R.string.pref_seasonal_none)
-		"winter" -> stringResource(R.string.pref_seasonal_winter)
-		"spring" -> stringResource(R.string.pref_seasonal_spring)
-		"summer" -> stringResource(R.string.pref_seasonal_summer)
-		"halloween" -> stringResource(R.string.pref_seasonal_halloween)
-		"fall" -> stringResource(R.string.pref_seasonal_fall)
-		else -> season
-	}
-
-@Composable
 fun getBlurLabel(value: Int): String =
 	when (value) {
 		0 -> stringResource(R.string.pref_blur_none)

@@ -40,9 +40,9 @@ import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.DetailDimensions
 import org.jellyfin.androidtv.ui.base.theme.HeroDimensions
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
-import org.jellyfin.androidtv.ui.browsing.composable.inforow.InfoRowMultipleRatings
 import org.jellyfin.androidtv.ui.itemdetail.v2.CinemaGenreTag
 import org.jellyfin.androidtv.ui.itemdetail.v2.CinemaPosterColumn
 import org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsUiState
@@ -52,6 +52,7 @@ import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailCastSection
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailSeasonsSection
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailSectionWithCards
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.getPosterUrl
+import org.jellyfin.androidtv.ui.shared.components.MediaMetadataBadges
 import org.jellyfin.sdk.api.client.ApiClient
 import java.util.UUID
 
@@ -124,7 +125,7 @@ fun SeriesDetailsContent(
 									.fillMaxSize()
 									.padding(horizontal = HeroDimensions.horizontalPadding),
 							verticalAlignment = Alignment.CenterVertically,
-							horizontalArrangement = Arrangement.spacedBy(48.dp),
+							horizontalArrangement = Arrangement.spacedBy(DetailDimensions.actionsSpacing),
 						) {
 							// ─── Left column ───
 							Column(
@@ -161,8 +162,8 @@ fun SeriesDetailsContent(
 
 								Spacer(modifier = Modifier.height(16.dp))
 
-								// Ratings
-								InfoRowMultipleRatings(item = item)
+								// Metadata badges
+								MediaMetadataBadges(item = item)
 
 								Spacer(modifier = Modifier.height(16.dp))
 
@@ -213,7 +214,7 @@ fun SeriesDetailsContent(
 					modifier =
 						Modifier
 							.fillMaxWidth()
-							.height(40.dp)
+							.height(DetailDimensions.gradientHeight)
 							.background(
 								Brush.verticalGradient(
 									colors = listOf(Color.Transparent, VegafoXColors.BackgroundDeep),
@@ -230,7 +231,7 @@ fun SeriesDetailsContent(
 							Modifier
 								.fillMaxWidth()
 								.background(VegafoXColors.BackgroundDeep)
-								.padding(horizontal = 48.dp)
+								.padding(horizontal = DetailDimensions.contentPaddingHorizontal)
 								.padding(top = 16.dp),
 					) {
 						DetailSectionWithCards(
@@ -252,7 +253,7 @@ fun SeriesDetailsContent(
 							Modifier
 								.fillMaxWidth()
 								.background(VegafoXColors.BackgroundDeep)
-								.padding(horizontal = 48.dp)
+								.padding(horizontal = DetailDimensions.contentPaddingHorizontal)
 								.padding(top = 24.dp),
 					) {
 						DetailSeasonsSection(uiState.seasons, api, onNavigateToItem)
@@ -268,7 +269,7 @@ fun SeriesDetailsContent(
 							Modifier
 								.fillMaxWidth()
 								.background(VegafoXColors.BackgroundDeep)
-								.padding(horizontal = 48.dp)
+								.padding(horizontal = DetailDimensions.contentPaddingHorizontal)
 								.padding(top = 24.dp),
 					) {
 						DetailCastSection(uiState.cast, api, onNavigateToItem)
@@ -284,7 +285,7 @@ fun SeriesDetailsContent(
 							Modifier
 								.fillMaxWidth()
 								.background(VegafoXColors.BackgroundDeep)
-								.padding(horizontal = 48.dp)
+								.padding(horizontal = DetailDimensions.contentPaddingHorizontal)
 								.padding(top = 24.dp),
 					) {
 						DetailSectionWithCards(
@@ -302,7 +303,7 @@ fun SeriesDetailsContent(
 				Spacer(
 					modifier =
 						Modifier
-							.height(80.dp)
+							.height(DetailDimensions.bottomPadding)
 							.fillMaxWidth()
 							.background(VegafoXColors.BackgroundDeep),
 				)

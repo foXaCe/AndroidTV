@@ -141,11 +141,6 @@ class UserPreferences(
 		var updateNotificationsEnabled = booleanPreference("update_notifications_enabled", true)
 
 		/**
-		 * Seasonal surprise effect selection (none, winter, spring, fall)
-		 */
-		var seasonalSurprise = stringPreference("seasonal_surprise", "none")
-
-		/**
 		 * Enable multi-server library aggregation
 		 * When enabled, shows libraries and content from all logged-in servers
 		 */

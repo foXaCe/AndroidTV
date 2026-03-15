@@ -167,27 +167,6 @@ val detailsBlurEntry =
 		descriptionRes = R.string.pref_details_background_blur_amount_description,
 	)
 
-val seasonalSurpriseEntry =
-	SettingsEntry(
-		preference = UserPreferences.seasonalSurprise,
-		titleRes = R.string.pref_seasonal_surprise,
-		options = listOf("auto", "none", "winter", "spring", "summer", "halloween", "fall"),
-		label = @Composable { option ->
-			stringResource(
-				when (option) {
-					"auto" -> R.string.pref_seasonal_auto
-					"none" -> R.string.pref_seasonal_none
-					"winter" -> R.string.pref_seasonal_winter
-					"spring" -> R.string.pref_seasonal_spring
-					"summer" -> R.string.pref_seasonal_summer
-					"halloween" -> R.string.pref_seasonal_halloween
-					else -> R.string.pref_seasonal_fall
-				},
-			)
-		},
-		overlineRes = R.string.pref_appearance,
-	)
-
 val themeMusicVolumeEntry =
 	SettingsEntry(
 		preference = UserSettingPreferences.themeMusicVolume,

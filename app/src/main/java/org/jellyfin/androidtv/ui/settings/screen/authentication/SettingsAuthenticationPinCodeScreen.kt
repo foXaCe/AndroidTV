@@ -25,25 +25,38 @@ import org.jellyfin.androidtv.ui.startup.PinEntryDialog
 import org.jellyfin.androidtv.util.PinCodeUtil
 import org.koin.compose.koinInject
 
+private sealed class PinDialogState {
+	data object None : PinDialogState()
+
+	data object SetPin : PinDialogState()
+
+	data class VerifyThenAction(
+		val action: (String) -> Unit,
+	) : PinDialogState()
+
+	data class VerifyThenChange(
+		val onVerified: (String) -> Unit,
+	) : PinDialogState()
+}
+
 @Composable
 fun SettingsAuthenticationPinCodeScreen() {
 	val context = LocalContext.current
 	val userRepository = koinInject<UserRepository>()
-	
-	// Get user-specific preferences
+
 	val userId = userRepository.currentUser.value?.id
 	val userSettingPreferences =
 		remember(userId) {
 			UserSettingPreferences(context, userId)
 		}
-	
+
 	var pinEnabled by remember { mutableStateOf(userSettingPreferences[UserSettingPreferences.userPinEnabled]) }
 	var hasPinSet by remember { mutableStateOf(userSettingPreferences[UserSettingPreferences.userPinHash].isNotEmpty()) }
-	
-	// Trigger recomposition after dialogs
 	var refreshTrigger by remember { mutableStateOf(0) }
-	
-	// Re-read state on refresh
+	var dialogState by remember { mutableStateOf<PinDialogState>(PinDialogState.None) }
+	// Step 2 of change: after verify, show SET dialog
+	var showSetAfterVerify by remember { mutableStateOf(false) }
+
 	if (refreshTrigger > 0) {
 		pinEnabled = userSettingPreferences[UserSettingPreferences.userPinEnabled]
 		hasPinSet = userSettingPreferences[UserSettingPreferences.userPinHash].isNotEmpty()
@@ -78,21 +91,7 @@ fun SettingsAuthenticationPinCodeScreen() {
 				headingContent = { Text(stringResource(R.string.lbl_set_pin_code)) },
 				captionContent = { Text(stringResource(R.string.lbl_set_pin_code_description)) },
 				enabled = !hasPinSet,
-				onClick = {
-					PinEntryDialog.show(
-						context = context,
-						mode = PinEntryDialog.Mode.SET,
-						onComplete = { pin ->
-							if (pin != null) {
-								val hash = PinCodeUtil.hashPin(pin)
-								userSettingPreferences[UserSettingPreferences.userPinHash] = hash
-								userSettingPreferences[UserSettingPreferences.userPinEnabled] = true
-								Toast.makeText(context, R.string.lbl_pin_code_set, Toast.LENGTH_SHORT).show()
-								refreshTrigger++
-							}
-						},
-					)
-				},
+				onClick = { dialogState = PinDialogState.SetPin },
 			)
 		}
 
@@ -102,31 +101,15 @@ fun SettingsAuthenticationPinCodeScreen() {
 				captionContent = { Text(stringResource(R.string.lbl_change_pin_code_description)) },
 				enabled = hasPinSet,
 				onClick = {
-					PinEntryDialog.show(
-						context = context,
-						mode = PinEntryDialog.Mode.VERIFY,
-						onComplete = { oldPin ->
-							if (oldPin != null) {
-								val currentHash = userSettingPreferences[UserSettingPreferences.userPinHash]
-								if (PinCodeUtil.hashPin(oldPin) == currentHash) {
-									PinEntryDialog.show(
-										context = context,
-										mode = PinEntryDialog.Mode.SET,
-										onComplete = { newPin ->
-											if (newPin != null) {
-												val hash = PinCodeUtil.hashPin(newPin)
-												userSettingPreferences[UserSettingPreferences.userPinHash] = hash
-												Toast.makeText(context, R.string.lbl_pin_code_changed, Toast.LENGTH_SHORT).show()
-												refreshTrigger++
-											}
-										},
-									)
-								} else {
-									Toast.makeText(context, R.string.lbl_pin_code_incorrect, Toast.LENGTH_SHORT).show()
-								}
+					dialogState =
+						PinDialogState.VerifyThenAction { oldPin ->
+							val currentHash = userSettingPreferences[UserSettingPreferences.userPinHash]
+							if (PinCodeUtil.hashPin(oldPin) == currentHash) {
+								showSetAfterVerify = true
+							} else {
+								Toast.makeText(context, R.string.lbl_pin_code_incorrect, Toast.LENGTH_SHORT).show()
 							}
-						},
-					)
+						}
 				},
 			)
 		}
@@ -137,25 +120,70 @@ fun SettingsAuthenticationPinCodeScreen() {
 				captionContent = { Text(stringResource(R.string.lbl_remove_pin_code_description)) },
 				enabled = hasPinSet,
 				onClick = {
-					PinEntryDialog.show(
-						context = context,
-						mode = PinEntryDialog.Mode.VERIFY,
-						onComplete = { pin ->
-							if (pin != null) {
-								val currentHash = userSettingPreferences[UserSettingPreferences.userPinHash]
-								if (PinCodeUtil.hashPin(pin) == currentHash) {
-									userSettingPreferences[UserSettingPreferences.userPinHash] = ""
-									userSettingPreferences[UserSettingPreferences.userPinEnabled] = false
-									Toast.makeText(context, R.string.lbl_pin_code_removed, Toast.LENGTH_SHORT).show()
-									refreshTrigger++
-								} else {
-									Toast.makeText(context, R.string.lbl_pin_code_incorrect, Toast.LENGTH_SHORT).show()
-								}
+					dialogState =
+						PinDialogState.VerifyThenAction { pin ->
+							val currentHash = userSettingPreferences[UserSettingPreferences.userPinHash]
+							if (PinCodeUtil.hashPin(pin) == currentHash) {
+								userSettingPreferences[UserSettingPreferences.userPinHash] = ""
+								userSettingPreferences[UserSettingPreferences.userPinEnabled] = false
+								Toast.makeText(context, R.string.lbl_pin_code_removed, Toast.LENGTH_SHORT).show()
+								refreshTrigger++
+							} else {
+								Toast.makeText(context, R.string.lbl_pin_code_incorrect, Toast.LENGTH_SHORT).show()
 							}
-						},
-					)
+						}
 				},
 			)
 		}
+	}
+
+	// ── Dialogs ──
+
+	when (val state = dialogState) {
+		is PinDialogState.SetPin -> {
+			PinEntryDialog.SetPinFlow(
+				context = context,
+				onComplete = { pin ->
+					if (pin != null) {
+						val hash = PinCodeUtil.hashPin(pin)
+						userSettingPreferences[UserSettingPreferences.userPinHash] = hash
+						userSettingPreferences[UserSettingPreferences.userPinEnabled] = true
+						Toast.makeText(context, R.string.lbl_pin_code_set, Toast.LENGTH_SHORT).show()
+						refreshTrigger++
+					}
+					dialogState = PinDialogState.None
+				},
+				onDismiss = { dialogState = PinDialogState.None },
+			)
+		}
+		is PinDialogState.VerifyThenAction -> {
+			PinEntryDialog.Compose(
+				title = stringResource(R.string.lbl_enter_pin),
+				onPinEntered = { pin ->
+					dialogState = PinDialogState.None
+					state.action(pin)
+				},
+				onDismiss = { dialogState = PinDialogState.None },
+			)
+		}
+		is PinDialogState.None -> {}
+		else -> {}
+	}
+
+	// Change PIN: step 2 after successful verify
+	if (showSetAfterVerify) {
+		PinEntryDialog.SetPinFlow(
+			context = context,
+			onComplete = { newPin ->
+				if (newPin != null) {
+					val hash = PinCodeUtil.hashPin(newPin)
+					userSettingPreferences[UserSettingPreferences.userPinHash] = hash
+					Toast.makeText(context, R.string.lbl_pin_code_changed, Toast.LENGTH_SHORT).show()
+					refreshTrigger++
+				}
+				showSetAfterVerify = false
+			},
+			onDismiss = { showSetAfterVerify = false },
+		)
 	}
 }

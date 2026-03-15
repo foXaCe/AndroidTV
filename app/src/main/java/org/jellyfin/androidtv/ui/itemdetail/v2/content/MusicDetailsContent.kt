@@ -30,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
@@ -47,7 +46,9 @@ import kotlinx.coroutines.delay
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.theme.DetailDimensions
 import org.jellyfin.androidtv.ui.base.theme.HeroDimensions
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.browsing.composable.inforow.InfoRowMultipleRatings
 import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
 import org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsUiState
@@ -158,8 +159,8 @@ fun MusicDetailsContent(
 										androidx.compose.ui.graphics.Brush.verticalGradient(
 											colors =
 												listOf(
-													Color.Black.copy(alpha = 0.3f),
-													Color.Black.copy(alpha = 0.6f),
+													VegafoXColors.Background.copy(alpha = 0.3f),
+													VegafoXColors.Background.copy(alpha = 0.7f),
 												),
 										),
 								),
@@ -252,7 +253,13 @@ fun MusicDetailsContent(
 
 		LazyColumn(
 			state = listState,
-			contentPadding = PaddingValues(top = HeroDimensions.contentTopPadding, start = 48.dp, end = 48.dp, bottom = 48.dp),
+			contentPadding =
+				PaddingValues(
+					top = HeroDimensions.contentTopPadding,
+					start = DetailDimensions.contentPaddingHorizontal,
+					end = DetailDimensions.contentPaddingHorizontal,
+					bottom = DetailDimensions.contentPaddingHorizontal,
+				),
 			modifier = Modifier.fillMaxSize(),
 		) {
 			// ---- Header + Action buttons ----

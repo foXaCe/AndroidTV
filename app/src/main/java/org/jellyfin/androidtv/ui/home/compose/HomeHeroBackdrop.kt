@@ -1,5 +1,6 @@
 package org.jellyfin.androidtv.ui.home.compose
 
+import android.content.Context
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Build
@@ -13,7 +14,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,10 +23,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -36,14 +34,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -54,15 +58,17 @@ import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.home.mediabar.ExoPlayerTrailerView
 import org.jellyfin.androidtv.ui.home.mediabar.SponsorBlockApi
 import org.jellyfin.androidtv.ui.home.mediabar.YouTubeStreamResolver
-import org.jellyfin.androidtv.ui.itemdetail.v2.shared.formatDuration
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.getBackdropUrl
+import org.jellyfin.androidtv.ui.itemdetail.v2.shared.translateGenreUpper
+import org.jellyfin.androidtv.ui.shared.components.MediaMetadataBadges
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.BaseItemKind
-import org.jellyfin.sdk.model.api.MediaStreamType
 import timber.log.Timber
 
 private val EaseOutCubic = CubicBezierEasing(0.33f, 1f, 0.68f, 1f)
+private val EaseInOutCubic = CubicBezierEasing(0.65f, 0f, 0.35f, 1f)
+private val EaseInCubic = CubicBezierEasing(0.32f, 0f, 0.67f, 0f)
 
 /**
  * Full-screen hero backdrop that changes with D-pad navigation.
@@ -100,6 +106,9 @@ fun HomeHeroBackdrop(
 	)
 
 	// -- Trailer state --
+	Timber.d(
+		"TRAILER_DBG: HomeHeroBackdrop recompose → isPlaying=${trailerState.isPlaying}, isCountingDown=${trailerState.isCountingDown}, streamInfo=${trailerState.streamInfo != null}",
+	)
 	val shouldPlayTrailer = trailerState.isPlaying && trailerState.streamInfo != null
 	var videoReady by remember { mutableStateOf(false) }
 
@@ -117,7 +126,7 @@ fun HomeHeroBackdrop(
 			showTrailerView = true
 		} else if (showTrailerView) {
 			// Wait for fade-out animation before removing from composition
-			delay(TRAILER_CROSSFADE_OUT_MS.toLong() + 50)
+			delay(TRAILER_FADE_OUT_MS.toLong() + 50)
 			showTrailerView = false
 			videoReady = false
 		}
@@ -163,20 +172,110 @@ fun HomeHeroBackdrop(
 			}
 		}
 
-		// Layer 2: Trailer video player (between backdrop image and gradients)
+		// Layer 2: Trailer video player (top-end, faded into backdrop)
 		if (showTrailerView && cachedStreamInfo != null) {
-			ExoPlayerTrailerView(
-				streamInfo = cachedStreamInfo!!,
-				startSeconds = cachedStartSeconds,
-				segments = cachedSegments,
-				muted = trailerState.isMuted,
-				isVisible = shouldPlayTrailer && videoReady,
-				onVideoReady = { videoReady = true },
-				onVideoEnded = onTrailerEnded,
-				crossfadeInMs = TRAILER_CROSSFADE_IN_MS,
-				crossfadeOutMs = TRAILER_CROSSFADE_OUT_MS,
-				modifier = Modifier.fillMaxSize(),
+			val videoAlpha by animateFloatAsState(
+				targetValue = if (shouldPlayTrailer && videoReady) 1f else 0f,
+				animationSpec =
+					if (shouldPlayTrailer && videoReady) {
+						tween(durationMillis = TRAILER_FADE_IN_MS, easing = EaseInOutCubic)
+					} else {
+						tween(durationMillis = TRAILER_FADE_OUT_MS, easing = EaseInCubic)
+					},
+				label = "videoAlpha",
 			)
+
+			Box(
+				modifier =
+					Modifier
+						.align(Alignment.TopEnd)
+						.width(380.dp)
+						.height(214.dp)
+						.graphicsLayer {
+							alpha = videoAlpha
+							compositingStrategy = CompositingStrategy.Offscreen
+						}.drawWithContent {
+							drawContent()
+							// Left edge — ease-in curve (slow start, fast finish)
+							drawRect(
+								brush =
+									Brush.horizontalGradient(
+										colorStops =
+											arrayOf(
+												0.00f to Color.Transparent,
+												0.25f to Color(0x08000000),
+												0.50f to Color(0x30000000),
+												0.75f to Color(0x80000000),
+												0.90f to Color(0xD0000000),
+												1.00f to Color.Black,
+											),
+										startX = 0f,
+										endX = size.width * 0.55f,
+									),
+								blendMode = BlendMode.DstIn,
+							)
+							// Top edge — ease-in curve
+							drawRect(
+								brush =
+									Brush.verticalGradient(
+										colorStops =
+											arrayOf(
+												0.00f to Color.Transparent,
+												0.30f to Color(0x10000000),
+												0.60f to Color(0x50000000),
+												0.85f to Color(0xC0000000),
+												1.00f to Color.Black,
+											),
+										startY = 0f,
+										endY = size.height * 0.4f,
+									),
+								blendMode = BlendMode.DstIn,
+							)
+							// Bottom edge — ease-out curve (inverted)
+							drawRect(
+								brush =
+									Brush.verticalGradient(
+										colorStops =
+											arrayOf(
+												0.00f to Color.Black,
+												0.15f to Color(0xC0000000),
+												0.40f to Color(0x50000000),
+												0.70f to Color(0x10000000),
+												1.00f to Color.Transparent,
+											),
+										startY = size.height * 0.55f,
+										endY = size.height,
+									),
+								blendMode = BlendMode.DstIn,
+							)
+							// Right edge — ease-out curve
+							drawRect(
+								brush =
+									Brush.horizontalGradient(
+										colorStops =
+											arrayOf(
+												0.00f to Color.Black,
+												0.20f to Color(0xC0000000),
+												0.50f to Color(0x50000000),
+												0.80f to Color(0x10000000),
+												1.00f to Color.Transparent,
+											),
+										startX = size.width * 0.75f,
+										endX = size.width,
+									),
+								blendMode = BlendMode.DstIn,
+							)
+						},
+			) {
+				ExoPlayerTrailerView(
+					streamInfo = cachedStreamInfo!!,
+					startSeconds = cachedStartSeconds,
+					segments = cachedSegments,
+					onVideoReady = { videoReady = true },
+					onVideoEnded = onTrailerEnded,
+					modifier = Modifier.fillMaxSize(),
+				)
+			}
 		}
 
 		// Layer 3: Vertical gradient: transparent at top -> background at bottom
@@ -275,50 +374,59 @@ private fun HeroInfoContent(item: BaseItemDto) {
 	Column(
 		modifier = Modifier.widthIn(max = 600.dp),
 	) {
-		// Genre / type tag line
-		val tagLine = buildHeroTagLine(item)
-		Timber.d(
-			"HeroLine1 | kind=${item.type} | name=${item.name} | genre=${item.genres?.firstOrNull()} | seriesName=${item.seriesName} | season=${item.parentIndexNumber} | episode=${item.indexNumber} | line1computed=$tagLine",
-		)
-		if (tagLine.isNotEmpty()) {
+		// Line 1: type (blue) + genres (orange)
+		val context = androidx.compose.ui.platform.LocalContext.current
+		val typeLabel = getHeroTypeLabel(item)
+		val genreLabels = getHeroGenres(context, item)
+		if (typeLabel != null || genreLabels.isNotEmpty()) {
 			Row(
 				verticalAlignment = Alignment.CenterVertically,
-				horizontalArrangement = Arrangement.spacedBy(8.dp),
+				modifier = Modifier.widthIn(max = 600.dp),
 			) {
-				Box(
-					modifier =
-						Modifier
-							.width(20.dp)
-							.height(2.dp)
-							.background(VegafoXColors.OrangePrimary),
-				)
+				val parts = buildAnnotatedHeroLine1(typeLabel, genreLabels)
 				Text(
-					text = tagLine,
+					text = parts,
 					fontSize = 11.sp,
-					fontWeight = FontWeight.SemiBold,
-					color = VegafoXColors.OrangePrimary,
+					fontWeight = FontWeight.Bold,
 					letterSpacing = 1.sp,
+					maxLines = 1,
+					overflow = TextOverflow.Ellipsis,
 				)
 			}
 			Spacer(Modifier.height(6.dp))
 		}
 
-		// Title — BebasNeue for cinematic look
+		// Line 2: title only
 		Text(
-			text = item.name.orEmpty(),
+			text = getHeroTitle(item),
 			fontSize = 32.sp,
-			fontWeight = FontWeight.Normal,
 			fontFamily = BebasNeue,
+			fontWeight = FontWeight.Normal,
 			color = VegafoXColors.TextPrimary,
-			maxLines = 2,
-			overflow = TextOverflow.Ellipsis,
 			letterSpacing = 1.sp,
+			maxLines = 1,
+			overflow = TextOverflow.Ellipsis,
 		)
+
+		// Line 3: season/episode info (if applicable)
+		val heroSuffix = getHeroTitleSuffix(item)
+		if (heroSuffix != null) {
+			Spacer(Modifier.height(2.dp))
+			Text(
+				text = heroSuffix,
+				fontSize = 20.sp,
+				fontFamily = BebasNeue,
+				fontWeight = FontWeight.Normal,
+				color = VegafoXColors.TextSecondary,
+				letterSpacing = 1.sp,
+				maxLines = 1,
+			)
+		}
 
 		Spacer(Modifier.height(8.dp))
 
-		// Pills row: year, duration, rating, officialRating, resolution
-		HeroPillsRow(item)
+		// Metadata badges: year, duration, rating, RT, quality
+		MediaMetadataBadges(item = item)
 
 		Spacer(Modifier.height(8.dp))
 
@@ -339,155 +447,93 @@ private fun HeroInfoContent(item: BaseItemDto) {
 	}
 }
 
-@Composable
-private fun HeroPillsRow(item: BaseItemDto) {
-	val pills =
-		buildList {
-			// Year
-			item.productionYear?.let { add(PillData(it.toString())) }
-
-			// Duration
-			item.runTimeTicks?.let { ticks ->
-				if (ticks > 0) add(PillData(formatDuration(ticks)))
-			}
-
-			// Community rating (star icon)
-			item.communityRating?.let { rating ->
-				if (rating > 0f) {
-					val formatted =
-						if (rating == rating.toLong().toFloat()) {
-							rating.toLong().toString()
-						} else {
-							String.format("%.1f", rating).replace(",", ".")
-						}
-					add(PillData("\u2605 $formatted", highlight = true))
-				}
-			}
-
-			// Resolution
-			getResolutionLabel(item)?.let { add(PillData(it)) }
-		}
-
-	if (pills.isEmpty()) return
-
-	Row(
-		horizontalArrangement = Arrangement.spacedBy(8.dp),
-		verticalAlignment = Alignment.CenterVertically,
-	) {
-		pills.forEach { pill ->
-			HeroPill(text = pill.text, highlight = pill.highlight)
-		}
-	}
-}
-
-private data class PillData(
-	val text: String,
-	val highlight: Boolean = false,
-)
-
-@Composable
-private fun HeroPill(
-	text: String,
-	highlight: Boolean = false,
-) {
-	val bgColor = if (highlight) VegafoXColors.OrangeSoft else VegafoXColors.Surface.copy(alpha = 0.4f)
-	val borderColor = if (highlight) VegafoXColors.OrangeBorder else VegafoXColors.Divider
-	val textColor = if (highlight) VegafoXColors.OrangePrimary else VegafoXColors.TextSecondary
-
-	Box(
-		modifier =
-			Modifier
-				.clip(RoundedCornerShape(4.dp))
-				.background(bgColor)
-				.padding(horizontal = 8.dp, vertical = 3.dp),
-	) {
-		Text(
-			text = text,
-			fontSize = 12.sp,
-			fontWeight = FontWeight.Medium,
-			color = textColor,
-		)
-	}
-}
-
 // -- Helpers --
 
-private fun buildHeroTagLine(item: BaseItemDto): String {
-	val genre = (item.genres?.firstOrNull() ?: item.genreItems?.firstOrNull()?.name)?.uppercase()
-	val parts = mutableListOf<String>()
-
+private fun getHeroTitle(item: BaseItemDto): String =
 	when (item.type) {
-		BaseItemKind.MOVIE -> {
-			parts.add("FILM")
-			genre?.let { parts.add(it) }
-		}
-		BaseItemKind.SERIES -> {
-			parts.add("SÉRIE")
-			genre?.let { parts.add(it) }
-		}
+		BaseItemKind.EPISODE -> item.seriesName ?: item.name.orEmpty()
+		else -> item.name.orEmpty()
+	}
+
+private fun getHeroTitleSuffix(item: BaseItemDto): String? =
+	when (item.type) {
 		BaseItemKind.EPISODE -> {
-			val seriesTitle =
-				item.seriesName
-					?.uppercase()
-					?: "ÉPISODE"
-			parts.add(seriesTitle)
 			val s = item.parentIndexNumber
 			val e = item.indexNumber
-			if (s != null && e != null) parts.add("S${s}E$e")
-		}
-		BaseItemKind.PROGRAM -> {
-			val seriesTitle =
-				item.seriesName
-					?.uppercase()
-			if (seriesTitle != null) {
-				parts.add(seriesTitle)
-				val s = item.parentIndexNumber
-				val e = item.indexNumber
-				if (s != null && e != null) parts.add("S${s}E$e")
+			if (s != null || e != null) {
+				val parts = mutableListOf<String>()
+				if (s != null) parts.add("SAISON $s")
+				if (e != null) parts.add("ÉPISODE $e")
+				parts.joinToString("  \u00B7  ")
 			} else {
-				parts.add("TV EN DIRECT")
-				genre?.let { parts.add(it) }
+				null
 			}
 		}
-		BaseItemKind.TV_CHANNEL -> {
-			parts.add("TV EN DIRECT")
-		}
-		BaseItemKind.PLAYLIST -> {
-			// Hidden — no tag line
-		}
-		BaseItemKind.MUSIC_ALBUM -> {
-			parts.add("MUSIQUE")
-		}
-		else -> {
-			parts.add(item.type?.name?.uppercase() ?: "")
-			genre?.let { parts.add(it) }
-		}
-	}
-
-	return parts.filter { it.isNotEmpty() }.joinToString("  \u2022  ")
-}
-
-private fun getResolutionLabel(item: BaseItemDto): String? {
-	val videoStream =
-		item.mediaSources
-			?.firstOrNull()
-			?.mediaStreams
-			?.firstOrNull { it.type == MediaStreamType.VIDEO }
-			?: return null
-
-	val width = videoStream.width ?: return null
-	return when {
-		width >= 3800 -> "4K"
-		width >= 1900 -> "1080p"
-		width >= 1260 -> "720p"
-		width >= 700 -> "480p"
 		else -> null
 	}
+
+private fun getHeroTypeLabel(item: BaseItemDto): String? =
+	when (item.type) {
+		BaseItemKind.MOVIE -> "FILM"
+		BaseItemKind.SERIES -> "SÉRIE"
+		BaseItemKind.EPISODE -> "SÉRIE"
+		BaseItemKind.SEASON -> "SAISON"
+		BaseItemKind.BOX_SET -> "COLLECTION"
+		BaseItemKind.MUSIC_ALBUM -> "ALBUM"
+		BaseItemKind.MUSIC_ARTIST -> "ARTISTE"
+		BaseItemKind.AUDIO -> "MUSIQUE"
+		BaseItemKind.TV_CHANNEL -> "TV EN DIRECT"
+		BaseItemKind.PROGRAM -> "ÉMISSION"
+		BaseItemKind.RECORDING -> "ENREGISTREMENT"
+		BaseItemKind.TRAILER -> "BANDE-ANNONCE"
+		BaseItemKind.MUSIC_VIDEO -> "CLIP"
+		BaseItemKind.BOOK -> "LIVRE"
+		BaseItemKind.PHOTO -> "PHOTO"
+		BaseItemKind.PHOTO_ALBUM -> "ALBUM PHOTO"
+		else -> null
+	}
+
+private fun getHeroGenres(
+	context: Context,
+	item: BaseItemDto,
+): List<String> {
+	val genres =
+		item.genres?.takeIf { it.isNotEmpty() }
+			?: item.genreItems?.mapNotNull { it.name }
+			?: return emptyList()
+	return genres.take(2).map { translateGenreUpper(context, it) }
 }
 
+private fun buildAnnotatedHeroLine1(
+	typeLabel: String?,
+	genres: List<String>,
+): AnnotatedString =
+	buildAnnotatedString {
+		if (typeLabel != null) {
+			withStyle(SpanStyle(color = VegafoXColors.BlueAccent)) {
+				append(typeLabel)
+			}
+			if (genres.isNotEmpty()) {
+				withStyle(SpanStyle(color = VegafoXColors.TextSecondary)) {
+					append("  \u00B7  ")
+				}
+			}
+		}
+		genres.forEachIndexed { index, genre ->
+			withStyle(SpanStyle(color = VegafoXColors.OrangePrimary)) {
+				append(genre)
+			}
+			if (index < genres.lastIndex) {
+				withStyle(SpanStyle(color = VegafoXColors.TextSecondary)) {
+					append("  \u00B7  ")
+				}
+			}
+		}
+	}
+
 private const val CROSSFADE_DURATION_MS = 400
-private const val BACKDROP_ALPHA = 0.50f
-private const val BLUR_RADIUS = 3f
-private const val TRAILER_CROSSFADE_IN_MS = 800
-private const val TRAILER_CROSSFADE_OUT_MS = 400
+private const val BACKDROP_ALPHA = 0.60f
+private const val BLUR_RADIUS = 1f
+private const val TRAILER_FADE_IN_MS = 600
+private const val TRAILER_FADE_OUT_MS = 300
 private const val TRAILER_COUNTDOWN_MS = 5_000

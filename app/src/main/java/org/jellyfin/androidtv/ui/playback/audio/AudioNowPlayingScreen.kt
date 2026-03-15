@@ -213,8 +213,8 @@ private fun ArtworkPanel(modifier: Modifier = Modifier) {
 							.aspectRatio(1f)
 							.shadow(24.dp, ArtworkShape)
 							.clip(ArtworkShape)
-							.background(Color.Black)
-							.border(1.dp, Color.White.copy(alpha = 0.08f), ArtworkShape),
+							.background(VegafoXColors.Background)
+							.border(1.dp, VegafoXColors.Divider, ArtworkShape),
 				) {
 					AsyncImage(
 						url = currentCover.getUrl(api),
@@ -245,7 +245,7 @@ private fun ArtworkPanel(modifier: Modifier = Modifier) {
 				duration = playbackManager.state.positionInfo.duration,
 				paused = playState != PlayState.PLAYING,
 				fontSize = JellyfinTheme.typography.bodySmall.fontSize,
-				color = Color.White,
+				color = VegafoXColors.TextPrimary,
 				modifier =
 					Modifier
 						.fillMaxSize()
@@ -338,11 +338,11 @@ private fun AudioControlsRow(
 			colors =
 				ButtonDefaults.colors(
 					containerColor = VegafoXColors.OrangePrimary,
-					contentColor = Color.White,
+					contentColor = VegafoXColors.TextPrimary,
 					focusedContainerColor = VegafoXColors.OrangeLight,
-					focusedContentColor = Color.White,
+					focusedContentColor = VegafoXColors.TextPrimary,
 					disabledContainerColor = VegafoXColors.OrangePrimary.copy(alpha = 0.38f),
-					disabledContentColor = Color.White.copy(alpha = 0.38f),
+					disabledContentColor = VegafoXColors.TextDisabled,
 				),
 			contentPadding = PaddingValues(0.dp),
 			modifier =
@@ -368,7 +368,7 @@ private fun AudioControlsRow(
 					stringResource(
 						if (uiState.isPlaying) R.string.lbl_pause else R.string.lbl_play,
 					),
-				tint = Color.White,
+				tint = VegafoXColors.TextPrimary,
 				modifier = Modifier.size(36.dp),
 			)
 		}

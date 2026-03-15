@@ -105,7 +105,7 @@ private fun BaseItemDto.slimForCache(): BaseItemDto =
 		mediaStreams = null,
 		chapters = null,
 		people = null,
-		remoteTrailers = null,
+		// Keep remoteTrailers for hero trailer auto-play
 		tags = null,
 		studios = null,
 		genreItems = null,

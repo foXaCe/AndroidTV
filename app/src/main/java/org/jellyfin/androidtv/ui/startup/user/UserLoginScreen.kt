@@ -57,7 +57,7 @@ private val IconVisibility: ImageVector by lazy {
 			viewportWidth = 24f,
 			viewportHeight = 24f,
 		).apply {
-			path(fill = SolidColor(Color.White)) {
+			path(fill = SolidColor(VegafoXColors.TextPrimary)) {
 				moveTo(12f, 4.5f)
 				curveTo(7f, 4.5f, 2.73f, 7.61f, 1f, 12f)
 				curveTo(2.73f, 16.39f, 7f, 19.5f, 12f, 19.5f)
@@ -90,7 +90,7 @@ private val IconVisibilityOff: ImageVector by lazy {
 			viewportWidth = 24f,
 			viewportHeight = 24f,
 		).apply {
-			path(fill = SolidColor(Color.White)) {
+			path(fill = SolidColor(VegafoXColors.TextPrimary)) {
 				moveTo(12f, 7f)
 				curveTo(14.76f, 7f, 17f, 9.24f, 17f, 12f)
 				curveTo(17f, 12.65f, 16.87f, 13.26f, 16.64f, 13.83f)

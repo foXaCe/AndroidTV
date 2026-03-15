@@ -46,15 +46,13 @@ import org.jellyfin.androidtv.ui.base.components.VegafoXButton
 import org.jellyfin.androidtv.ui.base.components.VegafoXButtonVariant
 import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.DetailDimensions
 import org.jellyfin.androidtv.ui.base.theme.HeroDimensions
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
-import org.jellyfin.androidtv.ui.browsing.composable.inforow.InfoRowMultipleRatings
 import org.jellyfin.androidtv.ui.itemdetail.v2.CinemaActionChip
 import org.jellyfin.androidtv.ui.itemdetail.v2.CinemaGenreTag
-import org.jellyfin.androidtv.ui.itemdetail.v2.CinemaPill
 import org.jellyfin.androidtv.ui.itemdetail.v2.CinemaPosterColumn
 import org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsUiState
-import org.jellyfin.androidtv.ui.itemdetail.v2.MediaBadge
 import org.jellyfin.androidtv.ui.itemdetail.v2.TrackSelectorDialog
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailActionCallbacks
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailCastSection
@@ -63,6 +61,8 @@ import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailEpisodesHorizontalSe
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailSectionWithCards
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.formatDuration
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.getPosterUrl
+import org.jellyfin.androidtv.ui.itemdetail.v2.shared.translateGenre
+import org.jellyfin.androidtv.ui.shared.components.MediaMetadataBadges
 import org.jellyfin.androidtv.util.sdk.compat.canResume
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.model.api.BaseItemKind
@@ -96,6 +96,7 @@ fun MovieDetailsContent(
 
 	val isEpisode = item.type == BaseItemKind.EPISODE
 	val isBoxSet = item.type == BaseItemKind.BOX_SET
+	val playButtonFocusRequester = remember { FocusRequester() }
 
 	val posterUrl = getPosterUrl(item, api)
 
@@ -106,7 +107,7 @@ fun MovieDetailsContent(
 	val watchedMinutes = (playbackPositionTicks / 10_000_000 / 60).toInt()
 
 	// Genre tag
-	val genreTag = buildGenreTag(item)
+	val genreTag = buildGenreTag(context, item)
 
 	// Media streams for action chips
 	val firstSource = item.mediaSources?.firstOrNull()
@@ -132,8 +133,12 @@ fun MovieDetailsContent(
 		showContent = true
 		kotlinx.coroutines.delay(500)
 		try {
-			titleFocusRequester.requestFocus()
+			playButtonFocusRequester.requestFocus()
 		} catch (_: Exception) {
+			try {
+				titleFocusRequester.requestFocus()
+			} catch (_: Exception) {
+			}
 		}
 	}
 
@@ -178,7 +183,7 @@ fun MovieDetailsContent(
 									.fillMaxSize()
 									.padding(horizontal = HeroDimensions.horizontalPadding),
 							verticalAlignment = Alignment.CenterVertically,
-							horizontalArrangement = Arrangement.spacedBy(48.dp),
+							horizontalArrangement = Arrangement.spacedBy(DetailDimensions.actionsSpacing),
 						) {
 							// ─── Left column ───
 							Column(
@@ -228,13 +233,8 @@ fun MovieDetailsContent(
 
 								Spacer(modifier = Modifier.height(16.dp))
 
-								// Pills row
-								CinemaPillsRow(item = item, badges = uiState.badges)
-
-								Spacer(modifier = Modifier.height(16.dp))
-
-								// Ratings
-								InfoRowMultipleRatings(item = item)
+								// Metadata badges (year, duration, rating, RT, quality)
+								MediaMetadataBadges(item = item)
 
 								Spacer(modifier = Modifier.height(16.dp))
 
@@ -268,6 +268,7 @@ fun MovieDetailsContent(
 											variant = VegafoXButtonVariant.Primary,
 											icon = VegafoXIcons.Play,
 											iconEnd = false,
+											modifier = Modifier.focusRequester(playButtonFocusRequester),
 										)
 										VegafoXButton(
 											text = stringResource(R.string.lbl_restart),
@@ -284,6 +285,7 @@ fun MovieDetailsContent(
 											variant = VegafoXButtonVariant.Primary,
 											icon = VegafoXIcons.Play,
 											iconEnd = false,
+											modifier = Modifier.focusRequester(playButtonFocusRequester),
 										)
 									}
 								}
@@ -389,7 +391,7 @@ fun MovieDetailsContent(
 					modifier =
 						Modifier
 							.fillMaxWidth()
-							.height(40.dp)
+							.height(DetailDimensions.gradientHeight)
 							.background(
 								Brush.verticalGradient(
 									colors = listOf(Color.Transparent, VegafoXColors.BackgroundDeep),
@@ -406,7 +408,7 @@ fun MovieDetailsContent(
 							Modifier
 								.fillMaxWidth()
 								.background(VegafoXColors.BackgroundDeep)
-								.padding(horizontal = 48.dp)
+								.padding(horizontal = DetailDimensions.contentPaddingHorizontal)
 								.padding(top = 16.dp),
 					) {
 						DetailEpisodesHorizontalSection(
@@ -431,7 +433,7 @@ fun MovieDetailsContent(
 							Modifier
 								.fillMaxWidth()
 								.background(VegafoXColors.BackgroundDeep)
-								.padding(horizontal = 48.dp)
+								.padding(horizontal = DetailDimensions.contentPaddingHorizontal)
 								.padding(top = 16.dp),
 					) {
 						DetailCollectionItemsGrid(
@@ -451,7 +453,7 @@ fun MovieDetailsContent(
 							Modifier
 								.fillMaxWidth()
 								.background(VegafoXColors.BackgroundDeep)
-								.padding(horizontal = 48.dp)
+								.padding(horizontal = DetailDimensions.contentPaddingHorizontal)
 								.padding(top = 24.dp),
 					) {
 						DetailCastSection(uiState.cast, api, onNavigateToItem)
@@ -467,7 +469,7 @@ fun MovieDetailsContent(
 							Modifier
 								.fillMaxWidth()
 								.background(VegafoXColors.BackgroundDeep)
-								.padding(horizontal = 48.dp)
+								.padding(horizontal = DetailDimensions.contentPaddingHorizontal)
 								.padding(top = 24.dp),
 					) {
 						DetailSectionWithCards(
@@ -485,7 +487,7 @@ fun MovieDetailsContent(
 				Spacer(
 					modifier =
 						Modifier
-							.height(80.dp)
+							.height(DetailDimensions.bottomPadding)
 							.fillMaxWidth()
 							.background(VegafoXColors.BackgroundDeep),
 				)
@@ -617,52 +619,24 @@ fun MovieDetailsContent(
 	}
 }
 
-// ─── Helper composables ───
+// ─── Helpers ───
 
-@Composable
-private fun CinemaPillsRow(
+private fun buildGenreTag(
+	context: android.content.Context,
 	item: org.jellyfin.sdk.model.api.BaseItemDto,
-	badges: List<MediaBadge>,
-) {
-	Row(
-		horizontalArrangement = Arrangement.spacedBy(8.dp),
-		modifier = Modifier.fillMaxWidth(),
-	) {
-		// Year
-		item.productionYear?.let { year ->
-			CinemaPill(text = year.toString())
-		}
-
-		// Duration
-		item.runTimeTicks?.let { ticks ->
-			CinemaPill(text = formatDuration(ticks))
-		}
-
-		// Media badges with type-based colors
-		badges.forEach { badge ->
-			val (borderColor, textColor) =
-				when (badge.type) {
-					"badge4k" -> VegafoXColors.OrangePrimary to VegafoXColors.OrangePrimary
-					"badgeHdr", "badgeDv" -> Color(0xFFFFD700) to Color(0xFFFFD700)
-					"badgeHd" -> VegafoXColors.TextHint to VegafoXColors.TextSecondary
-					else -> VegafoXColors.Divider to VegafoXColors.TextHint
-				}
-			CinemaPill(
-				text = badge.label,
-				borderColor = borderColor,
-				textColor = textColor,
-			)
-		}
-	}
-}
-
-private fun buildGenreTag(item: org.jellyfin.sdk.model.api.BaseItemDto): String {
+): String {
 	val type =
 		when (item.type) {
 			BaseItemKind.MOVIE -> "FILM"
+			BaseItemKind.EPISODE -> "S\u00C9RIE"
 			BaseItemKind.SERIES -> "S\u00C9RIE"
+			BaseItemKind.RECORDING -> "ENREGISTREMENT"
+			BaseItemKind.TRAILER -> "BANDE-ANNONCE"
+			BaseItemKind.MUSIC_VIDEO -> "CLIP"
+			BaseItemKind.BOX_SET -> "COLLECTION"
 			else -> null
 		}
-	val genre = item.genres?.firstOrNull()
-	return listOfNotNull(type, genre?.uppercase()).joinToString("  \u2022  ")
+	val genres = item.genres?.take(2)?.map { translateGenre(context, it).uppercase() }
+	val parts = listOfNotNull(type) + (genres ?: emptyList())
+	return parts.joinToString("  \u2022  ")
 }

@@ -14,6 +14,20 @@ ij_kotlin_name_count_to_use_star_import = 1000
 ij_kotlin_name_count_to_use_star_import_for_members = 1000
 ij_kotlin_packages_to_use_import_on_demand = unset
 ktlint_standard_no-wildcard-imports = enabled
+# Compose functions use PascalCase — disable function-naming rule
+ktlint_standard_function-naming = disabled
+# Multi-declaration files and extension files don't follow PascalCase naming
+ktlint_standard_filename = disabled
+# Backing properties are valid Kotlin patterns
+ktlint_standard_backing-property-naming = disabled
+# Existing KDoc/comment patterns predate this rule
+ktlint_standard_no-consecutive-comments = disabled
+# Const-like properties use camelCase in this project
+ktlint_standard_property-naming = disabled
+# Comments in if-else blocks are valid
+ktlint_standard_if-else-wrapping = disabled
+# Block comments in code are valid patterns
+ktlint_standard_comment-wrapping = disabled
 
 [*.md]
 trim_trailing_whitespace = false

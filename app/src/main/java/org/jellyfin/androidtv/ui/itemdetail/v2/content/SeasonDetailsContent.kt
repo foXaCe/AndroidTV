@@ -44,6 +44,7 @@ import org.jellyfin.androidtv.ui.base.components.VegafoXButton
 import org.jellyfin.androidtv.ui.base.components.VegafoXButtonVariant
 import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.DetailDimensions
 import org.jellyfin.androidtv.ui.base.theme.HeroDimensions
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.itemdetail.v2.CinemaActionChip
@@ -122,7 +123,7 @@ fun SeasonDetailsContent(
 									.fillMaxSize()
 									.padding(horizontal = HeroDimensions.horizontalPadding),
 							verticalAlignment = Alignment.CenterVertically,
-							horizontalArrangement = Arrangement.spacedBy(48.dp),
+							horizontalArrangement = Arrangement.spacedBy(DetailDimensions.actionsSpacing),
 						) {
 							// ─── Left column ───
 							Column(
@@ -257,7 +258,7 @@ fun SeasonDetailsContent(
 					modifier =
 						Modifier
 							.fillMaxWidth()
-							.height(40.dp)
+							.height(DetailDimensions.gradientHeight)
 							.background(
 								Brush.verticalGradient(
 									colors = listOf(Color.Transparent, VegafoXColors.BackgroundDeep),
@@ -274,7 +275,7 @@ fun SeasonDetailsContent(
 							Modifier
 								.fillMaxWidth()
 								.background(VegafoXColors.BackgroundDeep)
-								.padding(horizontal = 48.dp)
+								.padding(horizontal = DetailDimensions.contentPaddingHorizontal)
 								.padding(top = 16.dp),
 					) {
 						DetailEpisodesHorizontalSection(
@@ -296,7 +297,7 @@ fun SeasonDetailsContent(
 				Spacer(
 					modifier =
 						Modifier
-							.height(80.dp)
+							.height(DetailDimensions.bottomPadding)
 							.fillMaxWidth()
 							.background(VegafoXColors.BackgroundDeep),
 				)

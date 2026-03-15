@@ -28,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
@@ -43,7 +42,9 @@ import kotlinx.coroutines.delay
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.theme.DetailDimensions
 import org.jellyfin.androidtv.ui.base.theme.HeroDimensions
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.composable.rememberErrorPlaceholder
 import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
 import org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsUiState
@@ -119,8 +120,8 @@ fun PersonDetailsContent(
 										Brush.verticalGradient(
 											colors =
 												listOf(
-													Color.Black.copy(alpha = 0.3f),
-													Color.Black.copy(alpha = 0.6f),
+													VegafoXColors.Background.copy(alpha = 0.3f),
+													VegafoXColors.Background.copy(alpha = 0.7f),
 												),
 										),
 								),
@@ -149,7 +150,13 @@ fun PersonDetailsContent(
 		LazyColumn(
 			state = listState,
 			modifier = Modifier.fillMaxSize(),
-			contentPadding = PaddingValues(top = HeroDimensions.contentTopPadding, start = 48.dp, end = 48.dp, bottom = 80.dp),
+			contentPadding =
+				PaddingValues(
+					top = HeroDimensions.contentTopPadding,
+					start = DetailDimensions.contentPaddingHorizontal,
+					end = DetailDimensions.contentPaddingHorizontal,
+					bottom = DetailDimensions.bottomPadding,
+				),
 		) {
 			item {
 				Box(

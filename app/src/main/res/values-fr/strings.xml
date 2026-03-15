@@ -801,16 +801,6 @@
     <string name="pref_parental_controls_category_info">Informations</string>
     <string name="pref_parental_controls_info_description">Les classifications sélectionnées seront masquées des lignes d\'accueil, bibliothèques, recherche et barre média sur tous les serveurs</string>
 
-    <!-- Thème saisonnier -->
-    <string name="pref_seasonal_surprise">Thème saisonnier</string>
-<string name="pref_seasonal_auto">Automatique</string>
-    <string name="pref_seasonal_none">Aucun</string>
-    <string name="pref_seasonal_winter">Hiver</string>
-    <string name="pref_seasonal_spring">Printemps</string>
-    <string name="pref_seasonal_summer">Été</string>
-    <string name="pref_seasonal_halloween">Halloween</string>
-    <string name="pref_seasonal_fall">Automne</string>
-
     <!-- SyncPlay -->
 <string name="pref_syncplay_settings">Paramètres SyncPlay</string>
 <string name="pref_syncplay_enabled">Activer SyncPlay</string>
@@ -1250,4 +1240,35 @@
     <string name="lbl_server_address">Adresse du serveur</string>
     <string name="btn_continue">Continuer</string>
     <string name="change_server">Changer de serveur</string>
+    <!-- Genres -->
+    <string name="genre_action">Action</string>
+    <string name="genre_action_adventure">Action &amp; Aventure</string>
+    <string name="genre_adventure">Aventure</string>
+    <string name="genre_animation">Animation</string>
+    <string name="genre_anime">Animé</string>
+    <string name="genre_biography">Biographie</string>
+    <string name="genre_comedy">Comédie</string>
+    <string name="genre_crime">Policier</string>
+    <string name="genre_documentary">Documentaire</string>
+    <string name="genre_drama">Drame</string>
+    <string name="genre_family">Famille</string>
+    <string name="genre_fantasy">Fantastique</string>
+    <string name="genre_history">Histoire</string>
+    <string name="genre_horror">Horreur</string>
+    <string name="genre_kids">Enfants</string>
+    <string name="genre_music">Musique</string>
+    <string name="genre_musical">Musical</string>
+    <string name="genre_mystery">Mystère</string>
+    <string name="genre_news">Actualités</string>
+    <string name="genre_reality">Télé-réalité</string>
+    <string name="genre_romance">Romance</string>
+    <string name="genre_science_fiction">Science-fiction</string>
+    <string name="genre_scifi_fantasy">SF &amp; Fantastique</string>
+    <string name="genre_short">Court-métrage</string>
+    <string name="genre_sport">Sport</string>
+    <string name="genre_superhero">Super-héros</string>
+    <string name="genre_thriller">Thriller</string>
+    <string name="genre_war">Guerre</string>
+    <string name="genre_war_politics">Guerre &amp; Politique</string>
+    <string name="genre_western">Western</string>
 </resources>
