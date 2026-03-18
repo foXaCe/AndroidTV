@@ -11,6 +11,8 @@ import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.debug.ScreenIdOverlay
 import org.jellyfin.androidtv.ui.base.debug.ScreenIds
 import org.jellyfin.androidtv.ui.livetv.compose.LiveTvGuideScreen
+import org.jellyfin.androidtv.ui.navigation.Destinations
+import org.jellyfin.androidtv.ui.navigation.NavigationRepository
 import org.jellyfin.androidtv.util.PlaybackHelper
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -26,6 +28,7 @@ class LiveTvGuideFragment : Fragment() {
 
 	private val viewModel: LiveTvGuideViewModel by viewModel()
 	private val playbackHelper: PlaybackHelper by inject()
+	private val navigationRepository: NavigationRepository by inject()
 
 	override fun onCreateView(
 		inflater: LayoutInflater,
@@ -43,6 +46,9 @@ class LiveTvGuideFragment : Fragment() {
 								playbackHelper.retrieveAndPlay(channelId, false, requireContext())
 							},
 							onDismiss = { parentFragmentManager.popBackStack() },
+							onNavigateRecordings = { navigationRepository.navigate(Destinations.liveTvRecordings) },
+							onNavigateSchedule = { navigationRepository.navigate(Destinations.liveTvSchedule) },
+							onNavigateSeriesRecordings = { navigationRepository.navigate(Destinations.liveTvSeriesRecordings) },
 						)
 					}
 				}

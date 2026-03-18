@@ -29,9 +29,7 @@ import org.jellyfin.androidtv.integration.provider.ImageProvider
 import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.ui.startup.StartupActivity
 import org.jellyfin.androidtv.util.ImageHelper
-import org.jellyfin.androidtv.util.apiclient.getUrl
-import org.jellyfin.androidtv.util.apiclient.itemImages
-import org.jellyfin.androidtv.util.apiclient.parentImages
+import org.jellyfin.androidtv.util.apiclient.getCardImageUrl
 import org.jellyfin.androidtv.util.dp
 import org.jellyfin.androidtv.util.sdk.isUsable
 import org.jellyfin.androidtv.util.stripHtml
@@ -44,7 +42,6 @@ import org.jellyfin.sdk.api.client.extensions.userLibraryApi
 import org.jellyfin.sdk.api.client.extensions.userViewsApi
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.BaseItemKind
-import org.jellyfin.sdk.model.api.ImageType
 import org.jellyfin.sdk.model.api.MediaType
 import org.jellyfin.sdk.model.extensions.ticks
 import org.koin.core.component.KoinComponent
@@ -266,19 +263,6 @@ class LeanbackChannelWorker(
 	}
 
 	/**
-	 * Gets the poster art for an item. Uses the [preferParentThumb] parameter to fetch the series
-	 * image when preferred.
-	 */
-	private fun BaseItemDto.getPosterArtImageUrl(preferParentThumb: Boolean): Uri =
-		when {
-			type == BaseItemKind.MOVIE || type == BaseItemKind.SERIES -> itemImages[ImageType.PRIMARY]
-			(preferParentThumb || !itemImages.contains(ImageType.PRIMARY)) && parentImages.contains(ImageType.THUMB) -> parentImages[ImageType.THUMB]
-			else -> itemImages[ImageType.PRIMARY]
-		}.let { image ->
-			ImageProvider.getImageUri(image?.getUrl(api) ?: imageHelper.getResourceUrl(context, R.drawable.tile_land_tv))
-		}
-
-	/**
 	 * Gets the resume and next up episodes. The returned pair contains two lists:
 	 * 1. resume items
 	 * 2. next up items
@@ -358,7 +342,7 @@ class LeanbackChannelWorker(
 		item: BaseItemDto,
 		preferParentThumb: Boolean,
 	): ContentValues {
-		val imageUri = item.getPosterArtImageUrl(preferParentThumb)
+		val imageUri = ImageProvider.getImageUri(item.getCardImageUrl(api) ?: imageHelper.getResourceUrl(context, R.drawable.tile_land_tv))
 		val seasonString = item.parentIndexNumber?.toString().orEmpty()
 
 		val episodeString =
@@ -524,7 +508,7 @@ class LeanbackChannelWorker(
 				setDescription(item.overview?.stripHtml())
 
 				// Poster
-				setPosterArtUri(item.getPosterArtImageUrl(preferParentThumb))
+				setPosterArtUri(ImageProvider.getImageUri(item.getCardImageUrl(api) ?: imageHelper.getResourceUrl(context, R.drawable.tile_land_tv)))
 
 				when {
 					// User has started playing the episode

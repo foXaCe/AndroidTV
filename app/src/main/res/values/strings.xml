@@ -25,7 +25,6 @@
 <string name="lbl_latest">Recently added</string>
 <string name="lbl_by_name">By name</string>
     <string name="lbl_favorites">Favorites</string>
-    <string name="lbl_my_list">My List</string>
     <string name="lbl_coming_up">Coming up</string>
 <string name="lbl_collections">Collections</string>
     <string name="lbl_movies">Movies</string>
@@ -88,7 +87,8 @@
     <string name="lbl_no_items">No items</string>
     <string name="lbl_empty">Empty</string>
 <string name="search_empty_hint">Start typing to search…</string>
-    <string name="search_no_results">No results</string>
+    <string name="search_input_placeholder">Search movies, series, actors…</string>
+    <string name="search_no_results">No results for \"%1$s\"</string>
     <string name="lbl_play_first_unwatched">Play first unwatched</string>
     <string name="lbl_mark_unplayed">Mark unplayed</string>
     <string name="lbl_mark_played">Mark played</string>
@@ -165,7 +165,6 @@
     <string name="msg_failed_to_create_playlist">Failed to create playlist</string>
     <string name="msg_enter_playlist_name">Please enter a playlist name</string>
 <string name="lbl_create_and_add">Create &amp; Add</string>
-    <string name="lbl_back">Back</string>
     <string name="lbl_open_artist">Open artist</string>
     <string name="lbl_open_album">Open album</string>
     <string name="lbl_shuffle_queue">Toggle shuffle</string>
@@ -305,8 +304,6 @@
     <string name="lbl_use_series_thumbnails_description">Use series thumbnails when displaying episodes</string>
     <string name="lbl_card_focus_expansion">Card focus expansion</string>
     <string name="lbl_card_focus_expansion_description">Enlarge card items when they receive focus</string>
-    <string name="lbl_merge_continue_watching_next_up">Merge Continue Watching and Next Up</string>
-    <string name="lbl_merge_continue_watching_next_up_description">Show all in-progress and next episodes in a single row</string>
     <string name="auto_sign_in">Automatic sign in</string>
     <string name="user_picker_disable_title">Disable</string>
     <string name="user_picker_disable_summary">Always show the sign in screen</string>
@@ -387,6 +384,7 @@
     <string name="home_section_resume_audio">Continue listening</string>
     <string name="home_section_active_recordings">Active recordings</string>
     <string name="home_section_next_up">Next up</string>
+    <string name="home_section_continue_and_next">Continue watching &amp; Next up</string>
     <string name="home_section_playlists">Playlists</string>
     <string name="home_section_livetv">Live TV</string>
     <string name="home_section_latest">Recently added in %1$s</string>
@@ -779,6 +777,15 @@
     <string name="pref_shuffle_tv">TV shows only</string>
     <string name="pref_shuffle_both">Movies and TV shows</string>
 
+    <!-- Settings sections -->
+    <string name="pref_section_navigation">Navigation</string>
+    <string name="pref_section_video_audio">Video &amp; Audio</string>
+    <string name="pref_section_about_advanced">About &amp; Advanced</string>
+    <string name="pref_reset_all_settings">Reset all settings</string>
+    <string name="pref_reset_all_settings_description">Reset all preferences to default values</string>
+    <string name="pref_reset_confirmation_title">Reset settings?</string>
+    <string name="pref_reset_confirmation_message">All settings will be reset to their default values. This cannot be undone.</string>
+
     <!-- Update Checker -->
 <string name="btn_download">Download</string>
 <string name="btn_later">Later</string>
@@ -846,7 +853,6 @@
 
     <!-- Genres Grid -->
     <string name="all_libraries">All Libraries</string>
-    <string name="no_genres_found">No genres found</string>
     <string name="sort_a_z">A-Z</string>
     <string name="sort_z_a">Z-A</string>
     <string name="sort_most_items">Most Items</string>
@@ -986,13 +992,10 @@
     <string name="update_failed_open_settings">Failed to open settings</string>
 
     <!-- Hardcoded strings - Settings Main -->
-    <string name="settings_support_updates">Support &amp; Updates</string>
     <string name="settings_check_updates">Check for Updates</string>
     <string name="settings_check_updates_desc">Download latest VegafoX version</string>
     <string name="settings_update_notifications">Update Notifications</string>
     <string name="settings_update_notifications_desc">Show notification on app launch when updates are available</string>
-    <string name="settings_support_vegafox">Support VegafoX</string>
-    <string name="settings_support_vegafox_desc">Help us continue development</string>
     <string name="settings_install_permission_title">Install Permission Required</string>
     <string name="settings_install_permission_message">This app needs permission to install updates. Please grant it in the settings.</string>
 <!-- Hardcoded strings - Playback -->
@@ -1060,10 +1063,7 @@
     <!-- Hardcoded strings - Jellyseerr requests UI -->
     <string name="jellyseerr_my_requests">My Requests</string>
     <string name="jellyseerr_not_connected">Jellyseerr Not Connected</string>
-    <string name="jellyseerr_go_to_settings">Go to Settings to configure your server</string>
-    <string name="jellyseerr_loading_requests">Loading requests…</string>
     <string name="jellyseerr_no_requests">No Requests Yet</string>
-    <string name="jellyseerr_submit_from_discover">Submit requests from the Discover tab</string>
     <string name="btn_refresh">Refresh</string>
 
     <!-- Hardcoded strings - Genre sort -->

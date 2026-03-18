@@ -1,13 +1,12 @@
 package org.jellyfin.androidtv.ui.player.video
 
 import android.content.Context
-import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
@@ -15,7 +14,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -31,6 +29,8 @@ import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.composable.rememberCurrentTime
 import org.jellyfin.androidtv.ui.composable.rememberPlayerPositionInfo
 import org.jellyfin.androidtv.ui.player.base.PlayerHeader
+import org.jellyfin.androidtv.ui.shared.components.TechBadge
+import org.jellyfin.androidtv.ui.shared.components.TechBadgeStyle
 import org.jellyfin.androidtv.util.getTimeFormatter
 import org.jellyfin.playback.core.PlaybackManager
 import org.jellyfin.sdk.model.api.BaseItemDto
@@ -42,8 +42,6 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
-
-private val BadgeShape = RoundedCornerShape(4.dp)
 
 @Composable
 @Stable
@@ -134,15 +132,15 @@ fun VideoPlayerHeader(
 					remember(badges, resolutionBadge) {
 						buildList {
 							if (resolutionBadge != null) {
-								add(BadgeInfo(resolutionBadge, BadgeStyle.RESOLUTION))
+								add(BadgeInfo(resolutionBadge, TechBadgeStyle.RESOLUTION))
 							} else {
-								badges.resolution?.let { add(BadgeInfo(it, BadgeStyle.RESOLUTION)) }
+								badges.resolution?.let { add(BadgeInfo(it, TechBadgeStyle.RESOLUTION)) }
 							}
-							badges.hdr?.let { add(BadgeInfo(it, BadgeStyle.HDR)) }
-							badges.videoCodec?.let { add(BadgeInfo(it, BadgeStyle.TECH)) }
-							badges.container?.let { add(BadgeInfo(it, BadgeStyle.TECH)) }
-							badges.audioChannels?.let { add(BadgeInfo(it, BadgeStyle.TECH)) }
-							badges.audioCodec?.let { add(BadgeInfo(it, BadgeStyle.TECH)) }
+							badges.hdr?.let { add(BadgeInfo(it, TechBadgeStyle.HDR)) }
+							badges.videoCodec?.let { add(BadgeInfo(it, TechBadgeStyle.TECH)) }
+							badges.container?.let { add(BadgeInfo(it, TechBadgeStyle.TECH)) }
+							badges.audioChannels?.let { add(BadgeInfo(it, TechBadgeStyle.TECH)) }
+							badges.audioCodec?.let { add(BadgeInfo(it, TechBadgeStyle.TECH)) }
 						}
 					}
 
@@ -150,7 +148,10 @@ fun VideoPlayerHeader(
 					Row(
 						horizontalArrangement = Arrangement.spacedBy(6.dp),
 						verticalAlignment = Alignment.CenterVertically,
-						modifier = Modifier.padding(top = 8.dp),
+						modifier =
+							Modifier
+								.padding(top = 8.dp)
+								.horizontalScroll(rememberScrollState()),
 					) {
 						allBadges.forEach { badge ->
 							TechBadge(text = badge.text, style = badge.style)
@@ -199,37 +200,6 @@ fun VideoPlayerHeader(
 	}
 }
 
-@Composable
-private fun TechBadge(
-	text: String,
-	style: BadgeStyle,
-) {
-	val badgeColor =
-		when (style) {
-			BadgeStyle.RESOLUTION -> VegafoXColors.OrangePrimary
-			BadgeStyle.HDR -> Color(0xFFFFD700) // Gold
-			BadgeStyle.TECH -> VegafoXColors.TextHint
-		}
-
-	Box(
-		modifier =
-			Modifier
-				.border(1.dp, badgeColor, BadgeShape)
-				.padding(horizontal = 8.dp, vertical = 3.dp),
-	) {
-		Text(
-			text = text,
-			style =
-				TextStyle(
-					fontSize = 10.sp,
-					fontWeight = FontWeight.Bold,
-					color = badgeColor,
-					letterSpacing = 1.sp,
-				),
-		)
-	}
-}
-
 private fun computeEndTime(
 	context: Context,
 	duration: Duration,
@@ -243,11 +213,9 @@ private fun computeEndTime(
 	return context.getString(R.string.lbl_playback_control_ends, formatted)
 }
 
-private enum class BadgeStyle { RESOLUTION, HDR, TECH }
-
 private data class BadgeInfo(
 	val text: String,
-	val style: BadgeStyle,
+	val style: TechBadgeStyle,
 )
 
 private data class PlayerBadges(

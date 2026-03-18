@@ -1,7 +1,6 @@
 package org.jellyfin.androidtv.ui.itemdetail.v2.content
 
 import androidx.compose.foundation.MutatePriority
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,11 +32,11 @@ import kotlinx.coroutines.delay
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.components.VegafoXButton
+import org.jellyfin.androidtv.ui.base.components.VegafoXButtonVariant
 import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.theme.DetailDimensions
 import org.jellyfin.androidtv.ui.base.theme.HeroDimensions
-import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
-import org.jellyfin.androidtv.ui.itemdetail.v2.DetailActionButton
 import org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsUiState
 import org.jellyfin.androidtv.ui.itemdetail.v2.PosterImage
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailSectionWithCards
@@ -87,7 +86,6 @@ fun LiveTvDetailsContent(
 						Modifier
 							.fillMaxWidth()
 							.focusRequester(titleFocusRequester)
-							.focusable()
 							.onKeyEvent { keyEvent ->
 								if (keyEvent.nativeKeyEvent.action == android.view.KeyEvent.ACTION_DOWN) {
 									when (keyEvent.key) {
@@ -181,39 +179,37 @@ fun LiveTvDetailsContent(
 						Modifier
 							.fillMaxWidth()
 							.focusRestorer(playButtonFocusRequester),
-					horizontalArrangement = Arrangement.Center,
+					horizontalArrangement = Arrangement.spacedBy(12.dp),
 				) {
-					Row(
-						horizontalArrangement = Arrangement.spacedBy(16.dp),
-					) {
-						// Play / Tune to Channel
-						DetailActionButton(
-							label = stringResource(R.string.lbl_tune_to_channel),
-							icon = VegafoXIcons.Play,
-							onClick = onPlay,
-							modifier = Modifier.focusRequester(playButtonFocusRequester),
+					// Play / Tune to Channel
+					VegafoXButton(
+						text = stringResource(R.string.lbl_tune_to_channel),
+						onClick = onPlay,
+						variant = VegafoXButtonVariant.Primary,
+						icon = VegafoXIcons.Play,
+						iconEnd = false,
+						modifier = Modifier.focusRequester(playButtonFocusRequester),
+					)
+
+					// Record
+					if (uiState.programInfo != null) {
+						VegafoXButton(
+							text = stringResource(R.string.lbl_record),
+							onClick = onToggleRecord,
+							variant = if (uiState.isRecording) VegafoXButtonVariant.Primary else VegafoXButtonVariant.Secondary,
+							icon = VegafoXIcons.Record,
+							iconEnd = false,
 						)
 
-						// Record
-						if (uiState.programInfo != null) {
-							DetailActionButton(
-								label = stringResource(R.string.lbl_record),
-								icon = VegafoXIcons.Record,
-								onClick = onToggleRecord,
-								isActive = uiState.isRecording,
-								activeColor = VegafoXColors.Recording,
+						// Record Series (only if program is a series)
+						if (uiState.programInfo.isSeries == true) {
+							VegafoXButton(
+								text = stringResource(R.string.lbl_record_series),
+								onClick = onToggleRecordSeries,
+								variant = if (uiState.isRecordingSeries) VegafoXButtonVariant.Primary else VegafoXButtonVariant.Secondary,
+								icon = VegafoXIcons.RecordSeries,
+								iconEnd = false,
 							)
-
-							// Record Series (only if program is a series)
-							if (uiState.programInfo.isSeries == true) {
-								DetailActionButton(
-									label = stringResource(R.string.lbl_record_series),
-									icon = VegafoXIcons.RecordSeries,
-									onClick = onToggleRecordSeries,
-									isActive = uiState.isRecordingSeries,
-									activeColor = VegafoXColors.Recording,
-								)
-							}
 						}
 					}
 				}

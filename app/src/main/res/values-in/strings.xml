@@ -6,7 +6,6 @@
     <string name="pref_next_up_timeout_title">Durasi waktu sebelum memutar berikutnya</string>
     <string name="pref_next_up_timeout_summary">Berapa lama menunggu sebelum memainkan item berikutnya</string>
     <string name="pref_about_title">Tentang</string>
-    <string name="pref_theme_dark">Gelap (Default)</string>
     <string name="lbl_my_media">Media saya</string>
     <string name="lbl_image_size">Ukuran gambar</string>
     <string name="lbl_image_type">Jenis gambar</string>
@@ -107,7 +106,6 @@
     <string name="lbl_only_new_episodes">Hanya episode baru</string>
     <string name="lbl_record_any_time">Rekam kapan saja</string>
     <string name="pref_device_model">Model perangkat</string>
-    <string name="pref_app_theme">Tema aplikasi</string>
 <string name="lbl_filters">Filters TV live</string>
 <string name="lbl_yes">Ya</string>
     <string name="lbl_no">Tidak</string>
@@ -206,7 +204,6 @@
 <string name="lbl_playback_speed">Kecepatan pemutaran</string>
     <string name="lbl_quality_profile">Profil kualitas</string>
 <string name="lbl_playback_control_ends">Berakhir pada %1$s</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="lbl_always">Selalu</string>
     <string name="pref_clock_display_browsing">Saat menelusuri</string>
     <string name="pref_clock_display_playback">Saat pemutaran</string>
@@ -366,7 +363,6 @@
     <string name="clear_image_cache_content">Terpakai: %1$s</string>
 <string name="pref_subtitles_size">Ukuran teks</string>
 <string name="pref_accounts">Akun</string>
-    <string name="pref_behavior">Perilaku</string>
 <string name="home_section_resume_book">Lanjutkan Membaca</string>
     <string name="app_notification_beta">Aplikasi diperbarui ke %1$s
 \nTerima kasih telah bergabung ke dalam program Jellyfin beta.</string>
@@ -374,7 +370,6 @@
     <string name="item_delete_confirm_title">Hapus Item</string>
 <string name="lbl_album_artists">Album Artis</string>
     <string name="pref_screensaver_inapp_enabled_description">Tampilkan screensaver Jellyfin ketika aplikasi dibuka</string>
-    <string name="not_set">Belum Diatur</string>
     <string name="pref_screensaver_ageratingmax_unlimited">Nonaktifkan maksimum</string>
 <plurals name="seconds">
         <item quantity="other">%1$s detik</item>

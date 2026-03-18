@@ -5,17 +5,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -30,8 +25,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.repository.ItemRepository
-import org.jellyfin.androidtv.ui.base.JellyfinTheme
-import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.skeleton.SkeletonCardRow
 import org.jellyfin.androidtv.ui.base.state.DisplayState
 import org.jellyfin.androidtv.ui.base.state.EmptyState
@@ -39,12 +32,13 @@ import org.jellyfin.androidtv.ui.base.state.ErrorState
 import org.jellyfin.androidtv.ui.base.state.StateContainer
 import org.jellyfin.androidtv.ui.base.state.UiError
 import org.jellyfin.androidtv.ui.base.state.toUiError
-import org.jellyfin.androidtv.ui.base.theme.BebasNeue
 import org.jellyfin.androidtv.ui.base.theme.BrowseDimensions
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.base.tv.TvRow
 import org.jellyfin.androidtv.ui.base.tv.TvRowList
 import org.jellyfin.androidtv.ui.base.tv.TvScaffold
+import org.jellyfin.androidtv.ui.shared.components.BrowseHeader
+import org.jellyfin.androidtv.ui.shared.components.VegafoXScaffold
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.extensions.itemsApi
 import org.jellyfin.sdk.model.api.BaseItemDto
@@ -170,76 +164,61 @@ fun ByLetterBrowseScreen(
 	val uiState by viewModel.uiState.collectAsState()
 	val letters = stringResource(R.string.byletter_letters)
 
-	TvScaffold {
-		Column(
-			modifier =
-				Modifier
-					.fillMaxSize()
-					.background(VegafoXColors.BackgroundDeep),
-		) {
-			// VegafoX header
+	VegafoXScaffold {
+		TvScaffold {
 			Column(
 				modifier =
 					Modifier
-						.fillMaxWidth()
-						.padding(top = 32.dp, start = BrowseDimensions.gridPaddingHorizontal, end = BrowseDimensions.gridPaddingHorizontal),
+						.fillMaxSize()
+						.background(VegafoXColors.BackgroundDeep),
 			) {
-				Text(
-					text = uiState.title,
-					style =
-						JellyfinTheme.typography.headlineLarge.copy(
-							fontSize = 40.sp,
-							fontWeight = FontWeight.Bold,
-							fontFamily = BebasNeue,
-							letterSpacing = 2.sp,
-						),
-					color = VegafoXColors.TextPrimary,
+				// VegafoX header
+				BrowseHeader(title = uiState.title)
+
+				Spacer(modifier = Modifier.height(BrowseDimensions.headerBottomSpacing))
+
+				val displayState =
+					when {
+						uiState.isLoading -> DisplayState.LOADING
+						uiState.error != null -> DisplayState.ERROR
+						uiState.rows.isEmpty() -> DisplayState.EMPTY
+						else -> DisplayState.CONTENT
+					}
+
+				StateContainer(
+					state = displayState,
+					modifier = Modifier.weight(1f),
+					loadingContent = {
+						Column {
+							repeat(3) {
+								SkeletonCardRow()
+								Spacer(modifier = Modifier.height(BrowseDimensions.skeletonRowSpacing))
+							}
+						}
+					},
+					emptyContent = {
+						EmptyState(title = stringResource(R.string.lbl_empty))
+					},
+					errorContent = {
+						ErrorState(
+							message = stringResource(uiState.error?.messageRes ?: R.string.state_error_generic),
+							onRetry = { viewModel.retry(letters) },
+						)
+					},
+					content = {
+						TvRowList(
+							rows = uiState.rows,
+							contentPadding = PaddingValues(bottom = BrowseDimensions.gridBottomPadding),
+						) { item ->
+							BrowseMediaCard(
+								item = item,
+								api = viewModel.api,
+								onClick = { onItemClick(item) },
+							)
+						}
+					},
 				)
 			}
-
-			Spacer(modifier = Modifier.height(16.dp))
-
-			val displayState =
-				when {
-					uiState.isLoading -> DisplayState.LOADING
-					uiState.error != null -> DisplayState.ERROR
-					uiState.rows.isEmpty() -> DisplayState.EMPTY
-					else -> DisplayState.CONTENT
-				}
-
-			StateContainer(
-				state = displayState,
-				modifier = Modifier.weight(1f),
-				loadingContent = {
-					Column {
-						repeat(3) {
-							SkeletonCardRow()
-							Spacer(modifier = Modifier.height(28.dp))
-						}
-					}
-				},
-				emptyContent = {
-					EmptyState(title = stringResource(R.string.lbl_empty))
-				},
-				errorContent = {
-					ErrorState(
-						message = stringResource(uiState.error?.messageRes ?: R.string.state_error_generic),
-						onRetry = { viewModel.retry(letters) },
-					)
-				},
-				content = {
-					TvRowList(
-						rows = uiState.rows,
-						contentPadding = PaddingValues(bottom = 27.dp),
-					) { item ->
-						BrowseMediaCard(
-							item = item,
-							api = viewModel.api,
-							onClick = { onItemClick(item) },
-						)
-					}
-				},
-			)
 		}
 	}
 }

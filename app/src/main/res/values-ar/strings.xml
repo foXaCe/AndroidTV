@@ -115,13 +115,11 @@
     <string name="no_player_message">لا يبدو أن لديك تطبيقًا قادر على تشغيل الفيديو. يتطلب هذا الخيار تثبيت تطبيق تابع لجهة ثالثة لتشغيل محتوى الفيديو.</string>
 <string name="grid_direction_horizontal">أفقي</string>
     <string name="pref_device_model">اصدار الجهاز</string>
-    <string name="pref_app_theme">مظهر التطبيق</string>
     <string name="pref_next_up_behavior_title">إظهار معلومات الفيديو التالي</string>
     <string name="watch_now">شاهد الآن</string>
     <string name="pref_next_up_timeout_title">كم من الوقت لتشغيل التالي</string>
     <string name="pref_next_up_timeout_summary">كم من الوقت تنتظر قبل تشغيل العنصر التالي</string>
     <string name="pref_about_title">حول</string>
-    <string name="pref_theme_dark">الداكن (الافتراضي)</string>
     <string name="lbl_my_media">الوسائط الخاصة بي</string>
     <string name="lbl_image_size">حجم الصورة</string>
     <string name="lbl_image_type">نوع الصورة</string>
@@ -197,7 +195,6 @@
     <string name="login_help_description">Jellyfin يستلزم خادم للإتصال به. قم بزيارة وثائقنا على docs.jellyfin.org او قم بمسح رمز QR للبدأ مع Jellyfin.</string>
     <string name="pref_developer_link">إعدادات المطورين</string>
     <string name="lbl_manage_servers">إدارة الخوادم</string>
-    <string name="watch_count_overflow">+99</string>
 <string name="advanced_settings">الإعدادات (متقدمة)</string>
     <string name="always_authenticate_description">تفعيل هاته الخاصية يعطل تسجيل الدخول الآلي</string>
     <string name="alphabetical">أبجدي</string>
@@ -292,7 +289,6 @@
 <string name="pref_login">تسجيل الدخول</string>
 <string name="pref_libraries">مكتبات</string>
 <string name="pref_browsing">تصفح</string>
-    <string name="pref_behavior">سلوك</string>
     <string name="pref_accounts">حسابات</string>
     <string name="sort_accounts_by">فرز الحسابات حسب</string>
     <string name="pref_customization">التخصيص</string>
@@ -384,7 +380,6 @@
     </plurals>
 <string name="lbl_album_artists">فنانو الألبوم</string>
     <string name="disable_ui_mode_warning">تعطيل تنبيه نوع الجهاز</string>
-    <string name="not_set">غير مقرر</string>
     <string name="because_you_watched">لأنك شاهدت %1$s</string>
     <string name="lbl_hide_watched_checkmark">عندما تكون هناك حلقات متبقية</string>
     <string name="channels">القنوات</string>

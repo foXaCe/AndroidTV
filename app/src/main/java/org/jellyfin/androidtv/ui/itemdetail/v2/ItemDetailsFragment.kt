@@ -22,13 +22,13 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import coil3.request.crossfade
 import coil3.toBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
@@ -61,7 +61,7 @@ import org.jellyfin.androidtv.ui.playback.MediaManager
 import org.jellyfin.androidtv.ui.playback.PlaybackLauncher
 import org.jellyfin.androidtv.ui.playback.PrePlaybackTrackSelector
 import org.jellyfin.androidtv.ui.playback.ThemeMusicPlayer
-import org.jellyfin.androidtv.ui.playlist.showAddToPlaylistDialog
+import org.jellyfin.androidtv.ui.shared.components.DarkGridNoiseBackground
 import org.jellyfin.androidtv.util.BitmapBlur
 import org.jellyfin.androidtv.util.PlaybackHelper
 import org.jellyfin.androidtv.util.apiclient.Response
@@ -146,8 +146,24 @@ class ItemDetailsFragment : Fragment() {
 						ViewGroup.LayoutParams.MATCH_PARENT,
 						ViewGroup.LayoutParams.MATCH_PARENT,
 					)
-				setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.ds_background))
+				// Background color handled by DarkGridNoiseBackground
 			}
+
+		// Grid noise background (z-order: grid → backdrop → gradient → content)
+		val gridBackgroundView =
+			ComposeView(requireContext()).apply {
+				layoutParams =
+					FrameLayout.LayoutParams(
+						FrameLayout.LayoutParams.MATCH_PARENT,
+						FrameLayout.LayoutParams.MATCH_PARENT,
+					)
+				setContent {
+					JellyfinTheme {
+						DarkGridNoiseBackground(modifier = Modifier.fillMaxSize())
+					}
+				}
+			}
+		mainContainer.addView(gridBackgroundView)
 
 		backdropImage =
 			ImageView(requireContext()).apply {
@@ -157,7 +173,7 @@ class ItemDetailsFragment : Fragment() {
 						FrameLayout.LayoutParams.MATCH_PARENT,
 					)
 				scaleType = ImageView.ScaleType.CENTER_CROP
-				alpha = 0.55f
+				alpha = 0.75f
 			}
 		mainContainer.addView(backdropImage)
 
@@ -223,8 +239,13 @@ class ItemDetailsFragment : Fragment() {
 					}
 				viewModel.loadSeriesTimer(seriesTimer)
 			}
-			// Standard item details
-			else -> viewModel.loadItem(args.itemId, args.serverId)
+			// Standard item details — skip reload if ViewModel already has this item
+			else -> {
+				val currentItem = viewModel.uiState.value.item
+				if (currentItem == null || currentItem.id != args.itemId) {
+					viewModel.loadItem(args.itemId, args.serverId)
+				}
+			}
 		}
 
 		viewModel.uiState
@@ -243,7 +264,7 @@ class ItemDetailsFragment : Fragment() {
 						gradientView?.isVisible = true
 						val backdropUrl = getBackdropUrl(item, viewModel.effectiveApi)
 						if (backdropUrl != null) {
-							val blurAmount = userSettingPreferences[UserSettingPreferences.detailsBackgroundBlurAmount]
+							val blurAmount = 4
 							val imageLoader = coil3.SingletonImageLoader.get(requireContext())
 							lifecycleScope.launch {
 								val result =
@@ -251,6 +272,8 @@ class ItemDetailsFragment : Fragment() {
 										coil3.request.ImageRequest
 											.Builder(requireContext())
 											.data(backdropUrl)
+											.size(1920, 1080)
+											.crossfade(400)
 											.build(),
 									)
 								val bitmap = result.image?.toBitmap()
@@ -273,7 +296,7 @@ class ItemDetailsFragment : Fragment() {
 											bitmap
 										}
 									backdropImage?.setImageBitmap(finalBitmap)
-									backdropImage?.alpha = 0.55f
+									backdropImage?.alpha = 0.75f
 								}
 							}
 						}
@@ -310,12 +333,11 @@ class ItemDetailsFragment : Fragment() {
 			val item = uiState.item ?: return
 			val api = viewModel.effectiveApi
 			val context = LocalContext.current
-			val blurAmount = userSettingPreferences[UserSettingPreferences.detailsBackgroundBlurAmount]
+			val blurAmount = 4
 
 			val onNavigateToItem: (UUID) -> Unit = { id ->
 				navigationRepository.navigate(Destinations.itemDetails(id, viewModel.serverId))
 			}
-
 			when (item.type) {
 				BaseItemKind.PERSON ->
 					PersonDetailsContent(
@@ -326,18 +348,16 @@ class ItemDetailsFragment : Fragment() {
 						onNavigateToItem = onNavigateToItem,
 					)
 
-				BaseItemKind.SEASON ->
+				BaseItemKind.SEASON -> {
+					val actionCallbacks = createActionCallbacks(item, uiState, context)
 					SeasonDetailsContent(
 						uiState = uiState,
 						contentFocusRequester = contentFocusRequester,
-						showBackdrop = false,
 						api = api,
-						blurAmount = blurAmount,
+						actionCallbacks = actionCallbacks,
 						onNavigateToItem = onNavigateToItem,
-						onPlayEpisode = { episode -> play(episode, 0, false) },
-						onToggleWatched = { viewModel.toggleWatched() },
-						onToggleFavorite = { viewModel.toggleFavorite() },
 					)
+				}
 
 				BaseItemKind.SERIES -> {
 					val actionCallbacks = createActionCallbacks(item, uiState, context)
@@ -426,13 +446,10 @@ class ItemDetailsFragment : Fragment() {
 			hasPlayableTrailers = hasPlayableTrailers(context, item),
 			onPlay = { handlePlay(item, uiState) },
 			onResume = { handleResume(item) },
-			onShuffle = { handleShuffle(item) },
 			onPlayTrailers = { playTrailers(item) },
-			onPlayInstantMix = { playbackHelper.playInstantMix(context, item) },
 			onToggleWatched = { viewModel.toggleWatched() },
 			onToggleFavorite = { viewModel.toggleFavorite() },
 			onConfirmDelete = { confirmDeleteItem(item) },
-			onAddToPlaylist = { showAddToPlaylistDialog(context, item.id) },
 			onGoToSeries =
 				if (item.type == BaseItemKind.EPISODE && item.seriesId != null) {
 					{ item.seriesId?.let { seriesId -> navigationRepository.navigate(Destinations.itemDetails(seriesId, viewModel.serverId)) } }

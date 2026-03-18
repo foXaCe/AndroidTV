@@ -149,7 +149,6 @@
     <string name="lbl_series_settings">Dizi tercihleri</string>
     <string name="bitrate_kbit">%1$,.0f Kbit/s</string>
     <string name="bitrate_mbit">%1$,.0f Mbit/s</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="lbl_from">,</string>
     <string name="lbl_playback_control_ends">Bitiş zamanı %1$s</string>
 <string name="msg_no_items">Oynatıclacak öğe bulunmuyor</string>
@@ -164,12 +163,10 @@
     <string name="grid_direction_horizontal">Yatay</string>
     <string name="grid_direction">Tablo yönü</string>
     <string name="pref_device_model">Cihaz modeli</string>
-    <string name="pref_app_theme">Uygulama teması</string>
     <string name="watch_now">Şimdi izle</string>
     <string name="pref_next_up_timeout_title">Sıradaki öge için zamanlayıcı süresi</string>
     <string name="pref_next_up_timeout_summary">Bir sonraki ögeyi çalmadan önce bekleme süresi</string>
     <string name="pref_about_title">Hakkında</string>
-    <string name="pref_theme_dark">Karanlık (Varsayılan)</string>
     <string name="lbl_my_media">Benim medyam</string>
     <string name="lbl_image_size">Resim boyutu</string>
     <string name="lbl_image_type">Resim türü</string>
@@ -302,7 +299,6 @@
 <string name="pref_customization">Özelleştirme</string>
 <string name="server_issue_missing_version">Sunucu sürümü algılanamadı</string>
     <string name="server_issue_outdated_version">Sunucu desteklenmeyen %1$s sürümünü kullanıyor. Lütfen %2$s veya daha yeni bir sürüme güncelleyin</string>
-    <string name="pref_behavior">Davranış</string>
     <string name="server_issue_unsupported_version">Sunucu desteklenmeyen %1$s sürümünü kullanıyor</string>
 <string name="input_password">Parola</string>
     <string name="pref_audio_night_mode">Gece ses modu (deneysel)</string>
@@ -321,7 +317,6 @@
 \nJellyfin beta programına katıldığınız için teşekkür ederiz.</string>
 <string name="pref_screensaver">Ekran Koruyucu</string>
     <string name="pref_screensaver_inapp_enabled">Uygulama içi ekran koruyucuyu kullanın</string>
-    <string name="not_set">Ayarlanmadı</string>
     <string name="lbl_album_artists">Albüm sanatçıları</string>
     <plurals name="minutes">
         <item quantity="one">%1$s dakika</item>

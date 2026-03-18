@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.SearchManager
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
@@ -83,6 +82,8 @@ class StartupActivity : FragmentActivity() {
 		}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
+		val t0 = System.currentTimeMillis()
+		Timber.tag("VFX_PERF").i("VFX_PERF StartupActivity.onCreate START at $t0")
 		installSplashScreen()
 		applyTheme()
 
@@ -92,6 +93,8 @@ class StartupActivity : FragmentActivity() {
 		binding.background.setContent { AppBackground() }
 		binding.screensaver.isVisible = false
 		setContentView(binding.root)
+		val t1 = System.currentTimeMillis()
+		Timber.tag("VFX_PERF").i("VFX_PERF StartupActivity.onCreate layout: ${t1 - t0}ms")
 
 		if (!intent.getBooleanExtra(EXTRA_HIDE_SPLASH, false)) showSplash()
 
@@ -113,7 +116,7 @@ class StartupActivity : FragmentActivity() {
 			.distinctUntilChanged()
 			.onEach { session ->
 				if (session != null) {
-					Log.d("STARTUP", "Session detected: ${System.currentTimeMillis()}")
+					Timber.tag("VFX_PERF").i("VFX_PERF StartupActivity session detected at ${System.currentTimeMillis()}")
 					Timber.i("Found a session in the session repository, waiting for the currentUser in the application class.")
 
 					showSplash()
@@ -138,7 +141,7 @@ class StartupActivity : FragmentActivity() {
 			}.launchIn(lifecycleScope)
 
 	private suspend fun openNextActivity() {
-		Log.d("STARTUP", "openNextActivity: ${System.currentTimeMillis()}")
+		Timber.tag("VFX_PERF").i("VFX_PERF StartupActivity openNextActivity at ${System.currentTimeMillis()}")
 		val itemId =
 			when {
 				intent.action == Intent.ACTION_VIEW && intent.data != null -> intent.data.toString()
@@ -181,7 +184,7 @@ class StartupActivity : FragmentActivity() {
 		val intent = Intent(this, MainActivity::class.java)
 		// Clear navigation history
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_TASK_ON_HOME)
-		Log.d("STARTUP", "startActivity(MainActivity): ${System.currentTimeMillis()}")
+		Timber.tag("VFX_PERF").i("VFX_PERF StartupActivity → MainActivity at ${System.currentTimeMillis()}")
 		Timber.i("Opening next activity $intent")
 		startActivity(intent)
 		finishAfterTransition()

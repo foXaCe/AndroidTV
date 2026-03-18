@@ -10,9 +10,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import org.jellyfin.androidtv.ui.base.LocalShapes
+import org.jellyfin.androidtv.ui.base.theme.SettingsDimensions
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.design.Tokens
 
@@ -26,9 +25,9 @@ fun SettingsLayout(
 			modifier
 				.padding(Tokens.Space.spaceMd)
 				.clip(LocalShapes.current.large)
-				.border(1.dp, Color.White.copy(alpha = 0.08f), LocalShapes.current.large)
+				.border(SettingsDimensions.panelBorderWidth, VegafoXColors.PanelBorder, LocalShapes.current.large)
 				.background(VegafoXColors.Surface)
-				.width(350.dp)
+				.width(SettingsDimensions.panelWidth)
 				.fillMaxHeight(),
 		content = content,
 	)

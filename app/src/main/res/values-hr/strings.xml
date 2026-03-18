@@ -128,12 +128,10 @@
     <string name="grid_direction_horizontal">Vodoravno</string>
     <string name="grid_direction">Detekcija mreže</string>
     <string name="pref_device_model">Model uređaja</string>
-    <string name="pref_app_theme">Tema aplikacije</string>
     <string name="watch_now">Gledaj sada</string>
     <string name="pref_next_up_timeout_title">Trajanje brojača do reprodukcije iduće stavke</string>
     <string name="pref_next_up_timeout_summary">Koliko čekati prije reprodukcije iduće stavke</string>
     <string name="pref_about_title">O</string>
-    <string name="pref_theme_dark">Tamno (Zadano)</string>
     <string name="lbl_my_media">Moji mediji</string>
     <string name="lbl_image_size">Veličina slike</string>
     <string name="lbl_image_type">Vrsta slike</string>
@@ -200,7 +198,6 @@
     <string name="server_connecting">Spajanje na %1$s</string>
     <string name="pref_next_up_behavior_title">Prikaži informacije o idućem videu</string>
     <string name="image_type_banner">Pano</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="lbl_refresh_switching">Promjena brzine osvježavanja</string>
     <string name="lbl_start_end_on_schedule">Počinje i završava prema rasporedu</string>
     <string name="lbl_special">Specijalno</string>
@@ -281,7 +278,6 @@
     <string name="server_issue_timeout">Veza je istekla</string>
 <string name="sort_accounts_by">Sortiraj račune po</string>
     <string name="pref_accounts">Računi</string>
-    <string name="pref_behavior">Ponašanje</string>
     <string name="pref_browsing">Pregledavanje</string>
 <string name="action_login">Prijavi se</string>
     <string name="input_password">Lozinka</string>
@@ -340,7 +336,6 @@
     <string name="searchable_hint">Pretraži Jellyfin</string>
     <string name="episode_name_special">specijalna</string>
     <string name="pref_screensaver_inapp_enabled">Koristi čuvar zaslona u aplikaciji</string>
-    <string name="not_set">Nije postavljeno</string>
     <string name="lbl_album_artists">Izvođači albuma</string>
     <string name="disable_ui_mode_warning">Onemogući upozorenje vrste uređaja</string>
 <string name="pref_screensaver_inapp_timeout">Pokreni čuvar zaslona nakon</string>

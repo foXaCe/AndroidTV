@@ -190,14 +190,12 @@
     <string name="lbl_image_type">Aina ya picha</string>
     <string name="lbl_image_size">Vipimo vya picha</string>
     <string name="lbl_my_media">Maktaba yangu</string>
-    <string name="pref_theme_dark">Giza (Chaguo msingi)</string>
     <string name="pref_about_title">Kuhusu</string>
 <string name="pref_next_up_timeout_summary">Muda wa kusubiri kabla ya kucheza kitu kinachofuata</string>
     <string name="pref_next_up_timeout_title">Urefu wa muda wa kusubiri inayofuata</string>
     <string name="pref_next_up_timeout_disabled">∞</string>
     <string name="watch_now">Tazama sasa</string>
     <string name="pref_next_up_behavior_title">Onyesha taarifa za inayofuata</string>
-<string name="pref_app_theme">Mandhari ya programu</string>
     <string name="pref_device_model">Mfano wa kifaa</string>
     <string name="grid_direction">Mwelekeo wa gridi</string>
     <string name="grid_direction_horizontal">Ulalo</string>
@@ -213,7 +211,6 @@
     <string name="too_many_errors">Hitilafu ni nyingi mno. Inasitisha majaribio</string>
 <string name="msg_no_items">Hakuna maudhui ya kucheza</string>
 <string name="lbl_playback_control_ends">Tamati ni saa %1$s</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="pref_clock_display">Onyesha saa</string>
     <string name="lbl_always">Daima</string>
     <string name="pref_clock_display_browsing">Wakati unatafuta maudhui</string>
@@ -277,7 +274,6 @@
 <string name="pref_customization">Marekebisho binafsi</string>
     <string name="sort_accounts_by">Panga akaunti kwa</string>
     <string name="pref_accounts">Akaunti</string>
-    <string name="pref_behavior">Mwenendo</string>
     <string name="pref_browsing">Kuperuzi</string>
 <string name="pref_libraries">Maktaba</string>
 <string name="pref_login">Ingia</string>
@@ -357,7 +353,6 @@
     <string name="pref_screensaver_inapp_enabled">Tumia kizima-skrini cha programu</string>
     <string name="pref_screensaver_inapp_enabled_description">Onyesha kizima-skrini cha Jellyfin wakati programu imefunguliwa</string>
     <string name="pref_screensaver_inapp_timeout">Anza kizima-skrini baada ya</string>
-<string name="not_set">Haijawekwa</string>
     <string name="lbl_album_artists">Wasanii wa albamu</string>
     <string name="disable_ui_mode_warning">Lemaza onyo la aina ya kifaa</string>
     <string name="channels">Chaneli</string>

@@ -111,6 +111,8 @@ fun ExoPlayerTrailerView(
 		onDispose {
 			skipRunnable.value?.let { mainHandler.removeCallbacks(it) }
 			skipRunnable.value = null
+			exoPlayer.pause()
+			exoPlayer.stop()
 			exoPlayer.release()
 			player = null
 			videoSize = null

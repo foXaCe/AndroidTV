@@ -172,14 +172,11 @@
     <string name="lbl_resume_preroll">Genoptag indledende reklame</string>
     <string name="pref_next_up_timeout_title">Varighed af Næste-timer</string>
     <string name="pref_next_up_timeout_summary">Hvor lang tid der skal ventes inden afspilning af næste fil</string>
-    <string name="pref_app_theme">App-tema</string>
     <string name="watch_now">Se nu</string>
-    <string name="pref_theme_dark">Mørkt (standard)</string>
 <string name="grid_direction_vertical">Lodret</string>
     <string name="grid_direction_horizontal">Vandret</string>
     <string name="pref_device_model">Enhedsmodel</string>
     <string name="grid_direction">Gitterretning</string>
-<string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">Slutter %1$s</string>
 <string name="msg_no_items">Ingen filer at afspille</string>
 <string name="too_many_errors">For mange fejl. Giver op.</string>
@@ -279,7 +276,6 @@
 <string name="pref_login">Log ind</string>
 <string name="pref_libraries">Biblioteker</string>
 <string name="pref_browsing">Aktivitet</string>
-    <string name="pref_behavior">Adfærd</string>
     <string name="pref_accounts">Brugere</string>
     <string name="sort_accounts_by">Sorter brugere efter</string>
     <string name="pref_customization">Brugerdefineret</string>
@@ -362,7 +358,6 @@
     </plurals>
     <string name="pref_screensaver_inapp_timeout">Start pauseskærm efter</string>
     <string name="pref_screensaver_inapp_enabled_description">Vis Jellyfin-pauseskærmen, mens appen er åben</string>
-    <string name="not_set">Ikke indstillet</string>
     <string name="pref_screensaver_inapp_enabled">Brug pauseskærm i appen</string>
     <string name="lbl_album_artists">Album kunstnere</string>
     <string name="disable_ui_mode_warning">Deaktiver enhed type advarsel</string>

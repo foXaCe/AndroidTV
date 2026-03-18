@@ -93,12 +93,10 @@
 <string name="lbl_on">Ekkor</string>
     <string name="lbl_resume_preroll">Késleltetett lejátszás</string>
 <string name="lbl_show_backdrop">Hátterek megjelenítése</string>
-    <string name="pref_app_theme">Alkalmazástéma</string>
     <string name="watch_now">Megnézés</string>
     <string name="pref_next_up_timeout_title">A \'Következő\' időzítő időtartama</string>
     <string name="pref_next_up_timeout_summary">Ennyi időt várjon a következő elem lejátszása előtt</string>
     <string name="pref_about_title">Rólunk</string>
-    <string name="pref_theme_dark">Sötét (alapértelmezett)</string>
     <string name="lbl_my_media">Saját média</string>
     <string name="lbl_image_size">Képméret</string>
     <string name="lbl_image_type">Képtípus</string>
@@ -192,7 +190,6 @@
 <string name="episode_missing_message_2">Ez az epizód hiányzik a könyvtáradból. A lejátszás megáll.</string>
     <string name="episode_missing_message">Ez az epizód hiányzik a könyvtáradból. Szeretnéd kihagyni, és folytatni az azután következővel\?</string>
     <string name="episode_missing">Hiányzó epizód</string>
-<string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">%1$s -kor lesz vége</string>
 <string name="pref_clock_display_playback">Amíg fut a lejátszás</string>
     <string name="pref_clock_display_browsing">Amíg böngészem</string>
@@ -301,7 +298,6 @@
 <string name="pref_login">Bejelentkezés</string>
 <string name="pref_libraries">Könyvtárak</string>
 <string name="pref_browsing">Böngészés</string>
-    <string name="pref_behavior">Viselkedés</string>
     <string name="pref_accounts">Fiókok</string>
     <string name="sort_accounts_by">Fiókok rendezése ez szerint</string>
     <string name="pref_customization">Testreszabás</string>
@@ -364,7 +360,6 @@
         <item quantity="one">%1$s zeneszám</item>
         <item quantity="other">%1$s zeneszámok</item>
     </plurals>
-    <string name="not_set">Nincs beállítva</string>
     <string name="disable_ui_mode_warning">Eszköztípus figyelmeztetés letiltása</string>
     <string name="because_you_watched">Mert nézed %1$s</string>
     <string name="photos">Fotók</string>

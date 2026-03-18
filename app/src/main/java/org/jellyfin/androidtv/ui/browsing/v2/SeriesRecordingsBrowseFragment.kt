@@ -6,44 +6,32 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.service.BackgroundService
 import org.jellyfin.androidtv.ui.background.AppBackground
-import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.debug.ScreenIdOverlay
@@ -55,8 +43,13 @@ import org.jellyfin.androidtv.ui.base.state.EmptyState
 import org.jellyfin.androidtv.ui.base.state.ErrorState
 import org.jellyfin.androidtv.ui.base.state.StateContainer
 import org.jellyfin.androidtv.ui.base.theme.BrowseDimensions
+import org.jellyfin.androidtv.ui.base.theme.CardDimensions
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
+import org.jellyfin.androidtv.ui.browsing.compose.MediaPosterCard
 import org.jellyfin.androidtv.ui.navigation.Destinations
 import org.jellyfin.androidtv.ui.navigation.NavigationRepository
+import org.jellyfin.androidtv.ui.shared.components.BrowseHeader
+import org.jellyfin.androidtv.ui.shared.components.VegafoXScaffold
 import org.jellyfin.sdk.model.api.SeriesTimerInfoDto
 import org.jellyfin.sdk.model.serializer.toUUIDOrNull
 import org.koin.android.ext.android.inject
@@ -89,7 +82,13 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 						FrameLayout.LayoutParams.MATCH_PARENT,
 					)
 				setContent {
-					JellyfinTheme { ScreenIdOverlay(ScreenIds.SERIES_RECORDINGS_ID, ScreenIds.SERIES_RECORDINGS_NAME) { SeriesRecordingsContent() } }
+					JellyfinTheme {
+						ScreenIdOverlay(ScreenIds.SERIES_RECORDINGS_ID, ScreenIds.SERIES_RECORDINGS_NAME) {
+							VegafoXScaffold {
+								SeriesRecordingsContent()
+							}
+						}
+					}
 				}
 			}
 		mainContainer.addView(contentView)
@@ -118,11 +117,31 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 				modifier =
 					Modifier
 						.fillMaxSize()
-						.background(JellyfinTheme.colorScheme.surfaceDim.copy(alpha = overlayAlpha)),
+						.background(VegafoXColors.SurfaceDim.copy(alpha = overlayAlpha)),
 			)
 
 			Column(modifier = Modifier.fillMaxSize()) {
-				SeriesRecordingsHeader(uiState = uiState)
+				BrowseHeader(
+					title = stringResource(R.string.lbl_series_recordings),
+				) {
+					LibraryToolbarButton(
+						icon = VegafoXIcons.Home,
+						contentDescription = stringResource(R.string.home),
+						onClick = { navigationRepository.navigate(Destinations.home) },
+					)
+				}
+
+				Spacer(modifier = Modifier.height(6.dp))
+
+				SeriesTimerHud(
+					timer = uiState.focusedTimer,
+					modifier =
+						Modifier
+							.fillMaxWidth()
+							.padding(horizontal = BrowseDimensions.gridPaddingHorizontal),
+				)
+
+				Spacer(modifier = Modifier.height(6.dp))
 
 				val displayState =
 					when {
@@ -168,53 +187,6 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 	}
 
 	@Composable
-	private fun SeriesRecordingsHeader(uiState: SeriesRecordingsBrowseUiState) {
-		Column(
-			modifier =
-				Modifier
-					.fillMaxWidth()
-					.padding(
-						start = BrowseDimensions.contentPaddingHorizontal,
-						end = BrowseDimensions.contentPaddingHorizontal,
-						top = 12.dp,
-						bottom = 4.dp,
-					),
-		) {
-			Box(
-				modifier = Modifier.fillMaxWidth(),
-				contentAlignment = Alignment.Center,
-			) {
-				Text(
-					text = stringResource(R.string.lbl_series_recordings),
-					style = JellyfinTheme.typography.headlineMedium,
-					fontWeight = FontWeight.Light,
-					color = JellyfinTheme.colorScheme.onSurface,
-				)
-			}
-
-			Spacer(modifier = Modifier.height(6.dp))
-
-			SeriesTimerHud(
-				timer = uiState.focusedTimer,
-				modifier = Modifier.fillMaxWidth(),
-			)
-
-			Spacer(modifier = Modifier.height(6.dp))
-
-			Row(
-				modifier = Modifier.fillMaxWidth(),
-				verticalAlignment = Alignment.CenterVertically,
-			) {
-				LibraryToolbarButton(
-					icon = VegafoXIcons.Home,
-					contentDescription = stringResource(R.string.home),
-					onClick = { navigationRepository.navigate(Destinations.home) },
-				)
-			}
-		}
-	}
-
-	@Composable
 	private fun SeriesTimerHud(
 		timer: SeriesTimerInfoDto?,
 		modifier: Modifier = Modifier,
@@ -228,7 +200,7 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 					Text(
 						text = timer.name ?: "",
 						style = JellyfinTheme.typography.titleMedium,
-						color = JellyfinTheme.colorScheme.onSurface,
+						color = VegafoXColors.TextPrimary,
 						maxLines = 1,
 						overflow = TextOverflow.Ellipsis,
 					)
@@ -237,7 +209,7 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 						Text(
 							text = subtitle,
 							style = JellyfinTheme.typography.bodySmall,
-							color = JellyfinTheme.colorScheme.textSecondary,
+							color = VegafoXColors.TextSecondary,
 							maxLines = 1,
 							overflow = TextOverflow.Ellipsis,
 						)
@@ -272,7 +244,7 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 					Text(
 						text = stringResource(R.string.lbl_no_items),
 						style = JellyfinTheme.typography.titleMedium,
-						color = JellyfinTheme.colorScheme.textHint,
+						color = VegafoXColors.TextHint,
 					)
 				}
 			} else {
@@ -280,116 +252,33 @@ class SeriesRecordingsBrowseFragment : Fragment() {
 					modifier =
 						Modifier
 							.fillMaxWidth()
-							.padding(top = 12.dp),
+							.padding(top = BrowseDimensions.rowTopPadding),
 				) {
 					Text(
 						text = stringResource(R.string.lbl_series_recordings),
 						style = JellyfinTheme.typography.titleMedium,
-						color = JellyfinTheme.colorScheme.onSurface,
-						modifier = Modifier.padding(start = BrowseDimensions.contentPaddingHorizontal, bottom = 8.dp),
+						color = VegafoXColors.TextPrimary,
+						modifier = Modifier.padding(start = BrowseDimensions.contentPaddingHorizontal, bottom = BrowseDimensions.rowTitleBottomPadding),
 					)
 
 					LazyRow(
-						horizontalArrangement = Arrangement.spacedBy(12.dp),
+						horizontalArrangement = Arrangement.spacedBy(BrowseDimensions.cardGap),
 						contentPadding = PaddingValues(horizontal = BrowseDimensions.contentPaddingHorizontal),
 					) {
 						items(uiState.seriesTimers, key = { it.id ?: it.name.orEmpty() }) { timer ->
-							SeriesTimerCard(
-								timer = timer,
+							MediaPosterCard(
+								imageUrl = null,
+								title = timer.name ?: "",
+								cardWidth = CardDimensions.landscapeWidth,
+								cardHeight = CardDimensions.landscapeHeight,
 								onClick = { launchSeriesTimer(timer) },
 								onFocused = { viewModel.setFocusedTimer(timer) },
+								subtitle = buildSeriesTimerSubtitle(timer),
+								placeholderIcon = VegafoXIcons.RecordSeries,
 							)
 						}
 					}
 				}
-			}
-		}
-	}
-
-	@Composable
-	private fun SeriesTimerCard(
-		timer: SeriesTimerInfoDto,
-		onClick: () -> Unit,
-		onFocused: () -> Unit,
-		cardWidth: Int = 200,
-		cardHeight: Int = 112,
-	) {
-		val interactionSource = remember { MutableInteractionSource() }
-		val isFocused by interactionSource.collectIsFocusedAsState()
-
-		LaunchedEffect(isFocused) {
-			if (isFocused) onFocused()
-		}
-
-		val scale = if (isFocused) 1.08f else 1.0f
-		val alpha = if (isFocused) 1.0f else 0.75f
-
-		Column(
-			modifier =
-				Modifier
-					.width(cardWidth.dp)
-					.graphicsLayer {
-						scaleX = scale
-						scaleY = scale
-						this.alpha = alpha
-					}.clickable(
-						interactionSource = interactionSource,
-						indication = null,
-						onClick = onClick,
-					),
-			horizontalAlignment = Alignment.Start,
-		) {
-			Box(
-				modifier =
-					Modifier
-						.width(cardWidth.dp)
-						.height(cardHeight.dp)
-						.clip(JellyfinTheme.shapes.extraSmall)
-						.then(
-							if (isFocused) {
-								Modifier.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.12f))
-							} else {
-								Modifier
-							},
-						).background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.06f)),
-				contentAlignment = Alignment.Center,
-			) {
-				Icon(
-					imageVector = VegafoXIcons.RecordSeries,
-					contentDescription = null,
-					modifier = Modifier.size(48.dp),
-					tint =
-						if (isFocused) {
-							JellyfinTheme.colorScheme.onSurface.copy(
-								alpha = 0.4f,
-							)
-						} else {
-							JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.15f)
-						},
-				)
-			}
-
-			Spacer(modifier = Modifier.height(5.dp))
-
-			Text(
-				text = timer.name ?: "",
-				style = JellyfinTheme.typography.bodySmall,
-				fontWeight = FontWeight.Medium,
-				color = JellyfinTheme.colorScheme.onSurface,
-				maxLines = 1,
-				overflow = TextOverflow.Ellipsis,
-			)
-
-			val subtitle = buildSeriesTimerSubtitle(timer)
-			if (subtitle.isNotEmpty()) {
-				Text(
-					text = subtitle,
-					style = JellyfinTheme.typography.labelSmall,
-					fontWeight = FontWeight.Normal,
-					color = JellyfinTheme.colorScheme.textHint,
-					maxLines = 1,
-					overflow = TextOverflow.Ellipsis,
-				)
 			}
 		}
 	}

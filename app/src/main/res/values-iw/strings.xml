@@ -173,12 +173,10 @@
     <string name="grid_direction_horizontal">אופקי</string>
     <string name="grid_direction">כיוון הטבלה</string>
     <string name="pref_device_model">דגם המכשיר</string>
-    <string name="pref_app_theme">ערכת הנושא של היישום</string>
     <string name="watch_now">צפה עכשיו</string>
     <string name="pref_next_up_timeout_title">תזמון הבא בתור</string>
     <string name="pref_next_up_timeout_summary">כמה זמן לחכות לפני ניגון הפריט הבא</string>
     <string name="pref_about_title">אודות</string>
-    <string name="pref_theme_dark">כהה (ברירת מחדל)</string>
     <string name="lbl_my_media">המדיה שלי</string>
     <string name="lbl_image_size">גודל תמונה</string>
     <string name="lbl_image_type">סוג תמונה</string>
@@ -196,7 +194,6 @@
     <string name="pref_clock_display_browsing">בזמן הדפדוף</string>
     <string name="lbl_always">תמיד</string>
     <string name="pref_clock_display">הצג שעון</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="bitrate_kbit">%1$,.0f קילו-ביט לשנייה</string>
     <string name="bitrate_mbit">%1$,.0f מגה-ביט לשנייה</string>
 <string name="server_connection_failed">לא ניתן להתחבר לשרת</string>
@@ -258,7 +255,6 @@
 <string name="pref_login">התחברות</string>
 <string name="pref_libraries">ספריות</string>
 <string name="pref_browsing">דפדוף</string>
-    <string name="pref_behavior">אופי פעולה</string>
     <string name="pref_accounts">משתמשים</string>
     <string name="sort_accounts_by">מיין משתמשים לפי</string>
     <string name="pref_customization">התאמה אישית</string>
@@ -353,7 +349,6 @@
         <item quantity="many">%1$s שניות</item>
         <item quantity="other">%1$s שניות</item>
     </plurals>
-    <string name="not_set">לא הוגדר</string>
     <plurals name="hours">
         <item quantity="one">שעה %1$s</item>
         <item quantity="two">שעתיים</item>

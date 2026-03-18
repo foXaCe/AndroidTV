@@ -16,16 +16,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
+import org.jellyfin.androidtv.ui.base.theme.DetailSectionDimensions
+import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.itemdetail.v2.CastCard
 import org.jellyfin.androidtv.ui.itemdetail.v2.EpisodeCard
 import org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsUiState
@@ -46,13 +52,8 @@ fun DetailMetadataSection(
 	item: BaseItemDto,
 	uiState: ItemDetailsUiState,
 ) {
-	val context = androidx.compose.ui.platform.LocalContext.current
 	val metaItems = mutableListOf<Pair<String, String>>()
 
-	val genres = item.genres ?: emptyList()
-	if (genres.isNotEmpty()) {
-		metaItems.add(stringResource(R.string.lbl_genres) to genres.take(3).joinToString(", ") { translateGenre(context, it) })
-	}
 	if (uiState.directors.isNotEmpty()) {
 		metaItems.add(stringResource(R.string.lbl_director) to uiState.directors.joinToString(", ") { it.name ?: "" })
 	}
@@ -75,17 +76,20 @@ fun DetailSeasonsSection(
 	seasons: List<BaseItemDto>,
 	api: ApiClient,
 	onNavigateToItem: (UUID) -> Unit,
+	showHeader: Boolean = true,
 ) {
 	Column {
-		SectionHeader(title = stringResource(R.string.lbl_seasons))
+		if (showHeader) SectionHeader(title = stringResource(R.string.lbl_seasons))
 		LazyRow(
+			modifier = Modifier.focusRestorer().focusGroup(),
 			horizontalArrangement = Arrangement.spacedBy(16.dp),
 			contentPadding = PaddingValues(horizontal = 0.dp),
 		) {
 			items(seasons, key = { it.id }) { season ->
+				val imageUrl = remember(season.id) { getPosterUrl(season, api) }
 				SeasonCard(
 					name = season.name ?: stringResource(R.string.lbl_seasons),
-					imageUrl = getPosterUrl(season, api),
+					imageUrl = imageUrl,
 					isWatched = season.userData?.played == true,
 					unplayedCount = season.userData?.unplayedItemCount,
 					onClick = { onNavigateToItem(season.id) },
@@ -97,25 +101,64 @@ fun DetailSeasonsSection(
 }
 
 @Composable
+fun DetailEpisodesHeader(
+	seasonNumber: Int?,
+	episodeIndex: Int?,
+	totalEpisodes: Int,
+	modifier: Modifier = Modifier,
+) {
+	val episodesLabel = stringResource(R.string.lbl_episodes).uppercase()
+
+	Row(
+		modifier = modifier.padding(bottom = 10.dp),
+		verticalAlignment = Alignment.CenterVertically,
+		horizontalArrangement = Arrangement.spacedBy(8.dp),
+	) {
+		if (seasonNumber != null) {
+			Text(
+				text = "SAISON $seasonNumber",
+				fontSize = 22.sp,
+				fontFamily = BebasNeue,
+				color = VegafoXColors.OrangePrimary,
+			)
+			Text(
+				text = "\u00B7",
+				fontSize = 22.sp,
+				fontFamily = BebasNeue,
+				color = VegafoXColors.TextSecondary,
+			)
+		}
+		Text(
+			text = "\u00C9pisodes ${ episodeIndex?.let { "$it/" } ?: "" }$totalEpisodes",
+			fontSize = 22.sp,
+			fontFamily = BebasNeue,
+			color = VegafoXColors.TextPrimary,
+		)
+	}
+}
+
+@Composable
 fun DetailEpisodesHorizontalSection(
 	title: String,
 	episodes: List<BaseItemDto>,
 	currentEpisodeId: UUID,
 	api: ApiClient,
 	onNavigateToItem: (UUID) -> Unit,
+	showHeader: Boolean = true,
 ) {
 	Column {
-		SectionHeader(title = title)
+		if (showHeader) SectionHeader(title = title)
 		LazyRow(
+			modifier = Modifier.focusRestorer().focusGroup(),
 			horizontalArrangement = Arrangement.spacedBy(16.dp),
 			contentPadding = PaddingValues(horizontal = 0.dp),
 		) {
 			items(episodes, key = { it.id }) { ep ->
+				val imageUrl = remember(ep.id) { getEpisodeThumbnailUrl(ep, api) ?: getPosterUrl(ep, api) }
 				EpisodeCard(
 					episodeNumber = ep.indexNumber,
 					title = ep.name ?: "",
-					runtime = ep.runTimeTicks?.let { formatDuration(it) },
-					imageUrl = getPosterUrl(ep, api),
+					imageUrl = imageUrl,
 					progress = ep.userData?.playedPercentage ?: 0.0,
 					isCurrent = ep.id == currentEpisodeId,
 					isPlayed = ep.userData?.played == true,
@@ -131,18 +174,18 @@ fun DetailCastSection(
 	cast: List<BaseItemPerson>,
 	api: ApiClient,
 	onNavigateToItem: (UUID) -> Unit,
+	showHeader: Boolean = true,
 ) {
 	Column {
-		SectionHeader(title = stringResource(R.string.lbl_cast_crew))
+		if (showHeader) SectionHeader(title = stringResource(R.string.lbl_cast_crew))
 		LazyRow(
-			horizontalArrangement = Arrangement.spacedBy(24.dp),
+			modifier = Modifier.focusRestorer().focusGroup(),
+			horizontalArrangement = Arrangement.spacedBy(DetailSectionDimensions.castCardGap),
 			contentPadding = PaddingValues(horizontal = 0.dp),
 		) {
 			items(cast, key = { it.id }) { person ->
-				CastCard(
-					name = person.name ?: "",
-					role = person.role ?: person.type.toString(),
-					imageUrl =
+				val imageUrl =
+					remember(person.id, person.primaryImageTag) {
 						person.primaryImageTag?.let { tag ->
 							api.imageApi.getItemImageUrl(
 								itemId = person.id,
@@ -150,7 +193,12 @@ fun DetailCastSection(
 								tag = tag,
 								maxHeight = 280,
 							)
-						},
+						}
+					}
+				CastCard(
+					name = person.name ?: "",
+					role = person.role ?: person.type.toString(),
+					imageUrl = imageUrl,
 					onClick = { onNavigateToItem(person.id) },
 				)
 			}
@@ -167,10 +215,12 @@ fun DetailSectionWithCards(
 	isLandscape: Boolean = false,
 	firstItemFocusRequester: FocusRequester? = null,
 	onItemFocused: ((BaseItemDto) -> Unit)? = null,
+	showHeader: Boolean = true,
 ) {
 	Column {
-		SectionHeader(title = title)
+		if (showHeader) SectionHeader(title = title)
 		LazyRow(
+			modifier = Modifier.focusRestorer().focusGroup(),
 			horizontalArrangement = Arrangement.spacedBy(16.dp),
 			contentPadding = PaddingValues(horizontal = 0.dp),
 		) {
@@ -184,9 +234,10 @@ fun DetailSectionWithCards(
 					}
 
 				if (isLandscape) {
+					val imageUrl = remember(item.id) { getEpisodeThumbnailUrl(item, api) }
 					LandscapeItemCard(
 						title = item.name ?: "",
-						imageUrl = getEpisodeThumbnailUrl(item, api),
+						imageUrl = imageUrl,
 						subtitle = item.seriesName,
 						onClick = { onNavigateToItem(item.id) },
 						onFocused = onItemFocused?.let { callback -> { callback(item) } },
@@ -194,9 +245,10 @@ fun DetailSectionWithCards(
 						item = item,
 					)
 				} else {
+					val imageUrl = remember(item.id) { getPosterUrl(item, api) }
 					SimilarItemCard(
 						title = item.name ?: "",
-						imageUrl = getPosterUrl(item, api),
+						imageUrl = imageUrl,
 						year = item.productionYear,
 						onClick = { onNavigateToItem(item.id) },
 						onFocused = onItemFocused?.let { callback -> { callback(item) } },

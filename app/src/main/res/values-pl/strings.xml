@@ -146,11 +146,9 @@
     <string name="grid_direction_horizontal">Poziomy</string>
     <string name="grid_direction">Kierunek siatki</string>
     <string name="pref_device_model">Model urządzenia</string>
-    <string name="pref_app_theme">Motyw aplikacji</string>
     <string name="watch_now">Oglądaj teraz</string>
     <string name="pref_next_up_timeout_summary">Jak długo należy czekać przed odtworzeniem następnej pozycji</string>
     <string name="pref_about_title">O</string>
-    <string name="pref_theme_dark">Ciemny (Domyślny)</string>
     <string name="lbl_my_media">Moje media</string>
     <string name="lbl_image_size">Wielkość obrazu</string>
     <string name="lbl_image_type">Typ obrazu</string>
@@ -190,7 +188,6 @@
     <string name="episode_missing">Brakuje odcinka</string>
     <string name="no_player_message">Wydaje się że nie masz zainstalowanej aplikacji do odtwarzania video. Ta opcja wymaga zainstalowanej zewnętrznej aplikacji do odtwarzania video.</string>
 <string name="lbl_pause">Zatrzymaj</string>
-    <string name="watch_count_overflow">99+</string>
 <string name="lbl_subtitle_track">Wybierz napisy</string>
     <string name="lbl_audio_track">Wybierz ścieżkę audio</string>
 <string name="login_server_unavailable">Nie można połączyć z serwerem</string>
@@ -284,7 +281,6 @@
 <string name="pref_login">Login</string>
 <string name="pref_libraries">Biblioteki</string>
 <string name="pref_browsing">Przeglądanie</string>
-    <string name="pref_behavior">Zachowanie</string>
     <string name="pref_accounts">Konta</string>
     <string name="sort_accounts_by">Sortuj konta według</string>
     <string name="pref_customization">Dostosowywanie</string>
@@ -373,7 +369,6 @@
         <item quantity="many">%1$s odcinków</item>
         <item quantity="other">%1$s odcinków</item>
     </plurals>
-    <string name="not_set">Nie ustawiony</string>
     <string name="lbl_album_artists">Wykonawcy albumów</string>
     <string name="disable_ui_mode_warning">Wyłącz ostrzeżenie o typie urządzenia</string>
     <string name="because_you_watched">Bo obejrzałeś %1$s</string>

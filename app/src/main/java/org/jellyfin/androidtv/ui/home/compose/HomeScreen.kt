@@ -1,15 +1,12 @@
 package org.jellyfin.androidtv.ui.home.compose
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -18,17 +15,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.SingletonImageLoader
@@ -37,20 +29,22 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.size.Scale
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.skeleton.SkeletonLandscapeCardRow
 import org.jellyfin.androidtv.ui.base.state.DisplayState
 import org.jellyfin.androidtv.ui.base.state.EmptyState
 import org.jellyfin.androidtv.ui.base.state.ErrorState
 import org.jellyfin.androidtv.ui.base.state.StateContainer
-import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.base.tv.TvRowList
 import org.jellyfin.androidtv.ui.browsing.compose.BrowseMediaCard
-import org.jellyfin.androidtv.ui.browsing.compose.getItemImageUrl
-import org.jellyfin.androidtv.ui.home.compose.sidebar.PremiumSideBar
+import org.jellyfin.androidtv.ui.itemdetail.v2.shared.getBackdropUrl
+import org.jellyfin.androidtv.ui.shared.components.DarkGridNoiseBackground
+import org.jellyfin.androidtv.ui.shared.components.VegafoXScaffold
+import org.jellyfin.androidtv.util.apiclient.getCardImageUrl
 import org.jellyfin.design.Tokens
 import org.jellyfin.sdk.model.api.BaseItemDto
-import kotlin.random.Random
+import timber.log.Timber
 
 /** Pixel size used for prefetching card images (matches BrowseMediaCard). */
 private const val PREFETCH_IMAGE_WIDTH = 440
@@ -91,10 +85,12 @@ fun HomeScreen(
 	val focusRequester = remember { FocusRequester() }
 	var hasRequestedInitialFocus by rememberSaveable { mutableStateOf(false) }
 	val lastFocusedId by viewModel.lastFocusedItemId.collectAsState()
+	val lastFocusedRowIndex by viewModel.lastFocusedRowIndex.collectAsState()
+	val columnState = rememberLazyListState()
 
 	// Determine focus target: last focused item (return from detail) or default first item
 	val defaultRow =
-		uiState.rows.firstOrNull { it.key == "resume" || it.key == "continue_watching" }
+		uiState.rows.firstOrNull { it.key == "continue_watching" || it.key == "continue_watching_fallback" }
 			?: uiState.rows.firstOrNull()
 	val defaultItemId = defaultRow?.items?.firstOrNull()?.id
 	val focusTargetId = lastFocusedId ?: defaultItemId
@@ -112,14 +108,32 @@ fun HomeScreen(
 		}
 	}
 
-	// Restore focus when returning from detail screen
+	// Restore focus when returning from detail screen + stop trailer on pause/stop
 	var needsRestoreFocus by remember { mutableStateOf(false) }
 	val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
 	androidx.compose.runtime.DisposableEffect(lifecycleOwner) {
 		val observer =
 			androidx.lifecycle.LifecycleEventObserver { _, event ->
-				if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME && hasRequestedInitialFocus) {
-					needsRestoreFocus = true
+				when (event) {
+					androidx.lifecycle.Lifecycle.Event.ON_RESUME -> {
+						viewModel.unfreezeFocusTracking()
+						if (hasRequestedInitialFocus) {
+							needsRestoreFocus = true
+						}
+					}
+					androidx.lifecycle.Lifecycle.Event.ON_PAUSE,
+					androidx.lifecycle.Lifecycle.Event.ON_STOP,
+					-> {
+						// Freeze focus tracking to prevent corruption during fragment transition
+						viewModel.freezeFocusTracking()
+						// Save exact scroll position before leaving
+						viewModel.saveScrollPosition(
+							columnState.firstVisibleItemIndex,
+							columnState.firstVisibleItemScrollOffset,
+						)
+						viewModel.stopTrailer()
+					}
+					else -> Unit
 				}
 			}
 		lifecycleOwner.lifecycle.addObserver(observer)
@@ -128,26 +142,46 @@ fun HomeScreen(
 
 	LaunchedEffect(needsRestoreFocus) {
 		if (needsRestoreFocus && focusTargetId != null) {
-			delay(200)
+			val savedIdx = viewModel.savedScrollIndex
+			val savedOff = viewModel.savedScrollOffset
+
+			// Step 1: Wait for LazyColumn to complete its initial layout
+			snapshotFlow { columnState.layoutInfo.visibleItemsInfo.isNotEmpty() }
+				.first { it }
+
+			// Step 2: Restore exact scroll position saved before navigation
+			columnState.scrollToItem(savedIdx, savedOff)
+			delay(50)
+
+			// Step 3: If target row is not visible (deep rows), scroll to it
+			val targetVisible =
+				columnState.layoutInfo.visibleItemsInfo
+					.any { it.index == lastFocusedRowIndex }
+			if (!targetVisible) {
+				columnState.scrollToItem(lastFocusedRowIndex)
+				delay(50)
+			}
+
+			// Step 4: Request focus on the target card
 			try {
 				focusRequester.requestFocus()
-			} catch (_: Exception) {
+			} catch (e: Exception) {
+				Timber.w(e, "Focus restore failed for item $focusTargetId at row $lastFocusedRowIndex")
 			}
+
+			// Step 5: Re-apply saved scroll to counteract BringIntoView adjustment
+			// Only safe when saved position already shows the target row
+			if (targetVisible) {
+				delay(50)
+				columnState.scrollToItem(savedIdx, savedOff)
+			}
+
 			needsRestoreFocus = false
 		}
 	}
 
-	Row(modifier = Modifier.fillMaxSize()) {
-		// Left: Premium sidebar (fixed 72dp, no overlay)
-		PremiumSideBar(modifier = Modifier.fillMaxHeight())
-
-		// Right: Main content fills remaining space
-		Box(
-			modifier =
-				Modifier
-					.weight(1f)
-					.fillMaxHeight(),
-		) {
+	VegafoXScaffold {
+		Box(modifier = Modifier.fillMaxSize()) {
 			// Layer 0: Dark grid noise background (trading terminal style)
 			DarkGridNoiseBackground()
 
@@ -157,7 +191,37 @@ fun HomeScreen(
 				api = viewModel.api,
 				trailerState = trailerState,
 				onTrailerEnded = { viewModel.stopTrailer() },
+				onStopTrailer = { viewModel.stopTrailer() },
 			)
+
+			// Prefetch hero backdrop for focused item + 2 adjacent items
+			val prefetchContext = LocalContext.current
+			val heroImageLoader = remember { SingletonImageLoader.get(prefetchContext) }
+			LaunchedEffect(focusedItem?.id) {
+				val item = focusedItem ?: return@LaunchedEffect
+				val rows = uiState.rows
+				// Find the item's row and index
+				for (row in rows) {
+					val idx = row.items.indexOfFirst { it.id == item.id }
+					if (idx < 0) continue
+					// Prefetch current + previous + next backdrop
+					val indices = listOf(idx, idx - 1, idx + 1)
+					for (i in indices) {
+						val adjacentItem = row.items.getOrNull(i) ?: continue
+						val url = getBackdropUrl(adjacentItem, viewModel.api) ?: continue
+						heroImageLoader.enqueue(
+							ImageRequest
+								.Builder(prefetchContext)
+								.data(url)
+								.memoryCachePolicy(CachePolicy.ENABLED)
+								.diskCachePolicy(CachePolicy.ENABLED)
+								.crossfade(false)
+								.build(),
+						)
+					}
+					break
+				}
+			}
 
 			// Layer 2: Content
 			Column(modifier = Modifier.fillMaxSize()) {
@@ -218,7 +282,7 @@ fun HomeScreen(
 							remember<(List<BaseItemDto>) -> Unit>(api) {
 								{ items ->
 									for (nextItem in items.take(5)) {
-										val url = getItemImageUrl(nextItem, api, 220) ?: continue
+										val url = nextItem.getCardImageUrl(api) ?: continue
 										val request =
 											ImageRequest
 												.Builder(context)
@@ -234,8 +298,21 @@ fun HomeScreen(
 								}
 							}
 
+						// Pre-compute item → row index map for focus tracking
+						val itemRowIndex =
+							remember(uiState.rows) {
+								buildMap {
+									uiState.rows.forEachIndexed { rowIdx, row ->
+										for (item in row.items) {
+											put(item.id, rowIdx)
+										}
+									}
+								}
+							}
+
 						TvRowList(
 							rows = uiState.rows,
+							columnState = columnState,
 							staggerEntrance = true,
 							contentPadding =
 								PaddingValues(
@@ -249,7 +326,9 @@ fun HomeScreen(
 							BrowseMediaCard(
 								item = item,
 								api = viewModel.api,
-								onFocus = { viewModel.setFocusedItem(item) },
+								onFocus = {
+									viewModel.setFocusedItem(item, itemRowIndex[item.id] ?: 0)
+								},
 								onBlur = { viewModel.stopTrailer() },
 								onClick = { onItemClick(item) },
 								onPlayClick = { onPlayClick(item) },
@@ -266,124 +345,5 @@ fun HomeScreen(
 				)
 			}
 		}
-	}
-}
-
-// -- Dark Grid Noise background constants --
-private val GridBaseColor = Color(0xFF060A0F)
-private val RadialCenterColor = Color(0xFF0A1525)
-private const val NOISE_SEED = 42
-private const val NOISE_POINT_COUNT = 800
-
-/**
- * Dark Grid Noise background — trading/terminal dashboard style.
- * Layers: solid base, fractal noise, geometric grid, radial glow, vignette.
- * Does NOT depend on any state — drawn once, never recomposes.
- */
-@Composable
-private fun DarkGridNoiseBackground(modifier: Modifier = Modifier) {
-	val density = LocalDensity.current
-	val gridStepPx = with(density) { 60.dp.toPx() }
-	val dotSizePx = with(density) { 1.5.dp.toPx() }
-	val lineWidthPx = with(density) { 0.5.dp.toPx() }
-	val gridColor = VegafoXColors.OrangePrimary.copy(alpha = 0.03f)
-
-	Canvas(modifier = modifier.fillMaxSize()) {
-		val w = size.width
-		val h = size.height
-		val cx = w / 2f
-		val cy = h / 2f
-
-		// Layer 1: Solid base #060A0F
-		drawRect(color = GridBaseColor)
-
-		// Layer 2: Fractal noise — 800 deterministic random dots
-		val rng = Random(NOISE_SEED)
-		repeat(NOISE_POINT_COUNT) {
-			val x = rng.nextFloat() * w
-			val y = rng.nextFloat() * h
-			val a = rng.nextFloat() * 0.025f
-			drawRect(
-				color = Color.White.copy(alpha = a),
-				topLeft = Offset(x, y),
-				size = Size(dotSizePx, dotSizePx),
-			)
-		}
-
-		// Layer 3: Geometric grid — OrangePrimary lines every 60dp
-		var gx = 0f
-		while (gx <= w) {
-			drawLine(color = gridColor, start = Offset(gx, 0f), end = Offset(gx, h), strokeWidth = lineWidthPx)
-			gx += gridStepPx
-		}
-		var gy = 0f
-		while (gy <= h) {
-			drawLine(color = gridColor, start = Offset(0f, gy), end = Offset(w, gy), strokeWidth = lineWidthPx)
-			gy += gridStepPx
-		}
-
-		// Layer 4: Elliptical radial gradient — center glow (70% width × 50% height)
-		val radiusX = w * 0.35f
-		val scaleY = (h * 0.25f) / radiusX
-		drawContext.canvas.nativeCanvas.save()
-		drawContext.canvas.nativeCanvas.scale(1f, scaleY, cx, cy)
-		drawRect(
-			brush =
-				Brush.radialGradient(
-					colors = listOf(RadialCenterColor, Color.Transparent),
-					center = Offset(cx, cy),
-					radius = radiusX,
-				),
-			alpha = 0.6f,
-		)
-		drawContext.canvas.nativeCanvas.restore()
-
-		// Layer 5: Vignette — dark fading edges
-		val vw = w * 0.15f
-		val vh = h * 0.15f
-		val vAlpha = 0.7f
-		// Left — reduced (sidebar already provides left edge)
-		val vwLeft = w * 0.05f
-		drawRect(
-			brush =
-				Brush.horizontalGradient(
-					colors = listOf(Color.Black.copy(alpha = vAlpha * 0.5f), Color.Transparent),
-					startX = 0f,
-					endX = vwLeft,
-				),
-			size = Size(vwLeft, h),
-		)
-		// Right
-		drawRect(
-			brush =
-				Brush.horizontalGradient(
-					colors = listOf(Color.Transparent, Color.Black.copy(alpha = vAlpha)),
-					startX = w - vw,
-					endX = w,
-				),
-			topLeft = Offset(w - vw, 0f),
-			size = Size(vw, h),
-		)
-		// Top
-		drawRect(
-			brush =
-				Brush.verticalGradient(
-					colors = listOf(Color.Black.copy(alpha = vAlpha), Color.Transparent),
-					startY = 0f,
-					endY = vh,
-				),
-			size = Size(w, vh),
-		)
-		// Bottom
-		drawRect(
-			brush =
-				Brush.verticalGradient(
-					colors = listOf(Color.Transparent, Color.Black.copy(alpha = vAlpha)),
-					startY = h - vh,
-					endY = h,
-				),
-			topLeft = Offset(0f, h - vh),
-			size = Size(w, vh),
-		)
 	}
 }

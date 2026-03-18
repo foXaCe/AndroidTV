@@ -15,10 +15,13 @@ import androidx.media3.common.VideoSize
 import androidx.media3.common.text.CueGroup
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.SeekParameters
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
+import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.extractor.ts.TsExtractor
@@ -95,11 +98,35 @@ class ExoPlayerBackend(
 				)
 			}
 
+		val loadControl =
+			DefaultLoadControl
+				.Builder()
+				.setBufferDurationsMs(
+					/* minBufferMs = */ DefaultLoadControl.DEFAULT_MIN_BUFFER_MS,
+					/* maxBufferMs = */ DefaultLoadControl.DEFAULT_MAX_BUFFER_MS,
+					/* bufferForPlaybackMs = */ 500,
+					/* bufferForPlaybackAfterRebufferMs = */ 3000,
+				).build()
+
+		val bandwidthMeter =
+			DefaultBandwidthMeter
+				.Builder(context)
+				.setInitialBitrateEstimate(100_000_000L)
+				.build()
+
 		val builder =
 			ExoPlayer
 				.Builder(context)
+				.setLoadControl(loadControl)
+				.setBandwidthMeter(bandwidthMeter)
 				.setRenderersFactory(renderersFactory)
-				.setTrackSelector(
+				.setVideoChangeFrameRateStrategy(
+					if (exoPlayerOptions.disableFrameRateMatching) {
+						C.VIDEO_CHANGE_FRAME_RATE_STRATEGY_OFF
+					} else {
+						C.VIDEO_CHANGE_FRAME_RATE_STRATEGY_ONLY_IF_SEAMLESS
+					},
+				).setTrackSelector(
 					DefaultTrackSelector(context).apply {
 						setParameters(
 							buildUponParameters().apply {
@@ -141,6 +168,8 @@ class ExoPlayerBackend(
 			}
 
 		player.also { player ->
+			player.setWakeMode(C.WAKE_MODE_NETWORK)
+			player.setForegroundMode(true)
 			player.addListener(PlayerListener())
 
 			if (exoPlayerOptions.enableDebugLogging) {
@@ -157,10 +186,12 @@ class ExoPlayerBackend(
 					exoPlayer.playbackState == Player.STATE_IDLE || exoPlayer.playbackState == Player.STATE_ENDED -> PlayState.STOPPED
 					else -> PlayState.PAUSED
 				}
+			Timber.d("onIsPlayingChanged: isPlaying=$isPlaying, exoState=${exoPlayer.playbackState} → $state")
 			listener?.onPlayStateChange(state)
 		}
 
 		override fun onPlayerError(error: PlaybackException) {
+			Timber.e(error, "ExoPlayer error: ${error.errorCodeName} (code=${error.errorCode})")
 			listener?.onPlayStateChange(PlayState.ERROR)
 		}
 
@@ -175,6 +206,15 @@ class ExoPlayerBackend(
 		}
 
 		override fun onPlaybackStateChanged(playbackState: Int) {
+			val stateName =
+				when (playbackState) {
+					Player.STATE_IDLE -> "IDLE"
+					Player.STATE_BUFFERING -> "BUFFERING"
+					Player.STATE_READY -> "READY"
+					Player.STATE_ENDED -> "ENDED"
+					else -> "UNKNOWN($playbackState)"
+				}
+			Timber.d("onPlaybackStateChanged: $stateName, isPlaying=${exoPlayer.isPlaying}, playWhenReady=${exoPlayer.playWhenReady}")
 			onIsPlayingChanged(exoPlayer.isPlaying)
 			listener?.onBufferingChange(playbackState == Player.STATE_BUFFERING)
 		}
@@ -306,9 +346,12 @@ class ExoPlayerBackend(
 
 	override fun seekTo(position: Duration) {
 		if (!exoPlayer.isCommandAvailable(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) || !exoPlayer.isCurrentMediaItemSeekable) {
-			Timber.w("Trying to seek but ExoPlayer doesn't support it for the current item")
+			Timber.w("Trying to seek to $position but ExoPlayer doesn't support it yet (state=${exoPlayer.playbackState}), ignoring")
+			return
 		}
 
+		Timber.d("seekTo($position) — ExoPlayer state=${exoPlayer.playbackState}")
+		exoPlayer.setSeekParameters(SeekParameters.CLOSEST_SYNC)
 		exoPlayer.seekTo(position.inWholeMilliseconds)
 	}
 

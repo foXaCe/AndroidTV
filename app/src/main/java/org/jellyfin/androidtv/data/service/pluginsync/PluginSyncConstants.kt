@@ -26,7 +26,7 @@ object PluginSyncConstants {
 	 * Snapshot schema version. Increment when server key mappings change to
 	 * force a snapshot reset on the next sync (server-wins fallback).
 	 */
-	const val SNAPSHOT_VERSION = 2
+	const val SNAPSHOT_VERSION = 3
 
 	/** Key stored inside [SNAPSHOT_PREFS_NAME] to track the snapshot schema version. */
 	const val SNAPSHOT_VERSION_KEY = "_snapshot_version"
@@ -42,7 +42,6 @@ object PluginSyncConstants {
 			SyncablePreference(UserPreferences.showLibrariesInToolbar, SyncType.BOOLEAN, "showLibrariesInToolbar"),
 			SyncablePreference(UserPreferences.shuffleContentType, SyncType.STRING, "shuffleContentType"),
 			// Home Screen
-			SyncablePreference(UserPreferences.mergeContinueWatchingNextUp, SyncType.BOOLEAN, "mergeContinueWatchingNextUp"),
 			SyncablePreference(UserPreferences.enableMultiServerLibraries, SyncType.BOOLEAN, "enableMultiServerLibraries"),
 			SyncablePreference(UserPreferences.enableFolderView, SyncType.BOOLEAN, "enableFolderView"),
 			SyncablePreference(UserPreferences.confirmExit, SyncType.BOOLEAN, "confirmExit"),

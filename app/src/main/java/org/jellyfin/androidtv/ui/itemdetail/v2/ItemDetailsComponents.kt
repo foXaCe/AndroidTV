@@ -1,6 +1,7 @@
 package org.jellyfin.androidtv.ui.itemdetail.v2
 
 import android.view.KeyEvent
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -46,6 +48,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -78,14 +82,17 @@ import org.jellyfin.androidtv.ui.base.Seekbar
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.button.IconButton
 import org.jellyfin.androidtv.ui.base.button.IconButtonDefaults
-import org.jellyfin.androidtv.ui.base.focusBorderColor
 import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.theme.CardDimensions
+import org.jellyfin.androidtv.ui.base.theme.DetailSectionDimensions
 import org.jellyfin.androidtv.ui.base.theme.DialogDimensions
+import org.jellyfin.androidtv.ui.base.theme.HeroDimensions
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.browsing.composable.inforow.InfoRowColors
 import org.jellyfin.androidtv.ui.composable.rememberErrorPlaceholder
 import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
+import org.jellyfin.androidtv.ui.shared.components.CachedAsyncImage
+import org.jellyfin.androidtv.ui.shared.components.PlaybackProgressBadge
 import org.jellyfin.androidtv.util.TimeUtils
 import org.jellyfin.design.Tokens
 import org.jellyfin.sdk.model.api.BaseItemDto
@@ -104,7 +111,7 @@ fun DetailActionButton(
 ) {
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
-	val focusColor = focusBorderColor()
+	val focusColor = VegafoXColors.OrangePrimary
 	val resolvedActiveColor = if (activeColor == Color.Unspecified) focusColor else activeColor
 	val focusContentColor = if (focusColor.luminance() > 0.4f) JellyfinTheme.colorScheme.surface else JellyfinTheme.colorScheme.onSurface
 
@@ -244,45 +251,26 @@ fun MetadataGroup(
 ) {
 	if (items.isEmpty()) return
 
-	Row(
-		modifier =
-			modifier
-				.fillMaxWidth()
-				.clip(JellyfinTheme.shapes.small)
-				.background(JellyfinTheme.colorScheme.outlineVariant)
-				.border(
-					1.dp,
-					JellyfinTheme.colorScheme.outlineVariant,
-					JellyfinTheme.shapes.small,
-				).padding(vertical = 12.dp),
-		verticalAlignment = Alignment.Top,
+	Column(
+		modifier = modifier,
+		verticalArrangement = Arrangement.spacedBy(2.dp),
 	) {
-		items.forEachIndexed { index, (label, value) ->
-			Column(
-				modifier =
-					Modifier
-						.weight(1f)
-						.padding(horizontal = 18.dp),
-			) {
+		items.forEach { (label, value) ->
+			Column {
 				Text(
 					text = label.uppercase(),
-					style = JellyfinTheme.typography.labelSmall.copy(fontWeight = FontWeight.W600),
-					color = JellyfinTheme.colorScheme.textDisabled,
+					style =
+						JellyfinTheme.typography.labelSmall.copy(
+							fontWeight = FontWeight.W600,
+							fontSize = 10.sp,
+						),
+					color = VegafoXColors.TextDisabled,
 					letterSpacing = 0.5.sp,
 				)
-				Spacer(modifier = Modifier.height(4.dp))
 				Text(
 					text = value,
-					style = JellyfinTheme.typography.bodyMedium,
-					color = JellyfinTheme.colorScheme.onSurface,
-				)
-			}
-			if (index < items.lastIndex) {
-				Box(
-					Modifier
-						.width(1.dp)
-						.height(36.dp)
-						.background(JellyfinTheme.colorScheme.outlineVariant),
+					style = JellyfinTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+					color = VegafoXColors.TextSecondary,
 				)
 			}
 		}
@@ -300,11 +288,29 @@ fun CastCard(
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
 
+	// 3D relief animation
+	val animatedElevation by animateFloatAsState(
+		targetValue = if (isFocused) 20f else 8f,
+		animationSpec = tween(200, easing = CinemaEaseOutCubic),
+		label = "castElevation",
+	)
+	val animatedTranslationY by animateFloatAsState(
+		targetValue = if (isFocused) -2f else 0f,
+		animationSpec = tween(200, easing = CinemaEaseOutCubic),
+		label = "castTranslationY",
+	)
+	val castBorderColor by animateColorAsState(
+		targetValue = if (isFocused) VegafoXColors.OrangePrimary else VegafoXColors.PosterBorderLight,
+		animationSpec = tween(150),
+		label = "castBorder",
+	)
+
 	Column(
 		horizontalAlignment = Alignment.CenterHorizontally,
 		modifier =
 			modifier
-				.width(100.dp)
+				.width(DetailSectionDimensions.castCardWidth)
+				.height(DetailSectionDimensions.castCardHeight)
 				.clickable(
 					interactionSource = interactionSource,
 					indication = null,
@@ -314,15 +320,17 @@ fun CastCard(
 		Box(
 			modifier =
 				Modifier
-					.size(72.dp)
+					.size(DetailSectionDimensions.castPhotoSize)
+					.graphicsLayer {
+						shadowElevation = animatedElevation.dp.toPx()
+						translationY = animatedTranslationY
+						shape = CircleShape
+						clip = true
+						spotShadowColor = Color.Black
+						ambientShadowColor = Color.Black.copy(alpha = 0.6f)
+					}.border(2.dp, castBorderColor, CircleShape)
 					.clip(CircleShape)
-					.then(
-						if (isFocused) {
-							Modifier.border(2.dp, focusBorderColor(), CircleShape)
-						} else {
-							Modifier.border(1.dp, VegafoXColors.Divider, CircleShape)
-						},
-					).background(JellyfinTheme.colorScheme.outlineVariant),
+					.background(JellyfinTheme.colorScheme.surfaceDim),
 			contentAlignment = Alignment.Center,
 		) {
 			if (imageUrl != null) {
@@ -350,23 +358,21 @@ fun CastCard(
 
 		Text(
 			text = name,
-			style = JellyfinTheme.typography.labelMedium.copy(fontSize = 12.sp),
-			color = JellyfinTheme.colorScheme.onSurface,
+			style = JellyfinTheme.typography.labelMedium.copy(fontSize = 12.sp, lineHeight = 15.sp),
+			color = VegafoXColors.TextPrimary,
+			textAlign = TextAlign.Center,
+			maxLines = 2,
+			overflow = TextOverflow.Ellipsis,
+		)
+
+		Text(
+			text = role ?: "",
+			style = JellyfinTheme.typography.labelSmall.copy(fontSize = 11.sp),
+			color = VegafoXColors.TextSecondary,
 			textAlign = TextAlign.Center,
 			maxLines = 1,
 			overflow = TextOverflow.Ellipsis,
 		)
-
-		if (role != null) {
-			Text(
-				text = role,
-				style = JellyfinTheme.typography.labelSmall.copy(fontSize = 11.sp),
-				color = JellyfinTheme.colorScheme.textHint,
-				textAlign = TextAlign.Center,
-				maxLines = 1,
-				overflow = TextOverflow.Ellipsis,
-			)
-		}
 	}
 }
 
@@ -400,7 +406,7 @@ fun SeasonCard(
 					.clip(JellyfinTheme.shapes.button)
 					.then(
 						if (isFocused) {
-							Modifier.border(2.dp, focusBorderColor(), JellyfinTheme.shapes.button)
+							Modifier.border(2.dp, VegafoXColors.OrangePrimary, JellyfinTheme.shapes.button)
 						} else {
 							Modifier.border(2.dp, Color.Transparent, JellyfinTheme.shapes.button)
 						},
@@ -506,7 +512,6 @@ private fun SeasonCardLegacyBadge(
 fun EpisodeCard(
 	episodeNumber: Int?,
 	title: String,
-	runtime: String?,
 	imageUrl: String?,
 	progress: Double,
 	isCurrent: Boolean,
@@ -516,46 +521,58 @@ fun EpisodeCard(
 ) {
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
-	val borderColor = focusBorderColor()
+	val cardShape = RoundedCornerShape(12.dp)
+
+	// 3D relief animation (matches hero poster)
+	val animatedElevation by animateFloatAsState(
+		targetValue = if (isFocused) 24f else 12f,
+		animationSpec = tween(200, easing = CinemaEaseOutCubic),
+		label = "episodeElevation",
+	)
+	val animatedTranslationY by animateFloatAsState(
+		targetValue = if (isFocused) -3f else 0f,
+		animationSpec = tween(200, easing = CinemaEaseOutCubic),
+		label = "episodeTranslationY",
+	)
 
 	Column(
 		modifier =
 			modifier
 				.width(CardDimensions.landscapeWidth)
-				.clip(JellyfinTheme.shapes.button)
-				.then(
-					if (isCurrent) {
-						Modifier.border(
-							2.dp,
-							borderColor.copy(alpha = 0.4f),
-							JellyfinTheme.shapes.small,
-						)
-					} else if (isFocused) {
-						Modifier.border(
-							2.dp,
-							borderColor,
-							JellyfinTheme.shapes.small,
-						)
-					} else {
-						Modifier.border(2.dp, Color.Transparent, JellyfinTheme.shapes.small)
-					},
-				).then(
-					if (isCurrent) {
-						Modifier.background(borderColor.copy(alpha = 0.08f))
-					} else {
-						Modifier
-					},
-				).clickable(
+				.clickable(
 					interactionSource = interactionSource,
 					indication = null,
 					onClick = onClick,
 				),
 	) {
+		// ─── Thumbnail with 3D relief ───
 		Box(
 			modifier =
 				Modifier
 					.fillMaxWidth()
 					.height(CardDimensions.landscapeHeight)
+					.graphicsLayer {
+						shadowElevation = animatedElevation.dp.toPx()
+						translationY = animatedTranslationY
+						shape = cardShape
+						clip = true
+						spotShadowColor = Color.Black
+						ambientShadowColor = Color.Black.copy(alpha = 0.7f)
+					}.then(
+						if (isFocused) {
+							Modifier.border(2.dp, VegafoXColors.OrangePrimary, cardShape)
+						} else if (isCurrent) {
+							Modifier.border(2.dp, VegafoXColors.OrangePrimary.copy(alpha = 0.4f), cardShape)
+						} else {
+							Modifier.border(
+								1.dp,
+								Brush.linearGradient(
+									colors = listOf(VegafoXColors.PosterBorderLight, VegafoXColors.PosterBorderDark),
+								),
+								cardShape,
+							)
+						},
+					).clip(cardShape)
 					.background(JellyfinTheme.colorScheme.surfaceDim),
 		) {
 			if (imageUrl != null) {
@@ -571,61 +588,105 @@ fun EpisodeCard(
 				)
 			}
 
+			// Left edge reflection
+			Box(
+				modifier =
+					Modifier
+						.fillMaxSize()
+						.background(
+							Brush.horizontalGradient(
+								0f to VegafoXColors.PosterReflectLight,
+								0.12f to Color.Transparent,
+								1f to Color.Transparent,
+							),
+						),
+			)
+			// Right edge shadow
+			Box(
+				modifier =
+					Modifier
+						.fillMaxSize()
+						.background(
+							Brush.horizontalGradient(
+								0f to Color.Transparent,
+								0.85f to Color.Transparent,
+								1f to VegafoXColors.PosterShadowDark,
+							),
+						),
+			)
+
+			// Episode number badge — top right
+			Box(
+				modifier =
+					Modifier
+						.align(Alignment.TopEnd)
+						.padding(6.dp)
+						.background(
+							VegafoXColors.BackgroundDeep.copy(alpha = 0.85f),
+							RoundedCornerShape(6.dp),
+						).padding(horizontal = 8.dp, vertical = 3.dp),
+			) {
+				Text(
+					text = (episodeNumber ?: 0).toString(),
+					style = JellyfinTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+					color = VegafoXColors.OrangePrimary,
+				)
+			}
+
+			// Watched badge — top left (when fully played)
 			if (isPlayed && progress <= 0) {
 				EpisodeWatchedBadge(
 					modifier =
 						Modifier
-							.align(Alignment.TopEnd)
-							.padding(4.dp),
+							.align(Alignment.TopStart)
+							.padding(6.dp),
 				)
 			}
 
+			// Progress bar
 			if (progress > 0) {
 				Box(
 					modifier =
 						Modifier
 							.align(Alignment.BottomStart)
 							.fillMaxWidth()
-							.height(2.dp)
+							.height(3.dp)
 							.background(VegafoXColors.Background.copy(alpha = 0.5f)),
 				) {
 					Box(
 						modifier =
 							Modifier
 								.fillMaxWidth(fraction = (progress / 100.0).toFloat().coerceIn(0f, 1f))
-								.height(2.dp)
-								.background(JellyfinTheme.colorScheme.primary),
+								.height(3.dp)
+								.background(VegafoXColors.BlueAccent),
 					)
 				}
 			}
 		}
 
-		Row(
-			modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-			verticalAlignment = Alignment.CenterVertically,
+		// ─── Title badge ───
+		Box(
+			modifier =
+				Modifier
+					.fillMaxWidth()
+					.padding(top = 6.dp)
+					.background(
+						VegafoXColors.Surface.copy(alpha = 0.6f),
+						RoundedCornerShape(8.dp),
+					).border(
+						1.dp,
+						VegafoXColors.BlueAccent.copy(alpha = 0.4f),
+						RoundedCornerShape(8.dp),
+					).padding(horizontal = 10.dp, vertical = 5.dp),
 		) {
 			Text(
-				text = stringResource(R.string.lbl_episode_number_str, episodeNumber?.toString() ?: "?"),
-				style = JellyfinTheme.typography.labelMedium.copy(fontWeight = FontWeight.W700),
-				color = JellyfinTheme.colorScheme.textHint,
-			)
-			Spacer(modifier = Modifier.width(6.dp))
-			Text(
 				text = title,
-				style = JellyfinTheme.typography.bodySmall,
-				color = JellyfinTheme.colorScheme.onSurface,
-				maxLines = 1,
+				style = JellyfinTheme.typography.bodySmall.copy(lineHeight = 18.sp),
+				color = VegafoXColors.TextPrimary,
+				maxLines = 2,
 				overflow = TextOverflow.Ellipsis,
-				modifier = Modifier.weight(1f),
+				softWrap = true,
 			)
-			if (runtime != null) {
-				Spacer(modifier = Modifier.width(6.dp))
-				Text(
-					text = runtime,
-					style = JellyfinTheme.typography.labelSmall,
-					color = JellyfinTheme.colorScheme.textDisabled,
-				)
-			}
 		}
 	}
 }
@@ -644,7 +705,7 @@ fun SeasonEpisodeItem(
 ) {
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
-	val seasonBorderColor = focusBorderColor()
+	val seasonBorderColor = VegafoXColors.OrangePrimary
 
 	Row(
 		modifier =
@@ -898,10 +959,23 @@ fun SimilarItemCard(
 ) {
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
+	val cardShape = RoundedCornerShape(12.dp)
 
 	LaunchedEffect(isFocused) {
 		if (isFocused) onFocused?.invoke()
 	}
+
+	// 3D relief animation
+	val animatedElevation by animateFloatAsState(
+		targetValue = if (isFocused) 28f else 16f,
+		animationSpec = tween(200, easing = CinemaEaseOutCubic),
+		label = "similarElevation",
+	)
+	val animatedTranslationY by animateFloatAsState(
+		targetValue = if (isFocused) -3f else 0f,
+		animationSpec = tween(200, easing = CinemaEaseOutCubic),
+		label = "similarTranslationY",
+	)
 
 	Column(
 		modifier =
@@ -918,14 +992,27 @@ fun SimilarItemCard(
 				Modifier
 					.fillMaxWidth()
 					.height(200.dp)
-					.clip(JellyfinTheme.shapes.button)
-					.then(
+					.graphicsLayer {
+						shadowElevation = animatedElevation.dp.toPx()
+						translationY = animatedTranslationY
+						shape = cardShape
+						clip = true
+						spotShadowColor = Color.Black
+						ambientShadowColor = VegafoXColors.PosterShadowDark
+					}.then(
 						if (isFocused) {
-							Modifier.border(2.dp, focusBorderColor(), JellyfinTheme.shapes.button)
+							Modifier.border(2.dp, VegafoXColors.OrangePrimary, cardShape)
 						} else {
-							Modifier.border(2.dp, Color.Transparent, JellyfinTheme.shapes.button)
+							Modifier.border(
+								1.dp,
+								Brush.linearGradient(
+									colors = listOf(VegafoXColors.PosterBorderLight, VegafoXColors.PosterBorderDark),
+								),
+								cardShape,
+							)
 						},
-					).background(JellyfinTheme.colorScheme.outlineVariant),
+					).clip(cardShape)
+					.background(JellyfinTheme.colorScheme.surfaceDim),
 		) {
 			if (imageUrl != null) {
 				val placeholder = rememberGradientPlaceholder()
@@ -940,6 +1027,33 @@ fun SimilarItemCard(
 				)
 			}
 
+			// Left edge reflection
+			Box(
+				modifier =
+					Modifier
+						.fillMaxSize()
+						.background(
+							Brush.horizontalGradient(
+								0f to VegafoXColors.PosterReflectLight,
+								0.15f to Color.Transparent,
+								1f to Color.Transparent,
+							),
+						),
+			)
+			// Right edge shadow
+			Box(
+				modifier =
+					Modifier
+						.fillMaxSize()
+						.background(
+							Brush.horizontalGradient(
+								0f to Color.Transparent,
+								0.8f to Color.Transparent,
+								1f to VegafoXColors.PosterShadowDark,
+							),
+						),
+			)
+
 			if (item != null) {
 				ItemCardOverlays(item = item)
 			}
@@ -950,7 +1064,7 @@ fun SimilarItemCard(
 		Text(
 			text = title,
 			style = JellyfinTheme.typography.labelMedium,
-			color = JellyfinTheme.colorScheme.onSurface,
+			color = VegafoXColors.TextPrimary,
 			maxLines = 1,
 			overflow = TextOverflow.Ellipsis,
 		)
@@ -959,7 +1073,7 @@ fun SimilarItemCard(
 			Text(
 				text = year.toString(),
 				style = JellyfinTheme.typography.labelSmall,
-				color = JellyfinTheme.colorScheme.textHint,
+				color = VegafoXColors.TextSecondary,
 			)
 		}
 	}
@@ -1000,7 +1114,7 @@ fun LandscapeItemCard(
 					.clip(JellyfinTheme.shapes.button)
 					.then(
 						if (isFocused) {
-							Modifier.border(2.dp, focusBorderColor(), JellyfinTheme.shapes.button)
+							Modifier.border(2.dp, VegafoXColors.OrangePrimary, JellyfinTheme.shapes.button)
 						} else {
 							Modifier.border(2.dp, Color.Transparent, JellyfinTheme.shapes.button)
 						},
@@ -1066,7 +1180,7 @@ fun TrackItemCard(
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
 	val canReorder = onMoveUp != null || onMoveDown != null
-	val focusColor = if (canReorder) focusBorderColor() else JellyfinTheme.colorScheme.onSurface
+	val focusColor = if (canReorder) VegafoXColors.OrangePrimary else JellyfinTheme.colorScheme.onSurface
 
 	LaunchedEffect(isFocused) {
 		if (isFocused) onFocused?.invoke()
@@ -1201,7 +1315,7 @@ fun TrackSelectorDialog(
 ) {
 	val initialFocusRequester = remember { FocusRequester() }
 
-	val selectorFocusColor = focusBorderColor()
+	val selectorFocusColor = VegafoXColors.OrangePrimary
 
 	Dialog(
 		onDismissRequest = onDismiss,
@@ -1278,7 +1392,7 @@ fun TrackSelectorDialog(
 										.size(18.dp)
 										.border(
 											width = 2.dp,
-											color = if (isSelected) focusBorderColor() else JellyfinTheme.colorScheme.textDisabled,
+											color = if (isSelected) VegafoXColors.OrangePrimary else JellyfinTheme.colorScheme.textDisabled,
 											shape = CircleShape,
 										),
 								contentAlignment = Alignment.Center,
@@ -1288,7 +1402,7 @@ fun TrackSelectorDialog(
 										modifier =
 											Modifier
 												.size(10.dp)
-												.background(focusBorderColor(), CircleShape),
+												.background(VegafoXColors.OrangePrimary, CircleShape),
 									)
 								}
 							}
@@ -1303,7 +1417,7 @@ fun TrackSelectorDialog(
 									),
 								color =
 									when {
-										isSelected -> focusBorderColor()
+										isSelected -> VegafoXColors.OrangePrimary
 										isFocused -> JellyfinTheme.colorScheme.onSurface
 										else -> JellyfinTheme.colorScheme.textPrimary
 									},
@@ -1659,21 +1773,22 @@ fun CinemaActionChip(
 
 	val bgColor =
 		when {
+			isFocused -> Color(0xE5FF6B00)
 			isActive -> VegafoXColors.OrangeSoft
 			else -> VegafoXColors.Divider
 		}
 
 	val chipBorderColor =
 		when {
-			isFocused -> VegafoXColors.OrangePrimary
+			isFocused -> Color(0xCCFF9632)
 			isActive -> activeColor
 			else -> VegafoXColors.Divider
 		}
 
 	val iconTint =
 		when {
+			isFocused -> Color.White
 			isActive -> activeColor
-			isFocused -> VegafoXColors.OrangePrimary
 			else -> VegafoXColors.TextPrimary
 		}
 
@@ -1734,7 +1849,7 @@ fun CinemaActionChip(
 			Text(
 				text = label,
 				style = JellyfinTheme.typography.labelSmall.copy(fontSize = 10.sp),
-				color = if (isFocused) VegafoXColors.OrangePrimary else VegafoXColors.TextSecondary,
+				color = if (isFocused) Color.White else VegafoXColors.TextSecondary,
 				textAlign = TextAlign.Center,
 				maxLines = 1,
 			)
@@ -1751,63 +1866,198 @@ fun CinemaPosterColumn(
 	playedPercentage: Double,
 	watchedMinutes: Int,
 	modifier: Modifier = Modifier,
+	item: BaseItemDto? = null,
+	isFocused: Boolean = false,
 ) {
+	val posterShape = RoundedCornerShape(16.dp)
+	val fraction = (playedPercentage / 100.0).toFloat().coerceIn(0f, 1f)
+
+	// Progress bar focus animation
+	val progressHeight by animateFloatAsState(
+		targetValue = if (isFocused) 6f else 4f,
+		animationSpec = tween(200, easing = CinemaEaseOutCubic),
+		label = "posterProgressHeight",
+	)
+	val trackAlpha by animateFloatAsState(
+		targetValue = if (isFocused) 0.40f else 0.25f,
+		animationSpec = tween(200, easing = CinemaEaseOutCubic),
+		label = "posterTrackAlpha",
+	)
+	val glowAlpha by animateFloatAsState(
+		targetValue = if (isFocused) 1f else 0f,
+		animationSpec = tween(200, easing = CinemaEaseOutCubic),
+		label = "posterProgressGlow",
+	)
+
 	Column(
-		modifier = modifier.width(CardDimensions.landscapeWidth),
+		modifier = modifier.width(HeroDimensions.posterWidth),
 		horizontalAlignment = Alignment.CenterHorizontally,
 	) {
+		// ─── Poster with 3D relief ───
 		Box(
 			modifier =
 				Modifier
 					.fillMaxWidth()
 					.aspectRatio(2f / 3f)
-					.clip(RoundedCornerShape(16.dp))
-					.border(1.dp, VegafoXColors.Divider, RoundedCornerShape(16.dp))
+					// Couche 1 — Ombre portée profonde
+					.graphicsLayer {
+						shadowElevation = 32.dp.toPx()
+						shape = posterShape
+						clip = true
+						spotShadowColor = Color.Black
+						ambientShadowColor = Color.Black.copy(alpha = 0.8f)
+					}
+					// Bordure lumineuse fine
+					.border(
+						width = 1.dp,
+						brush =
+							Brush.linearGradient(
+								colors =
+									listOf(
+										VegafoXColors.PosterBorderLight,
+										VegafoXColors.PosterBorderDark,
+									),
+							),
+						shape = posterShape,
+					).clip(posterShape)
 					.background(JellyfinTheme.colorScheme.surfaceDim),
 		) {
+			// Image du poster
 			if (posterUrl != null) {
-				val placeholder = rememberGradientPlaceholder()
-				val errorFallback = rememberErrorPlaceholder()
-				AsyncImage(
+				CachedAsyncImage(
 					model = posterUrl,
 					contentDescription = null,
 					modifier = Modifier.fillMaxSize(),
-					contentScale = ContentScale.Crop,
-					placeholder = placeholder,
-					error = errorFallback,
+					maxHeight = 600,
+				)
+			} else {
+				Icon(
+					imageVector = VegafoXIcons.Movie,
+					contentDescription = null,
+					tint = VegafoXColors.TextSecondary,
+					modifier =
+						Modifier
+							.align(Alignment.Center)
+							.size(48.dp),
 				)
 			}
-		}
 
-		if (playedPercentage > 0) {
-			Spacer(modifier = Modifier.height(8.dp))
-
+			// Gradient bas — fond pour la barre de progression
 			Box(
 				modifier =
 					Modifier
 						.fillMaxWidth()
-						.height(3.dp)
-						.clip(RoundedCornerShape(1.5.dp))
-						.background(VegafoXColors.Divider),
-			) {
+						.fillMaxHeight(0.30f)
+						.align(Alignment.BottomCenter)
+						.background(
+							Brush.verticalGradient(
+								0f to Color.Transparent,
+								1f to VegafoXColors.BackgroundDeep.copy(alpha = 0.65f),
+							),
+						),
+			)
+
+			// Reflet de lumière bord gauche
+			Box(
+				modifier =
+					Modifier
+						.fillMaxSize()
+						.background(
+							Brush.horizontalGradient(
+								0f to VegafoXColors.PosterReflectLight,
+								0.15f to VegafoXColors.PosterReflectLight.copy(alpha = 0.04f),
+								0.4f to Color.Transparent,
+								1f to Color.Transparent,
+							),
+						),
+			)
+
+			// Assombrissement bord droit
+			Box(
+				modifier =
+					Modifier
+						.fillMaxSize()
+						.background(
+							Brush.horizontalGradient(
+								0f to Color.Transparent,
+								0.6f to Color.Transparent,
+								1f to VegafoXColors.PosterShadowDark,
+							),
+						),
+			)
+
+			// Barre de progression
+			if (playedPercentage > 0) {
+				val progressShape = RoundedCornerShape(2.dp)
+
 				Box(
 					modifier =
 						Modifier
-							.fillMaxWidth(fraction = (playedPercentage / 100.0).toFloat().coerceIn(0f, 1f))
-							.height(3.dp)
-							.background(VegafoXColors.OrangePrimary, RoundedCornerShape(1.5.dp)),
+							.align(Alignment.BottomCenter)
+							.fillMaxWidth()
+							.padding(start = 10.dp, end = 10.dp, bottom = 8.dp)
+							.height(progressHeight.dp)
+							.background(
+								Color.White.copy(alpha = trackAlpha),
+								progressShape,
+							),
+				) {
+					Box(
+						modifier =
+							Modifier
+								.fillMaxHeight()
+								.fillMaxWidth(fraction = fraction)
+								.drawBehind {
+									if (glowAlpha > 0f) {
+										val cr = CornerRadius(2.dp.toPx())
+										listOf(
+											4f to 0.10f,
+											2.5f to 0.15f,
+											1f to 0.25f,
+										).forEach { (spreadDp, alpha) ->
+											val spread = spreadDp.dp.toPx()
+											drawRoundRect(
+												color =
+													VegafoXColors.BlueAccent.copy(
+														alpha = alpha * glowAlpha,
+													),
+												topLeft = Offset(-spread, -spread),
+												size =
+													Size(
+														size.width + spread * 2,
+														size.height + spread * 2,
+													),
+												cornerRadius = cr,
+											)
+										}
+									}
+								}.background(VegafoXColors.BlueAccent, progressShape),
+					)
+				}
+			}
+
+			// Badge temps restant
+			if (playedPercentage > 0 && item != null) {
+				PlaybackProgressBadge(
+					playedPercentage = fraction * 100f,
+					runtimeTicks = item.runTimeTicks,
+					modifier =
+						Modifier
+							.align(Alignment.TopStart)
+							.padding(8.dp),
 				)
 			}
 
-			Spacer(modifier = Modifier.height(6.dp))
-
-			Text(
-				text = "${watchedMinutes}m " + stringResource(R.string.lbl_watched).lowercase(),
-				style = JellyfinTheme.typography.labelSmall.copy(fontSize = 12.sp),
-				color = VegafoXColors.TextHint,
-				textAlign = TextAlign.Center,
-				modifier = Modifier.fillMaxWidth(),
-			)
+			// Badge vu
+			if (item != null) {
+				DetailsWatchIndicator(
+					item = item,
+					modifier =
+						Modifier
+							.align(Alignment.TopEnd)
+							.padding(8.dp),
+				)
+			}
 		}
 	}
 }

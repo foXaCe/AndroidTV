@@ -1,7 +1,6 @@
 package org.jellyfin.androidtv.util
 
 import android.content.Context
-import android.widget.Toast
 import org.jellyfin.sdk.model.api.UserDto
 import org.jellyfin.sdk.model.serializer.toUUIDOrNull
 import java.util.UUID
@@ -11,44 +10,6 @@ import kotlin.math.roundToInt
  * A collection of utility methods, all static.
  */
 object Utils {
-	/**
-	 * Shows a (long) toast
-	 */
-	@JvmStatic
-	@Deprecated(
-		message = "Use Toast.makeText",
-		replaceWith =
-			ReplaceWith(
-				expression = "Toast.makeText(context, msg, Toast.LENGTH_LONG).show()",
-				imports = ["android.widget.Toast"],
-			),
-	)
-	fun showToast(
-		context: Context?,
-		msg: String?,
-	) {
-		Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
-	}
-
-	/**
-	 * Shows a (long) toast.
-	 */
-	@JvmStatic
-	@Deprecated(
-		message = "Use Toast.makeText",
-		replaceWith =
-			ReplaceWith(
-				expression = "Toast.makeText(context, context.getString(resourceId), Toast.LENGTH_LONG).show()",
-				imports = ["android.widget.Toast"],
-			),
-	)
-	fun showToast(
-		context: Context,
-		resourceId: Int,
-	) {
-		Toast.makeText(context, context.getString(resourceId), Toast.LENGTH_LONG).show()
-	}
-
 	@JvmStatic
 	fun convertDpToPixel(
 		ctx: Context,

@@ -170,9 +170,7 @@
     <string name="grid_direction_horizontal">Horizontal</string>
     <string name="grid_direction">Direção da grelha</string>
     <string name="pref_device_model">Modelo do dispositivo</string>
-    <string name="pref_app_theme">Tema da aplicação</string>
     <string name="pref_next_up_timeout_title">Duração do temporizador \"A seguir\"</string>
-    <string name="pref_theme_dark">Escuro (Padrão)</string>
     <string name="lbl_colored_backgrounds">Fundos com código de cores</string>
     <string name="lbl_premieres">Estreias</string>
     <string name="lbl_resume_preroll">Continuar Lançamentos</string>
@@ -199,7 +197,6 @@
     <string name="pref_clock_display_browsing">Durante a navegação</string>
     <string name="lbl_always">Sempre</string>
     <string name="pref_clock_display">Mostrar relógio</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">Termina às %1$s</string>
 <string name="lbl_subtitle_track">Selecionar faixa de legendas</string>
     <string name="lbl_audio_track">Selecionar faixa de áudio</string>
@@ -281,7 +278,6 @@
 <string name="pref_login">Iniciar Sessão</string>
 <string name="pref_libraries">Bibliotecas</string>
 <string name="pref_browsing">Navegação</string>
-    <string name="pref_behavior">Comportamento</string>
     <string name="pref_accounts">Contas</string>
     <string name="sort_accounts_by">Listar contas por</string>
     <string name="pref_customization">Personalização</string>
@@ -348,7 +344,6 @@
     <string name="pref_screensaver_inapp_enabled">Utilizar proteção de ecrã da aplicação</string>
     <string name="pref_screensaver_inapp_enabled_description">Ver o papel de parede do Jellyfin enquanto a aplicação estiver aberta</string>
     <string name="pref_screensaver_inapp_timeout">Iniciar o papel de parede depois de</string>
-    <string name="not_set">Não definido</string>
     <string name="lbl_album_artists">Artistas do album</string>
     <plurals name="minutes">
         <item quantity="one">%1$s minuto</item>

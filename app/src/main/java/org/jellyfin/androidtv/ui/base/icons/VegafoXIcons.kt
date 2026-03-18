@@ -88,6 +88,7 @@ import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.ZoomOutMap
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -101,7 +102,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
  * - ic_jellyseerr_jellyfish, ic_seer (Jellyseerr/Overseerr logos)
  * - ic_rt_fresh, ic_rt_rotten (Rotten Tomatoes)
  * - qr_code, qr_jellyfin_docs (QR codes)
- * - seasonal_* (seasonal animations)
  */
 object VegafoXIcons {
 	// ── Navigation ──────────────────────────────────────────────
@@ -158,6 +158,7 @@ object VegafoXIcons {
 	val Star: ImageVector = Icons.Default.Star
 	val Schedule: ImageVector = Icons.Default.Schedule
 	val Visibility: ImageVector = Icons.Default.Visibility
+	val VisibilityOff: ImageVector = Icons.Default.VisibilityOff
 	val Album: ImageVector = Icons.Default.Album
 
 	// ── Recording ───────────────────────────────────────────────

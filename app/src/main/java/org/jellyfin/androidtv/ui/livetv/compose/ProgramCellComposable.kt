@@ -40,7 +40,7 @@ import org.koin.compose.koinInject
 import java.time.Duration
 import java.time.LocalDateTime
 
-private val cellBorderColor = Color.White.copy(alpha = 0.06f)
+private val cellBorderColor = VegafoXColors.Divider
 
 private enum class ProgramTimeState { PAST, CURRENT, FUTURE }
 
@@ -69,7 +69,7 @@ fun ProgramCell(
 	val bgColor =
 		when {
 			isFocused -> VegafoXColors.OrangePrimary.copy(alpha = 0.20f)
-			timeState == ProgramTimeState.PAST -> Color.White.copy(alpha = 0.02f)
+			timeState == ProgramTimeState.PAST -> VegafoXColors.SurfaceSubtle
 			timeState == ProgramTimeState.CURRENT -> VegafoXColors.OrangePrimary.copy(alpha = 0.12f)
 			else -> Color.Transparent
 		}
@@ -165,7 +165,7 @@ fun ProgramCell(
 					BlockText(
 						text = stringResource(R.string.lbl_repeat),
 						textColor = VegafoXColors.TextSecondary,
-						bgColor = Color.White.copy(alpha = 0.08f),
+						bgColor = VegafoXColors.PanelBorder,
 					)
 					Spacer(Modifier.width(4.dp))
 				}
@@ -176,7 +176,7 @@ fun ProgramCell(
 					BlockText(
 						text = rating,
 						textColor = VegafoXColors.TextHint,
-						bgColor = Color.White.copy(alpha = 0.06f),
+						bgColor = VegafoXColors.Divider,
 					)
 					Spacer(Modifier.width(4.dp))
 				}
@@ -186,7 +186,7 @@ fun ProgramCell(
 					BlockText(
 						text = "HD",
 						textColor = VegafoXColors.TextSecondary,
-						bgColor = Color.White.copy(alpha = 0.06f),
+						bgColor = VegafoXColors.Divider,
 					)
 					Spacer(Modifier.width(4.dp))
 				}
@@ -208,7 +208,7 @@ fun ProgramCell(
 						.align(Alignment.BottomStart)
 						.fillMaxWidth()
 						.height(3.dp)
-						.background(Color.White.copy(alpha = 0.08f)),
+						.background(VegafoXColors.PanelBorder),
 			) {
 				Box(
 					modifier =
@@ -240,9 +240,9 @@ private fun BlockText(
 private fun RecordingIndicator(program: BaseItemDto) {
 	val (icon: ImageVector, tint: Color) =
 		when {
-			program.seriesTimerId != null && program.timerId != null -> VegafoXIcons.RecordSeries to Color.Red
-			program.seriesTimerId != null -> VegafoXIcons.RecordSeries to Color.White
-			program.timerId != null -> VegafoXIcons.Record to Color.Red
+			program.seriesTimerId != null && program.timerId != null -> VegafoXIcons.RecordSeries to VegafoXColors.RecordingRed
+			program.seriesTimerId != null -> VegafoXIcons.RecordSeries to VegafoXColors.TextPrimary
+			program.timerId != null -> VegafoXIcons.Record to VegafoXColors.RecordingRed
 			else -> return
 		}
 

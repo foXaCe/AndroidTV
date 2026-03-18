@@ -28,7 +28,6 @@ import org.jellyfin.androidtv.ui.navigation.LocalRouter
 import org.jellyfin.androidtv.ui.settings.Routes
 import org.jellyfin.androidtv.ui.settings.compat.rememberPreference
 import org.jellyfin.androidtv.ui.settings.composable.SettingsColumn
-import org.jellyfin.androidtv.ui.settings.screen.vegafox.getBlurLabel
 import org.jellyfin.androidtv.ui.settings.screen.vegafox.getShuffleContentTypeLabel
 import org.koin.compose.koinInject
 
@@ -129,17 +128,6 @@ fun SettingsCustomizationScreen(
 			)
 		}
 
-		item {
-			var cardFocusExpansion by rememberPreference(userPreferences, UserPreferences.cardFocusExpansion)
-
-			ListButton(
-				headingContent = { Text(stringResource(R.string.lbl_card_focus_expansion)) },
-				trailingContent = { Checkbox(checked = cardFocusExpansion) },
-				captionContent = { Text(stringResource(R.string.lbl_card_focus_expansion_description)) },
-				onClick = { cardFocusExpansion = !cardFocusExpansion },
-			)
-		}
-
 		// ── Toolbar ──
 
 		item { ListSection(headingContent = { Text(stringResource(R.string.pref_toolbar_customization)) }) }
@@ -212,16 +200,6 @@ fun SettingsCustomizationScreen(
 		item { ListSection(headingContent = { Text(stringResource(R.string.home_section_settings)) }) }
 
 		item {
-			var mergeContinueWatchingNextUp by rememberPreference(userPreferences, UserPreferences.mergeContinueWatchingNextUp)
-			ListButton(
-				headingContent = { Text(stringResource(R.string.lbl_merge_continue_watching_next_up)) },
-				captionContent = { Text(stringResource(R.string.lbl_merge_continue_watching_next_up_description)) },
-				trailingContent = { Checkbox(checked = mergeContinueWatchingNextUp) },
-				onClick = { mergeContinueWatchingNextUp = !mergeContinueWatchingNextUp },
-			)
-		}
-
-		item {
 			var enableMultiServerLibraries by rememberPreference(userPreferences, UserPreferences.enableMultiServerLibraries)
 			ListButton(
 				headingContent = { Text(stringResource(R.string.pref_multi_server_libraries)) },
@@ -251,26 +229,6 @@ fun SettingsCustomizationScreen(
 			)
 		}
 
-		// ── Appearance ──
-
-		item { ListSection(headingContent = { Text(stringResource(R.string.pref_appearance)) }) }
-
-		item {
-			val detailsBlur by rememberPreference(userSettingPreferences, UserSettingPreferences.detailsBackgroundBlurAmount)
-			ListButton(
-				headingContent = { Text(stringResource(R.string.pref_details_background_blur_amount)) },
-				captionContent = { Text(getBlurLabel(detailsBlur)) },
-				onClick = { router.push(Routes.VEGAFOX_DETAILS_BLUR) },
-			)
-		}
-
-		item {
-			val browsingBlur by rememberPreference(userSettingPreferences, UserSettingPreferences.browsingBackgroundBlurAmount)
-			ListButton(
-				headingContent = { Text(stringResource(R.string.pref_browsing_background_blur_amount)) },
-				captionContent = { Text(getBlurLabel(browsingBlur)) },
-				onClick = { router.push(Routes.VEGAFOX_BROWSING_BLUR) },
-			)
-		}
+		// ── Appearance (blur settings removed — hardcoded values) ──
 	}
 }

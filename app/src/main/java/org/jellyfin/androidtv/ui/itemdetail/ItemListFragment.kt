@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.PopupMenu
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
@@ -472,7 +473,7 @@ class ItemListFragment :
 					if (mItems.isNotEmpty()) {
 						play(mItems, false)
 					} else {
-						Utils.showToast(requireContext(), R.string.msg_no_playable_items)
+						Toast.makeText(requireContext(), R.string.msg_no_playable_items, Toast.LENGTH_LONG).show()
 					}
 				}
 			play.onFocusChangeListener =
@@ -534,7 +535,7 @@ class ItemListFragment :
 						} else if (mItems.isNotEmpty()) {
 							playbackHelper.retrieveAndPlay(baseItem.id, true, requireContext())
 						} else {
-							Utils.showToast(requireContext(), R.string.msg_no_playable_items)
+							Toast.makeText(requireContext(), R.string.msg_no_playable_items, Toast.LENGTH_LONG).show()
 						}
 					}
 				shuffle.setOnLongClickListener {

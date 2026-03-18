@@ -21,6 +21,8 @@ enum class HomeSectionType(
 	RESUME_AUDIO("resumeaudio", R.string.home_section_resume_audio),
 	RESUME_BOOK("resumebook", R.string.home_section_resume_book),
 	ACTIVE_RECORDINGS("activerecordings", R.string.home_section_active_recordings),
+
+	@Deprecated("Merged with RESUME — kept for JSON deserialization compatibility")
 	NEXT_UP("nextup", R.string.home_section_next_up),
 	PLAYLISTS("playlists", R.string.home_section_playlists),
 	LIVE_TV("livetv", R.string.home_section_livetv),

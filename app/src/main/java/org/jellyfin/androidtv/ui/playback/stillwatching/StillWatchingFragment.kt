@@ -73,7 +73,7 @@ import kotlin.time.Duration.Companion.seconds
 
 val TIMEOUT_IN_MS = 10.seconds.inWholeMilliseconds.toInt()
 
-private val ExitProgressColor = Color(0x66FF5050) // red rgba(255,80,80,0.40)
+private val ExitProgressColor = VegafoXColors.Error.copy(alpha = 0.4f)
 
 @Composable
 fun StillWatchingScreen(itemId: UUID) {
@@ -301,7 +301,6 @@ fun StillWatchingOverlay(
 					progressColor = ExitProgressColor,
 					modifier =
 						Modifier
-							.focusRequester(focusRequester)
 							.onFocusChanged { state ->
 								if (!state.isFocused) {
 									coroutineScope.launch {
@@ -315,12 +314,13 @@ fun StillWatchingOverlay(
 
 				Spacer(Modifier.width(4.dp))
 
-				// Continue watching (primary action)
+				// Continue watching (primary action — gets initial focus)
 				VegafoXButton(
 					text = stringResource(R.string.lbl_continue_watching),
 					onClick = onConfirm,
 					variant = VegafoXButtonVariant.Primary,
 					compact = true,
+					modifier = Modifier.focusRequester(focusRequester),
 				)
 			}
 		}

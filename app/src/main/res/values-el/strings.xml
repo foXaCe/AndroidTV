@@ -128,7 +128,6 @@
     <string name="pref_next_up_timeout_title">Χρόνος πριν την έναρξη αναπαραγωγής του επομένου</string>
     <string name="pref_next_up_timeout_summary">Χρόνος αναμονής πριν την αναπαραγωγή του επόμενου στοιχείου</string>
     <string name="pref_about_title">Περί</string>
-    <string name="pref_theme_dark">Σκοτεινό (Προεπιλογή)</string>
     <string name="lbl_my_media">Τα πολυμέσα μου</string>
     <string name="lbl_unwatched">Δεν προβλήθηκε</string>
 <string name="lbl_more_like_this">Περισσότερα σαν αυτό</string>
@@ -282,7 +281,6 @@
     <string name="episode_missing_message">Αυτό το επεισόδιο λείπει από τη βιβλιοθήκη σας. Θέλετε να το προσπεράσετε και να συνεχίσετε στο επόμενο;</string>
     <string name="episode_missing">Λείπει επεισόδιο</string>
     <string name="bitrate_mbit">%1$,.0f Mbit/s</string>
-    <string name="pref_app_theme">Θέμα Εφαρμογής</string>
     <string name="pref_next_up_timeout_disabled">∞</string>
     <string name="lbl_playback_speed">Ταχύτητα αναπαραγωγής</string>
     <string name="lbl_fit">Κανονικό</string>
@@ -306,12 +304,10 @@
     <string name="lbl_starting_early_ending_on_schedule">Αρχίζει %1$s νωρίτερα και τελειώνει σύμφωνα με το πρόγραμμα</string>
     <string name="image_size_xlarge">Πολύ μεγάλο</string>
     <string name="image_type_poster">Aφίσα</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="lbl_quality_profile">Προφίλ ποιότητας</string>
     <string name="pref_video">Βίντεο</string>
 <string name="pref_customization">Προσαρμογή</string>
     <string name="pref_accounts">Λογαριασμοί Χρηστών</string>
-    <string name="pref_behavior">Συμπεριφορά</string>
     <string name="pref_crash_report_logs">Συμπερίληψη αρχείων καταγραφών</string>
 <string name="pref_browsing">Περιήγηση</string>
 <string name="pref_telemetry_category">Αναφορά σφαλμάτων</string>
@@ -345,7 +341,6 @@
         <item quantity="one">%1$s ώρα</item>
         <item quantity="other">%1$s ώρες</item>
     </plurals>
-    <string name="not_set">Δεν έχει οριστεί</string>
     <string name="item_deleted">%1$s διαγράφηκε</string>
     <string name="item_delete_confirm_title">Διαγραφή</string>
     <string name="pref_screensaver_inapp_enabled">Χρήση προφύλαξης οθόνης της εφαρμογής</string>

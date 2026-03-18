@@ -104,14 +104,13 @@ fun SettingsPlaybackScreen(
 			)
 		}
 
-		// TODO: Subtitles screen needs to be recreated (SettingsSubtitlesScreen.kt not found)
-		// item {
-		// 	ListButton(
-		// 		leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Subtitles), contentDescription = null) },
-		// 		headingContent = { Text(stringResource(R.string.pref_customization_subtitles)) },
-		// 		onClick = { router.push(Routes.CUSTOMIZATION_SUBTITLES) },
-		// 	)
-		// }
+		item {
+			ListButton(
+				leadingContent = { Icon(rememberVectorPainter(VegafoXIcons.Subtitles), contentDescription = null) },
+				headingContent = { Text(stringResource(R.string.pref_customization_subtitles)) },
+				onClick = { router.push(Routes.CUSTOMIZATION_SUBTITLES) },
+			)
+		}
 
 		item {
 			var subtitlesDefaultToNone by rememberPreference(userPreferences, UserPreferences.subtitlesDefaultToNone)

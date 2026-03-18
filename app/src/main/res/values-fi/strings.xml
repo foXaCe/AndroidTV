@@ -2,9 +2,7 @@
 <resources>
     <string name="lbl_live">Suora</string>
     <string name="lbl_instant_mix">Pikasekoitus</string>
-    <string name="pref_app_theme">Sovelluksen teema</string>
     <string name="pref_about_title">Tietoja</string>
-    <string name="pref_theme_dark">Tumma (oletus)</string>
     <string name="lbl_my_media">Oma media</string>
     <string name="lbl_image_size">Kuvan koko</string>
     <string name="lbl_image_type">Kuvan tyyppi</string>
@@ -259,7 +257,6 @@
     <string name="pref_next_up_timeout_title">Viive seuraavaan toistoon</string>
     <string name="pref_next_up_timeout_summary">Odotusaika ennen seuraavan kohteen toistoa</string>
     <string name="lbl_start_favorites">Sijoita suosikit alkuun</string>
-    <string name="pref_behavior">Käytettävyys</string>
     <string name="searchable_settings_description">Media</string>
     <string name="lbl_time_range">%1$s–%2$s</string>
     <string name="lbl_name_date">%1$s (%2$s)</string>
@@ -268,7 +265,6 @@
     <string name="lbl_starting_early_ending_after">Aloitetaan %1$s etuajassa ja lopetetaan %2$s viiveellä</string>
     <string name="lbl_episode_range">J%1$d–%2$d</string>
     <string name="image_type_banner">Banneri</string>
-<string name="watch_count_overflow">99+</string>
 <string name="bitrate_mbit">%1$,.0f Mbit/s</string>
     <string name="pref_next_up_timeout_disabled">∞</string>
     <string name="lbl_resume_preroll">Toistoa jatkettaessa takaisin palattava aika</string>
@@ -364,7 +360,6 @@
         <item quantity="other">%1$s jaksoa</item>
     </plurals>
 <string name="lbl_album_artists">Albumin esittäjät</string>
-    <string name="not_set">Ei määritetty</string>
     <string name="disable_ui_mode_warning">Älä varoita laitteen tyypistä</string>
     <string name="because_you_watched">Koska katselit: %1$s</string>
     <string name="channels">Kanavat</string>

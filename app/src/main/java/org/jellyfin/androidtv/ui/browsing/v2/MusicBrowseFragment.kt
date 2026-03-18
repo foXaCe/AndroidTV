@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,16 +25,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,7 +39,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import coil3.compose.AsyncImage
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.service.BackgroundService
 import org.jellyfin.androidtv.data.service.BlurContext
@@ -60,24 +55,21 @@ import org.jellyfin.androidtv.ui.base.state.EmptyState
 import org.jellyfin.androidtv.ui.base.state.ErrorState
 import org.jellyfin.androidtv.ui.base.state.StateContainer
 import org.jellyfin.androidtv.ui.base.theme.BrowseDimensions
+import org.jellyfin.androidtv.ui.base.theme.CardDimensions
 import org.jellyfin.androidtv.ui.browsing.BrowsingUtils
-import org.jellyfin.androidtv.ui.composable.rememberErrorPlaceholder
-import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
+import org.jellyfin.androidtv.ui.browsing.compose.MediaPosterCard
 import org.jellyfin.androidtv.ui.itemhandling.BaseItemDtoBaseRowItem
 import org.jellyfin.androidtv.ui.itemhandling.ItemLauncher
 import org.jellyfin.androidtv.ui.navigation.Destinations
 import org.jellyfin.androidtv.ui.navigation.NavigationRepository
-import org.jellyfin.androidtv.util.apiclient.albumPrimaryImage
-import org.jellyfin.androidtv.util.apiclient.getUrl
-import org.jellyfin.androidtv.util.apiclient.itemImages
-import org.jellyfin.androidtv.util.apiclient.parentImages
+import org.jellyfin.androidtv.ui.shared.components.BrowseHeader
+import org.jellyfin.androidtv.util.apiclient.getCardImageUrl
 import org.jellyfin.androidtv.util.sdk.compat.copyWithDisplayPreferencesId
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.BaseItemKind
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.UUID
-import org.jellyfin.sdk.model.api.ImageType as JellyfinImageType
 
 class MusicBrowseFragment : Fragment() {
 	data class Args(
@@ -186,7 +178,18 @@ class MusicBrowseFragment : Fragment() {
 
 			Column(modifier = Modifier.fillMaxSize()) {
 				// ── Header ──
-				MusicHeader(uiState = uiState, folder = folder)
+				BrowseHeader(title = uiState.libraryName) {
+					LibraryToolbarButton(
+						icon = VegafoXIcons.Home,
+						contentDescription = stringResource(R.string.home),
+						onClick = { navigationRepository.navigate(Destinations.home) },
+					)
+				}
+
+				FocusedItemHud(
+					item = uiState.focusedItem,
+					modifier = Modifier.fillMaxWidth(),
+				)
 
 				// ── Content ──
 				val displayState =
@@ -199,7 +202,7 @@ class MusicBrowseFragment : Fragment() {
 					state = displayState,
 					modifier = Modifier.weight(1f),
 					loadingContent = {
-						Column(verticalArrangement = Arrangement.spacedBy(28.dp)) {
+						Column(verticalArrangement = Arrangement.spacedBy(BrowseDimensions.skeletonRowSpacing)) {
 							SkeletonCardRow()
 							SkeletonCardRow()
 						}
@@ -234,62 +237,7 @@ class MusicBrowseFragment : Fragment() {
 		}
 	}
 
-	// ──────────────────────────────────────────────
-	// Header: library name centered, focused item HUD, toolbar
-	// ──────────────────────────────────────────────
-
-	@Composable
-	private fun MusicHeader(
-		uiState: MusicBrowseUiState,
-		folder: BaseItemDto?,
-	) {
-		Column(
-			modifier =
-				Modifier
-					.fillMaxWidth()
-					.padding(
-						start = BrowseDimensions.contentPaddingHorizontal,
-						end = BrowseDimensions.contentPaddingHorizontal,
-						top = 12.dp,
-						bottom = 4.dp,
-					),
-		) {
-			// Row 0: Centered library name
-			Box(
-				modifier = Modifier.fillMaxWidth(),
-				contentAlignment = Alignment.Center,
-			) {
-				Text(
-					text = uiState.libraryName,
-					style = JellyfinTheme.typography.headlineMedium,
-					fontWeight = FontWeight.Light,
-					color = JellyfinTheme.colorScheme.onSurface,
-				)
-			}
-
-			Spacer(modifier = Modifier.height(6.dp))
-
-			// Row 1: Focused item HUD
-			FocusedItemHud(
-				item = uiState.focusedItem,
-				modifier = Modifier.fillMaxWidth(),
-			)
-
-			Spacer(modifier = Modifier.height(6.dp))
-
-			// Row 2: Toolbar — Home button
-			Row(
-				modifier = Modifier.fillMaxWidth(),
-				verticalAlignment = Alignment.CenterVertically,
-			) {
-				LibraryToolbarButton(
-					icon = VegafoXIcons.Home,
-					contentDescription = stringResource(R.string.home),
-					onClick = { navigationRepository.navigate(Destinations.home) },
-				)
-			}
-		}
-	}
+	// MusicHeader removed — uses BrowseHeader from ui/shared/components
 
 	// ──────────────────────────────────────────────
 	// Scrollable rows content
@@ -308,7 +256,7 @@ class MusicBrowseFragment : Fragment() {
 				modifier
 					.fillMaxWidth()
 					.verticalScroll(scrollState)
-					.padding(bottom = 16.dp),
+					.padding(bottom = BrowseDimensions.cardGap),
 		) {
 			// Navigation buttons row (at the top)
 			if (folder != null) {
@@ -362,139 +310,41 @@ class MusicBrowseFragment : Fragment() {
 			modifier =
 				Modifier
 					.fillMaxWidth()
-					.padding(top = 12.dp),
+					.padding(top = BrowseDimensions.rowTopPadding),
 		) {
 			// Row title
 			Text(
 				text = title,
 				style = JellyfinTheme.typography.titleLarge,
 				color = JellyfinTheme.colorScheme.onSurface,
-				modifier = Modifier.padding(start = BrowseDimensions.contentPaddingHorizontal, bottom = 8.dp),
+				modifier = Modifier.padding(start = BrowseDimensions.contentPaddingHorizontal, bottom = BrowseDimensions.rowTitleBottomPadding),
 			)
 
 			// Horizontal list of square cards
 			LazyRow(
-				horizontalArrangement = Arrangement.spacedBy(12.dp),
+				horizontalArrangement = Arrangement.spacedBy(BrowseDimensions.cardGap),
 				contentPadding = PaddingValues(horizontal = BrowseDimensions.contentPaddingHorizontal),
 			) {
 				items(items, key = { it.id }) { item ->
-					MusicSquareCard(
-						item = item,
+					MediaPosterCard(
+						imageUrl = item.getCardImageUrl(viewModel.effectiveApi),
+						title = item.name ?: "",
+						cardWidth = CardDimensions.squareSize,
+						cardHeight = CardDimensions.squareSize,
 						onClick = { launchItem(item) },
 						onFocused = {
 							viewModel.setFocusedItem(item)
 							backgroundService.setBackground(item, BlurContext.BROWSING)
 						},
+						subtitle = getMusicSubtitle(item),
+						placeholderIcon = VegafoXIcons.Album,
 					)
 				}
 			}
 		}
 	}
 
-	// ──────────────────────────────────────────────
-	// Square card for music items (albums, audio, playlists)
-	// ──────────────────────────────────────────────
-
-	@Composable
-	private fun MusicSquareCard(
-		item: BaseItemDto,
-		onClick: () -> Unit,
-		onFocused: () -> Unit,
-		cardSize: Int = 140,
-	) {
-		val interactionSource = remember { MutableInteractionSource() }
-		val isFocused by interactionSource.collectIsFocusedAsState()
-
-		LaunchedEffect(isFocused) {
-			if (isFocused) onFocused()
-		}
-
-		val scale = if (isFocused) 1.08f else 1.0f
-		val alpha = if (isFocused) 1.0f else 0.75f
-
-		Column(
-			modifier =
-				Modifier
-					.width(cardSize.dp)
-					.graphicsLayer {
-						scaleX = scale
-						scaleY = scale
-						this.alpha = alpha
-					}.clickable(
-						interactionSource = interactionSource,
-						indication = null,
-						onClick = onClick,
-					),
-			horizontalAlignment = Alignment.Start,
-		) {
-			// Square image
-			Box(
-				modifier =
-					Modifier
-						.size(cardSize.dp)
-						.clip(JellyfinTheme.shapes.extraSmall)
-						.then(
-							if (isFocused) {
-								Modifier.background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.08f))
-							} else {
-								Modifier
-							},
-						).background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.06f)),
-			) {
-				val imageUrl = getMusicImageUrl(item)
-				if (imageUrl != null) {
-					val placeholder = rememberGradientPlaceholder()
-					val errorFallback = rememberErrorPlaceholder()
-					AsyncImage(
-						model = imageUrl,
-						contentDescription = item.name,
-						modifier = Modifier.fillMaxSize(),
-						contentScale = ContentScale.Crop,
-						placeholder = placeholder,
-						error = errorFallback,
-					)
-				} else {
-					// Placeholder icon for items without artwork
-					Box(
-						modifier = Modifier.fillMaxSize(),
-						contentAlignment = Alignment.Center,
-					) {
-						Icon(
-							imageVector = VegafoXIcons.Album,
-							contentDescription = null,
-							modifier = Modifier.size(48.dp),
-							tint = JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-						)
-					}
-				}
-			}
-
-			Spacer(modifier = Modifier.height(5.dp))
-
-			// Title
-			Text(
-				text = item.name ?: "",
-				style = JellyfinTheme.typography.bodySmall,
-				fontWeight = FontWeight.Medium,
-				color = JellyfinTheme.colorScheme.onSurface,
-				maxLines = 1,
-				overflow = TextOverflow.Ellipsis,
-			)
-
-			// Subtitle: artist name for albums/audio, playlist item count, etc.
-			val subtitle = getMusicSubtitle(item)
-			if (subtitle.isNotEmpty()) {
-				Text(
-					text = subtitle,
-					style = JellyfinTheme.typography.labelSmall,
-					fontWeight = FontWeight.Normal,
-					color = JellyfinTheme.colorScheme.textHint,
-					maxLines = 1,
-					overflow = TextOverflow.Ellipsis,
-				)
-			}
-		}
-	}
+	// MusicSquareCard removed — uses MediaPosterCard from ui/browsing/compose
 
 	// ──────────────────────────────────────────────
 	// Navigation buttons: Albums, Album Artists, Artists, Genres, Random
@@ -512,11 +362,11 @@ class MusicBrowseFragment : Fragment() {
 				text = stringResource(R.string.lbl_views),
 				style = JellyfinTheme.typography.titleLarge,
 				color = JellyfinTheme.colorScheme.onSurface,
-				modifier = Modifier.padding(start = BrowseDimensions.contentPaddingHorizontal, bottom = 8.dp),
+				modifier = Modifier.padding(start = BrowseDimensions.contentPaddingHorizontal, bottom = BrowseDimensions.rowTitleBottomPadding),
 			)
 
 			LazyRow(
-				horizontalArrangement = Arrangement.spacedBy(12.dp),
+				horizontalArrangement = Arrangement.spacedBy(BrowseDimensions.cardGap),
 				contentPadding = PaddingValues(horizontal = BrowseDimensions.contentPaddingHorizontal),
 			) {
 				item {
@@ -651,27 +501,6 @@ class MusicBrowseFragment : Fragment() {
 	// ──────────────────────────────────────────────
 	// Helpers
 	// ──────────────────────────────────────────────
-
-	/**
-	 * Get the best image URL for a music item (album art, audio album art, or primary).
-	 */
-	private fun getMusicImageUrl(item: BaseItemDto): String? {
-		// For audio items, prefer the album's primary image
-		if (item.type == BaseItemKind.AUDIO) {
-			val albumImage = item.albumPrimaryImage
-			if (albumImage != null) return albumImage.getUrl(viewModel.effectiveApi, maxHeight = 300)
-		}
-
-		// Standard primary image
-		val primary = item.itemImages[JellyfinImageType.PRIMARY]
-		if (primary != null) return primary.getUrl(viewModel.effectiveApi, maxHeight = 300)
-
-		// Parent primary image fallback
-		val parentPrimary = item.parentImages[JellyfinImageType.PRIMARY]
-		if (parentPrimary != null) return parentPrimary.getUrl(viewModel.effectiveApi, maxHeight = 300)
-
-		return null
-	}
 
 	/**
 	 * Build a subtitle string for music items.

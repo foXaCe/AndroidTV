@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import android.view.Display
 import android.view.WindowManager
+import android.widget.Toast
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.auth.repository.SessionRepository
 import org.jellyfin.androidtv.data.compat.PlaybackException
@@ -393,7 +394,7 @@ class PlaybackController(
 
 		if (playbackRetries < 3) {
 			fragment?.let { frag ->
-				Utils.showToast(frag.context, frag.getString(R.string.player_error))
+				Toast.makeText(frag.context, frag.getString(R.string.player_error), Toast.LENGTH_LONG).show()
 			}
 			Timber.i("Player error encountered - retrying")
 			stop()
@@ -401,7 +402,7 @@ class PlaybackController(
 		} else {
 			mPlaybackState = PlaybackState.ERROR
 			fragment?.let { frag ->
-				Utils.showToast(frag.context, frag.getString(R.string.too_many_errors))
+				Toast.makeText(frag.context, frag.getString(R.string.too_many_errors), Toast.LENGTH_LONG).show()
 			}
 		}
 	}
@@ -642,7 +643,7 @@ class PlaybackController(
 
 				if (item == null) {
 					Timber.w("item is null - aborting play")
-					Utils.showToast(frag.context, frag.getString(R.string.msg_cannot_play))
+					Toast.makeText(frag.context, frag.getString(R.string.msg_cannot_play), Toast.LENGTH_LONG).show()
 					// no-op
 					return
 				}
@@ -837,14 +838,14 @@ class PlaybackController(
 		if (exception is PlaybackException) {
 			when (exception.errorCode) {
 				PlaybackErrorCode.NOT_ALLOWED ->
-					Utils.showToast(frag.context, frag.getString(R.string.msg_playback_not_allowed))
+					Toast.makeText(frag.context, frag.getString(R.string.msg_playback_not_allowed), Toast.LENGTH_LONG).show()
 				PlaybackErrorCode.NO_COMPATIBLE_STREAM ->
-					Utils.showToast(frag.context, frag.getString(R.string.msg_playback_incompatible))
+					Toast.makeText(frag.context, frag.getString(R.string.msg_playback_incompatible), Toast.LENGTH_LONG).show()
 				PlaybackErrorCode.RATE_LIMIT_EXCEEDED ->
-					Utils.showToast(frag.context, frag.getString(R.string.msg_playback_restricted))
+					Toast.makeText(frag.context, frag.getString(R.string.msg_playback_restricted), Toast.LENGTH_LONG).show()
 			}
 		} else {
-			Utils.showToast(frag.context, frag.getString(R.string.msg_cannot_play))
+			Toast.makeText(frag.context, frag.getString(R.string.msg_cannot_play), Toast.LENGTH_LONG).show()
 		}
 	}
 
@@ -1321,7 +1322,7 @@ class PlaybackController(
 							if (!isActive) return
 							wasSeeking = false
 							if (fragment != null) {
-								Utils.showToast(fragment!!.requireContext(), R.string.msg_video_playback_error)
+								Toast.makeText(fragment!!.requireContext(), R.string.msg_video_playback_error, Toast.LENGTH_LONG).show()
 							}
 							Timber.e(exception, "Error trying to seek transcoded stream")
 							// call stop so playback can be retried by the user
@@ -1336,7 +1337,7 @@ class PlaybackController(
 			if (mVideoManager!!.seekTo(position) < 0) {
 				wasSeeking = false
 				if (frag != null) {
-					Utils.showToast(frag.context, frag.getString(R.string.seek_error))
+					Toast.makeText(frag.context, frag.getString(R.string.seek_error), Toast.LENGTH_LONG).show()
 				}
 				pause()
 			} else {
@@ -1580,7 +1581,7 @@ class PlaybackController(
 		}
 
 		if (isLiveTv && directStreamLiveTv) {
-			Utils.showToast(frag.context, frag.getString(R.string.msg_error_live_stream))
+			Toast.makeText(frag.context, frag.getString(R.string.msg_error_live_stream), Toast.LENGTH_LONG).show()
 			directStreamLiveTv = false
 		} else {
 			val msg = frag.getString(R.string.video_error_unknown_error)

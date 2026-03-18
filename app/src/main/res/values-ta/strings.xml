@@ -90,12 +90,10 @@
     <string name="grid_direction_horizontal">கிடைமட்ட</string>
     <string name="grid_direction">கட்டம் திசை</string>
     <string name="pref_device_model">சாதன மாதிரி</string>
-    <string name="pref_app_theme">பயன்பாட்டு தீம்</string>
     <string name="watch_now">இப்பொழுது பார்</string>
     <string name="pref_next_up_timeout_title">அடுத்த டைமர் கால அளவு</string>
     <string name="pref_next_up_timeout_summary">அடுத்த உருப்படியை இயக்குவதற்கு முன்பு எவ்வளவு நேரம் காத்திருக்க வேண்டும்</string>
     <string name="pref_about_title">பற்றி</string>
-    <string name="pref_theme_dark">இருண்ட (இயல்புநிலை)</string>
     <string name="lbl_my_media">எனது மீடியா</string>
     <string name="lbl_image_size">பட அளவு</string>
     <string name="lbl_image_type">பட வகை</string>
@@ -193,7 +191,6 @@
     <string name="lbl_audio_track">ஆடியோ டிராக்கைத் தேர்ந்தெடுக்கவும்</string>
     <string name="lbl_pause">இடைநிறுத்தம்</string>
     <string name="lbl_playback_control_ends">%1$s இல் முடிகிறது</string>
-<string name="watch_count_overflow">99+</string>
     <string name="pref_clock_display_playback">பின்னணி போது</string>
     <string name="pref_clock_display_browsing">உலாவும்போது</string>
     <string name="lbl_always">எப்போதும்</string>
@@ -291,7 +288,6 @@
 <string name="pref_login">புகுபதிகை</string>
 <string name="pref_libraries">நூலகங்கள்</string>
 <string name="pref_browsing">உலாவுதல்</string>
-    <string name="pref_behavior">நடத்தை</string>
     <string name="pref_accounts">கணக்குகள்</string>
     <string name="sort_accounts_by">கணக்குகளை வரிசைப்படுத்தவும்</string>
     <string name="pref_customization">தனிப்பயனாக்கம்</string>
@@ -345,7 +341,6 @@
         <item quantity="other">%1$s டிராக்குகள்</item>
     </plurals>
 <string name="pref_screensaver_inapp_timeout">பிறகு ஸ்கிரீன்சேவரைத் தொடங்கவும்</string>
-<string name="not_set">அமைக்கப்படவில்லை</string>
     <string name="lbl_album_artists">ஆல்பம் கலைஞர்கள்</string>
 <string name="item_delete_confirm_message">சேவையகத்திலிருந்து இந்த உருப்படியை நிச்சயமாக நீக்க விரும்புகிறீர்களா\? இந்தச் செயலைச் செயல்தவிர்க்க முடியாது.</string>
     <string name="app_notification_beta">பயன்பாடு %1$s க்கு புதுப்பிக்கப்பட்டது\nஜெல்லிஃபின் பீட்டா திட்டத்தில் பங்கேற்றதற்கு நன்றி.</string>

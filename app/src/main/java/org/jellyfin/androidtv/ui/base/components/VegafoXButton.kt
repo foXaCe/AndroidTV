@@ -1,19 +1,28 @@
 package org.jellyfin.androidtv.ui.base.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -26,10 +35,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -42,18 +54,20 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import kotlinx.coroutines.delay
+import org.jellyfin.androidtv.ui.base.theme.BebasNeue
 import org.jellyfin.androidtv.ui.base.theme.ButtonDimensions
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 
-private val EaseOutCubic = CubicBezierEasing(0.33f, 1f, 0.68f, 1f)
-private val ButtonShape = RoundedCornerShape(14.dp)
-private const val FOCUS_ANIM_MS = 150
+private const val GLASS_ANIM_MS = 120
 private const val DOUBLE_CLICK_GUARD_MS = 400L
+private val FastOutSlowIn = FastOutSlowInEasing
+private val EaseOutCubic = CubicBezierEasing(0.33f, 1f, 0.68f, 1f)
 
 // ---------------------------------------------------------------------------
 // Variant
@@ -66,52 +80,13 @@ enum class VegafoXButtonVariant {
 	Ghost,
 }
 
-private data class VariantColors(
-	val container: Color,
-	val content: Color,
-	val borderColor: Color,
-	val borderWidth: Float,
-)
-
-private fun variantColors(variant: VegafoXButtonVariant) =
-	when (variant) {
-		VegafoXButtonVariant.Primary ->
-			VariantColors(
-				container = VegafoXColors.OrangePrimary,
-				content = VegafoXColors.Background,
-				borderColor = Color.Transparent,
-				borderWidth = 0f,
-			)
-		VegafoXButtonVariant.Secondary ->
-			VariantColors(
-				container = Color.Transparent,
-				content = VegafoXColors.TextSecondary,
-				borderColor = VegafoXColors.Divider,
-				borderWidth = 1f,
-			)
-		VegafoXButtonVariant.Outlined ->
-			VariantColors(
-				container = VegafoXColors.OrangeSoft,
-				content = VegafoXColors.OrangePrimary,
-				borderColor = VegafoXColors.OrangeBorder,
-				borderWidth = 1f,
-			)
-		VegafoXButtonVariant.Ghost ->
-			VariantColors(
-				container = Color.Transparent,
-				content = VegafoXColors.TextSecondary,
-				borderColor = Color.Transparent,
-				borderWidth = 0f,
-			)
-	}
-
 // ---------------------------------------------------------------------------
-// VegafoXButton
+// VegafoXButton — Glass Dark Premium
 // ---------------------------------------------------------------------------
 
 @Composable
 fun VegafoXButton(
-	text: String,
+	text: String = "",
 	onClick: () -> Unit,
 	modifier: Modifier = Modifier,
 	variant: VegafoXButtonVariant = VegafoXButtonVariant.Primary,
@@ -120,33 +95,124 @@ fun VegafoXButton(
 	icon: ImageVector? = null,
 	iconEnd: Boolean = true,
 	compact: Boolean = false,
+	iconTint: Color? = null,
+	expandOnFocus: Boolean = false,
 ) {
 	val focusRequester = remember { FocusRequester() }
 	var isFocused by remember { mutableStateOf(false) }
+	var isPressed by remember { mutableStateOf(false) }
 	var navigating by remember { mutableStateOf(false) }
 
-	val colors = variantColors(variant)
+	val shape = RoundedCornerShape(ButtonDimensions.cornerRadius)
+	val isGhost = variant == VegafoXButtonVariant.Ghost
+	val isPrimary = variant == VegafoXButtonVariant.Primary
+	val isSecondary = variant == VegafoXButtonVariant.Secondary
+	val isOutlined = variant == VegafoXButtonVariant.Outlined
 
-	val scale by animateFloatAsState(
-		targetValue = if (isFocused && enabled) 1.06f else 1f,
-		animationSpec = tween(FOCUS_ANIM_MS, easing = EaseOutCubic),
-		label = "vfxBtnScale",
+	// No translationY elevation — avoids misalignment between buttons
+
+	// --- Container background color ---
+	// Primary is dark/glass at rest, orange only on focus
+	val containerTarget =
+		when {
+			!enabled ->
+				when (variant) {
+					VegafoXButtonVariant.Primary -> Color(0x14FFFFFF)
+					VegafoXButtonVariant.Secondary -> Color(0x08FFFFFF)
+					else -> Color.Transparent
+				}
+			isPressed ->
+				when (variant) {
+					VegafoXButtonVariant.Ghost -> Color.Transparent
+					else -> Color(0xFFCC5500)
+				}
+			isFocused ->
+				when (variant) {
+					VegafoXButtonVariant.Primary -> Color(0xE5FF6B00)
+					VegafoXButtonVariant.Secondary -> Color(0xE5FF6B00)
+					VegafoXButtonVariant.Outlined -> Color(0xE5FF6B00)
+					VegafoXButtonVariant.Ghost -> Color(0x33FF6B00)
+				}
+			else ->
+				when (variant) {
+					VegafoXButtonVariant.Primary -> Color(0x14FFFFFF)
+					VegafoXButtonVariant.Secondary -> Color(0x0DFFFFFF)
+					else -> Color.Transparent
+				}
+		}
+	val containerColor by animateColorAsState(
+		targetValue = containerTarget,
+		animationSpec = tween(GLASS_ANIM_MS, easing = FastOutSlowIn),
+		label = "bg",
 	)
 
-	val glowAlpha by animateFloatAsState(
-		targetValue = if (isFocused && enabled) 1f else 0f,
-		animationSpec = tween(FOCUS_ANIM_MS, easing = EaseOutCubic),
-		label = "vfxBtnGlow",
+	// --- Content (text) color ---
+	// All variants: white text on focus (orange bg), light/muted at rest
+	val contentTarget =
+		when {
+			isFocused && enabled -> Color.White
+			isPrimary -> VegafoXColors.TextPrimary
+			else -> VegafoXColors.TextSecondary
+		}
+	val contentColor by animateColorAsState(
+		targetValue = contentTarget,
+		animationSpec = tween(GLASS_ANIM_MS, easing = FastOutSlowIn),
+		label = "fg",
 	)
+
+	// --- Border color ---
+	// All variants get orange border on focus
+	val borderTarget =
+		when {
+			!enabled -> Color.Transparent
+			isFocused -> Color(0xCCFF9632)
+			isPrimary -> Color(0x1FFFFFFF)
+			isSecondary -> Color(0x1FFFFFFF)
+			isOutlined -> Color(0x2EFFFFFF)
+			else -> Color.Transparent
+		}
+	val borderColor by animateColorAsState(
+		targetValue = borderTarget,
+		animationSpec = tween(GLASS_ANIM_MS, easing = FastOutSlowIn),
+		label = "brd",
+	)
+
+	// --- Shadow glow alpha ---
+	// Orange glow on focus for all variants, nothing at rest
+	val shadowGlowTarget =
+		when {
+			!enabled -> 0f
+			isFocused -> 0.50f
+			else -> 0f
+		}
+	val shadowGlow by animateFloatAsState(
+		targetValue = shadowGlowTarget,
+		animationSpec = tween(GLASS_ANIM_MS, easing = FastOutSlowIn),
+		label = "glow",
+	)
+
+	// --- Ghost press opacity ---
+	val pressAlpha by animateFloatAsState(
+		targetValue = if (isPressed && isGhost) 0.6f else 1f,
+		animationSpec = tween(80, easing = FastOutSlowIn),
+		label = "pa",
+	)
+
+	LaunchedEffect(isPressed) {
+		if (isPressed) {
+			delay(80)
+			isPressed = false
+		}
+	}
 
 	val safeClick: () -> Unit = {
 		if (enabled && !navigating) {
 			navigating = true
+			isPressed = true
 			onClick()
 		}
 	}
 
-	// Reset navigating guard after delay
 	LaunchedEffect(navigating) {
 		if (navigating) {
 			delay(DOUBLE_CLICK_GUARD_MS)
@@ -154,50 +220,106 @@ fun VegafoXButton(
 		}
 	}
 
+	val borderW =
+		when (variant) {
+			VegafoXButtonVariant.Primary -> if (isFocused) 1.5f else 1f
+			VegafoXButtonVariant.Secondary -> 1f
+			VegafoXButtonVariant.Outlined -> 1.5f
+			VegafoXButtonVariant.Ghost -> 0f
+		}
+
+	val cr = ButtonDimensions.cornerRadius
+	val isExpandable = expandOnFocus && icon != null && text.isNotBlank()
+	val effectiveIsIconOnly = if (isExpandable) !isFocused else text.isBlank()
+	val compactH = if (compact) ButtonDimensions.heightCompact else ButtonDimensions.height
+
 	Box(
 		modifier =
 			modifier
 				.graphicsLayer {
-					scaleX = scale
-					scaleY = scale
-					alpha = if (enabled) 1f else 0.4f
-				}.defaultMinSize(
-					minWidth = if (compact) ButtonDimensions.minWidthCompact else ButtonDimensions.minWidth,
-					minHeight = if (compact) ButtonDimensions.heightCompact else ButtonDimensions.height,
-				).drawBehind {
-					if (glowAlpha > 0f) {
+					alpha = if (enabled) pressAlpha else 0.4f
+				}.height(compactH)
+				.then(
+					if (isExpandable) {
+						Modifier.widthIn(min = compactH)
+					} else {
+						Modifier
+					},
+				)
+				// Diffuse glow shadow drawn behind/below the button
+				.drawBehind {
+					if (shadowGlow > 0f) {
+						val glowColor = Color(0xFFFF6B00)
+						// Layer 1: wide diffuse glow
 						drawRoundRect(
 							brush =
-								Brush.radialGradient(
-									colors =
-										listOf(
-											VegafoXColors.OrangeGlow.copy(
-												alpha = VegafoXColors.OrangeGlow.alpha * glowAlpha,
-											),
-											Color.Transparent,
-										),
-									radius = size.maxDimension * 1.2f,
+								Brush.verticalGradient(
+									0f to glowColor.copy(alpha = shadowGlow * 0.3f),
+									1f to Color.Transparent,
 								),
-							cornerRadius = CornerRadius(14.dp.toPx()),
+							topLeft = Offset(-8.dp.toPx(), size.height * 0.4f),
+							size =
+								Size(
+									size.width + 16.dp.toPx(),
+									size.height * 0.9f,
+								),
+							cornerRadius = CornerRadius(cr.toPx() * 2f),
+						)
+						// Layer 2: tighter concentrated glow
+						drawRoundRect(
+							brush =
+								Brush.verticalGradient(
+									0f to glowColor.copy(alpha = shadowGlow * 0.5f),
+									1f to Color.Transparent,
+								),
+							topLeft = Offset(4.dp.toPx(), size.height * 0.6f),
+							size =
+								Size(
+									size.width - 8.dp.toPx(),
+									size.height * 0.6f,
+								),
+							cornerRadius = CornerRadius(cr.toPx()),
 						)
 					}
 				}.border(
-					width =
-						if (isFocused && enabled) {
-							2.dp
-						} else {
-							colors.borderWidth.dp
-						},
-					color =
-						if (isFocused && enabled) {
-							VegafoXColors.OrangePrimary
-						} else {
-							colors.borderColor
-						},
-					shape = ButtonShape,
-				).clip(ButtonShape)
-				.background(colors.container)
-				.focusRequester(focusRequester)
+					width = borderW.dp,
+					color = borderColor,
+					shape = shape,
+				).clip(shape)
+				.background(containerColor)
+				// Glass highlight: top edge bright line + subtle top gradient
+				.drawWithContent {
+					drawContent()
+					// Top highlight: glass reflection on focus for all non-ghost variants
+					val showHighlight = isFocused && enabled && !isGhost
+					if (showHighlight) {
+						val hlAlpha = 0.25f
+						// Bright edge line
+						drawRect(
+							color = Color.White.copy(alpha = hlAlpha),
+							topLeft = Offset.Zero,
+							size = Size(size.width, 1.dp.toPx()),
+						)
+						// Subtle glass gradient in top third
+						drawRect(
+							brush =
+								Brush.verticalGradient(
+									0f to Color.White.copy(alpha = hlAlpha * 0.4f),
+									1f to Color.Transparent,
+								),
+							topLeft = Offset.Zero,
+							size = Size(size.width, size.height * 0.35f),
+						)
+					}
+					// Ghost underline on focus
+					if (isGhost && isFocused && enabled) {
+						drawRect(
+							color = VegafoXColors.OrangePrimary,
+							topLeft = Offset(4.dp.toPx(), size.height - 2.dp.toPx()),
+							size = Size(size.width - 8.dp.toPx(), 2.dp.toPx()),
+						)
+					}
+				}.focusRequester(focusRequester)
 				.onFocusChanged { isFocused = it.isFocused }
 				.focusable(enabled)
 				.onKeyEvent { event ->
@@ -218,36 +340,77 @@ fun VegafoXButton(
 				),
 		contentAlignment = Alignment.Center,
 	) {
+		val effectiveIconTint =
+			when {
+				iconTint != null && isFocused && enabled -> Color.White
+				iconTint != null -> iconTint
+				else -> contentColor
+			}
+		val iconSizeDp = if (effectiveIsIconOnly) 22.dp else 20.dp
+		val padH =
+			when {
+				isExpandable && !isFocused -> 9.dp
+				effectiveIsIconOnly -> 0.dp
+				else -> 24.dp
+			}
+
 		Row(
 			verticalAlignment = Alignment.CenterVertically,
-			horizontalArrangement = Arrangement.spacedBy(8.dp),
-			modifier =
-				Modifier.padding(
-					horizontal = if (compact) 20.dp else 32.dp,
-					vertical = if (compact) 8.dp else 14.dp,
-				),
+			modifier = Modifier.padding(horizontal = padH),
 		) {
 			if (icon != null && !iconEnd) {
-				ButtonIcon(icon = icon, tint = colors.content, focused = isFocused)
+				GlassButtonIcon(icon = icon, tint = effectiveIconTint, focused = isFocused, size = iconSizeDp)
 			}
-			Text(
-				text = text,
-				style =
-					TextStyle(
-						fontSize = if (compact) 14.sp else 16.sp,
-						fontWeight =
-							if (isFocused && enabled) {
-								FontWeight.ExtraBold
-							} else {
-								FontWeight.Bold
-							},
-						color = colors.content,
-						textAlign = TextAlign.Center,
-						letterSpacing = (-0.2).sp,
-					),
-			)
+			if (isExpandable) {
+				AnimatedVisibility(
+					visible = isFocused,
+					enter =
+						expandHorizontally(
+							expandFrom = Alignment.Start,
+							animationSpec = tween(180, easing = EaseOutCubic),
+						) + fadeIn(tween(120, delayMillis = 60)),
+					exit =
+						shrinkHorizontally(
+							shrinkTowards = Alignment.Start,
+							animationSpec = tween(160, easing = EaseOutCubic),
+						) + fadeOut(tween(80)),
+				) {
+					Row(verticalAlignment = Alignment.CenterVertically) {
+						Spacer(modifier = Modifier.width(8.dp))
+						Text(
+							text = text.uppercase(),
+							maxLines = 1,
+							style =
+								TextStyle(
+									fontFamily = BebasNeue,
+									fontSize = 15.sp,
+									fontWeight = FontWeight.Bold,
+									color = contentColor,
+									textAlign = TextAlign.Center,
+									letterSpacing = 1.5.sp,
+								),
+						)
+						Spacer(modifier = Modifier.width(6.dp))
+					}
+				}
+			} else if (!effectiveIsIconOnly) {
+				Spacer(modifier = Modifier.width(8.dp))
+				Text(
+					text = text.uppercase(),
+					maxLines = 1,
+					style =
+						TextStyle(
+							fontFamily = BebasNeue,
+							fontSize = 15.sp,
+							fontWeight = FontWeight.Bold,
+							color = contentColor,
+							textAlign = TextAlign.Center,
+							letterSpacing = 1.5.sp,
+						),
+				)
+			}
 			if (icon != null && iconEnd) {
-				ButtonIcon(icon = icon, tint = colors.content, focused = isFocused)
+				GlassButtonIcon(icon = icon, tint = effectiveIconTint, focused = isFocused, size = iconSizeDp)
 			}
 		}
 	}
@@ -261,10 +424,11 @@ fun VegafoXButton(
 }
 
 @Composable
-private fun ButtonIcon(
+private fun GlassButtonIcon(
 	icon: ImageVector,
 	tint: Color,
 	focused: Boolean,
+	size: Dp = 20.dp,
 ) {
 	Icon(
 		imageVector = icon,
@@ -272,9 +436,9 @@ private fun ButtonIcon(
 		tint = tint,
 		modifier =
 			Modifier
-				.size(20.dp)
+				.size(size)
 				.graphicsLayer {
-					val iconScale = if (focused) 1.2f else 1f
+					val iconScale = if (focused) 1.15f else 1f
 					scaleX = iconScale
 					scaleY = iconScale
 				},
@@ -282,7 +446,7 @@ private fun ButtonIcon(
 }
 
 // ---------------------------------------------------------------------------
-// VegafoXIconButton
+// VegafoXIconButton — Glass Dark
 // ---------------------------------------------------------------------------
 
 @Composable
@@ -299,13 +463,13 @@ fun VegafoXIconButton(
 
 	val scale by animateFloatAsState(
 		targetValue = if (isFocused && enabled) 1.06f else 1f,
-		animationSpec = tween(FOCUS_ANIM_MS, easing = EaseOutCubic),
+		animationSpec = tween(GLASS_ANIM_MS, easing = FastOutSlowIn),
 		label = "vfxIconScale",
 	)
 
 	val glowAlpha by animateFloatAsState(
 		targetValue = if (isFocused && enabled) 1f else 0f,
-		animationSpec = tween(FOCUS_ANIM_MS, easing = EaseOutCubic),
+		animationSpec = tween(GLASS_ANIM_MS, easing = FastOutSlowIn),
 		label = "vfxIconGlow",
 	)
 
@@ -349,20 +513,11 @@ fun VegafoXIconButton(
 					}
 				}.border(
 					width = if (isFocused && enabled) 2.dp else 0.dp,
-					color =
-						if (isFocused && enabled) {
-							VegafoXColors.OrangePrimary
-						} else {
-							Color.Transparent
-						},
+					color = if (isFocused && enabled) VegafoXColors.OrangePrimary else Color.Transparent,
 					shape = CircleShape,
 				).clip(CircleShape)
 				.background(
-					if (isFocused && enabled) {
-						VegafoXColors.OrangeSoft
-					} else {
-						VegafoXColors.SurfaceBright
-					},
+					if (isFocused && enabled) VegafoXColors.OrangeSoft else VegafoXColors.SurfaceBright,
 				).onFocusChanged { isFocused = it.isFocused }
 				.focusable(enabled)
 				.onKeyEvent { event ->

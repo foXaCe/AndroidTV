@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -80,12 +81,17 @@ class ItemDetailsViewModel(
 		private set
 
 	private var lastItemId: UUID? = null
+	var initialFocusShown = false
+	var savedScrollIndex = 0
+	var savedScrollOffset = 0
 
 	fun loadItem(
 		itemId: UUID,
 		serverId: UUID? = null,
 	) {
 		viewModelScope.launch {
+			val t0 = System.currentTimeMillis()
+			Timber.tag("VFX_PERF").i("VFX_PERF ItemDetail loadItem START id=$itemId")
 			_uiState.value = ItemDetailsUiState(isLoading = true)
 			lastItemId = itemId
 
@@ -102,6 +108,8 @@ class ItemDetailsViewModel(
 								itemId = itemId,
 							).content
 					}
+				val t1 = System.currentTimeMillis()
+				Timber.tag("VFX_PERF").i("VFX_PERF ItemDetail getItem: ${t1 - t0}ms")
 
 				// If serverId wasn't passed explicitly, try to resolve from the item itself
 				if (this@ItemDetailsViewModel.serverId == null && item.serverId != null) {
@@ -132,8 +140,10 @@ class ItemDetailsViewModel(
 						writers = writers,
 						badges = badges,
 					)
+				val t2 = System.currentTimeMillis()
+				Timber.tag("VFX_PERF").i("VFX_PERF ItemDetail first render ready: ${t2 - t0}ms")
 
-				loadAdditionalData(item)
+				loadAdditionalData(item, t0)
 			} catch (err: ApiClientException) {
 				Timber.e(err, "Failed to load item $itemId")
 				_uiState.value = ItemDetailsUiState(isLoading = false, error = err.toUiError())
@@ -141,52 +151,62 @@ class ItemDetailsViewModel(
 		}
 	}
 
-	private fun loadAdditionalData(item: BaseItemDto) {
+	private fun loadAdditionalData(
+		item: BaseItemDto,
+		t0: Long = System.currentTimeMillis(),
+	) {
 		viewModelScope.launch {
-			when (item.type) {
-				BaseItemKind.SERIES -> {
-					loadSeasons(item.id)
-					loadNextUp(item.id)
-					loadSimilar(item.id)
-				}
-
-				BaseItemKind.SEASON -> {
-					loadEpisodes(item.seriesId ?: return@launch, item.id)
-				}
-
-				BaseItemKind.EPISODE -> {
-					val seasonId = item.seasonId ?: item.parentId
-					if (item.seriesId != null && seasonId != null) {
-						loadEpisodes(item.seriesId!!, seasonId)
+			coroutineScope {
+				when (item.type) {
+					BaseItemKind.SERIES -> {
+						// Parallel: seasons + nextUp + similar
+						launch { loadSeasons(item.id) }
+						launch { loadNextUp(item.id) }
+						launch { loadSimilar(item.id) }
 					}
-					loadSimilar(item.id)
-				}
 
-				BaseItemKind.BOX_SET -> {
-					loadCollectionItems(item.id)
-				}
+					BaseItemKind.SEASON -> {
+						launch { loadEpisodes(item.seriesId ?: return@launch, item.id) }
+					}
 
-				BaseItemKind.PERSON -> {
-					loadFilmography(item.id)
-				}
+					BaseItemKind.EPISODE -> {
+						// Parallel: episodes + similar
+						val seasonId = item.seasonId ?: item.parentId
+						if (item.seriesId != null && seasonId != null) {
+							launch { loadEpisodes(item.seriesId!!, seasonId) }
+						}
+						launch { loadSimilar(item.id) }
+					}
 
-				BaseItemKind.MUSIC_ARTIST -> {
-					loadArtistAlbums(item.id)
-					loadSimilar(item.id)
-				}
+					BaseItemKind.BOX_SET -> {
+						launch { loadCollectionItems(item.id) }
+					}
 
-				BaseItemKind.MUSIC_ALBUM -> {
-					loadTracks(item.id)
-				}
+					BaseItemKind.PERSON -> {
+						launch { loadFilmography(item.id) }
+					}
 
-				BaseItemKind.PLAYLIST -> {
-					loadPlaylistItems(item.id)
-				}
+					BaseItemKind.MUSIC_ARTIST -> {
+						// Parallel: albums + similar
+						launch { loadArtistAlbums(item.id) }
+						launch { loadSimilar(item.id) }
+					}
 
-				else -> {
-					loadSimilar(item.id)
+					BaseItemKind.MUSIC_ALBUM -> {
+						launch { loadTracks(item.id) }
+					}
+
+					BaseItemKind.PLAYLIST -> {
+						launch { loadPlaylistItems(item.id) }
+					}
+
+					else -> {
+						launch { loadSimilar(item.id) }
+					}
 				}
 			}
+			val tEnd = System.currentTimeMillis()
+			Timber.tag("VFX_PERF").i("VFX_PERF ItemDetail additionalData complete: ${tEnd - t0}ms (type=${item.type})")
 		}
 	}
 

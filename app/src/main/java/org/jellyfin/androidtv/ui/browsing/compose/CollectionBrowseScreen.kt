@@ -10,7 +10,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +22,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.repository.ItemRepository
+import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.skeleton.SkeletonCardRow
 import org.jellyfin.androidtv.ui.base.state.DisplayState
 import org.jellyfin.androidtv.ui.base.state.EmptyState
@@ -30,10 +30,13 @@ import org.jellyfin.androidtv.ui.base.state.ErrorState
 import org.jellyfin.androidtv.ui.base.state.StateContainer
 import org.jellyfin.androidtv.ui.base.state.UiError
 import org.jellyfin.androidtv.ui.base.state.toUiError
-import org.jellyfin.androidtv.ui.base.tv.TvHeader
+import org.jellyfin.androidtv.ui.base.theme.BrowseDimensions
 import org.jellyfin.androidtv.ui.base.tv.TvRow
 import org.jellyfin.androidtv.ui.base.tv.TvRowList
 import org.jellyfin.androidtv.ui.base.tv.TvScaffold
+import org.jellyfin.androidtv.ui.browsing.v2.LibraryToolbarButton
+import org.jellyfin.androidtv.ui.shared.components.BrowseHeader
+import org.jellyfin.androidtv.ui.shared.components.VegafoXScaffold
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.extensions.itemsApi
 import org.jellyfin.sdk.model.api.BaseItemDto
@@ -141,60 +144,71 @@ class CollectionBrowseViewModel(
 fun CollectionBrowseScreen(
 	viewModel: CollectionBrowseViewModel,
 	onItemClick: (BaseItemDto) -> Unit,
+	onHomeClick: () -> Unit = {},
 ) {
 	val uiState by viewModel.uiState.collectAsState()
 	val moviesLabel = stringResource(R.string.lbl_movies)
 	val seriesLabel = stringResource(R.string.lbl_tv_series)
 	val otherLabel = stringResource(R.string.lbl_other)
 
-	TvScaffold {
-		Column(modifier = Modifier.fillMaxSize()) {
-			TvHeader(title = uiState.title)
-
-			Spacer(modifier = Modifier.height(16.dp))
-
-			val displayState =
-				when {
-					uiState.isLoading -> DisplayState.LOADING
-					uiState.error != null -> DisplayState.ERROR
-					uiState.rows.isEmpty() -> DisplayState.EMPTY
-					else -> DisplayState.CONTENT
+	VegafoXScaffold {
+		TvScaffold {
+			Column(modifier = Modifier.fillMaxSize()) {
+				BrowseHeader(
+					title = uiState.title,
+				) {
+					LibraryToolbarButton(
+						icon = VegafoXIcons.Home,
+						contentDescription = stringResource(R.string.home),
+						onClick = onHomeClick,
+					)
 				}
 
-			StateContainer(
-				state = displayState,
-				modifier = Modifier.weight(1f),
-				loadingContent = {
-					Column {
-						SkeletonCardRow()
-						Spacer(modifier = Modifier.height(28.dp))
-						SkeletonCardRow()
+				Spacer(modifier = Modifier.height(BrowseDimensions.headerBottomSpacing))
+
+				val displayState =
+					when {
+						uiState.isLoading -> DisplayState.LOADING
+						uiState.error != null -> DisplayState.ERROR
+						uiState.rows.isEmpty() -> DisplayState.EMPTY
+						else -> DisplayState.CONTENT
 					}
-				},
-				emptyContent = {
-					EmptyState(
-						title = stringResource(R.string.lbl_empty),
-					)
-				},
-				errorContent = {
-					ErrorState(
-						message = stringResource(uiState.error?.messageRes ?: R.string.state_error_generic),
-						onRetry = { viewModel.retry(moviesLabel, seriesLabel, otherLabel) },
-					)
-				},
-				content = {
-					TvRowList(
-						rows = uiState.rows,
-						contentPadding = PaddingValues(bottom = 27.dp),
-					) { item ->
-						BrowseMediaCard(
-							item = item,
-							api = viewModel.api,
-							onClick = { onItemClick(item) },
+
+				StateContainer(
+					state = displayState,
+					modifier = Modifier.weight(1f),
+					loadingContent = {
+						Column {
+							SkeletonCardRow()
+							Spacer(modifier = Modifier.height(BrowseDimensions.skeletonRowSpacing))
+							SkeletonCardRow()
+						}
+					},
+					emptyContent = {
+						EmptyState(
+							title = stringResource(R.string.lbl_empty),
 						)
-					}
-				},
-			)
+					},
+					errorContent = {
+						ErrorState(
+							message = stringResource(uiState.error?.messageRes ?: R.string.state_error_generic),
+							onRetry = { viewModel.retry(moviesLabel, seriesLabel, otherLabel) },
+						)
+					},
+					content = {
+						TvRowList(
+							rows = uiState.rows,
+							contentPadding = PaddingValues(bottom = BrowseDimensions.gridBottomPadding),
+						) { item ->
+							BrowseMediaCard(
+								item = item,
+								api = viewModel.api,
+								onClick = { onItemClick(item) },
+							)
+						}
+					},
+				)
+			}
 		}
 	}
 }

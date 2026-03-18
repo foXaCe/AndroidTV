@@ -16,7 +16,7 @@ Navigation principale via la barre laterale gauche (72dp repliee, 220dp depliee)
 | 2 | Films | `VegafoXIcons.Movie` | Premiere librairie MOVIES | Toujours (no-op si absent) |
 | 3 | Series | `VegafoXIcons.Tv` | Premiere librairie TVSHOWS | Toujours (no-op si absent) |
 | 4 | Musique | `VegafoXIcons.MusicLibrary` | Premiere librairie MUSIC | Toujours (no-op si absent) |
-| 5 | Live TV | `VegafoXIcons.LiveTv` | Premiere librairie LIVETV | Toujours (no-op si absent) |
+| 5 | Live TV | `VegafoXIcons.LiveTv` | `Destinations.liveTvGuide` (direct) | Toujours (no-op si absent) |
 | 6 | Genres | `VegafoXIcons.Genres` | `Destinations.allGenres` | Toujours |
 | 7 | Favoris | `VegafoXIcons.Favorite` | `Destinations.allFavorites` | Toujours |
 | 8 | Parametres | `VegafoXIcons.Settings` | `settingsViewModel.show()` | Toujours |
@@ -90,23 +90,26 @@ Architecture : navigation Fragment programmatique (pas de NavGraph XML). Toutes 
 
 L'ecran Settings utilise un systeme de routage interne (`Routes` + `SettingsRouterContent`).
 
-### Menu principal
+### Menu principal (refonte 2026-03-16 — 10 sections plates)
 
-| # | Section | Label | Icone | Route |
-|---|---------|-------|-------|-------|
-| 1 | Apparence | Personnalisation | `Tune` | `/customization` |
-| 2 | Apparence | Ecran de veille | `PhotoLibrary` | `/customization/screensaver` |
-| 3 | Lecture | Lecture | `SkipNext` | `/playback` |
-| 4 | Extensions | Plugin VegafoX | `Tune` | `/plugin` |
-| 5 | Compte | Authentification | `Group` | `/authentication` |
-| 6 | Informations | Mises a jour | `Download` | Dialog (conditionnel OTA) |
-| 7 | Informations | Developpeur | `Science` | `/developer` |
-| 8 | Informations | A propos | Jellyfin icon | `/about` |
+| # | Section | Options |
+|---|---------|---------|
+| 1 | **Apparence** | Theme focus, Fonds, Flou details, Flou navigation, Indicateur vu, Horloge |
+| 2 | **Accueil** | Taille affiches, Type image rangees, Sections Home, Fusionner Continue/Next Up |
+| 3 | **Navigation** | Shuffle (fusionne), Genres, Favoris, Libraries toolbar, Vue dossiers, Confirmer sortie |
+| 4 | **Lecture** | Lecteur video, Episode suivant, Sous-titres, Sous-titres off, Segments, Cinema mode, Inactivite, Pause description, Skip forward, Unpause rewind, Resume preroll |
+| 5 | **Video & Audio** | Bitrate max, Resolution max, Zoom, Refresh rate, Delai demarrage, Audio output, Night mode, AC3, Live TV direct, PGS, ASS |
+| 6 | **Ecran de veille** | Activer, Delai, Mode, Assombrissement, Classification, Horloge veille |
+| 7 | **Jellyseerr** | → `/jellyseerr` (configuration, rangees, sync) |
+| 8 | **SyncPlay** | → `/vegafox/syncplay` |
+| 9 | **Comptes** | → `/authentication`, Controles parentaux, Librairies |
+| 10 | **A propos & Avance** | Version, MAJ, TrickPlay, Debug, FFmpeg, Cache, Reset |
 
 Options supprimees :
+- ~~Section Plugin VegafoX~~ (contenu distribue dans les 10 sections)
+- ~~cardFocusExpansion~~ (preference jamais lue — supprimee)
 - ~~Telemetrie~~ (VegafoX ne collecte pas de donnees)
 - ~~Support VegafoX / DonateDialog~~ (vestige Jellyfin)
-- ~~Sous-titres dans Lecture~~ (ecran introuvable)
 
 ### Authentification (`/authentication`)
 
@@ -117,43 +120,46 @@ Options supprimees :
 | [Serveurs dynamiques] | `/authentication/server/{serverId}` |
 | Code PIN | `/authentication/pin-code` |
 
-### Personnalisation (`/customization`)
+### Sous-ecrans de navigation (inchanges, accessibles depuis le menu principal flat)
 
-| Section | Label | Route |
-|---------|-------|-------|
-| Navigation | Librairies | `/libraries` |
-| Navigation | Accueil | `/home` |
-| Navigation | Theme de focus | `/customization/theme` |
-| Navigation | Horloge | `/customization/clock` |
-| Navigation | Indicateur vu | `/customization/watch-indicators` |
-| Toolbar | Position navbar | `/vegafox/navbar-position` |
-| Toolbar | Contenu shuffle | `/vegafox/shuffle-content-type` |
-| Apparence | Flou details | `/vegafox/details-blur` |
-| Apparence | Flou navigation | `/vegafox/browsing-blur` |
+| Route | Ecran | Accede depuis |
+|-------|-------|---------------|
+| `/customization/theme` | Focus Color | Apparence |
+| `/customization/clock` | Horloge | Apparence |
+| `/customization/watch-indicators` | Indicateur vu | Apparence |
+| `/vegafox/details-blur` | Flou details | Apparence |
+| `/vegafox/browsing-blur` | Flou navigation | Apparence |
+| `/home/poster-size` | Taille affiches | Accueil |
+| `/home/rows-image-type` | Type image rangees | Accueil |
+| `/home` | Sections Home | Accueil |
+| `/vegafox/shuffle-content-type` | Type contenu shuffle | Navigation |
+| `/playback/player` | Lecteur video | Lecture |
+| `/playback/next-up` | Episode suivant | Lecture |
+| `/customization/subtitles` | Sous-titres | Lecture |
+| `/playback/media-segments` | Segments media | Lecture |
+| `/playback/inactivity-prompt` | Inactivite | Lecture |
+| `/playback/resume-subtract-duration` | Resume preroll | Lecture |
+| `/playback/max-bitrate` | Bitrate max | Video & Audio |
+| `/playback/max-resolution` | Resolution max | Video & Audio |
+| `/playback/zoom-mode` | Mode zoom | Video & Audio |
+| `/playback/refresh-rate-switching-behavior` | Refresh rate | Video & Audio |
+| `/playback/audio-behavior` | Sortie audio | Video & Audio |
+| `/jellyseerr` | Jellyseerr | Jellyseerr |
+| `/vegafox/syncplay` | SyncPlay | SyncPlay |
+| `/authentication` | Comptes | Comptes |
+| `/vegafox/parental-controls` | Controles parentaux | Comptes |
+| `/libraries` | Librairies | Comptes |
+| `/about` | A propos | A propos & Avance |
+| `/licenses` | Licences | A propos & Avance |
 
-### Lecture (`/playback`)
+### Ecrans legacy (routes conservees mais plus navigues depuis le menu principal)
 
-| Label | Route |
-|-------|-------|
-| Lecteur video | `/playback/player` |
-| Episode suivant | `/playback/next-up` |
-| Inactivite | `/playback/inactivity-prompt` |
-| Pre-rolls | `/playback/prerolls` |
-| Sous-titres | `/customization/subtitles` |
-| Segments media | `/playback/media-segments` |
-| SyncPlay | `/vegafox/syncplay` |
-| Avance | `/playback/advanced` |
-
-### Plugin VegafoX (`/plugin`)
-
-| Label | Route |
-|-------|-------|
-| Jellyseerr | `/jellyseerr` |
-| Rangees Jellyseerr | `/jellyseerr/rows` |
-| Controles parentaux | `/vegafox/parental-controls` |
-| Media Bar (type, nombre, opacite, couleur) | `/vegafox/media-bar-*` |
-| Volume musique de theme | `/vegafox/theme-music-volume` |
-| Rangees Home (type image) | `/home/rows-image-type` |
+| Route | Ecran | Note |
+|-------|-------|------|
+| `/customization` | SettingsCustomizationScreen | Contenu distribue dans Apparence + Navigation + Accueil |
+| `/playback` | SettingsPlaybackScreen | Contenu distribue dans Lecture + Video & Audio |
+| `/playback/advanced` | SettingsPlaybackAdvancedScreen | Contenu distribue dans Lecture + Video & Audio |
+| `/plugin` | SettingsPluginScreen | Contenu distribue dans toutes les sections |
 
 ---
 
@@ -164,10 +170,10 @@ Options supprimees :
 | Destination | Fragment | Observation |
 |-------------|----------|-------------|
 | `nowPlaying` | `AudioNowPlayingComposeFragment` | Pas dans la sidebar ni settings — acces uniquement via lecture audio en cours |
-| `liveTvGuide` | `LiveTvGuideFragment` | Pas dans la sidebar — acces via `liveTvBrowser()` uniquement |
-| `liveTvSchedule` | `ScheduleBrowseFragment` | Acces uniquement depuis l'ecran Live TV Browse |
-| `liveTvRecordings` | `RecordingsBrowseFragment` | Acces uniquement depuis l'ecran Live TV Browse |
-| `liveTvSeriesRecordings` | `SeriesRecordingsBrowseFragment` | Acces uniquement depuis l'ecran Live TV Browse |
+| `liveTvGuide` | `LiveTvGuideFragment` | Destination directe depuis la sidebar — boutons dans le header vers Recordings/Schedule/Series |
+| `liveTvSchedule` | `ScheduleBrowseFragment` | Acces depuis le guide (bouton header) ou depuis Recordings |
+| `liveTvRecordings` | `RecordingsBrowseFragment` | Acces depuis le guide (bouton header) |
+| `liveTvSeriesRecordings` | `SeriesRecordingsBrowseFragment` | Acces depuis le guide (bouton header) ou depuis Recordings |
 | `trailerPlayer()` | `TrailerPlayerFragment` | Acces uniquement depuis les details d'un item |
 | `itemList()` | `ItemListFragment` | Acces uniquement depuis un lien interne (playlists, music) |
 | `externalPlayer()` | `ExternalPlayerActivity` | Acces uniquement depuis le player interne (fallback) |
@@ -184,9 +190,7 @@ Options supprimees :
 
 ### Route Settings sans ecran confirme
 
-| Route | Observation |
-|-------|-------------|
-| `/customization/subtitles` | Pointe vers `SettingsSubtitlesScreen` — fichier marque "inconnu" dans SCREENS_MAP (introuvable) |
+_Aucune anomalie — toutes les routes ont un ecran confirme._
 
 ### Coherence sidebar/toolbar
 

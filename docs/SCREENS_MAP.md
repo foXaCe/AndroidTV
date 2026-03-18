@@ -11,7 +11,7 @@
 - **Methode** : Lecture directe du code source Kotlin de chaque ecran
 - **Statuts corriges** : 47 sur 97 ecrans (48.5%)
 - **Tendance** : Migration massive des Settings (30 ecrans, presque tous fully VegafoX), Live TV composables migres, 5 fragments Startup legacy supprimes du code, 4 Jellyseerr migres vers Compose
-- **Fichiers supprimes** : 6 fichiers n'existent plus (`ServerFragment`, `UserLoginFragment`, `UserLoginCredentialsFragment`, `UserLoginQuickConnectFragment`, `SelectServerFragment`, `SettingsSubtitlesScreen`)
+- **Fichiers supprimes** : 5 fichiers n'existent plus (`ServerFragment`, `UserLoginFragment`, `UserLoginCredentialsFragment`, `UserLoginQuickConnectFragment`, `SelectServerFragment`)
 
 ---
 
@@ -114,7 +114,7 @@
 | 51 | Settings Clock | `ui/settings/screen/customization/SettingsCustomizationClockScreen.kt` | fully VegafoX | P2 |
 | 52 | Settings Clock Behavior | `ui/settings/screen/customization/SettingsClockBehaviorScreen.kt` | fully VegafoX | P3 |
 | 53 | Settings Watched Indicator | `ui/settings/screen/customization/SettingsCustomizationWatchedIndicatorScreen.kt` | fully VegafoX | P3 |
-| 54 | Settings Subtitles | `ui/settings/screen/subtitle/SettingsSubtitlesScreen.kt` | inconnu | P2 |
+| 54 | Settings Subtitles | `ui/settings/screen/customization/subtitle/SettingsSubtitlesScreen.kt` | fully VegafoX | P2 |
 | 55 | Settings Plugin (VegafoX) | `ui/settings/screen/vegafox/SettingsPluginScreen.kt` | fully VegafoX | P1 |
 | 56 | Settings Jellyseerr | `ui/settings/screen/vegafox/SettingsJellyseerrScreen.kt` | fully VegafoX | P1 |
 | 57 | Settings Jellyseerr Rows | `ui/settings/screen/vegafox/SettingsJellyseerrRowsScreen.kt` | fully VegafoX | P2 |
@@ -153,6 +153,7 @@
 |---|-------|--------------------------|--------|----------|
 | 81 | Welcome Screen (splash anime) | `ui/startup/compose/WelcomeScreen.kt` | fully VegafoX | P0 |
 | 82 | Server Discovery Screen | `ui/startup/server/ServerDiscoveryScreen.kt` | fully VegafoX | P0 |
+| 82b | Server Add Screen | `ui/startup/server/ServerAddScreen.kt` | fully VegafoX | P0 |
 | 83 | Quick Connect Screen | `ui/startup/server/QuickConnectScreen.kt` | fully VegafoX | P0 |
 | 84 | User Selection (grille profils) | `ui/startup/user/UserSelectionScreen.kt` | fully VegafoX | P1 |
 | 85 | User Login (identifiants) | `ui/startup/user/UserLoginScreen.kt` | fully VegafoX | P1 |
@@ -185,10 +186,10 @@
 
 | Statut | Nombre | % | Evolution |
 |--------|--------|---|-----------|
-| fully VegafoX | 91 | 97.8% | +71 |
+| fully VegafoX | 92 | 98.9% | +72 |
 | partial | 1 | 1.1% | -41 |
 | legacy | 0 | 0.0% | -34 |
-| inconnu | 1 | 1.1% | 0 |
+| inconnu | 0 | 0.0% | -1 |
 | **Total** | **93** | **100%** | |
 
 ### Par priorite
@@ -210,12 +211,12 @@
 | Player | 11 | 11 | 0 | 0 | 0 |
 | Browse | 9 | 9 | 0 | 0 | 0 |
 | Search | 1 | 1 | 0 | 0 | 0 |
-| Settings | 30 | 29 | 0 | 0 | 1 |
+| Settings | 30 | 30 | 0 | 0 | 0 |
 | Live TV | 11 | 11 | 0 | 0 | 0 |
 | Startup | 8 | 8 | 0 | 0 | 0 |
 | Jellyseerr | 6 | 6 | 0 | 0 | 0 |
 | Autres | 1 | 1 | 0 | 0 | 0 |
-| **Total** | **93** | **91** | **1** | **0** | **1** |
+| **Total** | **93** | **92** | **1** | **0** | **0** |
 
 ### Prochaines priorites de migration
 
@@ -223,4 +224,3 @@ Migration terminee. Tous les ecrans legacy ont ete reecrits en Compose VegafoX.
 
 Ecrans restants non-fully-VegafoX :
 1. **Home partial (P2 x1)** — ExoPlayerTrailerView utilise un TextureView natif pour la transparence video (contrainte technique justifiee, pas de migration possible)
-2. **Settings inconnu (P2 x1)** — SettingsSubtitlesScreen (fichier introuvable dans le code source)

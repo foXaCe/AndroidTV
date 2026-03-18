@@ -173,8 +173,6 @@
     <string name="pref_next_up_timeout_title">Časový limit pre nasledujúcu položku</string>
     <string name="watch_now">Pozerať teraz</string>
     <string name="pref_next_up_timeout_summary">Dĺžka čakania pred prehratím ďalšej položky</string>
-    <string name="pref_app_theme">Téma aplikácie</string>
-    <string name="pref_theme_dark">Tmavá (predvolená)</string>
     <string name="grid_direction_vertical">Vertikálne</string>
     <string name="grid_direction_horizontal">Horizontálne</string>
     <string name="grid_direction">Smer mriežky</string>
@@ -182,7 +180,6 @@
 <string name="bitrate_kbit">%1$,.0f Kbit/s</string>
     <string name="bitrate_mbit">%1$,.0f Mbit/s</string>
 <string name="lbl_pause">Pozastaviť</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">Končí o %1$s</string>
 <string name="msg_no_items">Žiadne položky na prehranie</string>
 <string name="too_many_errors">Príliš veľa chýb. Vzdávam sa</string>
@@ -301,7 +298,6 @@
 <string name="pref_login">Prihlásenie</string>
 <string name="pref_libraries">Knižnice</string>
 <string name="pref_browsing">Prechádzanie</string>
-    <string name="pref_behavior">Chovanie</string>
     <string name="pref_accounts">Účty</string>
     <string name="sort_accounts_by">Zoradiť účty podľa</string>
     <string name="pref_customization">Prispôsobenie</string>
@@ -368,7 +364,6 @@
         <item quantity="few">%1$s hodinách</item>
         <item quantity="other">%1$s hodinách</item>
     </plurals>
-<string name="not_set">Nie je nastavené</string>
     <string name="lbl_album_artists">Interpreti albumu</string>
 <string name="disable_ui_mode_warning">Zakázať upozornenia na typ zariadenia</string>
     <string name="because_you_watched">Pretože ste pozerali %1$s</string>

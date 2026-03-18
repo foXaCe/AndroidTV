@@ -141,7 +141,6 @@
     <string name="lbl_subtitle_background_color">सबटाइटल के बैकग्राउंड का रंग</string>
     <string name="lbl_subtitle_text_stroke_color">टाइटल के स्ट्रोक का रंग</string>
     <string name="pref_next_up_behavior_title">अगले वीडियो की जानकारी दिखाएं</string>
-    <string name="pref_app_theme">ऐप थीम</string>
     <string name="pref_device_model">डिवाइस मॉडल</string>
 <string name="lbl_live_tv_guide">लाइव टीवी गाइड</string>
     <string name="lbl_recorded_tv">रिकॉर्डेड टीवी</string>
@@ -179,14 +178,12 @@
     <string name="watch_now">अभी देखें</string>
     <string name="no_player_message">आपके पास वीडियो सक्षम ऐप इंस्टॉल नहीं है। तृतीय पक्ष एप्लीकेशन को इंस्टॉल करना होगा।</string>
     <string name="episode_missing_message_2">यह एपिसोड आपके संग्रह से गायब है। प्लेबैक बंद हो जाएगा।</string>
-<string name="watch_count_overflow">99+</string>
 <string name="pref_live_tv_cat">लाइव टीवी</string>
     <string name="lbl_delete">मिटाएं</string>
 <string name="episode_missing">एपिसोड गायब</string>
 <string name="lbl_image_type">इस तरह की इमेज</string>
     <string name="lbl_image_size">इमेज का आकार</string>
     <string name="lbl_my_media">मेरी मीडिया</string>
-    <string name="pref_theme_dark">डार्क (डिफॉल्ट)</string>
     <string name="pref_next_up_timeout_summary">अगला आइटम चलाने से पहले कितना रुकें</string>
     <string name="grid_direction">ग्रिड डायरेक्शन</string>
 <string name="lbl_albums">एल्बम्स</string>
@@ -348,7 +345,6 @@
     <string name="home_prefs">घर</string>
     <string name="home_section_livetv">लाइव टीवी</string>
     <string name="pref_browsing">ब्राउजिंग</string>
-<string name="pref_behavior">व्यवहार</string>
     <string name="pref_video">वीडियो</string>
     <string name="pref_subtitles">उपशीर्षक</string>
     <string name="pref_audio">ऑडियो</string>
@@ -419,7 +415,6 @@
         <item quantity="one">%1$s एल्बम</item>
         <item quantity="other">%1$s एलबम्स</item>
     </plurals>
-    <string name="not_set">सेट नहीं</string>
     <string name="clear_image_cache">इमेज कैश साफ़ करें</string>
     <string name="person_birthday_and_age">जन्म %1$s (%2$d)</string>
     <string name="disable_ui_mode_warning">डिवाइस प्रकार चेतावनी बंद करें</string>

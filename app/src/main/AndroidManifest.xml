@@ -3,10 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto">
 
-    <!-- Android TV Integration -->
-    <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA" />
-
-
     <!-- Generic permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -14,7 +10,6 @@
         android:name="android.permission.ACCESS_WIFI_STATE"
         tools:ignore="LeanbackUsesWifi" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <!-- Search permissions (voice to text) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -128,11 +123,14 @@
         <!-- Main application -->
         <activity
             android:name=".ui.browsing.MainActivity"
+            android:exported="false"
             android:launchMode="singleTask"
             android:configChanges="keyboard|keyboardHidden|navigation"
             android:windowSoftInputMode="adjustNothing" />
 
-        <activity android:name=".ui.playback.ExternalPlayerActivity" />
+        <activity
+            android:name=".ui.playback.ExternalPlayerActivity"
+            android:exported="false" />
 
         <!-- FileProvider for sharing APK files -->
         <provider

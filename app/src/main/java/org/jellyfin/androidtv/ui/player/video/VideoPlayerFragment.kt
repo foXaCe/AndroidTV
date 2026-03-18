@@ -7,13 +7,17 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.compose.content
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.debug.ScreenIdOverlay
 import org.jellyfin.androidtv.ui.base.debug.ScreenIds
 import org.jellyfin.androidtv.ui.playback.VideoQueueManager
 import org.jellyfin.androidtv.ui.playback.rewrite.RewriteMediaManager
 import org.jellyfin.playback.core.PlaybackManager
+import org.jellyfin.playback.core.model.PlayState
 import org.jellyfin.playback.core.queue.queue
 import org.jellyfin.sdk.api.client.ApiClient
 import org.koin.android.ext.android.inject
@@ -47,17 +51,32 @@ class VideoPlayerFragment : Fragment() {
 
 		// Create a queue from the items added to the legacy video queue
 		val queueSupplier = RewriteMediaManager.BaseItemQueueSupplier(api, videoQueueManager.getCurrentVideoQueue(), false)
-		Timber.i("Created a queue with ${queueSupplier.items.size} items")
+		if (queueSupplier.items.isEmpty()) {
+			Timber.e("Queue is EMPTY — nothing will play! Check VideoQueueManager state.")
+		} else {
+			Timber.i("Created a queue with ${queueSupplier.items.size} items")
+		}
 		playbackManager.queue.clear()
 		playbackManager.queue.addSupplier(queueSupplier)
 
-		// Set position — retry until backend is ready
+		// Set position — wait for PLAYING state (not just PAUSED/BUFFERING) then seek
 		Args.fromBundle(arguments).position?.milliseconds?.let { seekPosition ->
 			lifecycleScope.launch {
-				// Wait for the player backend to be ready before seeking
-				repeat(20) {
-					playbackManager.state.seek(seekPosition)
-					kotlinx.coroutines.delay(50)
+				try {
+					val readyState =
+						withTimeout(5000) {
+							playbackManager.state.playState.first {
+								it == PlayState.PLAYING || it == PlayState.ERROR
+							}
+						}
+					if (readyState == PlayState.ERROR) {
+						Timber.e("Player entered ERROR state, skipping initial seek to $seekPosition")
+					} else {
+						Timber.i("Player is PLAYING, seeking to $seekPosition")
+						playbackManager.state.seek(seekPosition)
+					}
+				} catch (_: TimeoutCancellationException) {
+					Timber.w("Player not PLAYING after 5s, skipping initial seek to $seekPosition")
 				}
 			}
 		}

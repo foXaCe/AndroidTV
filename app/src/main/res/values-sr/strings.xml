@@ -51,7 +51,6 @@
 <string name="lbl_videos">Видео</string>
     <string name="lbl_people">Особе</string>
     <string name="lbl_sd">СД</string>
-<string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">Завршава се у %1$s</string>
 <string name="msg_no_items">Нема ставки за репродукцију</string>
 <string name="too_many_errors">Превише грешака. Одустајем</string>
@@ -67,12 +66,10 @@
     <string name="grid_direction_horizontal">Хоризонтално</string>
     <string name="grid_direction">Смер мреже</string>
     <string name="pref_device_model">Модел уређаја</string>
-    <string name="pref_app_theme">Тема апликације</string>
     <string name="watch_now">Гледај сада</string>
     <string name="pref_next_up_timeout_title">Трајање тајмера за следеће снимање</string>
     <string name="pref_next_up_timeout_summary">Колико треба чекати пре репродукције следеће ставке</string>
     <string name="pref_about_title">О</string>
-    <string name="pref_theme_dark">Тамно (подразумевано)</string>
     <string name="lbl_my_media">Моји медији</string>
     <string name="lbl_image_size">Величина слике</string>
     <string name="lbl_image_type">Тип слике</string>
@@ -323,7 +320,6 @@
     <string name="pref_accounts">Налози</string>
     <string name="pref_browsing">Претрага</string>
     <string name="sort_accounts_by">Сортирај налоге по</string>
-    <string name="pref_behavior">Понашање</string>
 <string name="because_you_watched">Јер сте гледали %1$s</string>
     <string name="speech_error_no_permission">Није дозвољен микрофон. Молимо Вас, дозволиоте микрофон у подешавањима.</string>
     <string name="speech_error_unavailable">Препознавање говора није доступно на Вашем уређају.</string>
@@ -403,7 +399,6 @@
     <string name="item_delete_confirm_title">Обриши ставку</string>
     <string name="pref_screensaver">Чувар екрана</string>
     <string name="pref_screensaver_inapp_timeout">Покрени чувар екрана после</string>
-    <string name="not_set">Није подешено</string>
     <string name="disable_ui_mode_warning">Онемогући упозорење о врсти уређаја</string>
     <string name="indicator_subtitles">CC</string>
     <string name="indicator_subtitles_hearing_impaired">SDH</string>

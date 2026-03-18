@@ -64,9 +64,7 @@ class UserSettingPreferences(
 		val homeRowsUniversalImageType = enumPreference("homeRowsUniversalImageType", org.jellyfin.androidtv.constant.ImageType.POSTER)
 		
 		// Background blur settings
-		@Deprecated("Use detailsBackgroundBlurAmount or browsingBackgroundBlurAmount instead", ReplaceWith("detailsBackgroundBlurAmount"))
-		val backgroundBlurAmount = intPreference("backgroundBlurAmount", 10)
-		val detailsBackgroundBlurAmount = intPreference("detailsBackgroundBlurAmount", 10)
+		val detailsBackgroundBlurAmount = intPreference("detailsBackgroundBlurAmount", 4)
 		val browsingBackgroundBlurAmount = intPreference("browsingBackgroundBlurAmount", 10)
 
 		// Rating settings
@@ -82,39 +80,8 @@ class UserSettingPreferences(
 		 */
 		val enabledRatings = stringPreference("enabledRatings", "RATING_TOMATOES,RATING_STARS")
 
-		// New home sections configuration (JSON storage)
+		// Home sections configuration (JSON storage)
 		val homeSectionsJson = stringPreference("home_sections_config", "")
-		
-		// Legacy home section preferences (kept for migration)
-		@Deprecated("Use homeSectionsJson instead")
-		val homesection0 = enumPreference("homesection0", HomeSectionType.MEDIA_BAR)
-
-		@Deprecated("Use homeSectionsJson instead")
-		val homesection1 = enumPreference("homesection1", HomeSectionType.RESUME)
-
-		@Deprecated("Use homeSectionsJson instead")
-		val homesection2 = enumPreference("homesection2", HomeSectionType.RESUME_BOOK)
-
-		@Deprecated("Use homeSectionsJson instead")
-		val homesection3 = enumPreference("homesection3", HomeSectionType.NONE)
-
-		@Deprecated("Use homeSectionsJson instead")
-		val homesection4 = enumPreference("homesection4", HomeSectionType.NEXT_UP)
-
-		@Deprecated("Use homeSectionsJson instead")
-		val homesection5 = enumPreference("homesection5", HomeSectionType.LATEST_MEDIA)
-
-		@Deprecated("Use homeSectionsJson instead")
-		val homesection6 = enumPreference("homesection6", HomeSectionType.NONE)
-
-		@Deprecated("Use homeSectionsJson instead")
-		val homesection7 = enumPreference("homesection7", HomeSectionType.NONE)
-
-		@Deprecated("Use homeSectionsJson instead")
-		val homesection8 = enumPreference("homesection8", HomeSectionType.NONE)
-
-		@Deprecated("Use homeSectionsJson instead")
-		val homesection9 = enumPreference("homesection9", HomeSectionType.NONE)
 
 		// Theme music settings
 		val themeMusicEnabled = booleanPreference("themeMusicEnabled", false)
@@ -122,7 +89,7 @@ class UserSettingPreferences(
 		val themeMusicOnHomeRows = booleanPreference("themeMusicOnHomeRows", false)
 
 		// Display
-		val focusColor = enumPreference("focus_color", AppTheme.WHITE)
+		val focusColor = enumPreference("focus_color", AppTheme.ORANGE)
 
 		// Security
 		/**
@@ -141,21 +108,6 @@ class UserSettingPreferences(
 			ignoreUnknownKeys = true
 			encodeDefaults = true
 		}
-
-	@Deprecated("Use homeSectionsConfig instead")
-	val homesections =
-		listOf(
-			homesection0,
-			homesection1,
-			homesection2,
-			homesection3,
-			homesection4,
-			homesection5,
-			homesection6,
-			homesection7,
-			homesection8,
-			homesection9,
-		)
 
 	/**
 	 * Get or set the home sections configuration.
@@ -243,7 +195,7 @@ class UserSettingPreferences(
 				putInt(browsingBackgroundBlurAmount.key, oldBlurAmount)
 			}
 			
-			// Migrate from old slot-based system to new system
+			// Migrate from old slot-based system to new JSON system
 			migration(toVersion = 2) { prefs ->
 				// Check if we already have the new config
 				if (prefs.contains(homeSectionsJson.key)) {
@@ -252,22 +204,27 @@ class UserSettingPreferences(
 						return@migration // Already migrated
 					}
 				}
-				
+
+				// Old legacy keys (properties removed, use string keys directly)
+				val legacyKeys = (0..9).map { "homesection$it" }
+				val legacyDefaults =
+					listOf(
+						"mediabar",
+						"resume",
+						"resumebook",
+						"none",
+						"nextup",
+						"latestmedia",
+						"none",
+						"none",
+						"none",
+						"none",
+					)
+
 				// Read old home section preferences and build enabled sections list
 				val enabledOldSections =
-					listOf(
-						homesection0,
-						homesection1,
-						homesection2,
-						homesection3,
-						homesection4,
-						homesection5,
-						homesection6,
-						homesection7,
-						homesection8,
-						homesection9,
-					).mapIndexedNotNull { index, pref ->
-						val typeString = prefs.getString(pref.key, HomeSectionType.NONE.serializedName)
+					legacyKeys.mapIndexedNotNull { index, key ->
+						val typeString = prefs.getString(key, legacyDefaults[index])
 						val type =
 							HomeSectionType.entries.find { it.serializedName == typeString }
 								?: HomeSectionType.NONE
@@ -277,14 +234,14 @@ class UserSettingPreferences(
 							null
 						}
 					}
-				
+
 				// Check if user had MEDIA_BAR enabled and set the new toggle accordingly
 				val hadMediaBar = enabledOldSections.any { it.type == HomeSectionType.MEDIA_BAR }
 				putBoolean(mediaBarEnabled.key, hadMediaBar)
-				
+
 				// Get default configs for all available section types (excluding MEDIA_BAR)
 				val defaultConfigs = HomeSectionConfig.defaults()
-				
+
 				// Build final config: start with enabled old sections, but exclude MEDIA_BAR
 				val enabledOldSectionsWithoutMediaBar = enabledOldSections.filter { it.type != HomeSectionType.MEDIA_BAR }
 				val enabledTypes = enabledOldSectionsWithoutMediaBar.map { it.type }.toSet()
@@ -292,7 +249,7 @@ class UserSettingPreferences(
 					buildList {
 						// Add all old enabled sections with their original order (excluding MEDIA_BAR)
 						addAll(enabledOldSectionsWithoutMediaBar)
-					
+
 						// Add any section types from defaults that weren't in the old config (as disabled)
 						val maxOrder = enabledOldSectionsWithoutMediaBar.maxOfOrNull { it.order } ?: -1
 						defaultConfigs.forEach { defaultConfig ->
@@ -306,7 +263,7 @@ class UserSettingPreferences(
 							}
 						}
 					}.sortedBy { it.order }
-				
+
 				// Save the new config
 				val jsonString = json.encodeToString(newConfigs)
 				putString(homeSectionsJson.key, jsonString)
@@ -345,11 +302,11 @@ class UserSettingPreferences(
 				// Check if enabledRatings already exists (skip if already migrated)
 				val existingRatings = prefs.getString(enabledRatings.key, null)
 				if (existingRatings != null) return@migration
-				
+
 				// Read old single rating type from the same shared preferences
 				// (UserSettingPreferences uses default shared prefs when userId is null)
 				val oldRatingType = prefs.getString("pref_rating_type", "RATING_TOMATOES")
-				
+
 				// Convert to new multi-select format
 				// If user had a specific rating selected, enable both that and community rating
 				val newEnabledRatings =
@@ -359,8 +316,18 @@ class UserSettingPreferences(
 						"RATING_TOMATOES" -> "RATING_TOMATOES,RATING_STARS" // RT + Stars (default)
 						else -> "$oldRatingType,RATING_STARS" // User's preference + community rating
 					}
-				
+
 				putString(enabledRatings.key, newEnabledRatings)
+			}
+
+			// Migration 5: Clean up deprecated SharedPreferences keys
+			migration(toVersion = 5) {
+				// Remove legacy homesection0-9 keys (migrated to homeSectionsJson in v2)
+				for (i in 0..9) {
+					remove("homesection$i")
+				}
+				// Remove legacy backgroundBlurAmount (migrated to split keys in v1)
+				remove("backgroundBlurAmount")
 			}
 		}
 	}

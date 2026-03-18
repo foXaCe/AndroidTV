@@ -17,11 +17,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
-import coil3.compose.AsyncImage
 import org.jellyfin.androidtv.ui.base.AnimationDefaults
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.getBackdropUrl
+import org.jellyfin.androidtv.ui.shared.components.CachedAsyncImage
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.model.api.BaseItemDto
 
@@ -60,7 +59,7 @@ fun DetailHeroBackdrop(
 			label = "detail_hero_backdrop",
 		) { url ->
 			if (url != null) {
-				AsyncImage(
+				CachedAsyncImage(
 					model = url,
 					contentDescription = null,
 					modifier =
@@ -78,7 +77,9 @@ fun DetailHeroBackdrop(
 											).asComposeRenderEffect()
 								}
 							},
-					contentScale = ContentScale.Crop,
+					maxWidth = 1920,
+					placeholder = null,
+					error = null,
 				)
 			}
 		}

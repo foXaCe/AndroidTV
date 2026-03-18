@@ -12699,17 +12699,6 @@
 
     <issue
         id="UseKtx"
-        message="Use the KTX extension function `SharedPreferences.edit` instead?"
-        errorLine1="  prefs.edit().putString(KEY_WATCHLIST, jsonString).apply()"
-        errorLine2="  ~~~~~~~~~~~~">
-        <location
-            file="src/main/java/org/jellyfin/androidtv/data/repository/LocalWatchlistRepository.kt"
-            line="65"
-            column="3"/>
-    </issue>
-
-    <issue
-        id="UseKtx"
         message="Use the KTX extension function `String.toUri` instead?"
         errorLine1="   val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(youtubeSearchUrl))"
         errorLine2="                                                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">

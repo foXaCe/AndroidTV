@@ -123,7 +123,6 @@
     <string name="lbl_sorted_by">razvrščeno po</string>
     <string name="lbl_all_items">Vsi elementi</string>
     <string name="lbl_showing">Prikazujem</string>
-<string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">Konec ob %1$s</string>
 <string name="msg_no_items">Ni elementov za predvajanje</string>
 <string name="too_many_errors">Preveč napak. Predajam se</string>
@@ -134,10 +133,8 @@
     <string name="grid_direction_horizontal">Horizontalno</string>
     <string name="grid_direction">Smer mreže</string>
     <string name="pref_device_model">Model naprave</string>
-    <string name="pref_app_theme">Tema aplikacije</string>
     <string name="watch_now">Glej zdaj</string>
     <string name="pref_about_title">Vizitka</string>
-    <string name="pref_theme_dark">Temno (Privzeto)</string>
     <string name="lbl_my_media">Moja predstavnost</string>
     <string name="lbl_image_size">Velikost slike</string>
     <string name="lbl_image_type">Vrsta slike</string>
@@ -306,7 +303,6 @@
     <string name="pref_audio">Zvok</string>
     <string name="pref_login">Prijava</string>
 <string name="pref_browsing">Brskanje</string>
-    <string name="pref_behavior">Obnašanje</string>
     <string name="pref_accounts">Računi</string>
     <string name="sort_accounts_by">Razvrsti račune po</string>
     <string name="pref_customization">Prilagoditev</string>
@@ -331,7 +327,6 @@
     <string name="lbl_quality_profile">Profil kakovosti</string>
     <string name="item_deleted">%1$s izbrisano</string>
     <string name="item_delete_confirm_title">Izbriši element</string>
-<string name="not_set">Ni nastavljeno</string>
     <string name="lbl_album_artists">Izvajalci albuma</string>
     <plurals name="episodes">
         <item quantity="one">%1$s epizoda</item>

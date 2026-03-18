@@ -157,12 +157,10 @@
     <string name="lbl_select_date">Seleccionar fecha</string>
     <string name="lbl_favorite">Favorito</string>
 <string name="loading">Cargando…</string>
-    <string name="pref_app_theme">Tema de la aplicación</string>
     <string name="watch_now">Ver ahora</string>
     <string name="pref_next_up_timeout_title">Duración del temporizador de «A continuación»</string>
     <string name="pref_next_up_timeout_summary">Cuánto tiempo hay que esperar antes de reproducir el siguiente elemento</string>
     <string name="pref_about_title">Acerca de</string>
-    <string name="pref_theme_dark">Oscuro (Por defecto)</string>
     <string name="lbl_my_media">Mis medios</string>
     <string name="lbl_image_size">Tamaño de imagen</string>
     <string name="lbl_image_type">Tipo de imagen</string>
@@ -192,7 +190,6 @@
     <string name="lbl_subtitle_track">Seleccione pista de subtítulos</string>
     <string name="lbl_audio_track">Seleccione pista de audio</string>
     <string name="lbl_pause">Pausa</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">Termina %1$s</string>
 <string name="image_type_banner">Banner</string>
     <string name="image_type_thumbnail">Miniatura</string>
@@ -298,7 +295,6 @@
 <string name="pref_login">Inicio de sesión</string>
 <string name="pref_libraries">Bibliotecas</string>
 <string name="pref_browsing">Exploración</string>
-    <string name="pref_behavior">Comportamiento</string>
     <string name="pref_accounts">Cuentas</string>
     <string name="sort_accounts_by">Organizar cuentas por</string>
     <string name="pref_customization">Personalización</string>
@@ -398,7 +394,6 @@
         <item quantity="other">%1$s álbumes</item>
     </plurals>
 <string name="item_delete_confirm_title">Eliminar elemento</string>
-<string name="not_set">No establecido</string>
     <string name="color_green">Verde</string>
 <string name="pref_screensaver_inapp_enabled_description">Mostrar el salvapantallas de Jellyfin mientras la aplicación está abierta</string>
     <string name="clear_image_cache_content">Utilizado: %1$s</string>

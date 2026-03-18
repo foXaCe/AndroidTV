@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -21,7 +22,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -29,13 +29,16 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.LocalTextStyle
 import org.jellyfin.androidtv.ui.base.ProvideTextStyle
+import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 
@@ -60,7 +63,7 @@ fun SearchTextInput(
 		}
 	}
 
-	val borderColor = if (focused) VegafoXColors.OrangePrimary else Color.White.copy(alpha = 0.10f)
+	val borderColor = if (focused) VegafoXColors.OrangePrimary else VegafoXColors.Divider
 	val iconTint = if (focused) VegafoXColors.OrangePrimary else VegafoXColors.TextSecondary
 
 	ProvideTextStyle(
@@ -119,7 +122,16 @@ fun SearchTextInput(
 				) {
 					Icon(VegafoXIcons.Search, contentDescription = null, tint = iconTint)
 					Spacer(Modifier.width(12.dp))
-					innerTextField()
+					Box {
+						if (query.isEmpty()) {
+							Text(
+								text = stringResource(R.string.search_input_placeholder),
+								style = LocalTextStyle.current,
+								color = VegafoXColors.TextSecondary,
+							)
+						}
+						innerTextField()
+					}
 				}
 			},
 		)

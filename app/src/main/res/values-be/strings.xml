@@ -172,7 +172,6 @@
     <string name="lbl_zoom">Павелічэнне</string>
 <string name="lbl_news">Навіны</string>
 <string name="bitrate_mbit">%1$,.0f Mbit/s</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="pref_clock_display_playback">Падчас прайгравання</string>
     <string name="server_connecting">Падлучэнне да %1$s</string>
     <string name="server_connection_failed">Немагчыма падлучыцца да сервера</string>
@@ -326,7 +325,6 @@
     <string name="lbl_live">У прамым эфіры</string>
     <string name="lbl_save">Захаваць</string>
     <string name="lbl_premiere">Прэм\'ера</string>
-    <string name="pref_theme_dark">Цёмны (па змаўчанні)</string>
     <string name="lbl_on">Уключыць</string>
     <string name="lbl_record_any_channel">Запіс любога канала</string>
     <string name="lbl_recorded_tv">Запісы тэлеканалаў</string>
@@ -400,7 +398,6 @@
 <string name="color_red">Чырвоны</string>
     <string name="pref_subtitles_size">Памер тэксту</string>
     <string name="pref_accounts">Уліковыя запісы</string>
-    <string name="pref_behavior">Паводзіны</string>
 <string name="home_section_resume_book">Чытаць далей</string>
     <string name="action_login">Увайсці</string>
 <string name="item_delete_confirm_title">Выдаліць элемент</string>
@@ -417,7 +414,6 @@
         <item quantity="many">%1$s дарожак</item>
         <item quantity="other">%1$s дарожак</item>
     </plurals>
-    <string name="not_set">Не ўстаноўлена</string>
     <string name="lbl_album_artists">Выканаўцы альбома</string>
     <string name="disable_ui_mode_warning">Адключыць папярэджанне аб тыпе прылады</string>
     <string name="dts_x">DTS:X</string>
@@ -430,7 +426,6 @@
     <string name="pref_playback_advanced">Пашыраныя налады прайгравання</string>
     <string name="all_channels">Усе каналы</string>
     <string name="lbl_resume_preroll">Перайдзіце назад, перш чым працягнуць прагляд</string>
-    <string name="pref_app_theme">Тэма прыкладання</string>
     <string name="pref_screensaver_ageratingmax">Максімальны ўзроставы рэйтынг</string>
     <string name="pref_screensaver_ageratingmax_zero">Усе ўзросты</string>
     <string name="pref_screensaver_ageratingmax_entry">Узрост да %1$d</string>

@@ -6,7 +6,6 @@ import org.jellyfin.androidtv.ui.navigation.RouteComposable
 import org.jellyfin.androidtv.ui.settings.Routes
 import org.jellyfin.androidtv.ui.settings.screen.home.SettingsHomePosterSizeScreen
 import org.jellyfin.androidtv.ui.settings.screen.home.SettingsHomeScreen
-import org.jellyfin.androidtv.ui.settings.screen.home.SettingsHomeSectionScreen
 import org.jellyfin.androidtv.ui.settings.screen.vegafox.SettingsVegafoXHomeRowsImageScreen
 
 val homeRoutes =
@@ -14,12 +13,6 @@ val homeRoutes =
 		Routes.HOME to {
 			ScreenIdOverlay(ScreenIds.SETTINGS_HOME_ID, ScreenIds.SETTINGS_HOME_NAME) {
 				SettingsHomeScreen()
-			}
-		},
-		Routes.HOME_SECTION to { context ->
-			val index = context.parameters["index"]?.toIntOrNull()
-			if (index != null) {
-				SettingsHomeSectionScreen(index)
 			}
 		},
 		Routes.HOME_POSTER_SIZE to {

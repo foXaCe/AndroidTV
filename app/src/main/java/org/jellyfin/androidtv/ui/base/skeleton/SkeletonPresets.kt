@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.theme.BrowseDimensions
+import org.jellyfin.androidtv.ui.base.theme.ButtonDimensions
 import org.jellyfin.androidtv.ui.base.theme.CardDimensions
 
 /**
@@ -230,11 +231,11 @@ fun SkeletonItemDetail(modifier: Modifier = Modifier) {
 					// Buttons
 					Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
 						SkeletonBox(
-							modifier = Modifier.width(120.dp).height(40.dp),
+							modifier = Modifier.width(120.dp).height(ButtonDimensions.heightCompact),
 							shape = JellyfinTheme.shapes.button,
 						)
 						SkeletonBox(
-							modifier = Modifier.width(120.dp).height(40.dp),
+							modifier = Modifier.width(120.dp).height(ButtonDimensions.heightCompact),
 							shape = JellyfinTheme.shapes.button,
 						)
 					}

@@ -112,7 +112,6 @@
     <string name="pref_next_up_timeout_title">Тривалість відображення інформації</string>
     <string name="pref_next_up_timeout_summary">Як довго чекати, перш ніж відтворити наступний елемент</string>
     <string name="pref_about_title">Про додаток</string>
-    <string name="pref_theme_dark">Темна (за замовчуванням)</string>
     <string name="lbl_my_media">Мої медіафайли</string>
     <string name="lbl_image_size">Розмір зображення</string>
     <string name="lbl_image_type">Тип зображення</string>
@@ -203,7 +202,6 @@
     <string name="grid_direction_horizontal">Горизонтальний</string>
     <string name="grid_direction">Напрямок сітки</string>
     <string name="pref_device_model">Модель пристрою</string>
-    <string name="pref_app_theme">Тема додатку</string>
     <string name="lbl_record_all">Записуватиме всі епізоди</string>
     <string name="lbl_record_only_new">Записуватиме тільки нові епізоди</string>
     <string name="lbl_episode_range">Епізоди %1$d–%2$d</string>
@@ -221,7 +219,6 @@
 <string name="pref_login">Авторизація</string>
 <string name="pref_libraries">Медіатеки</string>
 <string name="pref_browsing">Навігація</string>
-<string name="pref_behavior">Поведінка</string>
     <string name="pref_accounts">Облікові записи</string>
     <string name="sort_accounts_by">Сортування облікових записів</string>
     <string name="pref_customization">Персональні налаштування</string>
@@ -311,7 +308,6 @@
     <string name="server_connection_failed_candidates">Не вийшло підключитись до сервера, спробували такі адреси: %1$s</string>
     <string name="server_connection_failed">Не вийшло підключитись до сервера</string>
     <string name="server_connecting">Підключення до %1$s</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">Завершиться о %1$s</string>
 <string name="lbl_shuffle_queue">Перемкнути перемішування</string>
     <string name="state_disabled">Вимкнено</string>
@@ -374,7 +370,6 @@
         <item quantity="other">%1$s доріжок</item>
     </plurals>
 <string name="lbl_album_artists">Виконавці альбому</string>
-    <string name="not_set">Не встановлено</string>
     <string name="disable_ui_mode_warning">Вимкнути попередження про тип пристрою</string>
     <string name="because_you_watched">Тому що ви переглянули %1$s</string>
     <string name="channels">Канали</string>

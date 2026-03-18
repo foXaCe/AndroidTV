@@ -173,8 +173,6 @@
     <string name="pref_next_up_timeout_title">Varighet for Neste-timer</string>
     <string name="watch_now">Se nå</string>
     <string name="pref_next_up_timeout_summary">Hvor lang tid det skal gå før neste element spilles av</string>
-    <string name="pref_app_theme">App-tema</string>
-    <string name="pref_theme_dark">Mørk (Standard)</string>
 <string name="grid_direction_vertical">Vertikal</string>
     <string name="grid_direction_horizontal">Horisontal</string>
     <string name="grid_direction">Rutenettretning</string>
@@ -203,7 +201,6 @@
 <string name="lbl_subtitle_track">Velg undertekst</string>
     <string name="lbl_audio_track">Velg lydspor</string>
     <string name="lbl_pause">Pause</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="lbl_use_series_thumbnails_description">Bruk serieminiatyrbilder når du viser episoder</string>
     <string name="lbl_use_series_thumbnails">Foretrekker serieminiatyrbilder</string>
     <string name="lbl_hide_unwatched_count">Når elementet er sett</string>
@@ -307,14 +304,12 @@
 <string name="pref_screensaver_inapp_enabled_description">Vis Jellyfin-skjermspareren mens appen er åpen</string>
 <string name="home_section_library_small">Mediene mine (liten)</string>
     <string name="server_issue_timeout">Tilkoblingen ble tidsavbrutt</string>
-    <string name="not_set">Ikke satt</string>
     <plurals name="seconds">
         <item quantity="one">%1$s sekund</item>
         <item quantity="other">%1$s sekunder</item>
     </plurals>
     <string name="last_use">Sist brukt</string>
 <string name="license_description">Beskrivelse</string>
-<string name="pref_behavior">Oppførsel</string>
     <string name="home_section_resume_audio">Fortsett å lytte</string>
     <string name="home_section_active_recordings">Aktive opptak</string>
     <string name="server_issue_unable_to_connect">Kunne ikke koble til</string>

@@ -56,7 +56,6 @@
 <string name="lbl_coming_up">Próximamente</string>
     <string name="lbl_by_name">Por nombre</string>
     <string name="lbl_latest">Añadido recientemente</string>
-<string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">Termina %1$shs</string>
 <string name="msg_no_items">No hay elementos para reproducir</string>
 <string name="too_many_errors">Demasiados errores. Deteniéndose</string>
@@ -72,12 +71,10 @@
     <string name="grid_direction_horizontal">Horizontal</string>
     <string name="grid_direction">Dirección de la cuadrícula</string>
     <string name="pref_device_model">Modelo del dispositivo</string>
-    <string name="pref_app_theme">Tema de la aplicación</string>
     <string name="watch_now">Ver ahora</string>
     <string name="pref_next_up_timeout_title">Duración del temporizador de «A continuación»</string>
     <string name="pref_next_up_timeout_summary">Cuánto tiempo hay que esperar antes de reproducir el siguiente elemento</string>
     <string name="pref_about_title">Acerca de</string>
-    <string name="pref_theme_dark">Obscuro (Por defecto)</string>
     <string name="lbl_my_media">Mi contenido</string>
     <string name="lbl_image_size">Tamaño de imagen</string>
     <string name="lbl_image_type">Tipo de imagen</string>
@@ -268,7 +265,6 @@
 <string name="pref_login">Acceso</string>
 <string name="pref_libraries">Bibliotecas</string>
 <string name="pref_browsing">Navegación</string>
-    <string name="pref_behavior">Comportamiento</string>
     <string name="pref_accounts">Cuentas</string>
     <string name="sort_accounts_by">Ordenar cuentas por</string>
     <string name="pref_customization">Personalización</string>
@@ -355,7 +351,6 @@
 <string name="pref_refresh_rate_scale_on_device">Escala en el dispositivo</string>
     <string name="pref_crash_reports_enabled">Los informes de fallos serán enviados al último servidor utilizado</string>
 <string name="pref_screensaver_inapp_timeout">Iniciar el salvapantallas después de</string>
-    <string name="not_set">No establecido</string>
 <string name="crash_report_toast">Epa! Algo salió mal, se envió un informe de fallos a tu servidor Jellyfin.</string>
     <string name="pref_refresh_rate_scale_on_tv">Escalado en TV</string>
     <string name="episode_name_special">especial</string>

@@ -1,6 +1,7 @@
 package org.jellyfin.androidtv.ui.livetv.compose
 
 import android.text.format.DateUtils
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,7 +40,6 @@ import org.jellyfin.androidtv.ui.base.theme.BebasNeue
 import org.jellyfin.androidtv.ui.base.theme.LiveTvDimensions
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.util.TimeUtils
-import org.jellyfin.androidtv.util.Utils
 import org.jellyfin.androidtv.util.getQuantityString
 import org.jellyfin.androidtv.util.getTimeFormatter
 import org.jellyfin.sdk.api.client.ApiClient
@@ -198,12 +198,12 @@ fun RecordDialog(
 								onDismiss()
 								customMessageRepository.pushMessage(CustomMessage.ActionComplete)
 								if (isSeries) {
-									Utils.showToast(context, R.string.msg_settings_updated)
+									Toast.makeText(context, R.string.msg_settings_updated, Toast.LENGTH_LONG).show()
 								} else {
 									val updatedProgram = getLiveTvProgram(api, program.id)
 									selectedProgramView?.setRecTimer(updatedProgram.timerId)
 									selectedProgramView?.setRecSeriesTimer(updatedProgram.seriesTimerId)
-									Utils.showToast(context, R.string.msg_set_to_record)
+									Toast.makeText(context, R.string.msg_set_to_record, Toast.LENGTH_LONG).show()
 								}
 								onRecordingUpdated()
 							}

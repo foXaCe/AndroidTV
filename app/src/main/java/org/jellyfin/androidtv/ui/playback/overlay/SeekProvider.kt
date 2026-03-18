@@ -19,9 +19,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.jellyfin.androidtv.R
-import org.jellyfin.androidtv.ui.playback.PlaybackController
+import org.jellyfin.androidtv.preference.UserPreferences
+import org.jellyfin.androidtv.ui.playback.PlaybackControllerContainer
 import org.jellyfin.androidtv.util.coil.SubsetTransformation
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.extensions.trickplayApi
@@ -36,16 +40,21 @@ import kotlin.math.min
 
 /**
  * Pure Kotlin seek provider for trickplay thumbnails and seek positions.
- * No Leanback dependency — the Leanback adapter is created in the Glue.
+ * Exposes [currentThumbnail] as a reactive StateFlow for Compose integration.
  */
 class SeekProvider(
-	private val playbackController: PlaybackController,
+	private val playbackControllerContainer: PlaybackControllerContainer,
 	private val imageLoader: ImageLoader,
 	private val api: ApiClient,
 	private val context: Context,
-	private val trickPlayEnabled: Boolean,
-	private val forwardTime: Long,
+	private val userPreferences: UserPreferences,
 ) {
+	private val trickPlayEnabled: Boolean get() = userPreferences[UserPreferences.trickPlayEnabled]
+	private val forwardTime: Long = TRICKPLAY_STEP_MS
+
+	private val _currentThumbnail = MutableStateFlow<Bitmap?>(null)
+	val currentThumbnail: StateFlow<Bitmap?> = _currentThumbnail.asStateFlow()
+
 	fun interface ThumbnailCallback {
 		fun onThumbnailLoaded(
 			bitmap: Bitmap,
@@ -90,21 +99,23 @@ class SeekProvider(
 		private const val VISIBLE_THUMBNAILS = 7
 		private const val PRELOAD_AHEAD = 3
 		private const val PRELOAD_RETRIGGER_THRESHOLD = 2
+		private const val TRICKPLAY_STEP_MS = 10_000L
 	}
 
 	/** Duration in milliseconds, computed from media source or item ticks. */
 	private val duration: Long
 		get() {
+			val controller = playbackControllerContainer.playbackController ?: return -1
 			val runTimeTicks =
-				playbackController.currentMediaSource?.runTimeTicks
-					?: playbackController.currentlyPlayingItem?.runTimeTicks
+				controller.currentMediaSource?.runTimeTicks
+					?: controller.currentlyPlayingItem?.runTimeTicks
 			return if (runTimeTicks != null) runTimeTicks / 10000 else -1
 		}
 
-	private fun canSeek(): Boolean = playbackController.canSeek()
+	private fun canSeek(): Boolean = playbackControllerContainer.playbackController?.canSeek() ?: false
 
-	private val currentlyPlayingItem get() = playbackController.currentlyPlayingItem
-	private val currentMediaSource get() = playbackController.currentMediaSource
+	private val currentlyPlayingItem get() = playbackControllerContainer.playbackController?.currentlyPlayingItem
+	private val currentMediaSource get() = playbackControllerContainer.playbackController?.currentMediaSource
 
 	init {
 		if (trickPlayEnabled) {
@@ -403,6 +414,33 @@ class SeekProvider(
 						)
 					}.build(),
 			)
+	}
+
+	fun updatePosition(positionMs: Long) {
+		if (!trickPlayEnabled) {
+			_currentThumbnail.value = null
+			return
+		}
+
+		// Trigger disk cache preload if not yet started for the current item
+		if (!diskCacheReady && diskCacheJob?.isActive != true) {
+			preloadTilesToDiskCache()
+		}
+
+		val dur = duration
+		if (dur <= 0 || forwardTime <= 0) {
+			_currentThumbnail.value = null
+			return
+		}
+
+		val index = (positionMs / forwardTime).toInt()
+		getThumbnail(index) { bitmap, _ ->
+			_currentThumbnail.value = bitmap
+		}
+	}
+
+	fun clearThumbnail() {
+		_currentThumbnail.value = null
 	}
 
 	fun reset() {

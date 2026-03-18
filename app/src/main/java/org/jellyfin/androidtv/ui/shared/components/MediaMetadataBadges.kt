@@ -46,7 +46,7 @@ fun MediaMetadataBadges(
 			Text(
 				text = metaParts.joinToString("  \u00B7  "),
 				fontSize = 13.sp,
-				color = VegafoXColors.TextSecondary,
+				color = VegafoXColors.TextPrimary,
 			)
 		}
 

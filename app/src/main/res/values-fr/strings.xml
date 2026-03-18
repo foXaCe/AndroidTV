@@ -22,7 +22,6 @@
 <string name="lbl_latest">Récemment ajouté</string>
     <string name="lbl_by_name">Par nom</string>
     <string name="lbl_favorites">Favoris</string>
-    <string name="lbl_my_list">Ma liste</string>
     <string name="lbl_coming_up">À venir</string>
 <string name="lbl_collections">Collections</string>
     <string name="lbl_movies">Films</string>
@@ -47,7 +46,7 @@
     <string name="lbl_cast">Distribution</string>
 <string name="lbl_chapters">Chapitres</string>
     <string name="lbl_specials">Épisodes spéciaux</string>
-    <string name="lbl_trailers">Bandes-annonces</string>
+    <string name="lbl_trailers">Bande-annonce</string>
 <string name="lbl_series">Séries</string>
     <string name="lbl_seasons">Saisons</string>
 <string name="lbl_favorite">Favori</string>
@@ -80,7 +79,10 @@
     <string name="msg_cannot_play">Impossible de lire cet élément</string>
     <string name="lbl_no_items">Aucun élément</string>
     <string name="lbl_empty">Vide</string>
-<string name="lbl_play_first_unwatched">Lire le premier élément non vu</string>
+<string name="search_empty_hint">Commencez à taper pour rechercher…</string>
+    <string name="search_input_placeholder">Rechercher des films, séries, acteurs…</string>
+    <string name="search_no_results">Aucun résultat pour \"%1$s\"</string>
+    <string name="lbl_play_first_unwatched">Lire le premier élément non vu</string>
     <string name="lbl_mark_unplayed">Marquer comme non vu</string>
     <string name="lbl_mark_played">Marquer comme vu</string>
     <string name="lbl_remove_favorite">Supprimer des favoris</string>
@@ -106,7 +108,7 @@
     <string name="pref_audio_compat">Sous-mixer en stéréo</string>
     <string name="pref_audio_night_mode">Mode nuit audio (expérimental)</string>
     <string name="lbl_audio_output">Sortie audio</string>
-    <string name="lbl_goto_series">Aller vers les séries</string>
+    <string name="lbl_goto_series">La série</string>
     <string name="lbl_enable_debug">Options de débogage</string>
     <string name="desc_debug">Fournir des informations supplémentaires pour le débogage</string>
     <string name="lbl_showing">Afficher</string>
@@ -130,6 +132,8 @@
     <string name="lbl_your_recordings">Vos enregistrements</string>
     <string name="lbl_x_channels">%1$d chaînes</string>
     <string name="lbl_guide_hours">%1$d heures</string>
+    <string name="guide_filter_active">Contenu filtré. Affichage des chaînes avec %s</string>
+    <string name="guide_filter_none">Affichage de tous les programmes</string>
     <string name="lbl_recorded_tv">TV enregistrée</string>
     <string name="pref_live_tv_cat">TV en direct</string>
     <string name="msg_error_live_stream">Erreur du flux TV en direct. Nouvel essai en cours…</string>
@@ -154,7 +158,6 @@
     <string name="msg_failed_to_create_playlist">Échec de la création de la liste de lecture</string>
     <string name="msg_enter_playlist_name">Saisis un nom de liste de lecture</string>
 <string name="lbl_create_and_add">Créer et ajouter</string>
-    <string name="lbl_back">Retour</string>
     <string name="lbl_open_artist">Ouvrir la fiche de l\'artiste</string>
     <string name="lbl_open_album">Ouvrir l\'album</string>
     <string name="lbl_shuffle_queue">Mode aléatoire</string>
@@ -294,8 +297,6 @@
     <string name="lbl_use_series_thumbnails_description">Utiliser les miniatures des séries lors de l\'affichage des épisodes</string>
     <string name="lbl_card_focus_expansion">Agrandissement au focus</string>
     <string name="lbl_card_focus_expansion_description">Agrandir les cartes lorsqu\'elles reçoivent le focus</string>
-    <string name="lbl_merge_continue_watching_next_up">Fusionner Continuer et À suivre</string>
-    <string name="lbl_merge_continue_watching_next_up_description">Afficher tous les épisodes en cours et à suivre sur une seule ligne</string>
     <string name="auto_sign_in">Connexion automatique</string>
     <string name="user_picker_disable_title">Désactiver</string>
     <string name="user_picker_disable_summary">Toujours afficher l\'écran de connexion</string>
@@ -376,6 +377,7 @@
     <string name="home_section_resume_audio">Poursuivre l\'écoute</string>
     <string name="home_section_active_recordings">Enregistrements actifs</string>
     <string name="home_section_next_up">À suivre</string>
+    <string name="home_section_continue_and_next">Continuer &amp; À suivre</string>
     <string name="home_section_playlists">Listes de lecture</string>
     <string name="home_section_livetv">TV en direct</string>
     <string name="home_section_latest">Récemment ajouté dans %1$s</string>
@@ -848,7 +850,6 @@
 
     <!-- Grille des genres -->
     <string name="all_libraries">Toutes les bibliothèques</string>
-    <string name="no_genres_found">Aucun genre trouvé</string>
     <string name="sort_a_z">A-Z</string>
     <string name="sort_z_a">Z-A</string>
     <string name="sort_most_items">Plus d\'éléments</string>
@@ -884,7 +885,7 @@
     <string name="lbl_appearances">Filmographie</string>
     <string name="lbl_tracks">Pistes</string>
     <string name="lbl_unknown">Inconnu</string>
-<string name="lbl_episode_number_str">É%1$s</string>
+<string name="lbl_episode_number_str">E%1$s</string>
     <string name="lbl_episode_label">Épisode %1$s</string>
     <string name="lbl_born_date">Né(e) le %1$s (%2$d ans)</string>
     <string name="lbl_no_playlists_found">Aucune liste de lecture. Crée-en une !</string>
@@ -982,13 +983,10 @@
     <string name="update_failed_open_settings">Impossible d\'ouvrir les paramètres</string>
 
     <!-- Chaînes hardcodées - Paramètres principaux -->
-    <string name="settings_support_updates">Assistance et mises à jour</string>
     <string name="settings_check_updates">Rechercher les mises à jour</string>
     <string name="settings_check_updates_desc">Télécharger la dernière version de VegafoX</string>
     <string name="settings_update_notifications">Notifications de mise à jour</string>
     <string name="settings_update_notifications_desc">Afficher une notification au lancement lorsqu\'une mise à jour est disponible</string>
-    <string name="settings_support_vegafox">Soutenir VegafoX</string>
-    <string name="settings_support_vegafox_desc">Aide-nous à poursuivre le développement</string>
     <string name="settings_install_permission_title">Autorisation d\'installation requise</string>
     <string name="settings_install_permission_message">Cette application a besoin d\'installer des mises à jour. Accorde la permission dans les paramètres.</string>
 <!-- Chaînes hardcodées - Lecture -->
@@ -1056,10 +1054,7 @@
     <!-- Chaînes hardcodées - Interface demandes Jellyseerr -->
     <string name="jellyseerr_my_requests">Mes demandes</string>
     <string name="jellyseerr_not_connected">Jellyseerr non connecté</string>
-    <string name="jellyseerr_go_to_settings">Va dans les paramètres pour configurer ton serveur</string>
-    <string name="jellyseerr_loading_requests">Chargement des demandes…</string>
     <string name="jellyseerr_no_requests">Aucune demande pour l\'instant</string>
-    <string name="jellyseerr_submit_from_discover">Soumets des demandes depuis l\'onglet Découvrir</string>
     <string name="btn_refresh">Actualiser</string>
 
     <!-- Chaînes hardcodées - Tri genres -->

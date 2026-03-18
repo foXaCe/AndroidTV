@@ -173,8 +173,6 @@
     <string name="pref_next_up_timeout_summary">Quanto tempo esperar antes de iniciar o próximo item</string>
     <string name="pref_about_title">Sobre</string>
     <string name="lbl_my_media">Minha mídia</string>
-    <string name="pref_app_theme">Tema do aplicativo</string>
-    <string name="pref_theme_dark">Escuro (Padrão)</string>
     <string name="grid_direction_vertical">Vertical</string>
     <string name="grid_direction_horizontal">Horizontal</string>
     <string name="grid_direction">Direção da grade</string>
@@ -192,7 +190,6 @@
     <string name="lbl_subtitle_track">Selecionar faixa de legenda</string>
     <string name="lbl_audio_track">Selecionar faixa de áudio</string>
     <string name="lbl_pause">Pausar</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">Termina às %1$s</string>
 <string name="login_server_unavailable">Incapaz de conectar ao servidor</string>
     <string name="login_invalid_credentials">Nome de usuário e/ou senha inválida</string>
@@ -301,7 +298,6 @@
 <string name="pref_login">Login</string>
 <string name="pref_libraries">Bibliotecas</string>
 <string name="pref_browsing">Navegando</string>
-    <string name="pref_behavior">Comportamento</string>
     <string name="pref_accounts">Contas</string>
     <string name="sort_accounts_by">Ordenar contas por</string>
     <string name="pref_customization">Customização</string>
@@ -368,7 +364,6 @@
         <item quantity="other">%1$s horas</item>
     </plurals>
     <string name="lbl_album_artists">Artistas do álbum</string>
-<string name="not_set">Não definido</string>
     <string name="disable_ui_mode_warning">Desativar avisos de tipo de dispositivos</string>
     <string name="because_you_watched">Por você ter assistido %1$s</string>
     <string name="lbl_hide_watched_checkmark">Quando houverem episódios restantes</string>

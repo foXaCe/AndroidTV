@@ -63,7 +63,6 @@ import org.jellyfin.androidtv.ui.base.theme.DialogDimensions
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.base.tv.TvCardGrid
 import org.jellyfin.androidtv.ui.base.tv.TvFocusCard
-import org.jellyfin.androidtv.ui.base.tv.TvHeader
 import org.jellyfin.androidtv.ui.base.tv.TvScaffold
 import org.jellyfin.androidtv.ui.browsing.genre.JellyfinGenreItem
 import org.jellyfin.androidtv.ui.browsing.v2.GenreSortOption
@@ -71,6 +70,8 @@ import org.jellyfin.androidtv.ui.browsing.v2.GenresGridViewModel
 import org.jellyfin.androidtv.ui.browsing.v2.LibraryToolbarButton
 import org.jellyfin.androidtv.ui.composable.rememberErrorPlaceholder
 import org.jellyfin.androidtv.ui.composable.rememberGradientPlaceholder
+import org.jellyfin.androidtv.ui.shared.components.BrowseHeader
+import org.jellyfin.androidtv.ui.shared.components.VegafoXScaffold
 import org.jellyfin.design.Tokens
 import org.jellyfin.sdk.model.api.BaseItemDto
 import java.util.UUID
@@ -104,87 +105,89 @@ fun GenresGridScreen(
 			else -> DisplayState.CONTENT
 		}
 
-	TvScaffold {
-		Column(modifier = Modifier.fillMaxSize()) {
-			TvHeader(
-				title = uiState.title,
-				subtitle =
-					if (uiState.totalGenres > 0) {
-						stringResource(R.string.lbl_genres_count, uiState.totalGenres)
-					} else {
-						null
-					},
-			) {
-				LibraryToolbarButton(
-					icon = VegafoXIcons.Home,
-					contentDescription = stringResource(R.string.home),
-					onClick = onHomeClick,
-				)
-				LibraryToolbarButton(
-					icon = VegafoXIcons.Sort,
-					contentDescription = stringResource(R.string.lbl_sort_by),
-					onClick = { showSortDialog = true },
-				)
-				if (uiState.libraries.size > 1 && showLibraryFilter) {
+	VegafoXScaffold {
+		TvScaffold {
+			Column(modifier = Modifier.fillMaxSize()) {
+				BrowseHeader(
+					title = uiState.title,
+					subtitle =
+						if (uiState.totalGenres > 0) {
+							stringResource(R.string.lbl_genres_count, uiState.totalGenres)
+						} else {
+							null
+						},
+				) {
 					LibraryToolbarButton(
-						icon = VegafoXIcons.Filter,
-						contentDescription = stringResource(R.string.lbl_filter_by_library),
-						isActive = uiState.selectedLibraryId != null,
-						onClick = { showLibraryDialog = true },
+						icon = VegafoXIcons.Home,
+						contentDescription = stringResource(R.string.home),
+						onClick = onHomeClick,
 					)
-				}
-			}
-
-			Spacer(modifier = Modifier.height(Tokens.Space.spaceMd))
-
-			StateContainer(
-				state = displayState,
-				modifier = Modifier.weight(1f),
-				loadingContent = {
-					// Skeleton: 20 cards 180×100dp in 5 columns
-					LazyVerticalGrid(
-						columns = GridCells.Fixed(5),
-						modifier = Modifier.fillMaxSize(),
-						contentPadding = PaddingValues(bottom = Tokens.Space.spaceLg),
-						horizontalArrangement = Arrangement.spacedBy(Tokens.Space.spaceMd),
-						verticalArrangement = Arrangement.spacedBy(Tokens.Space.spaceMd),
-						userScrollEnabled = false,
-					) {
-						items(20) {
-							SkeletonBox(
-								modifier =
-									Modifier
-										.width(180.dp)
-										.height(100.dp),
-								shape = JellyfinTheme.shapes.small,
-							)
-						}
-					}
-				},
-				emptyContent = {
-					EmptyState(title = stringResource(R.string.state_empty_genres))
-				},
-				errorContent = {
-					ErrorState(
-						message = stringResource(uiState.error?.messageRes ?: R.string.state_error_generic),
-						onRetry = { viewModel.retry() },
+					LibraryToolbarButton(
+						icon = VegafoXIcons.Sort,
+						contentDescription = stringResource(R.string.lbl_sort_by),
+						onClick = { showSortDialog = true },
 					)
-				},
-				content = {
-					TvCardGrid(
-						items = uiState.genres,
-						columns = 5,
-						contentPadding = PaddingValues(bottom = Tokens.Space.spaceLg),
-						key = { it.id },
-					) { genre ->
-						GenreCard(
-							genre = genre,
-							onClick = { onGenreClick(genre) },
-							onFocused = { onGenreFocus(genre) },
+					if (uiState.libraries.size > 1 && showLibraryFilter) {
+						LibraryToolbarButton(
+							icon = VegafoXIcons.Filter,
+							contentDescription = stringResource(R.string.lbl_filter_by_library),
+							isActive = uiState.selectedLibraryId != null,
+							onClick = { showLibraryDialog = true },
 						)
 					}
-				},
-			)
+				}
+
+				Spacer(modifier = Modifier.height(Tokens.Space.spaceMd))
+
+				StateContainer(
+					state = displayState,
+					modifier = Modifier.weight(1f),
+					loadingContent = {
+						// Skeleton: 20 cards 180×100dp in 5 columns
+						LazyVerticalGrid(
+							columns = GridCells.Fixed(5),
+							modifier = Modifier.fillMaxSize(),
+							contentPadding = PaddingValues(bottom = Tokens.Space.spaceLg),
+							horizontalArrangement = Arrangement.spacedBy(Tokens.Space.spaceMd),
+							verticalArrangement = Arrangement.spacedBy(Tokens.Space.spaceMd),
+							userScrollEnabled = false,
+						) {
+							items(20) {
+								SkeletonBox(
+									modifier =
+										Modifier
+											.width(180.dp)
+											.height(100.dp),
+									shape = JellyfinTheme.shapes.small,
+								)
+							}
+						}
+					},
+					emptyContent = {
+						EmptyState(title = stringResource(R.string.state_empty_genres))
+					},
+					errorContent = {
+						ErrorState(
+							message = stringResource(uiState.error?.messageRes ?: R.string.state_error_generic),
+							onRetry = { viewModel.retry() },
+						)
+					},
+					content = {
+						TvCardGrid(
+							items = uiState.genres,
+							columns = 5,
+							contentPadding = PaddingValues(bottom = Tokens.Space.spaceLg),
+							key = { it.id },
+						) { genre ->
+							GenreCard(
+								genre = genre,
+								onClick = { onGenreClick(genre) },
+								onFocused = { onGenreFocus(genre) },
+							)
+						}
+					},
+				)
+			}
 		}
 	}
 

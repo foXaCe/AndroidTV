@@ -42,15 +42,12 @@ import org.jellyfin.androidtv.ui.settings.composable.SettingsColumn
 import org.koin.compose.koinInject
 
 @Composable
-fun SettingsHomeScreen(
-	userSettingPreferences: UserSettingPreferences = koinInject(),
-	userPreferences: org.jellyfin.androidtv.preference.UserPreferences = koinInject(),
-) {
+fun SettingsHomeScreen(userSettingPreferences: UserSettingPreferences = koinInject()) {
 	val router = org.jellyfin.androidtv.ui.navigation.LocalRouter.current
-	
+
 	var sections by remember { mutableStateOf(userSettingPreferences.homeSectionsConfig) }
 	var focusedSectionType by remember { mutableStateOf<HomeSectionType?>(null) }
-	
+
 	// Auto-focus the first item on initial load
 	LaunchedEffect(Unit) {
 		val firstSection = sections.sortedBy { it.order }.firstOrNull { it.type != HomeSectionType.NONE }
@@ -58,7 +55,7 @@ fun SettingsHomeScreen(
 			focusedSectionType = firstSection.type
 		}
 	}
-	
+
 	// Auto-save when sections change
 	val saveSections = { newSections: List<HomeSectionConfig> ->
 		sections = newSections
@@ -75,11 +72,11 @@ fun SettingsHomeScreen(
 				modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp),
 			)
 		}
-		
+
 		// Home Rows Image Size
 		item {
 			val posterSize by org.jellyfin.androidtv.ui.settings.compat.rememberPreference(
-				userPreferences,
+				org.koin.compose.koinInject<org.jellyfin.androidtv.preference.UserPreferences>(),
 				org.jellyfin.androidtv.preference.UserPreferences.posterSize,
 			)
 			ListButton(
@@ -100,57 +97,74 @@ fun SettingsHomeScreen(
 		}
 
 		item { ListSection(headingContent = { Text(stringResource(R.string.home_sections_description)) }) }
-		
+
 		val configurableSections =
 			sections
 				.filter { it.type != HomeSectionType.MEDIA_BAR }
+				// NEXT_UP is always merged with RESUME — hide from config
+				.filter { it.type != HomeSectionType.NEXT_UP }
 				.sortedBy { it.order }
-		
+
 		configurableSections.forEachIndexed { index, section ->
 			if (section.type != HomeSectionType.NONE) {
+				// RESUME is pinned to first position — no move arrows, always enabled
+				val isPinned = section.type == HomeSectionType.RESUME
 				item(key = section.type) {
 					HomeSectionRow(
-						section = section,
-						canMoveUp = index > 0,
-						canMoveDown = index < configurableSections.size - 1,
+						section =
+							if (section.type == HomeSectionType.RESUME) {
+								section.copy(enabled = true)
+							} else {
+								section
+							},
+						labelOverride =
+							if (section.type == HomeSectionType.RESUME) {
+								stringResource(R.string.home_section_continue_and_next)
+							} else {
+								null
+							},
+						canMoveUp = !isPinned && index > 0,
+						canMoveDown = !isPinned && index < configurableSections.size - 1,
 						shouldRequestFocus = section.type == focusedSectionType,
 						onFocusChanged = { focused ->
 							if (focused) focusedSectionType = section.type
 						},
 						onToggle = {
-							val updated =
-								sections.map {
-									if (it.type == section.type) {
-										it.copy(enabled = !it.enabled)
-									} else {
-										it
+							if (!isPinned) {
+								val updated =
+									sections.map {
+										if (it.type == section.type) {
+											it.copy(enabled = !it.enabled)
+										} else {
+											it
+										}
 									}
-								}
-							saveSections(updated)
+								saveSections(updated)
+							}
 						},
 						onMoveUp = {
-							if (index > 0) {
+							if (!isPinned && index > 0) {
 								focusedSectionType = section.type
 								val sorted = sections.sortedBy { it.order }.toMutableList()
 								val currentOrder = sorted[index].order
 								val previousOrder = sorted[index - 1].order
-								
+
 								sorted[index] = sorted[index].copy(order = previousOrder)
 								sorted[index - 1] = sorted[index - 1].copy(order = currentOrder)
-								
+
 								saveSections(sorted)
 							}
 						},
 						onMoveDown = {
-							if (index < sections.size - 1) {
+							if (!isPinned && index < sections.size - 1) {
 								focusedSectionType = section.type
 								val sorted = sections.sortedBy { it.order }.toMutableList()
 								val currentOrder = sorted[index].order
 								val nextOrder = sorted[index + 1].order
-								
+
 								sorted[index] = sorted[index].copy(order = nextOrder)
 								sorted[index + 1] = sorted[index + 1].copy(order = currentOrder)
-								
+
 								saveSections(sorted)
 							}
 						},
@@ -158,7 +172,7 @@ fun SettingsHomeScreen(
 				}
 			}
 		}
-		
+
 		item {
 			ListButton(
 				leadingContent = {
@@ -179,6 +193,7 @@ fun SettingsHomeScreen(
 @Composable
 private fun HomeSectionRow(
 	section: HomeSectionConfig,
+	labelOverride: String? = null,
 	canMoveUp: Boolean,
 	canMoveDown: Boolean,
 	shouldRequestFocus: Boolean,
@@ -190,13 +205,13 @@ private fun HomeSectionRow(
 	val context = LocalContext.current
 	val focusRequester = remember { FocusRequester() }
 	var isFocused by remember { mutableStateOf(false) }
-	
+
 	LaunchedEffect(shouldRequestFocus) {
 		if (shouldRequestFocus) {
 			focusRequester.requestFocus()
 		}
 	}
-	
+
 	ListButton(
 		modifier =
 			Modifier
@@ -237,7 +252,7 @@ private fun HomeSectionRow(
 			)
 		},
 		headingContent = {
-			Text(context.getString(section.type.nameRes))
+			Text(labelOverride ?: context.getString(section.type.nameRes))
 		},
 		trailingContent = {
 			Row(

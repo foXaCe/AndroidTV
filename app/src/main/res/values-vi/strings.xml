@@ -163,11 +163,9 @@
     <string name="grid_direction_horizontal">Ngang</string>
     <string name="grid_direction">Hướng lưới</string>
     <string name="pref_device_model">Mẫu thiết bị</string>
-    <string name="pref_app_theme">Chủ đề ứng dụng</string>
     <string name="watch_now">Xem bây giờ</string>
     <string name="pref_next_up_timeout_title">Thời lượng hẹn giờ tiếp theo</string>
     <string name="pref_next_up_timeout_summary">Chờ bao lâu trước khi phát mục tiếp theo</string>
-    <string name="pref_theme_dark">Tối (Mặc định)</string>
     <string name="lbl_my_media">Phương tiện của tôi</string>
     <string name="lbl_image_size">Kích cỡ ảnh</string>
     <string name="lbl_image_type">Lọai hình ảnh</string>
@@ -188,7 +186,6 @@
     <string name="lbl_audio_track">Chọn bản âm thanh</string>
     <string name="lbl_pause">Tạm dừng</string>
     <string name="lbl_on">Bật</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">Kết thúc lúc %1$s</string>
 <string name="pref_clock_display_playback">Trong khi phát lại</string>
     <string name="pref_clock_display_browsing">Trong khi duyệt</string>
@@ -298,7 +295,6 @@
     <string name="pref_show_backdrop_description">Thay đổi hình nền cho các mục đã chọn</string>
     <string name="lbl_playback_speed">Tốc độ phát lại</string>
 <string name="pref_browsing">Duyệt</string>
-    <string name="pref_behavior">Hành vi</string>
     <string name="action_connect">Kết nối</string>
     <string name="pref_refresh_rate_scale_on_device">Tỉ lệ trên thiết bị</string>
     <string name="pref_refresh_rate_scale_on_tv">Tỉ lệ trên TV</string>
@@ -342,7 +338,6 @@
         <item quantity="other">%1$s tập</item>
     </plurals>
     <string name="pref_screensaver">Bảo vệ màn hình</string>
-<string name="not_set">Không thiết lập</string>
     <string name="pref_screensaver_inapp_enabled">Sử dụng trình bảo vệ màn hình trong ứng dụng</string>
 <string name="pref_screensaver_inapp_timeout">Bắt đầu trình bảo vệ màn hình sau</string>
     <plurals name="hours">

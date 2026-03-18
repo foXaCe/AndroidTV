@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -34,6 +35,8 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -62,6 +65,7 @@ import org.jellyfin.androidtv.ui.composable.modifier.fadingEdges
 import org.jellyfin.androidtv.ui.composable.rememberPlayerProgress
 import org.jellyfin.androidtv.ui.composable.rememberQueueEntry
 import org.jellyfin.androidtv.ui.player.base.PlayerSeekbar
+import org.jellyfin.androidtv.ui.shared.components.VegafoXScaffold
 import org.jellyfin.androidtv.util.TimeUtils
 import org.jellyfin.androidtv.util.apiclient.albumPrimaryImage
 import org.jellyfin.androidtv.util.apiclient.getUrl
@@ -82,102 +86,113 @@ private val ArtworkShape = RoundedCornerShape(16.dp)
 @Composable
 fun AudioNowPlayingScreen(viewModel: AudioNowPlayingViewModel) {
 	val uiState by viewModel.uiState.collectAsState()
+	val playPauseFocusRequester = remember { FocusRequester() }
 
-	TvScaffold {
-		Box(
-			modifier =
-				Modifier
-					.fillMaxSize()
-					.background(VegafoXColors.BackgroundDeep),
-		) {
-			Row(modifier = Modifier.fillMaxSize()) {
-				// Left side: Artwork + lyrics
-				ArtworkPanel(
-					modifier =
-						Modifier
-							.fillMaxHeight()
-							.weight(1f),
-				)
+	LaunchedEffect(Unit) {
+		kotlinx.coroutines.delay(150)
+		try {
+			playPauseFocusRequester.requestFocus()
+		} catch (_: Exception) {
+		}
+	}
 
-				Spacer(modifier = Modifier.width(TvSpacing.sectionGap))
+	VegafoXScaffold {
+		TvScaffold {
+			Box(
+				modifier =
+					Modifier
+						.fillMaxSize()
+						.background(VegafoXColors.BackgroundDeep),
+			) {
+				Row(modifier = Modifier.fillMaxSize()) {
+					// Left side: Artwork + lyrics
+					ArtworkPanel(
+						modifier =
+							Modifier
+								.fillMaxHeight()
+								.weight(1f),
+					)
 
-				// Right side: Info + controls + queue
-				Column(
-					modifier =
-						Modifier
-							.fillMaxHeight()
-							.weight(1.5f),
-					verticalArrangement = Arrangement.SpaceBetween,
-				) {
-					// Artist + genres at top
-					Column {
-						Text(
-							text = uiState.artistName,
-							style =
-								TextStyle(
-									fontSize = 16.sp,
-									color = VegafoXColors.TextSecondary,
-								),
-							maxLines = 1,
-						)
-						if (uiState.genres.isNotEmpty()) {
-							Text(
-								text = uiState.genres,
-								style =
-									TextStyle(
-										fontSize = 14.sp,
-										color = VegafoXColors.TextHint,
-									),
-								maxLines = 1,
-							)
-						}
-					}
+					Spacer(modifier = Modifier.width(TvSpacing.sectionGap))
 
-					// Song info
+					// Right side: Info + controls + queue
 					Column(
-						horizontalAlignment = Alignment.CenterHorizontally,
-						modifier = Modifier.fillMaxWidth(),
+						modifier =
+							Modifier
+								.fillMaxHeight()
+								.weight(1.5f),
+						verticalArrangement = Arrangement.SpaceBetween,
 					) {
-						Text(
-							text = uiState.songTitle,
-							style =
-								TextStyle(
-									fontFamily = BebasNeue,
-									fontSize = 36.sp,
-									color = VegafoXColors.TextPrimary,
-									letterSpacing = 2.sp,
-								),
-							maxLines = 1,
-						)
-						if (uiState.albumTitle.isNotEmpty()) {
+						// Artist + genres at top
+						Column {
 							Text(
-								text = uiState.albumTitle,
+								text = uiState.artistName,
+								style =
+									TextStyle(
+										fontSize = 16.sp,
+										color = VegafoXColors.TextSecondary,
+									),
+								maxLines = 1,
+							)
+							if (uiState.genres.isNotEmpty()) {
+								Text(
+									text = uiState.genres,
+									style =
+										TextStyle(
+											fontSize = 14.sp,
+											color = VegafoXColors.TextHint,
+										),
+									maxLines = 1,
+								)
+							}
+						}
+
+						// Song info
+						Column(
+							horizontalAlignment = Alignment.CenterHorizontally,
+							modifier = Modifier.fillMaxWidth(),
+						) {
+							Text(
+								text = uiState.songTitle,
+								style =
+									TextStyle(
+										fontFamily = BebasNeue,
+										fontSize = 36.sp,
+										color = VegafoXColors.TextPrimary,
+										letterSpacing = 2.sp,
+									),
+								maxLines = 1,
+							)
+							if (uiState.albumTitle.isNotEmpty()) {
+								Text(
+									text = uiState.albumTitle,
+									style =
+										TextStyle(
+											fontSize = 14.sp,
+											color = VegafoXColors.TextHint,
+										),
+									maxLines = 1,
+								)
+							}
+							Text(
+								text = uiState.trackInfo,
 								style =
 									TextStyle(
 										fontSize = 14.sp,
 										color = VegafoXColors.TextHint,
 									),
-								maxLines = 1,
 							)
 						}
-						Text(
-							text = uiState.trackInfo,
-							style =
-								TextStyle(
-									fontSize = 14.sp,
-									color = VegafoXColors.TextHint,
-								),
-						)
+
+						// Progress bar with times
+						AudioProgressSection(uiState)
+
+						// Transport controls
+						AudioControlsRow(viewModel, uiState, playPauseFocusRequester)
+
+						// Queue row
+						AudioQueueSection(viewModel, uiState)
 					}
-
-					// Progress bar with times
-					AudioProgressSection(uiState)
-
-					// Transport controls
-					AudioControlsRow(viewModel, uiState)
-
-					// Queue row
-					AudioQueueSection(viewModel, uiState)
 				}
 			}
 		}
@@ -309,6 +324,7 @@ private fun AudioProgressSection(uiState: AudioNowPlayingUiState) {
 private fun AudioControlsRow(
 	viewModel: AudioNowPlayingViewModel,
 	uiState: AudioNowPlayingUiState,
+	playPauseFocusRequester: FocusRequester = FocusRequester(),
 ) {
 	Row(
 		modifier = Modifier.fillMaxWidth(),
@@ -347,6 +363,7 @@ private fun AudioControlsRow(
 			contentPadding = PaddingValues(0.dp),
 			modifier =
 				Modifier
+					.focusRequester(playPauseFocusRequester)
 					.size(72.dp)
 					.drawBehind {
 						drawCircle(

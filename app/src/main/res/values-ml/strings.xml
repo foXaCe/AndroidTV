@@ -60,7 +60,6 @@
     <string name="pref_clock_display_browsing">ബ്രൗസുചെയ്യുമ്പോൾ</string>
     <string name="lbl_always">എല്ലായ്പ്പോഴും</string>
     <string name="pref_clock_display">ക്ലോക്ക് കാണിക്കുക</string>
-    <string name="watch_count_overflow">99+</string>
 <string name="msg_no_items">കളിക്കാൻ ഇനങ്ങളൊന്നുമില്ല</string>
 <string name="too_many_errors">വളരെയധികം പിശകുകൾ. ഉപേക്ഷിക്കുന്നു</string>
     <string name="seek_error">അന്വേഷിക്കാൻ കഴിയുന്നില്ല</string>
@@ -70,13 +69,11 @@
     <string name="no_player_message">നിങ്ങൾക്ക് വീഡിയോ ശേഷിയുള്ള അപ്ലിക്കേഷൻ ഇൻസ്റ്റാളുചെയ്‌തതായി തോന്നുന്നില്ല. വീഡിയോ ഉള്ളടക്കം പ്ലേ ചെയ്യുന്നതിനായി ഒരു മൂന്നാം കക്ഷി ആപ്ലിക്കേഷൻ ഇൻസ്റ്റാൾ ചെയ്യാൻ ഈ ഓപ്ഷന് ആവശ്യമാണ്.</string>
 <string name="grid_direction_horizontal">തിരശ്ചീന</string>
     <string name="pref_device_model">ഉപകരണ മോഡൽ</string>
-    <string name="pref_app_theme">അപ്ലിക്കേഷൻ തീം</string>
     <string name="pref_next_up_behavior_title">അടുത്ത വീഡിയോ വിവരം കാണിക്കുക</string>
     <string name="watch_now">ഇപ്പോൾ കാണുക</string>
     <string name="pref_next_up_timeout_title">അടുത്ത അപ് ടൈമർ ദൈർഘ്യം</string>
     <string name="pref_next_up_timeout_summary">അടുത്ത ഇനം പ്ലേ ചെയ്യുന്നതിന് മുമ്പ് എത്രത്തോളം കാത്തിരിക്കണം</string>
     <string name="pref_about_title">കുറിച്ച്</string>
-    <string name="pref_theme_dark">ഇരുണ്ടത് (സ്ഥിരസ്ഥിതി)</string>
     <string name="lbl_my_media">എന്റെ മീഡിയ</string>
     <string name="lbl_image_size">ചിത്രത്തിന്റെ അളവ്</string>
     <string name="lbl_image_type">ചിത്ര തരം</string>

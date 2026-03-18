@@ -43,6 +43,7 @@ internal class MediaStreamService(
 	}
 
 	private suspend fun QueueEntry.ensureMediaStream(): Boolean {
+		val t0 = System.currentTimeMillis()
 		mediaStream = mediaStream ?: mediaStreamResolvers.firstNotNullOfOrNull { resolver ->
 			runCatching {
 				withContext(Dispatchers.IO) {
@@ -52,6 +53,8 @@ internal class MediaStreamService(
 				Timber.e(it, "Media stream resolver failed for $this")
 			}.getOrNull()
 		}
+		val t1 = System.currentTimeMillis()
+		Timber.tag("VFX_PERF").i("VFX_PERF MediaStreamService ensureMediaStream: ${t1 - t0}ms (resolved=${mediaStream != null})")
 
 		return mediaStream != null
 	}

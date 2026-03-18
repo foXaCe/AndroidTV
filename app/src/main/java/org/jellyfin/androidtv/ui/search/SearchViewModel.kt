@@ -36,17 +36,11 @@ class SearchViewModel(
 				R.string.lbl_movies to setOf(BaseItemKind.MOVIE),
 				R.string.lbl_series to setOf(BaseItemKind.SERIES),
 				R.string.lbl_episodes to setOf(BaseItemKind.EPISODE),
-				R.string.lbl_videos to setOf(BaseItemKind.VIDEO),
-				R.string.lbl_programs to setOf(BaseItemKind.LIVE_TV_PROGRAM),
-				R.string.channels to setOf(BaseItemKind.LIVE_TV_CHANNEL),
-				R.string.lbl_playlists to setOf(BaseItemKind.PLAYLIST),
+				R.string.lbl_people to setOf(BaseItemKind.PERSON),
 				R.string.lbl_artists to setOf(BaseItemKind.MUSIC_ARTIST),
 				R.string.lbl_albums to setOf(BaseItemKind.MUSIC_ALBUM),
 				R.string.lbl_songs to setOf(BaseItemKind.AUDIO),
-				R.string.photo_albums to setOf(BaseItemKind.PHOTO_ALBUM),
-				R.string.photos to setOf(BaseItemKind.PHOTO),
 				R.string.lbl_collections to setOf(BaseItemKind.BOX_SET),
-				R.string.lbl_people to setOf(BaseItemKind.PERSON),
 			)
 	}
 
@@ -56,6 +50,9 @@ class SearchViewModel(
 
 	private val _searchResultsFlow = MutableStateFlow<Collection<SearchResultGroup>>(emptyList())
 	val searchResultsFlow = _searchResultsFlow.asStateFlow()
+
+	private val _isSearching = MutableStateFlow(false)
+	val isSearching = _isSearching.asStateFlow()
 
 	fun searchImmediately(query: String) = searchDebounced(query, 0.milliseconds)
 
@@ -77,6 +74,7 @@ class SearchViewModel(
 		searchJob =
 			viewModelScope.launch {
 				delay(debounce)
+				_isSearching.value = true
 
 				val enableMultiServer = userPreferences[UserPreferences.enableMultiServerLibraries]
 
@@ -95,7 +93,7 @@ class SearchViewModel(
 									items.filter { item ->
 										!parentalControlsRepository.shouldFilterItem(item)
 									}
-								SearchResultGroup(stringRes, filteredItems)
+								SearchResultGroup(stringRes, filteredItems, itemKinds)
 							}
 						}.awaitAll()
 
@@ -125,6 +123,7 @@ class SearchViewModel(
 					}
 
 				_searchResultsFlow.value = allResults
+				_isSearching.value = false
 			}
 
 		return true

@@ -14,6 +14,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,7 +41,10 @@ import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.service.UpdateCheckerService
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.theme.DialogDimensions
+import org.jellyfin.androidtv.ui.base.theme.SettingsDimensions
 import org.jellyfin.androidtv.ui.preference.category.GlassDialogButton
+import org.jellyfin.design.Tokens
 import timber.log.Timber
 
 @Composable
@@ -387,6 +391,71 @@ internal fun openUrl(
 	} catch (e: Exception) {
 		Timber.e(e, "Failed to open URL")
 		Toast.makeText(context, context.getString(R.string.update_failed_open_url), Toast.LENGTH_LONG).show()
+	}
+}
+
+@Composable
+internal fun ResetSettingsDialog(
+	onConfirm: () -> Unit,
+	onDismiss: () -> Unit,
+) {
+	val confirmFocusRequester = remember { FocusRequester() }
+
+	Dialog(
+		onDismissRequest = onDismiss,
+		properties = DialogProperties(usePlatformDefaultWidth = false),
+	) {
+		Box(
+			modifier = Modifier.fillMaxSize(),
+			contentAlignment = Alignment.Center,
+		) {
+			Column(
+				modifier =
+					Modifier
+						.widthIn(min = DialogDimensions.standardMinWidth, max = DialogDimensions.standardMaxWidth)
+						.clip(JellyfinTheme.shapes.dialog)
+						.background(JellyfinTheme.colorScheme.dialogScrim)
+						.border(SettingsDimensions.panelBorderWidth, JellyfinTheme.colorScheme.toolbarDivider, JellyfinTheme.shapes.dialog)
+						.padding(vertical = Tokens.Space.spaceLg),
+			) {
+				Text(
+					text = stringResource(R.string.pref_reset_confirmation_title),
+					style = JellyfinTheme.typography.titleLarge,
+					color = JellyfinTheme.colorScheme.onSurface,
+					modifier = Modifier.padding(horizontal = Tokens.Space.spaceLg),
+				)
+				Spacer(Modifier.height(Tokens.Space.spaceSm))
+				Text(
+					text = stringResource(R.string.pref_reset_confirmation_message),
+					style = JellyfinTheme.typography.bodyMedium,
+					color = JellyfinTheme.colorScheme.onSurfaceVariant,
+					modifier = Modifier.padding(horizontal = Tokens.Space.spaceLg),
+				)
+				Spacer(Modifier.height(Tokens.Space.spaceLg))
+				Row(
+					modifier = Modifier.padding(horizontal = Tokens.Space.spaceLg),
+					horizontalArrangement = Arrangement.spacedBy(Tokens.Space.spaceSm),
+				) {
+					GlassDialogButton(
+						text = stringResource(R.string.lbl_cancel),
+						onClick = onDismiss,
+					)
+					GlassDialogButton(
+						text = stringResource(R.string.pref_reset_all_settings),
+						onClick = onConfirm,
+						modifier = Modifier.focusRequester(confirmFocusRequester),
+						isPrimary = true,
+					)
+				}
+			}
+		}
+	}
+
+	LaunchedEffect(Unit) {
+		try {
+			confirmFocusRequester.requestFocus()
+		} catch (_: IllegalStateException) {
+		}
 	}
 }
 

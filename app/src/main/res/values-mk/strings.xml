@@ -82,9 +82,7 @@
     <string name="msg_settings_updated">Поставките се обновени</string>
     <string name="lbl_save">Зачувај</string>
 <string name="lbl_hd_programs">HD програми</string>
-    <string name="pref_theme_dark">Темно (Зададено)</string>
     <string name="pref_next_up_behavior_title">Прикажи инфо за следно видео</string>
-    <string name="pref_app_theme">Тема на апликација</string>
 <string name="episode_missing">Недостасува епизода</string>
     <string name="episode_missing_message">Оваа епизода недостасува во вашата библиотека. Дали би сакале да ја прескокнете и да продолжите со следната\?</string>
     <string name="episode_missing_message_2">Оваа епизода недостасува во вашата библиотека. Репродукцијата ќе запре.</string>
@@ -114,7 +112,6 @@
     <string name="server_issue_missing_version">Неможе да се утврди верзијата на серверот</string>
     <string name="server_issue_unsupported_version">Серверот користи верзија %1$s која не е поддржана</string>
     <string name="server_issue_timeout">Истече времето на врската</string>
-    <string name="pref_behavior">Однесување</string>
 <string name="pref_video">Видео</string>
 <string name="input_username">Корисничко име</string>
 <string name="app_notification_uimode_invalid">Оваа апликација е прилагодена за телевизори. Ви препорачуваме да ја користите нашата мобилна апликација на други уреди.</string>
@@ -130,7 +127,6 @@
 <string name="item_delete_confirm_title">Избриши ставка</string>
     <string name="pref_screensaver">Заштитник на екран</string>
     <string name="pref_screensaver_inapp_enabled_description">Прикажи го Jellyfin заштитникот на екран додека е отворена апликацијата</string>
-<string name="not_set">Не е поставено</string>
     <string name="disable_ui_mode_warning">Оневозможи предупредување за тип на уред</string>
     <string name="license_version">Верзија</string>
 <string name="home_section_resume_book">Продолжи со читање</string>
@@ -340,7 +336,6 @@
     <string name="pref_about_title">За</string>
     <string name="pref_next_up_timeout_title">Следно времетраење на тајмерот</string>
     <string name="no_player_message">Изгледа немате инсталирано апликација за видео. Оваа опција бара да инсталирате независна апликација за пуштање на видео содржини.</string>
-<string name="watch_count_overflow">99+</string>
     <string name="server_connection_failed">Неуспешно поврзување со серверот</string>
     <string name="pref_clock_display_browsing">Додека се пребарува</string>
     <string name="server_connection_failed_candidates">Неуспешно поврзување со серверот, пробано со следните адреси: %1$s</string>

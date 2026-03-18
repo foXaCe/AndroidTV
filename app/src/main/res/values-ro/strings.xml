@@ -173,8 +173,6 @@
     <string name="watch_now">Vizionează acum</string>
     <string name="pref_next_up_timeout_title">Durata mesajului: Urmează</string>
     <string name="pref_next_up_timeout_summary">Cât timp să aștepți înainte de a reda următorul articol</string>
-    <string name="pref_app_theme">Tema Aplicației</string>
-    <string name="pref_theme_dark">Întunecat (Implicit)</string>
     <string name="grid_direction_vertical">Verticală</string>
     <string name="grid_direction_horizontal">Orizontală</string>
     <string name="grid_direction">Direcţie grilă</string>
@@ -192,7 +190,6 @@
 <string name="lbl_subtitle_track">Selectează pista subtitrare</string>
     <string name="lbl_audio_track">Selectează pista audio</string>
     <string name="lbl_pause">Pauză</string>
-<string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">Se termină la %1$s</string>
 <string name="login_server_unavailable">Nu s-a putut conecta la server</string>
     <string name="login_invalid_credentials">Nume de utilizator și/sau parolă greșite</string>
@@ -253,7 +250,6 @@
 <string name="pref_login">Autentificare</string>
 <string name="pref_libraries">Colecții</string>
 <string name="pref_browsing">Navigare</string>
-    <string name="pref_behavior">Comportament</string>
     <string name="pref_accounts">Conturi</string>
     <string name="sort_accounts_by">Sorteaza conturi după</string>
     <string name="pref_customization">Personalizare</string>
@@ -368,7 +364,6 @@
         <item quantity="few">%1$s minute</item>
         <item quantity="other">%1$s de minute</item>
     </plurals>
-<string name="not_set">Nu este setat</string>
     <string name="lbl_album_artists">Album artisti</string>
     <string name="disable_ui_mode_warning">Dezactivează avertizarea tipului de dispozitiv</string>
     <string name="because_you_watched">Pentru că ai vizionat %1$s</string>

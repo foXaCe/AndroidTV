@@ -1,21 +1,29 @@
 package org.jellyfin.androidtv.ui.itemdetail.v2.shared
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -24,7 +32,6 @@ import org.jellyfin.androidtv.ui.base.components.VegafoXButton
 import org.jellyfin.androidtv.ui.base.components.VegafoXButtonVariant
 import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
-import org.jellyfin.androidtv.ui.itemdetail.v2.CinemaActionChip
 import org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsUiState
 import org.jellyfin.androidtv.ui.itemdetail.v2.TrackSelectorDialog
 import org.jellyfin.androidtv.ui.playback.PrePlaybackTrackSelector
@@ -39,13 +46,10 @@ data class DetailActionCallbacks(
 	val hasPlayableTrailers: Boolean,
 	val onPlay: () -> Unit,
 	val onResume: () -> Unit,
-	val onShuffle: () -> Unit,
 	val onPlayTrailers: () -> Unit,
-	val onPlayInstantMix: () -> Unit,
 	val onToggleWatched: () -> Unit,
 	val onToggleFavorite: () -> Unit,
 	val onConfirmDelete: () -> Unit,
-	val onAddToPlaylist: () -> Unit,
 	val onGoToSeries: (() -> Unit)?,
 	val onLoadItem: (UUID) -> Unit,
 )
@@ -91,20 +95,28 @@ fun DetailActionButtonsRow(
 	var showSubtitleDialog by remember { mutableStateOf(false) }
 	var showVersionDialog by remember { mutableStateOf(false) }
 
+	// Focus restore after dialog close
+	val audioFocusRequester = remember { FocusRequester() }
+	val subtitleFocusRequester = remember { FocusRequester() }
+	val versionFocusRequester = remember { FocusRequester() }
+
 	Column {
 		// ─── Primary action buttons ───
 		Row(
 			horizontalArrangement = Arrangement.spacedBy(12.dp),
-			modifier = Modifier.focusGroup(),
+			modifier =
+				Modifier
+					.focusProperties { right = FocusRequester.Cancel }
+					.focusGroup(),
 		) {
 			if (hasPlaybackPosition && canPlay) {
-				val resumeTime = item.userData?.playbackPositionTicks?.let { formatDuration(it) } ?: ""
 				VegafoXButton(
-					text = "${stringResource(R.string.lbl_resume)} \u2014 $resumeTime",
+					text = stringResource(R.string.lbl_resume),
 					onClick = callbacks.onResume,
 					variant = VegafoXButtonVariant.Primary,
 					icon = VegafoXIcons.Play,
 					iconEnd = false,
+					expandOnFocus = true,
 					modifier = Modifier.focusRequester(playButtonFocusRequester),
 				)
 				VegafoXButton(
@@ -113,7 +125,7 @@ fun DetailActionButtonsRow(
 					variant = VegafoXButtonVariant.Secondary,
 					icon = VegafoXIcons.Refresh,
 					iconEnd = false,
-					compact = true,
+					expandOnFocus = true,
 				)
 			} else if (canPlay) {
 				VegafoXButton(
@@ -122,126 +134,165 @@ fun DetailActionButtonsRow(
 					variant = VegafoXButtonVariant.Primary,
 					icon = VegafoXIcons.Play,
 					iconEnd = false,
+					expandOnFocus = true,
 					modifier = Modifier.focusRequester(playButtonFocusRequester),
-				)
-			}
-
-			if ((item.isFolder == true || item.type == BaseItemKind.MUSIC_ARTIST) && item.type != BaseItemKind.BOX_SET) {
-				VegafoXButton(
-					text = stringResource(R.string.lbl_shuffle_all),
-					onClick = callbacks.onShuffle,
-					variant = VegafoXButtonVariant.Secondary,
-					icon = VegafoXIcons.Shuffle,
-					iconEnd = false,
-					compact = true,
-				)
-			}
-
-			if (item.type == BaseItemKind.MUSIC_ARTIST) {
-				VegafoXButton(
-					text = stringResource(R.string.lbl_instant_mix),
-					onClick = callbacks.onPlayInstantMix,
-					variant = VegafoXButtonVariant.Secondary,
-					icon = VegafoXIcons.Mix,
-					iconEnd = false,
-					compact = true,
 				)
 			}
 		}
 
 		Spacer(modifier = Modifier.height(12.dp))
 
-		// ─── Secondary action chips ───
-		Row(
+		// ─── Secondary action buttons (scrollable LazyRow) ───
+		val hasMediaGroup = hasMultipleVersions || audioStreams.size > 1 || subtitleStreams.isNotEmpty() || callbacks.hasPlayableTrailers
+		val hasStateGroup = item.userData != null
+		val goToSeries = callbacks.onGoToSeries
+		val hasNavGroup = (item.type == BaseItemKind.EPISODE && item.seriesId != null && goToSeries != null) || item.canDelete == true
+
+		LazyRow(
 			horizontalArrangement = Arrangement.spacedBy(10.dp),
-			modifier = Modifier.focusGroup(),
+			verticalAlignment = Alignment.CenterVertically,
+			contentPadding = PaddingValues(horizontal = 0.dp),
+			modifier = Modifier.focusRestorer().focusGroup(),
 		) {
+			// ── Media group ──
 			if (hasMultipleVersions) {
-				CinemaActionChip(
-					icon = VegafoXIcons.Guide,
-					label = stringResource(R.string.select_version),
-					onClick = { showVersionDialog = true },
-				)
+				item {
+					VegafoXButton(
+						text = stringResource(R.string.select_version),
+						onClick = { showVersionDialog = true },
+						variant = VegafoXButtonVariant.Outlined,
+						icon = VegafoXIcons.Guide,
+						iconEnd = false,
+						compact = true,
+						expandOnFocus = true,
+						modifier = Modifier.focusRequester(versionFocusRequester),
+					)
+				}
 			}
-
 			if (audioStreams.size > 1) {
-				CinemaActionChip(
-					icon = VegafoXIcons.Audiotrack,
-					label = stringResource(R.string.pref_audio),
-					onClick = { showAudioDialog = true },
-				)
+				item {
+					VegafoXButton(
+						text = stringResource(R.string.pref_audio),
+						onClick = { showAudioDialog = true },
+						variant = VegafoXButtonVariant.Outlined,
+						icon = VegafoXIcons.Audiotrack,
+						iconEnd = false,
+						compact = true,
+						expandOnFocus = true,
+						modifier = Modifier.focusRequester(audioFocusRequester),
+					)
+				}
 			}
-
 			if (subtitleStreams.isNotEmpty()) {
-				CinemaActionChip(
-					icon = VegafoXIcons.Subtitles,
-					label = stringResource(R.string.pref_subtitles),
-					onClick = { showSubtitleDialog = true },
-				)
+				item {
+					VegafoXButton(
+						text = stringResource(R.string.pref_subtitles),
+						onClick = { showSubtitleDialog = true },
+						variant = VegafoXButtonVariant.Outlined,
+						icon = VegafoXIcons.Subtitles,
+						iconEnd = false,
+						compact = true,
+						expandOnFocus = true,
+						modifier = Modifier.focusRequester(subtitleFocusRequester),
+					)
+				}
 			}
-
 			if (callbacks.hasPlayableTrailers) {
-				CinemaActionChip(
-					icon = VegafoXIcons.Trailer,
-					label = stringResource(R.string.lbl_trailers),
-					onClick = callbacks.onPlayTrailers,
-				)
+				item {
+					VegafoXButton(
+						text = stringResource(R.string.lbl_trailers),
+						onClick = callbacks.onPlayTrailers,
+						variant = VegafoXButtonVariant.Outlined,
+						icon = VegafoXIcons.Trailer,
+						iconEnd = false,
+						compact = true,
+						expandOnFocus = true,
+					)
+				}
 			}
 
+			// ── Separator ──
+			if (hasMediaGroup && hasStateGroup) {
+				item {
+					Box(
+						modifier =
+							Modifier
+								.width(1.dp)
+								.height(20.dp)
+								.background(VegafoXColors.Divider),
+					)
+				}
+			}
+
+			// ── State group ──
 			if (item.userData != null) {
-				CinemaActionChip(
-					icon = VegafoXIcons.Favorite,
-					label =
-						if (item.userData?.isFavorite == true) {
-							stringResource(R.string.lbl_favorited)
-						} else {
-							stringResource(R.string.lbl_favorite)
-						},
-					onClick = callbacks.onToggleFavorite,
-					isActive = item.userData?.isFavorite == true,
-					activeColor = VegafoXColors.Error,
-				)
+				item {
+					VegafoXButton(
+						text = stringResource(R.string.lbl_favorite),
+						onClick = callbacks.onToggleFavorite,
+						variant = VegafoXButtonVariant.Outlined,
+						icon = if (item.userData?.isFavorite == true) VegafoXIcons.Favorite else VegafoXIcons.FavoriteOutlined,
+						iconEnd = false,
+						compact = true,
+						iconTint = if (item.userData?.isFavorite == true) VegafoXColors.OrangePrimary else null,
+						expandOnFocus = true,
+					)
+				}
 			}
-
 			if (item.userData != null && item.type != BaseItemKind.PERSON && item.type != BaseItemKind.MUSIC_ARTIST) {
-				CinemaActionChip(
-					icon = VegafoXIcons.Visibility,
-					label =
-						if (item.userData?.played == true) {
-							stringResource(R.string.lbl_watched)
-						} else {
-							stringResource(R.string.lbl_unwatched)
-						},
-					onClick = callbacks.onToggleWatched,
-					isActive = item.userData?.played == true,
-					activeColor = VegafoXColors.Info,
-				)
+				item {
+					VegafoXButton(
+						text = stringResource(R.string.lbl_watched),
+						onClick = callbacks.onToggleWatched,
+						variant = VegafoXButtonVariant.Outlined,
+						icon = if (item.userData?.played == true) VegafoXIcons.VisibilityOff else VegafoXIcons.Visibility,
+						iconEnd = false,
+						compact = true,
+						iconTint = if (item.userData?.played == true) VegafoXColors.OrangePrimary else null,
+						expandOnFocus = true,
+					)
+				}
 			}
 
-			if (item.userData != null && item.type != BaseItemKind.PERSON) {
-				CinemaActionChip(
-					icon = VegafoXIcons.Add,
-					label = stringResource(R.string.lbl_playlist),
-					onClick = callbacks.onAddToPlaylist,
-				)
+			// ── Separator ──
+			if (hasStateGroup && hasNavGroup) {
+				item {
+					Box(
+						modifier =
+							Modifier
+								.width(1.dp)
+								.height(20.dp)
+								.background(VegafoXColors.Divider),
+					)
+				}
 			}
 
-			val goToSeries = callbacks.onGoToSeries
+			// ── Nav group ──
 			if (item.type == BaseItemKind.EPISODE && item.seriesId != null && goToSeries != null) {
-				CinemaActionChip(
-					icon = VegafoXIcons.Tv,
-					label = stringResource(R.string.lbl_goto_series),
-					onClick = goToSeries,
-				)
+				item {
+					VegafoXButton(
+						text = stringResource(R.string.lbl_goto_series),
+						onClick = goToSeries,
+						variant = VegafoXButtonVariant.Outlined,
+						icon = VegafoXIcons.VideoLibrary,
+						iconEnd = false,
+						compact = true,
+						expandOnFocus = true,
+					)
+				}
 			}
-
 			if (item.canDelete == true) {
-				CinemaActionChip(
-					icon = VegafoXIcons.Delete,
-					label = stringResource(R.string.lbl_delete),
-					onClick = callbacks.onConfirmDelete,
-					activeColor = VegafoXColors.Error,
-				)
+				item {
+					VegafoXButton(
+						text = stringResource(R.string.lbl_delete),
+						onClick = callbacks.onConfirmDelete,
+						variant = VegafoXButtonVariant.Outlined,
+						icon = VegafoXIcons.Delete,
+						iconEnd = false,
+						compact = true,
+						expandOnFocus = true,
+					)
+				}
 			}
 		}
 	}
@@ -285,6 +336,15 @@ fun DetailActionButtonsRow(
 				},
 				onDismiss = { showAudioDialog = false },
 			)
+		}
+	}
+	// Restore focus to audio button after dialog closes
+	LaunchedEffect(showAudioDialog) {
+		if (!showAudioDialog) {
+			try {
+				audioFocusRequester.requestFocus()
+			} catch (_: Exception) {
+			}
 		}
 	}
 
@@ -333,6 +393,15 @@ fun DetailActionButtonsRow(
 			onDismiss = { showSubtitleDialog = false },
 		)
 	}
+	// Restore focus to subtitle button after dialog closes
+	LaunchedEffect(showSubtitleDialog) {
+		if (!showSubtitleDialog) {
+			try {
+				subtitleFocusRequester.requestFocus()
+			} catch (_: Exception) {
+			}
+		}
+	}
 
 	// Version selector dialog
 	if (showVersionDialog) {
@@ -354,5 +423,14 @@ fun DetailActionButtonsRow(
 			},
 			onDismiss = { showVersionDialog = false },
 		)
+	}
+	// Restore focus to version button after dialog closes
+	LaunchedEffect(showVersionDialog) {
+		if (!showVersionDialog) {
+			try {
+				versionFocusRequester.requestFocus()
+			} catch (_: Exception) {
+			}
+		}
 	}
 }

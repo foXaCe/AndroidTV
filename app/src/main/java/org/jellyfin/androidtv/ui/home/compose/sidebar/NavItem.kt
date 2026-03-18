@@ -29,6 +29,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -77,6 +79,7 @@ fun NavItem(
 	shimmerAlpha: Float = 1f,
 	isExpanded: Boolean = false,
 	onFocusChanged: ((Boolean) -> Unit)? = null,
+	focusRequester: FocusRequester? = null,
 ) {
 	val interactionSource = remember { MutableInteractionSource() }
 	val isFocused by interactionSource.collectIsFocusedAsState()
@@ -171,7 +174,9 @@ fun NavItem(
 							}
 						}.clip(CircleShape)
 						.background(circleBg)
-						.focusable(interactionSource = interactionSource)
+						.then(
+							if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier,
+						).focusable(interactionSource = interactionSource)
 						.onKeyEvent { event ->
 							if ((event.key == Key.Enter || event.key == Key.DirectionCenter) &&
 								event.type == KeyEventType.KeyUp

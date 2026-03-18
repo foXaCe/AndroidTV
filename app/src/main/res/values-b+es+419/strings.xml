@@ -83,7 +83,6 @@
     <string name="lbl_schedule">Programar</string>
     <string name="lbl_recent_recordings">Grabaciones recientes</string>
     <string name="watch_now">Ver ahora</string>
-    <string name="pref_theme_dark">Oscuro (Por defecto)</string>
     <string name="lbl_image_size">Tamaño de imagen</string>
     <string name="lbl_image_type">Tipo de imagen</string>
     <string name="lbl_continue_watching">Continuar viendo</string>
@@ -96,7 +95,6 @@
     <string name="lbl_news">Noticias</string>
     <string name="lbl_mark_unplayed">Marcar como no reproducido</string>
     <string name="byletter_letters">ABCDEFGHIJKLMNÑOPQRSTUVWXYZ</string>
-    <string name="pref_app_theme">Tema de la aplicación</string>
     <string name="pref_next_up_timeout_title">Duración del temporizador de «A continuación»</string>
     <string name="pref_next_up_timeout_summary">Cuánto tiempo hay que esperar antes de reproducir el siguiente elemento</string>
     <string name="pref_about_title">Acerca de</string>
@@ -199,7 +197,6 @@
     <string name="pref_clock_display_browsing">Mientras navega</string>
     <string name="lbl_always">Siempre</string>
     <string name="pref_clock_display">Mostrar el reloj</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">Termina %1$s</string>
 <string name="lbl_subtitle_track">Seleccionar pista de subtítulos</string>
     <string name="lbl_audio_track">Seleccionar pista de audio</string>
@@ -291,7 +288,6 @@
 <string name="pref_login">Acceso</string>
 <string name="pref_libraries">Bibliotecas</string>
 <string name="pref_browsing">Navegación</string>
-    <string name="pref_behavior">Comportamiento</string>
     <string name="pref_accounts">Cuentas</string>
     <string name="sort_accounts_by">Ordenar cuentas por</string>
     <string name="pref_customization">Personalización</string>
@@ -352,7 +348,6 @@
         <item quantity="many">%1$s horas</item>
         <item quantity="other">%1$s horas</item>
     </plurals>
-    <string name="not_set">No configurado</string>
     <plurals name="minutes">
         <item quantity="one">%1$s minuto</item>
         <item quantity="many">%1$s minutos</item>

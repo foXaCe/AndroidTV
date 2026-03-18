@@ -49,9 +49,6 @@
 # Data binding & view binding
 -keep class org.jellyfin.androidtv.databinding.** { *; }
 
-# Keep Compose @Composable functions from being removed
--keep @androidx.compose.runtime.Composable class * { *; }
-
 # Timber
 -dontwarn org.jetbrains.annotations.**
 

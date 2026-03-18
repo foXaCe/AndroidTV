@@ -34,7 +34,6 @@ import org.jellyfin.androidtv.ui.playback.MediaManager
 import org.jellyfin.androidtv.ui.playback.PlaybackLauncher
 import org.jellyfin.androidtv.ui.playback.PrePlaybackTrackSelector
 import org.jellyfin.androidtv.ui.playback.ThemeMusicPlayer
-import org.jellyfin.androidtv.ui.playlist.showAddToPlaylistDialog
 import org.jellyfin.androidtv.util.PlaybackHelper
 import org.jellyfin.androidtv.util.Utils
 import org.jellyfin.androidtv.util.apiclient.Response
@@ -174,7 +173,6 @@ class ItemDetailComposeFragment : Fragment() {
 			},
 			onPlayTrailers = { item -> playTrailers(item) },
 			onConfirmDelete = { item -> confirmDeleteItem(item) },
-			onAddToPlaylist = { item -> showAddToPlaylistDialog(requireContext(), item.id) },
 			onNavigateToItem = { id ->
 				navigationRepository.navigate(Destinations.itemDetails(id, viewModel.serverId))
 			},
@@ -190,13 +188,10 @@ class ItemDetailComposeFragment : Fragment() {
 			hasPlayableTrailers = hasPlayableTrailers(context, item),
 			onPlay = { handlePlay(item, uiState) },
 			onResume = { handleResume(item) },
-			onShuffle = { handleShuffle(item) },
 			onPlayTrailers = { playTrailers(item) },
-			onPlayInstantMix = { playbackHelper.playInstantMix(context, item) },
 			onToggleWatched = { viewModel.toggleWatched() },
 			onToggleFavorite = { viewModel.toggleFavorite() },
 			onConfirmDelete = { confirmDeleteItem(item) },
-			onAddToPlaylist = { showAddToPlaylistDialog(context, item.id) },
 			onGoToSeries =
 				if (item.type == BaseItemKind.EPISODE && item.seriesId != null) {
 					{

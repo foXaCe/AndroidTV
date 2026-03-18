@@ -17,8 +17,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,7 +31,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRestorer
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -45,12 +42,14 @@ import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.service.jellyseerr.JellyseerrDiscoverItemDto
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.components.VegafoXIconButton
 import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.theme.BebasNeue
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.jellyseerr.BrowseFilterType
 import org.jellyfin.androidtv.ui.jellyseerr.JellyseerrDiscoverViewModel
 import org.jellyfin.androidtv.ui.jellyseerr.JellyseerrSortOption
+import org.jellyfin.androidtv.ui.shared.components.VegafoXScaffold
 import timber.log.Timber
 
 /**
@@ -168,154 +167,154 @@ fun JellyseerrBrowseByScreen(
 		}
 	val mediaTypeName = if (mediaType == "movie") stringResource(R.string.lbl_movies) else stringResource(R.string.lbl_tv_series)
 
-	Column(modifier = modifier.fillMaxSize().background(VegafoXColors.BackgroundDeep).padding(horizontal = 48.dp, vertical = 27.dp)) {
-		// ── Header ───────────────────────────────────────────────────
-		Row(
-			modifier = Modifier.fillMaxWidth(),
-			verticalAlignment = Alignment.CenterVertically,
-		) {
-			// Selected item title (left)
-			Text(
-				text = selectedTitle,
-				style = JellyfinTheme.typography.titleLarge,
-				color = VegafoXColors.TextPrimary,
-				maxLines = 1,
-				overflow = TextOverflow.Ellipsis,
-				modifier = Modifier.weight(1f),
-			)
+	VegafoXScaffold {
+		Column(modifier = modifier.fillMaxSize().background(VegafoXColors.BackgroundDeep).padding(horizontal = 48.dp, vertical = 27.dp)) {
+			// ── Header ───────────────────────────────────────────────────
+			Row(
+				modifier = Modifier.fillMaxWidth(),
+				verticalAlignment = Alignment.CenterVertically,
+			) {
+				// Selected item title (left)
+				Text(
+					text = selectedTitle,
+					style = JellyfinTheme.typography.titleLarge,
+					color = VegafoXColors.TextPrimary,
+					maxLines = 1,
+					overflow = TextOverflow.Ellipsis,
+					modifier = Modifier.weight(1f),
+				)
 
-			// Filter name (center)
-			Text(
-				text = filterName,
-				style =
-					TextStyle(
-						fontFamily = BebasNeue,
-						fontSize = 32.sp,
-						letterSpacing = 2.sp,
-					),
-				color = VegafoXColors.TextPrimary,
-				maxLines = 1,
-				textAlign = TextAlign.Center,
-				modifier = Modifier.weight(1f),
-			)
+				// Filter name (center)
+				Text(
+					text = filterName,
+					style =
+						TextStyle(
+							fontFamily = BebasNeue,
+							fontSize = 32.sp,
+							letterSpacing = 2.sp,
+						),
+					color = VegafoXColors.TextPrimary,
+					maxLines = 1,
+					textAlign = TextAlign.Center,
+					modifier = Modifier.weight(1f),
+				)
 
-			// Toolbar (right)
-			Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.End) {
-				Box {
-					IconButton(onClick = { showFilterMenu = true }) {
-						Icon(
-							painter = rememberVectorPainter(VegafoXIcons.Filter),
+				// Toolbar (right)
+				Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.End) {
+					Box {
+						VegafoXIconButton(
+							icon = VegafoXIcons.Filter,
 							contentDescription = stringResource(R.string.lbl_filters),
+							onClick = { showFilterMenu = true },
 							tint = VegafoXColors.TextPrimary,
 						)
-					}
-					DropdownMenu(
-						expanded = showFilterMenu,
-						onDismissRequest = { showFilterMenu = false },
-						modifier = Modifier.background(VegafoXColors.SurfaceBright),
-					) {
-						DropdownMenuItem(
-							text = { Text(stringResource(R.string.jellyseerr_filter_show_all)) },
-							leadingIcon = { RadioButton(selected = !showAvailableOnly && !showRequestedOnly, onClick = null) },
-							onClick = {
-								showAvailableOnly = false
-								showRequestedOnly = false
-								showFilterMenu = false
-							},
-						)
-						DropdownMenuItem(
-							text = { Text(stringResource(R.string.jellyseerr_filter_available_only)) },
-							leadingIcon = { RadioButton(selected = showAvailableOnly, onClick = null) },
-							onClick = {
-								showAvailableOnly = true
-								showRequestedOnly = false
-								showFilterMenu = false
-							},
-						)
-						DropdownMenuItem(
-							text = { Text(stringResource(R.string.jellyseerr_filter_requested_only)) },
-							leadingIcon = { RadioButton(selected = showRequestedOnly, onClick = null) },
-							onClick = {
-								showAvailableOnly = false
-								showRequestedOnly = true
-								showFilterMenu = false
-							},
-						)
-					}
-				}
-
-				Box {
-					IconButton(onClick = { showSortMenu = true }) {
-						Icon(
-							painter = rememberVectorPainter(VegafoXIcons.Sort),
-							contentDescription = stringResource(R.string.lbl_sort_by),
-							tint = VegafoXColors.TextPrimary,
-						)
-					}
-					DropdownMenu(
-						expanded = showSortMenu,
-						onDismissRequest = { showSortMenu = false },
-						modifier = Modifier.background(VegafoXColors.SurfaceBright),
-					) {
-						sortOptions.forEach { option ->
+						DropdownMenu(
+							expanded = showFilterMenu,
+							onDismissRequest = { showFilterMenu = false },
+							modifier = Modifier.background(VegafoXColors.SurfaceBright),
+						) {
 							DropdownMenuItem(
-								text = { Text(option.name) },
-								leadingIcon = { RadioButton(selected = option.value == currentSort.value, onClick = null) },
+								text = { Text(stringResource(R.string.jellyseerr_filter_show_all)) },
+								leadingIcon = { RadioButton(selected = !showAvailableOnly && !showRequestedOnly, onClick = null) },
 								onClick = {
-									currentSort = option
-									showSortMenu = false
+									showAvailableOnly = false
+									showRequestedOnly = false
+									showFilterMenu = false
+								},
+							)
+							DropdownMenuItem(
+								text = { Text(stringResource(R.string.jellyseerr_filter_available_only)) },
+								leadingIcon = { RadioButton(selected = showAvailableOnly, onClick = null) },
+								onClick = {
+									showAvailableOnly = true
+									showRequestedOnly = false
+									showFilterMenu = false
+								},
+							)
+							DropdownMenuItem(
+								text = { Text(stringResource(R.string.jellyseerr_filter_requested_only)) },
+								leadingIcon = { RadioButton(selected = showRequestedOnly, onClick = null) },
+								onClick = {
+									showAvailableOnly = false
+									showRequestedOnly = true
+									showFilterMenu = false
 								},
 							)
 						}
 					}
+
+					Box {
+						VegafoXIconButton(
+							icon = VegafoXIcons.Sort,
+							contentDescription = stringResource(R.string.lbl_sort_by),
+							onClick = { showSortMenu = true },
+							tint = VegafoXColors.TextPrimary,
+						)
+						DropdownMenu(
+							expanded = showSortMenu,
+							onDismissRequest = { showSortMenu = false },
+							modifier = Modifier.background(VegafoXColors.SurfaceBright),
+						) {
+							sortOptions.forEach { option ->
+								DropdownMenuItem(
+									text = { Text(option.name) },
+									leadingIcon = { RadioButton(selected = option.value == currentSort.value, onClick = null) },
+									onClick = {
+										currentSort = option
+										showSortMenu = false
+									},
+								)
+							}
+						}
+					}
 				}
 			}
-		}
 
-		Spacer(modifier = Modifier.height(8.dp))
+			Spacer(modifier = Modifier.height(8.dp))
 
-		// ── Grid ─────────────────────────────────────────────────────
-		Box(modifier = Modifier.weight(1f)) {
-			LazyVerticalGrid(
-				columns = GridCells.Fixed(7),
-				state = gridState,
-				contentPadding = PaddingValues(top = 8.dp),
-				verticalArrangement = Arrangement.spacedBy(40.dp),
-				horizontalArrangement = Arrangement.spacedBy(16.dp),
-				modifier = Modifier.fillMaxSize().focusRestorer(),
+			// ── Grid ─────────────────────────────────────────────────────
+			Box(modifier = Modifier.weight(1f)) {
+				LazyVerticalGrid(
+					columns = GridCells.Fixed(7),
+					state = gridState,
+					contentPadding = PaddingValues(top = 8.dp),
+					verticalArrangement = Arrangement.spacedBy(40.dp),
+					horizontalArrangement = Arrangement.spacedBy(16.dp),
+					modifier = Modifier.fillMaxSize().focusRestorer(),
+				) {
+					items(items = gridItems, key = { it.id }) { item ->
+						JellyseerrPosterCard(
+							item = item,
+							onClick = { onItemClick(item) },
+							onFocus = {
+								selectedTitle = item.title ?: item.name ?: ""
+								selectedPosition = gridItems.indexOf(item) + 1
+								onItemFocused(item)
+							},
+						)
+					}
+				}
+			}
+
+			// ── Footer ───────────────────────────────────────────────────
+			Row(
+				modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+				verticalAlignment = Alignment.CenterVertically,
 			) {
-				items(items = gridItems, key = { it.id }) { item ->
-					JellyseerrPosterCard(
-						item = item,
-						onClick = { onItemClick(item) },
-						onFocus = {
-							selectedTitle = item.title ?: item.name ?: ""
-							selectedPosition = gridItems.indexOf(item) + 1
-							onItemFocused(item)
-						},
-					)
-				}
+				Text(
+					text = "${stringResource(
+						R.string.lbl_showing,
+					)} $mediaTypeName ${stringResource(R.string.lbl_from)} '$filterName' ${stringResource(R.string.lbl_sorted_by)} ${currentSort.name}",
+					style = JellyfinTheme.typography.labelSmall,
+					color = VegafoXColors.TextSecondary,
+					modifier = Modifier.weight(1f),
+				)
+				Text(
+					text = "$selectedPosition | $totalResults",
+					style = JellyfinTheme.typography.bodyMedium,
+					color = VegafoXColors.TextPrimary,
+				)
 			}
-		}
-
-		// ── Footer ───────────────────────────────────────────────────
-		Row(
-			modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-			verticalAlignment = Alignment.CenterVertically,
-		) {
-			Text(
-				text = "${stringResource(
-					R.string.lbl_showing,
-				)} $mediaTypeName ${stringResource(R.string.lbl_from)} '$filterName' ${stringResource(R.string.lbl_sorted_by)} ${currentSort.name}",
-				style = JellyfinTheme.typography.labelSmall,
-				color = VegafoXColors.TextSecondary,
-				modifier = Modifier.weight(1f),
-			)
-			Text(
-				text = "$selectedPosition | $totalResults",
-				style = JellyfinTheme.typography.bodyMedium,
-				color = VegafoXColors.TextPrimary,
-			)
 		}
 	}
 }

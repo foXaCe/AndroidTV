@@ -173,8 +173,6 @@
     <string name="pref_next_up_timeout_summary">Задержка воспроизведения следующего элемента</string>
     <string name="watch_now">Смотреть сейчас</string>
     <string name="pref_about_title">О приложении</string>
-    <string name="pref_app_theme">Тема приложения</string>
-    <string name="pref_theme_dark">Тёмная (по умолчанию)</string>
     <string name="grid_direction_vertical">Вертикально</string>
     <string name="grid_direction_horizontal">Горизонтальное</string>
     <string name="grid_direction">Направление сетки</string>
@@ -192,7 +190,6 @@
 <string name="lbl_subtitle_track">Выбрать дорожку субтитров</string>
     <string name="lbl_audio_track">Выбрать аудио дорожку</string>
     <string name="lbl_pause">Пауза</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">Конец в %1$s</string>
 <string name="pref_clock_display_playback">При воспроизведении</string>
     <string name="pref_clock_display_browsing">При навигации</string>
@@ -304,7 +301,6 @@
 <string name="pref_login">Вход</string>
     <string name="pref_libraries">Медиатеки</string>
 <string name="pref_browsing">Навигация</string>
-    <string name="pref_behavior">Поведение</string>
     <string name="pref_accounts">Учётные записи</string>
     <string name="home_section_resume_book">Продолжение чтения</string>
     <string name="lbl_shuffle_queue">Переключить перемешивание</string>
@@ -341,7 +337,6 @@
     <string name="item_delete_confirm_message">Вы уверенны, что хотите удалить это с сервера\? Это действие невозможно отменить.</string>
 <string name="pref_screensaver_inapp_enabled_description">Показывать заставку Jellyfin при открытом приложении</string>
     <string name="lbl_album_artists">Исполнители альбома</string>
-<string name="not_set">Не задано</string>
     <string name="pref_screensaver">Заставка</string>
     <string name="pref_screensaver_inapp_enabled">Использовать заставку приложения</string>
     <plurals name="hours">

@@ -86,14 +86,12 @@
     <string name="lbl_next_item">下一個項目</string>
     <string name="pref_next_up_timeout_summary">播放下一項目之前的等待時間</string>
     <string name="pref_about_title">關於</string>
-    <string name="pref_theme_dark">暗色（預設）</string>
     <string name="lbl_my_media">我的媒體</string>
     <string name="lbl_image_size">圖片尺寸</string>
     <string name="lbl_new_episodes">新集數</string>
 <string name="lbl_more_like_this">更多類似的</string>
 <string name="lbl_sort_by">排序按照</string>
 <string name="watch_now">立即播放</string>
-    <string name="pref_app_theme">應用程式主題</string>
 <string name="lbl_filters">直播電視過濾器</string>
     <string name="desc_debug">為除錯提供額外的訊息</string>
     <string name="lbl_enable_debug">除錯選項</string>
@@ -214,7 +212,6 @@
     <string name="pref_clock_display_browsing">在瀏覽時</string>
     <string name="lbl_always">永遠</string>
     <string name="pref_clock_display">顯示時間</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">在 %1$s 結束</string>
 <string name="msg_no_items">無項目可供播放</string>
 <string name="too_many_errors">出現過多錯誤，放棄重試</string>
@@ -233,7 +230,6 @@
 <string name="pref_login">登入</string>
 <string name="pref_libraries">資料庫</string>
 <string name="pref_browsing">隨意瀏覽</string>
-    <string name="pref_behavior">行為</string>
     <string name="pref_accounts">帳號</string>
     <string name="sort_accounts_by">對帳號進行排序</string>
     <string name="pref_customization">客製化</string>
@@ -335,7 +331,6 @@
     <string name="lbl_album_artists">專輯藝術家</string>
 <string name="lbl_quality_profile">質量概况</string>
 <string name="pref_audio_night_mode">音訊夜間模式（實驗性）</string>
-    <string name="not_set">未設置</string>
     <plurals name="minutes">
         <item quantity="other">%1$s 分</item>
     </plurals>

@@ -26,8 +26,14 @@ object VegafoXColors {
 	/** Surface container (elements eleves) */
 	val SurfaceContainer = Color(0xFF242428)
 
+	/** Surface subtile — programmes passes, fond zebra pair */
+	val SurfaceSubtle = Color(0x05FFFFFF) // 2% blanc
+
 	/** Separateurs */
 	val Divider = Color(0x0FFFFFFF) // 6% blanc
+
+	/** Bordure de panneaux (settings, dialogs) */
+	val PanelBorder = Color(0x14FFFFFF) // 8% blanc
 
 	// -- Orange VegafoX --
 	/** Orange principal — boutons, highlights */
@@ -111,6 +117,24 @@ object VegafoXColors {
 	// -- Recording --
 	val Recording = Color(0xFFFB7E7E)
 	val OnRecording = Color(0xFFFFF6F6)
+	val RecordingRed = Color(0xFFE53935)
+
+	// -- Player --
+	/** Badge HDR gold */
+	val HdrGold = Color(0xFFFFD700)
+
+	// -- Tech Badges (player overlay) --
+	/** Badge résolution (orange) */
+	val BadgeResolution = OrangePrimary
+
+	/** Badge HDR (gold) */
+	val BadgeHdr = HdrGold
+
+	/** Badge technique générique (gris hint) */
+	val BadgeTech = TextHint
+
+	/** Fond semi-transparent du toast player */
+	val ToastBackground = Color(0xBF060A0F)
 
 	// -- Dialog --
 	val DialogScrim = Color(0xE6141414)
@@ -120,4 +144,14 @@ object VegafoXColors {
 	val GradientStart = Color(0xFF3D1E00)
 	val GradientMid = Color(0xFF1F0F00)
 	val GradientEnd = Color(0xFF0A0A0F)
+
+	// -- Progress bar (cards) --
+	/** Track de la barre de progression sur les cartes (25% blanc) */
+	val ProgressTrack = Color(0x40FFFFFF)
+
+	// -- Poster 3D relief --
+	val PosterReflectLight = Color(0x1FFFFFFF) // 12% white
+	val PosterShadowDark = Color(0x40000000) // 25% black
+	val PosterBorderLight = Color(0x40FFFFFF) // 25% white
+	val PosterBorderDark = Color(0x0AFFFFFF) // 4% white
 }

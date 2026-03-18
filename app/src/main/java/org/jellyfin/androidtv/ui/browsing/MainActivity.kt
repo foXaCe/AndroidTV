@@ -3,7 +3,6 @@ package org.jellyfin.androidtv.ui.browsing
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -75,7 +74,7 @@ class MainActivity : FragmentActivity() {
 		}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
-		Log.d("STARTUP", "MainActivity.onCreate: ${System.currentTimeMillis()}")
+		Timber.tag("VFX_PERF").i("VFX_PERF MainActivity.onCreate START at ${System.currentTimeMillis()}")
 		applyTheme()
 
 		super.onCreate(savedInstanceState)

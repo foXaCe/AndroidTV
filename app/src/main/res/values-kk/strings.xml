@@ -172,8 +172,6 @@
     <string name="pref_next_up_timeout_title">Kezektı taimerınıñ ūzaqtyğy</string>
     <string name="pref_about_title">Qoldanba turaly</string>
     <string name="lbl_my_media">Menıñ tasyğyşderekterım</string>
-    <string name="pref_app_theme">Qoldanba taqyryby</string>
-    <string name="pref_theme_dark">Küngırt (ädepkı)</string>
     <string name="lbl_pause">Üzu</string>
 <string name="seek_error">Izdeu mümkın emes</string>
 <string name="episode_missing">Telebölım joq</string>
@@ -195,7 +193,6 @@
     <string name="pref_clock_display_browsing">Şarlau kezınde</string>
     <string name="lbl_always">Äldeqaşan</string>
     <string name="pref_clock_display">Sağatty körsetu</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">Soñy %1$s kezınde</string>
 <string name="msg_no_items">Oinaityn tarmaqtar joq</string>
 <string name="player_error">Oinatqyş qatesı paida boldy. Äreket qaitalanady…</string>
@@ -302,7 +299,6 @@
     <string name="pref_libraries">Tasyğyşhanalar</string>
 <string name="pref_show_backdrop_description">Tañdalğan tarmaqtar üşın öñdıq surettı özgertu</string>
     <string name="pref_browsing">Şarlau</string>
-    <string name="pref_behavior">Qasietı</string>
     <string name="pref_accounts">Tırkelgıler</string>
     <string name="sort_accounts_by">Tirkelgılerdı sūryptau retı</string>
     <string name="pref_customization">Retteu</string>

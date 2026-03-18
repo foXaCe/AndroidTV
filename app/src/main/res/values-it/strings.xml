@@ -161,10 +161,8 @@
     <string name="lbl_premieres">Anteprime</string>
     <string name="lbl_new_only">Solo nuovi</string>
     <string name="lbl_news">Novità</string>
-    <string name="pref_app_theme">Tema</string>
     <string name="watch_now">Guarda ora</string>
     <string name="pref_next_up_timeout_summary">Tempo da aspettare prima di riprodurre il contenuto successivo</string>
-    <string name="pref_theme_dark">Scuro (default)</string>
     <string name="lbl_my_media">I miei media</string>
     <string name="lbl_image_size">Dimensione dell\'immagine</string>
     <string name="lbl_image_type">Tipo di immagine</string>
@@ -199,7 +197,6 @@
     <string name="pref_clock_display_browsing">Durante la navigazione</string>
     <string name="lbl_always">Sempre</string>
     <string name="pref_clock_display">Mostra orologio</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">Finisce alle %1$s</string>
     <string name="player_error">Errore nel Player. Riprovo…</string>
 <string name="episode_missing_message_2">Quest\'episodio manca nella tua libreria. La riproduzione verrà interrotta.</string>
@@ -305,7 +302,6 @@
     <string name="sort_accounts_by">Ordina gli utenti per</string>
     <string name="pref_customization">Personalizzazione</string>
     <string name="pref_show_backdrop_description">Cambia lo sfondo per le voci selezionate</string>
-<string name="pref_behavior">Comportamento</string>
     <string name="home_section_resume_book">Continua a leggere</string>
     <string name="lbl_shuffle_queue">Riproduzione casuale</string>
 <string name="input_password">Password</string>
@@ -369,7 +365,6 @@
     </plurals>
     <string name="pref_screensaver_inapp_enabled">Usa il salvaschermo integrato</string>
 <string name="lbl_album_artists">Artisti dell\'album</string>
-    <string name="not_set">Non impostato</string>
 <string name="disable_ui_mode_warning">Disabilita avvisi riguardo al tipo di dispositivo</string>
     <string name="because_you_watched">Perché hai guardato %1$s</string>
     <string name="channels">Canali</string>

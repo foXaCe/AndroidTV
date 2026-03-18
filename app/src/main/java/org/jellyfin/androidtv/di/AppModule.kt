@@ -45,6 +45,7 @@ import org.jellyfin.androidtv.ui.navigation.NavigationRepository
 import org.jellyfin.androidtv.ui.navigation.NavigationRepositoryImpl
 import org.jellyfin.androidtv.ui.playback.PlaybackControllerContainer
 import org.jellyfin.androidtv.ui.playback.nextup.NextUpViewModel
+import org.jellyfin.androidtv.ui.playback.overlay.SeekProvider
 import org.jellyfin.androidtv.ui.playback.segment.MediaSegmentRepository
 import org.jellyfin.androidtv.ui.playback.segment.MediaSegmentRepositoryImpl
 import org.jellyfin.androidtv.ui.playback.stillwatching.StillWatchingViewModel
@@ -125,8 +126,8 @@ val appModule =
 						.newBuilder()
 						.dispatcher(
 							okhttp3.Dispatcher().apply {
-								maxRequests = 4
-								maxRequestsPerHost = 4
+								maxRequests = 8
+								maxRequestsPerHost = 8
 							},
 						).build()
 				},
@@ -177,6 +178,7 @@ val appModule =
 		// Non API related
 		single { DataRefreshService() }
 		single { PlaybackControllerContainer() }
+		single { SeekProvider(get(), get(), get(), androidContext(), get()) }
 		// Use single scope to ensure the same instance is used across all playback sessions
 		single { InteractionTrackerViewModel(get(), get()) }
 
@@ -304,7 +306,7 @@ val appModule =
 		}
 		viewModel {
 			org.jellyfin.androidtv.ui.home.compose
-				.HomeViewModel(get(), androidApplication(), get(), get(), get(), get(), get(), get())
+				.HomeViewModel(get(), androidApplication(), get(), get(), get(), get(), get())
 		}
 		viewModel {
 			org.jellyfin.androidtv.ui.playback.audio

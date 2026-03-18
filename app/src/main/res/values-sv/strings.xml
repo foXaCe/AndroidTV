@@ -173,8 +173,6 @@
     <string name="lbl_programs">Program</string>
     <string name="pref_live_tv_cat">Direktsänd-TV</string>
     <string name="lbl_recorded_tv">Inspelad TV</string>
-    <string name="pref_theme_dark">Mörk (Standard)</string>
-    <string name="pref_app_theme">Apptema</string>
     <string name="grid_direction">Rutnätsriktning</string>
     <string name="pref_device_model">Enhetens modell</string>
     <string name="grid_direction_vertical">Vertikal</string>
@@ -192,7 +190,6 @@
 <string name="lbl_subtitle_track">Välj undertext</string>
     <string name="lbl_audio_track">Välj ljudspår</string>
     <string name="lbl_pause">Pausa</string>
-<string name="watch_count_overflow">99+</string>
 <string name="server_field_empty">Adress får inte vara tomt</string>
     <string name="login_server_unavailable">Kunde inte ansluta till server</string>
     <string name="login_invalid_credentials">Ogiltigt användarnamn och/eller lösenord</string>
@@ -295,7 +292,6 @@
 <string name="pref_login">Logga in</string>
 <string name="pref_libraries">Bibliotek</string>
 <string name="pref_browsing">Bläddring</string>
-    <string name="pref_behavior">Beteende</string>
     <string name="pref_accounts">Konton</string>
     <string name="sort_accounts_by">Sortera konton efter</string>
     <string name="pref_customization">Anpassning</string>
@@ -366,7 +362,6 @@
     <string name="item_deleted">%1$s borttagen</string>
 <string name="because_you_watched">Eftersom du såg %1$s</string>
 <string name="disable_ui_mode_warning">Inaktivera varningar om enhetstyp</string>
-    <string name="not_set">Inte inställd</string>
     <string name="lbl_hide_watched_checkmark">Dölj uppspelad markering</string>
     <string name="channels">Kanaler</string>
     <string name="photo_albums">Fotoalbum</string>

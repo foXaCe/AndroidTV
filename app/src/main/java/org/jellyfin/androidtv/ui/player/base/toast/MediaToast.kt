@@ -37,7 +37,7 @@ object MediaToastDefaults {
 	@ReadOnlyComposable
 	@Composable
 	fun colors(
-		backgroundColor: Color = Color(0xBF060A0F), // rgba(6,10,15,0.75)
+		backgroundColor: Color = VegafoXColors.ToastBackground,
 		iconColor: Color = VegafoXColors.TextPrimary,
 		progressBackgroundColor: Color = Color.Black,
 		progressFillColor: Color = JellyfinTheme.colorScheme.rangeControlFill,

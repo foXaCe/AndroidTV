@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -41,7 +42,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -50,7 +50,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.delay
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.theme.BebasNeue
@@ -60,6 +62,7 @@ import org.jellyfin.androidtv.ui.home.mediabar.SponsorBlockApi
 import org.jellyfin.androidtv.ui.home.mediabar.YouTubeStreamResolver
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.getBackdropUrl
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.translateGenreUpper
+import org.jellyfin.androidtv.ui.shared.components.CachedAsyncImage
 import org.jellyfin.androidtv.ui.shared.components.MediaMetadataBadges
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.model.api.BaseItemDto
@@ -86,6 +89,7 @@ fun HomeHeroBackdrop(
 	api: ApiClient,
 	trailerState: TrailerState = TrailerState(),
 	onTrailerEnded: () -> Unit = {},
+	onStopTrailer: () -> Unit = {},
 	modifier: Modifier = Modifier,
 ) {
 	val bgColor = VegafoXColors.Background
@@ -117,6 +121,19 @@ fun HomeHeroBackdrop(
 	var cachedStreamInfo by remember { mutableStateOf<YouTubeStreamResolver.StreamInfo?>(null) }
 	var cachedStartSeconds by remember { mutableStateOf(0.0) }
 	var cachedSegments by remember { mutableStateOf<List<SponsorBlockApi.Segment>>(emptyList()) }
+
+	// Stop trailer immediately when lifecycle pauses/stops (prevents audio leak)
+	val lifecycleOwner = LocalLifecycleOwner.current
+	DisposableEffect(lifecycleOwner) {
+		val observer =
+			LifecycleEventObserver { _, event ->
+				if (event == Lifecycle.Event.ON_PAUSE || event == Lifecycle.Event.ON_STOP) {
+					onStopTrailer()
+				}
+			}
+		lifecycleOwner.lifecycle.addObserver(observer)
+		onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+	}
 
 	LaunchedEffect(shouldPlayTrailer) {
 		if (shouldPlayTrailer) {
@@ -152,7 +169,7 @@ fun HomeHeroBackdrop(
 			label = "home_hero_backdrop",
 		) { url ->
 			if (url != null) {
-				AsyncImage(
+				CachedAsyncImage(
 					model = url,
 					contentDescription = null,
 					modifier =
@@ -167,7 +184,9 @@ fun HomeHeroBackdrop(
 											.asComposeRenderEffect()
 								}
 							},
-					contentScale = ContentScale.Crop,
+					maxWidth = 1920,
+					placeholder = null,
+					error = null,
 				)
 			}
 		}

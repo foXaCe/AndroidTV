@@ -40,12 +40,6 @@ class UserPreferences(
 		var posterSize = enumPreference("poster_size", PosterSize.DEFAULT)
 
 		/**
-		 * Enable focus expansion (zoom) effect on card items.
-		 * When enabled, focused cards scale up slightly. Default is off.
-		 */
-		var cardFocusExpansion = booleanPreference("pref_card_focus_expansion", false)
-
-		/**
 		 * Enable background images while browsing
 		 */
 		var backdropEnabled = booleanPreference("pref_show_backdrop", true)
@@ -258,11 +252,6 @@ class UserPreferences(
 		 * Enable series thumbnails in home screen rows
 		 */
 		var seriesThumbnailsEnabled = booleanPreference("pref_enable_series_thumbnails", false)
-
-		/**
-		 * Merge Continue Watching and Next Up into a single row
-		 */
-		var mergeContinueWatchingNextUp = booleanPreference("pref_merge_continue_watching_next_up", false)
 
 		/**
 		 * Subtitles foreground color

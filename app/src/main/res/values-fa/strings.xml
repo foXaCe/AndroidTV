@@ -170,7 +170,6 @@
 <string name="pref_login">ورود</string>
 <string name="pref_libraries">کتابخانه ها</string>
 <string name="pref_browsing">گشت و گذار</string>
-    <string name="pref_behavior">برخورد</string>
     <string name="pref_accounts">حساب ها</string>
     <string name="sort_accounts_by">مرتب سازی حساب ها بر اساس</string>
     <string name="pref_customization">سفارشی سازی</string>
@@ -268,7 +267,6 @@
     <string name="pref_clock_display_browsing">حین گشتن</string>
     <string name="lbl_always">همیشه</string>
     <string name="pref_clock_display">نمایش ساعت</string>
-    <string name="watch_count_overflow">۹۹+</string>
     <string name="lbl_playback_control_ends">در %1$s به اتمام می‌رسد</string>
 <string name="msg_no_items">هیچ موردی برای پخش وجود ندارد</string>
 <string name="too_many_errors">خطا خیلی زیاد بود. بیخیال شدیم</string>
@@ -279,14 +277,12 @@
 <string name="grid_direction_vertical">عمودی (آزمایشی)</string>
     <string name="grid_direction_horizontal">افقی</string>
     <string name="pref_device_model">مدل دستگاه</string>
-    <string name="pref_app_theme">قالب برنامه</string>
     <string name="pref_next_up_behavior_title">نمایش اطلاعات ویدئوی بعدی</string>
     <string name="watch_now">الان ببین</string>
     <string name="pref_next_up_timeout_disabled">∞</string>
     <string name="pref_next_up_timeout_title">مدت زمان سنج تا پخش بعدی</string>
     <string name="pref_next_up_timeout_summary">چه مدت باید قبل از پخش مورد بعدی صبر کرد</string>
     <string name="pref_about_title">درباره</string>
-    <string name="pref_theme_dark">تیره (پیش فرض)</string>
     <string name="lbl_my_media">رسانه های من</string>
     <string name="lbl_image_size">اندازه تصویر</string>
     <string name="lbl_image_type">نوع تصویر</string>

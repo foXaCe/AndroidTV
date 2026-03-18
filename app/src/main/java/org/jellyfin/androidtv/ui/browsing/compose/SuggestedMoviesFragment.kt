@@ -14,6 +14,8 @@ import org.jellyfin.androidtv.ui.base.debug.ScreenIdOverlay
 import org.jellyfin.androidtv.ui.base.debug.ScreenIds
 import org.jellyfin.androidtv.ui.itemhandling.BaseItemDtoBaseRowItem
 import org.jellyfin.androidtv.ui.itemhandling.ItemLauncher
+import org.jellyfin.androidtv.ui.navigation.Destinations
+import org.jellyfin.androidtv.ui.navigation.NavigationRepository
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -41,6 +43,7 @@ class SuggestedMoviesComposeFragment : Fragment() {
 
 	private val viewModel: SuggestedMoviesViewModel by viewModel()
 	private val itemLauncher: ItemLauncher by inject()
+	private val navigationRepository: NavigationRepository by inject()
 
 	override fun onCreateView(
 		inflater: LayoutInflater,
@@ -55,6 +58,7 @@ class SuggestedMoviesComposeFragment : Fragment() {
 						SuggestedMoviesScreen(
 							viewModel = viewModel,
 							onItemClick = ::launchItem,
+							onHomeClick = { navigationRepository.navigate(Destinations.home) },
 						)
 					}
 				}

@@ -27,7 +27,6 @@ import org.jellyfin.androidtv.auth.repository.UserRepository
 import org.jellyfin.androidtv.constant.HomeSectionType
 import org.jellyfin.androidtv.data.repository.ItemRepository
 import org.jellyfin.androidtv.data.repository.UserViewsRepository
-import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.preference.UserSettingPreferences
 import org.jellyfin.androidtv.ui.base.state.UiError
 import org.jellyfin.androidtv.ui.base.state.toUiError
@@ -74,7 +73,6 @@ class HomeViewModel(
 	private val application: Application,
 	private val userRepository: UserRepository,
 	private val userViewsRepository: UserViewsRepository,
-	private val userPreferences: UserPreferences,
 	private val userSettingPreferences: UserSettingPreferences,
 	private val homePrefetchService: HomePrefetchService,
 	private val homeRowsCache: HomeRowsCache,
@@ -88,6 +86,24 @@ class HomeViewModel(
 	/** Last focused item ID — survives navigation to detail and back. */
 	private val _lastFocusedItemId = MutableStateFlow<java.util.UUID?>(null)
 	val lastFocusedItemId: StateFlow<java.util.UUID?> = _lastFocusedItemId.asStateFlow()
+
+	/** Last focused row index — used to scroll LazyColumn before restoring focus. */
+	private val _lastFocusedRowIndex = MutableStateFlow(0)
+	val lastFocusedRowIndex: StateFlow<Int> = _lastFocusedRowIndex.asStateFlow()
+
+	/** Saved scroll position for precise restoration after navigation. */
+	var savedScrollIndex: Int = 0
+		private set
+	var savedScrollOffset: Int = 0
+		private set
+
+	fun saveScrollPosition(
+		firstVisibleItemIndex: Int,
+		firstVisibleItemScrollOffset: Int,
+	) {
+		savedScrollIndex = firstVisibleItemIndex
+		savedScrollOffset = firstVisibleItemScrollOffset
+	}
 
 	private val _trailerState = MutableStateFlow(TrailerState())
 	val trailerState: StateFlow<TrailerState> = _trailerState.asStateFlow()
@@ -109,6 +125,11 @@ class HomeViewModel(
 
 	private var trailerJob: Job? = null
 
+	override fun onCleared() {
+		stopTrailer()
+		super.onCleared()
+	}
+
 	private val t0 = System.currentTimeMillis()
 
 	init {
@@ -116,9 +137,27 @@ class HomeViewModel(
 		loadRows()
 	}
 
-	fun setFocusedItem(item: BaseItemDto) {
+	/** When true, focus tracking is frozen (during fragment transitions). */
+	private var focusTrackingFrozen = false
+
+	fun freezeFocusTracking() {
+		focusTrackingFrozen = true
+	}
+
+	fun unfreezeFocusTracking() {
+		focusTrackingFrozen = false
+	}
+
+	fun setFocusedItem(
+		item: BaseItemDto,
+		rowIndex: Int = -1,
+	) {
 		_focusedItem.value = item
-		_lastFocusedItemId.value = item.id
+		// Don't update navigation-restore targets during fragment transitions
+		if (!focusTrackingFrozen) {
+			_lastFocusedItemId.value = item.id
+			if (rowIndex >= 0) _lastFocusedRowIndex.value = rowIndex
+		}
 		startTrailerCountdown(item)
 	}
 
@@ -205,44 +244,54 @@ class HomeViewModel(
 	}
 
 	fun loadRows() {
-		// Check for prefetched data — show immediately while loading the rest
-		val prefetched = homePrefetchService.consume()
-		val t1 = System.currentTimeMillis()
-		Timber.tag("VFX_PERF").d("VFX_PERF T0→T1 prefetch consume: ${t1 - t0}ms (data=${prefetched != null})")
-
-		if (prefetched != null) {
-			_uiState.update { it.copy(isLoading = false, rows = prefetched) }
-			if (_focusedItem.value == null) {
-				prefetched
-					.firstOrNull()
-					?.items
-					?.firstOrNull()
-					?.let { _focusedItem.value = it }
-			}
-		}
-
 		viewModelScope.launch {
-			// Load cache on IO thread (fast: slimmed data, ~50-100KB)
-			if (prefetched == null) {
-				val cacheResult = withContext(Dispatchers.IO) { homeRowsCache.load() }
-				if (cacheResult != null) {
-					val (cachedRows, cacheTime) = cacheResult
-					val cacheAge = System.currentTimeMillis() - cacheTime
-					val isFresh = cacheAge < HomeRowsCache.FRESH_DURATION_MS
-					val tCacheHit = System.currentTimeMillis()
-					Timber.tag("VFX_PERF").d("VFX_PERF T_cache_hit: ${tCacheHit - t0}ms (age=${cacheAge}ms, fresh=$isFresh, rows=${cachedRows.size})")
-					_uiState.update { it.copy(isLoading = false, isRefreshing = !isFresh, rows = cachedRows) }
+			// Step 1: Load cache FIRST (fast ~50ms from disk) — show content ASAP
+			val cacheResult = withContext(Dispatchers.IO) { homeRowsCache.load() }
+			var hasVisibleRows = false
+
+			if (cacheResult != null) {
+				val (cachedRows, cacheTime) = cacheResult
+				val cacheAge = System.currentTimeMillis() - cacheTime
+				val isFresh = cacheAge < HomeRowsCache.FRESH_DURATION_MS
+				val tCacheHit = System.currentTimeMillis()
+				Timber.tag("VFX_PERF").d("VFX_PERF T_cache_hit: ${tCacheHit - t0}ms (age=${cacheAge}ms, fresh=$isFresh, rows=${cachedRows.size})")
+				_uiState.update { it.copy(isLoading = false, isRefreshing = !isFresh, rows = cachedRows) }
+				if (_focusedItem.value == null) {
+					cachedRows
+						.firstOrNull()
+						?.items
+						?.firstOrNull()
+						?.let { _focusedItem.value = it }
+				}
+				hasVisibleRows = true
+			}
+
+			// Step 2: Prefetch — only wait if no cache was found (otherwise network refresh handles it)
+			if (!hasVisibleRows) {
+				val prefetched = homePrefetchService.consume()
+				val t1p = System.currentTimeMillis()
+				Timber.tag("VFX_PERF").d("VFX_PERF T_prefetch_consume: ${t1p - t0}ms (data=${prefetched != null})")
+
+				if (prefetched != null) {
+					_uiState.update { it.copy(isLoading = false, rows = prefetched) }
 					if (_focusedItem.value == null) {
-						cachedRows
+						prefetched
 							.firstOrNull()
 							?.items
 							?.firstOrNull()
 							?.let { _focusedItem.value = it }
 					}
-				} else {
-					_uiState.update { it.copy(isLoading = true, error = null) }
+					hasVisibleRows = true
 				}
+			} else {
+				// Cache was shown — discard any in-flight prefetch (network refresh will update)
+				homePrefetchService.discard()
 			}
+
+			if (!hasVisibleRows) {
+				_uiState.update { it.copy(isLoading = true, error = null) }
+			}
+			val t1 = System.currentTimeMillis()
 
 			val t2 = System.currentTimeMillis()
 			Timber.tag("VFX_PERF").d("VFX_PERF T1→T2 loadRows coroutine start: ${t2 - t1}ms")
@@ -251,6 +300,8 @@ class HomeViewModel(
 					withTimeout(30.seconds) {
 						userRepository.currentUser.filterNotNull().first()
 					}
+				val t2b = System.currentTimeMillis()
+				Timber.tag("VFX_PERF").d("VFX_PERF T2→T2b currentUser wait: ${t2b - t2}ms")
 				val homesections = userSettingPreferences.activeHomesections
 
 				// Pre-fetch views if needed (for latest media)
@@ -284,16 +335,12 @@ class HomeViewModel(
 						null
 					}
 
-				// Determine merged continue watching mode
-				val mergeContinueWatching = userPreferences[UserPreferences.mergeContinueWatchingNextUp]
-
 				// Load all sections in parallel — emit progressively
 				// NOTE: viewsDeferred and liveTvDeferred are NOT awaited here.
 				// Sections that need them (LATEST_MEDIA, LIVE_TV) await individually,
 				// so independent sections (RESUME, NEXT_UP) start immediately.
 				withContext(Dispatchers.IO) {
 					val deferredRows = mutableListOf<kotlinx.coroutines.Deferred<List<TvRow<BaseItemDto>>>>()
-					var mergedRowAdded = false
 
 					for (section in homesections) {
 						val deferred =
@@ -301,26 +348,8 @@ class HomeViewModel(
 								try {
 									when (section) {
 										HomeSectionType.MEDIA_BAR -> emptyList()
-										HomeSectionType.RESUME -> {
-											if (mergeContinueWatching && !mergedRowAdded) {
-												mergedRowAdded = true
-												loadMergedContinueWatching()
-											} else if (!mergeContinueWatching) {
-												loadContinueWatching()
-											} else {
-												emptyList()
-											}
-										}
-										HomeSectionType.NEXT_UP -> {
-											if (!mergeContinueWatching) {
-												loadNextUp()
-											} else if (!mergedRowAdded) {
-												mergedRowAdded = true
-												loadMergedContinueWatching()
-											} else {
-												emptyList()
-											}
-										}
+										HomeSectionType.RESUME -> loadMergedContinueWatching()
+										HomeSectionType.NEXT_UP -> emptyList()
 										HomeSectionType.LATEST_MEDIA -> {
 											val tViewsStart = System.currentTimeMillis()
 											val views = viewsDeferred?.await() ?: emptyList()
@@ -360,10 +389,19 @@ class HomeViewModel(
 					val progressiveRows = mutableListOf<TvRow<BaseItemDto>>()
 					var rowIndex = 0
 
-					for (deferred in deferredRows) {
+					for ((sectionIndex, deferred) in deferredRows.withIndex()) {
 						val sectionRows = deferred.await()
 						if (sectionRows.isNotEmpty()) {
-							progressiveRows.addAll(sectionRows)
+							// Pin the merged continue_watching row to first position
+							val isMergedSection =
+								sectionIndex < homesections.size &&
+									homesections[sectionIndex] == HomeSectionType.RESUME &&
+									sectionRows.any { it.key == "continue_watching" || it.key == "continue_watching_fallback" }
+							if (isMergedSection) {
+								progressiveRows.addAll(0, sectionRows)
+							} else {
+								progressiveRows.addAll(sectionRows)
+							}
 
 							if (!hasExistingRows) {
 								// No cached data — show rows progressively
@@ -428,85 +466,114 @@ class HomeViewModel(
 		}
 	}
 
-	private suspend fun loadContinueWatching(): List<TvRow<BaseItemDto>> {
-		val query =
-			GetResumeItemsRequest(
-				limit = ROW_MAX_ITEMS,
-				fields = ItemRepository.itemFields,
-				imageTypeLimit = 1,
-				enableTotalRecordCount = false,
-				mediaTypes = listOf(MediaType.VIDEO),
-				excludeItemTypes = setOf(BaseItemKind.AUDIO_BOOK),
-			)
-		val items =
-			api.itemsApi
-				.getResumeItems(query)
-				.content.items
-		if (items.isEmpty()) return emptyList()
-		return listOf(TvRow(title = application.getString(R.string.home_section_resume), items = items, key = "resume"))
-	}
-
-	private suspend fun loadNextUp(): List<TvRow<BaseItemDto>> {
-		val query =
-			GetNextUpRequest(
-				imageTypeLimit = 1,
-				limit = ROW_MAX_ITEMS,
-				enableResumable = false,
-				fields = ItemRepository.itemFields,
-			)
-		val items =
-			enrichEpisodesWithSeriesGenres(
-				api.tvShowsApi
-					.getNextUp(query)
-					.content.items,
-			)
-		if (items.isEmpty()) return emptyList()
-		return listOf(TvRow(title = application.getString(R.string.home_section_next_up), items = items, key = "nextup"))
-	}
-
 	private suspend fun loadMergedContinueWatching(): List<TvRow<BaseItemDto>> =
 		coroutineScope {
+			val tCw0 = System.currentTimeMillis()
 			val resumeDeferred =
 				async {
-					val query =
-						GetResumeItemsRequest(
-							limit = ROW_MAX_ITEMS,
-							fields = ItemRepository.itemFields,
-							imageTypeLimit = 1,
-							enableTotalRecordCount = false,
-							mediaTypes = listOf(MediaType.VIDEO),
-							excludeItemTypes = setOf(BaseItemKind.AUDIO_BOOK),
-						)
-					api.itemsApi
-						.getResumeItems(query)
-						.content.items
+					try {
+						val query =
+							GetResumeItemsRequest(
+								limit = ROW_MAX_ITEMS,
+								fields = ItemRepository.itemFields,
+								imageTypeLimit = 1,
+								enableTotalRecordCount = false,
+								mediaTypes = listOf(MediaType.VIDEO),
+								excludeItemTypes = setOf(BaseItemKind.AUDIO_BOOK),
+							)
+						api.itemsApi
+							.getResumeItems(query)
+							.content.items
+					} catch (e: Exception) {
+						Timber.w(e, "Failed to load resume items for merged row")
+						emptyList()
+					}
 				}
 			val nextUpDeferred =
 				async {
-					val query =
-						GetNextUpRequest(
-							imageTypeLimit = 1,
-							limit = ROW_MAX_ITEMS,
-							enableResumable = false,
-							fields = ItemRepository.itemFields,
-						)
-					api.tvShowsApi
-						.getNextUp(query)
-						.content.items
+					try {
+						val query =
+							GetNextUpRequest(
+								imageTypeLimit = 1,
+								limit = ROW_MAX_ITEMS,
+								enableResumable = false,
+								fields = ItemRepository.itemFields,
+							)
+						api.tvShowsApi
+							.getNextUp(query)
+							.content.items
+					} catch (e: Exception) {
+						Timber.w(e, "Failed to load next up items for merged row")
+						emptyList()
+					}
 				}
 
 			val resumeItems = resumeDeferred.await()
+			val tCw1 = System.currentTimeMillis()
+			Timber.tag("VFX_PERF").d("VFX_PERF CW resume: ${tCw1 - tCw0}ms (items=${resumeItems.size})")
 			val nextUpItems = nextUpDeferred.await()
+			val tCw2 = System.currentTimeMillis()
+			Timber.tag("VFX_PERF").d("VFX_PERF CW nextUp: ${tCw2 - tCw1}ms (items=${nextUpItems.size})")
 
 			// Merge: resume items first, then next up items not already in resume
+			// Dedup pass 1: by itemId
 			val resumeIds = resumeItems.map { it.id }.toSet()
-			val merged =
-				enrichEpisodesWithSeriesGenres(
-					resumeItems + nextUpItems.filter { it.id !in resumeIds },
-				)
+			val uniqueNextUp = nextUpItems.filter { it.id !in resumeIds }
+			// Dedup pass 2: by seriesId (same series already represented in resume)
+			val resumeSeriesIds = resumeItems.mapNotNull { it.seriesId }.toSet()
+			val dedupedNextUp =
+				uniqueNextUp.filter { item ->
+					val sid = item.seriesId
+					sid == null || sid !in resumeSeriesIds
+				}
+			val merged = resumeItems + dedupedNextUp
 
-			if (merged.isEmpty()) return@coroutineScope emptyList()
-			listOf(TvRow(title = application.getString(R.string.home_section_resume), items = merged, key = "continue_watching"))
+			if (merged.isNotEmpty()) {
+				val row = TvRow(title = application.getString(R.string.home_section_resume), items = merged, key = "continue_watching")
+				val tCw3 = System.currentTimeMillis()
+				Timber.tag("VFX_PERF").d("VFX_PERF CW merged: ${tCw3 - tCw0}ms (items=${merged.size})")
+
+				// Enrich genres in background (non-blocking — row is displayed immediately)
+				viewModelScope.launch(Dispatchers.IO) {
+					val enriched = enrichEpisodesWithSeriesGenres(merged)
+					val tCw4 = System.currentTimeMillis()
+					Timber.tag("VFX_PERF").d("VFX_PERF CW enrichGenres: ${tCw4 - tCw3}ms")
+					if (enriched !== merged) {
+						_uiState.update { state ->
+							val updatedRows =
+								state.rows.map { r ->
+									if (r.key == "continue_watching") r.copy(items = enriched) else r
+								}
+							state.copy(rows = updatedRows)
+						}
+					}
+				}
+
+				return@coroutineScope listOf(row)
+			}
+
+			// Fallback: load latest media if both resume + next up are empty or failed
+			val fallbackItems =
+				try {
+					val response by api.userLibraryApi.getLatestMedia(
+						fields = ItemRepository.itemFields,
+						imageTypeLimit = 1,
+						groupItems = true,
+						limit = 25,
+					)
+					response
+				} catch (e: Exception) {
+					Timber.w(e, "Failed to load fallback latest media for merged row")
+					emptyList()
+				}
+			if (fallbackItems.isEmpty()) return@coroutineScope emptyList()
+			listOf(
+				TvRow(
+					title = application.getString(R.string.home_section_latest_media),
+					items = fallbackItems,
+					key = "continue_watching_fallback",
+				),
+			)
 		}
 
 	private suspend fun loadLatestMedia(userViews: Collection<BaseItemDto>): List<TvRow<BaseItemDto>> {

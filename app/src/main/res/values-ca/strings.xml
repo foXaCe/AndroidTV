@@ -183,7 +183,6 @@
     <string name="pref_clock_display_browsing">Mentre es navega</string>
     <string name="lbl_always">Sempre</string>
     <string name="pref_clock_display">Mostra el rellotge</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">Acaba a %1$s</string>
 <string name="msg_no_items">No hi ha elements per a reproduir</string>
 <string name="too_many_errors">Hi ha massa errors. S\'ha aturat la reproducció</string>
@@ -196,12 +195,10 @@
 <string name="grid_direction_horizontal">Horitzontal</string>
     <string name="grid_direction">Direcció de la graella</string>
     <string name="pref_device_model">Model de dispositiu</string>
-    <string name="pref_app_theme">Tema de l\'aplicació</string>
     <string name="watch_now">Mostra-ho ara</string>
     <string name="pref_next_up_timeout_title">Duració del temporitzador del següent</string>
     <string name="pref_next_up_timeout_summary">Temps d\'espera abans de reproduir l\'element següent</string>
     <string name="pref_about_title">Quant a</string>
-    <string name="pref_theme_dark">Fosc (Per defecte)</string>
     <string name="lbl_my_media">El meu contingut multimèdia</string>
     <string name="lbl_image_size">Mida de la imatge</string>
 <string name="server_issue_timeout">Ha expirat el temps de connexió</string>
@@ -318,7 +315,6 @@
 <string name="pref_login">Inici de sessió</string>
 <string name="pref_libraries">Mediateques</string>
 <string name="pref_browsing">Navegació</string>
-    <string name="pref_behavior">Comportament</string>
     <string name="pref_accounts">Comptes</string>
     <string name="sort_accounts_by">Ordena comptes per</string>
     <string name="pref_customization">Personalització</string>
@@ -340,7 +336,6 @@
         <item quantity="many">%1$s pistes</item>
         <item quantity="other">%1$s pistes</item>
     </plurals>
-    <string name="not_set">No definit</string>
     <string name="item_deletion_failed">No es pot eliminar %1$s</string>
     <string name="pref_screensaver_inapp_enabled_description">Mostra el protector de pantalla de Jellyfin mentre l\'aplicació és oberta</string>
 <string name="lbl_album_artists">Artistes de l\'àlbum</string>

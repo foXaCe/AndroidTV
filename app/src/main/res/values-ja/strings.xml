@@ -244,14 +244,11 @@
     <string name="grid_direction_horizontal">水平方向</string>
     <string name="watch_now">今すぐ見る</string>
     <string name="pref_next_up_timeout_summary">次のアイテムを再生するまでどのくらい待つか</string>
-    <string name="pref_theme_dark">ダークモード（デフォルト）</string>
-    <string name="pref_app_theme">アプリのテーマ</string>
     <string name="pref_next_up_behavior_title">次のビデオの情報を表示する</string>
     <string name="lbl_my_media">私のメディア</string>
     <string name="lbl_fit">通常</string>
 <string name="lbl_community_rating">コミュニティーの評価</string>
     <string name="pref_subtitles">字幕</string>
-<string name="watch_count_overflow">99+</string>
 <string name="pref_show_backdrop_description">背景画像を選択中のアイテムに変更する</string>
     <string name="lbl_playback_speed">再生速度</string>
     <string name="lbl_stretch">ストレッチ</string>
@@ -386,7 +383,6 @@
         <item quantity="other">%1$s 話</item>
     </plurals>
     <string name="lbl_starting_early_ending_after">%1$s 早く開始、 %2$s 遅く終了</string>
-    <string name="not_set">未設定</string>
     <string name="pref_next_up_timeout_title">次までのタイマー時間</string>
     <string name="pref_watched_indicator">視聴済みマークを表示</string>
     <string name="pref_customization">カスタマイズ</string>
@@ -417,7 +413,6 @@
     <string name="lbl_starting_early_ending_on_schedule">%1$s 早く開始し定時終了</string>
     <string name="lbl_start_end_on_schedule">定時開始、終了</string>
     <string name="lbl_time_range">%1$s–%2$s</string>
-    <string name="pref_behavior">ふるまい</string>
     <string name="segment_action_skip">スキップ</string>
     <string name="pref_screensaver_ageratingmax_unlimited">最大を不許可</string>
     <string name="segment_type_recap">要約</string>

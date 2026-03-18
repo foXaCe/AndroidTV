@@ -16,17 +16,20 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -82,14 +85,40 @@ fun LiveTvGuideGrid(
 		}
 	}
 
-	// Now line position
-	val now = LocalDateTime.now()
-	val nowMinutesFromStart =
-		if (!now.isBefore(guideStart) && now.isBefore(guideEnd)) {
-			Duration.between(guideStart, now).seconds.toFloat() / 60f
-		} else {
-			null
+	// Now line position — refresh every 30s to avoid recomposition churn
+	var nowTick by remember { mutableLongStateOf(System.currentTimeMillis()) }
+	LaunchedEffect(Unit) {
+		while (true) {
+			kotlinx.coroutines.delay(30_000)
+			nowTick = System.currentTimeMillis()
 		}
+	}
+	val now = remember(nowTick) { LocalDateTime.now() }
+	val nowMinutesFromStart =
+		remember(nowTick, guideStart, guideEnd) {
+			if (!now.isBefore(guideStart) && now.isBefore(guideEnd)) {
+				Duration.between(guideStart, now).seconds.toFloat() / 60f
+			} else {
+				null
+			}
+		}
+
+	// Focus requester for first current-program cell
+	val initialFocusRequester = remember { FocusRequester() }
+	var focusRequested by remember { mutableStateOf(false) }
+
+	LaunchedEffect(channels) {
+		if (channels.isNotEmpty() && !focusRequested) {
+			// Small delay to let the LazyColumn compose its items
+			kotlinx.coroutines.delay(300)
+			try {
+				initialFocusRequester.requestFocus()
+			} catch (_: Exception) {
+				// Focus requester not yet attached — ignore
+			}
+			focusRequested = true
+		}
+	}
 
 	Box(modifier = modifier.background(VegafoXColors.BackgroundDeep)) {
 		LazyColumn(
@@ -98,7 +127,7 @@ fun LiveTvGuideGrid(
 		) {
 			// Page up button
 			if (pageUpLabel != null && onPageUp != null) {
-				item(key = "page_up") {
+				item(key = "page_up", contentType = "paging") {
 					Row(Modifier.fillMaxWidth().height(TvSpacing.programCellHeight)) {
 						Box(Modifier.width(TvSpacing.channelHeaderWidth))
 						GuidePagingButton(
@@ -111,12 +140,14 @@ fun LiveTvGuideGrid(
 			}
 
 			// Channel rows
-			items(
+			itemsIndexed(
 				items = channels,
-				key = { it.id.toString() },
-			) { channel ->
-				val rowIndex = channels.indexOf(channel)
-				val rowBg = if (rowIndex % 2 == 1) Color.White.copy(alpha = 0.015f) else Color.Transparent
+				key = { _, channel -> channel.id.toString() },
+				contentType = { _, _ -> "channel_row" },
+			) { rowIndex, channel ->
+				val rowBg = if (rowIndex % 2 == 1) VegafoXColors.Divider else Color.Transparent
+				// First row gets the initial focus requester
+				val rowFocusRequester = if (rowIndex == 0) initialFocusRequester else null
 
 				GuideRow(
 					channel = channel,
@@ -132,12 +163,13 @@ fun LiveTvGuideGrid(
 					onChannelLongClick = onChannelLongClick,
 					rowBackground = rowBg,
 					nowMinutesFromStart = nowMinutesFromStart,
+					initialFocusRequester = rowFocusRequester,
 				)
 			}
 
 			// Page down button
 			if (pageDownLabel != null && onPageDown != null) {
-				item(key = "page_down") {
+				item(key = "page_down", contentType = "paging") {
 					Row(Modifier.fillMaxWidth().height(TvSpacing.programCellHeight)) {
 						Box(Modifier.width(TvSpacing.channelHeaderWidth))
 						GuidePagingButton(
@@ -167,6 +199,7 @@ private fun GuideRow(
 	onChannelLongClick: (BaseItemDto) -> Unit,
 	rowBackground: Color,
 	nowMinutesFromStart: Float?,
+	initialFocusRequester: FocusRequester? = null,
 ) {
 	val imageHelper = koinInject<ImageHelper>()
 	val imageUrl =
@@ -216,7 +249,19 @@ private fun GuideRow(
 					},
 		) {
 			val cells = buildProgramCells(programs, guideStart, guideEnd)
-			cells.forEach { cell ->
+			// Find the first CURRENT program to assign initial focus
+			val currentNow = LocalDateTime.now()
+			val firstCurrentIndex =
+				if (initialFocusRequester != null) {
+					cells.indexOfFirst { cell ->
+						val s = cell.program.startDate
+						val e = cell.program.endDate
+						s != null && e != null && !s.isAfter(currentNow) && e.isAfter(currentNow)
+					}
+				} else {
+					-1
+				}
+			cells.forEachIndexed { index, cell ->
 				GuideProgramCell(
 					program = cell.program,
 					widthDp = cell.widthDp,
@@ -225,6 +270,7 @@ private fun GuideRow(
 					onFocus = { onProgramFocus(cell.program) },
 					onClick = { onProgramClick(cell.program) },
 					onLongClick = { onProgramLongClick(cell.program) },
+					focusRequester = if (index == firstCurrentIndex) initialFocusRequester else null,
 				)
 			}
 		}
@@ -403,6 +449,7 @@ private fun GuideProgramCell(
 	onFocus: () -> Unit,
 	onClick: () -> Unit,
 	onLongClick: () -> Unit,
+	focusRequester: FocusRequester? = null,
 ) {
 	var isFocused by remember { mutableStateOf(false) }
 
@@ -420,7 +467,9 @@ private fun GuideProgramCell(
 				.graphicsLayer {
 					scaleX = scale
 					scaleY = scale
-				}.focusable()
+				}.then(
+					if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier,
+				).focusable()
 				.onFocusChanged { focusState ->
 					isFocused = focusState.isFocused
 					if (focusState.isFocused) onFocus()

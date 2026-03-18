@@ -41,7 +41,6 @@ data class DetailPlaybackCallbacks(
 	val onQueueAudioItem: (BaseItemDto) -> Unit,
 	val onPlayTrailers: (BaseItemDto) -> Unit,
 	val onConfirmDelete: (BaseItemDto) -> Unit,
-	val onAddToPlaylist: (BaseItemDto) -> Unit,
 	val onNavigateToItem: (UUID) -> Unit,
 )
 
@@ -124,20 +123,16 @@ fun ItemDetailScreen(
 					onNavigateToItem = playbackCallbacks.onNavigateToItem,
 				)
 
-			BaseItemKind.SEASON ->
+			BaseItemKind.SEASON -> {
+				val actionCallbacks = createActionCallbacks(item, uiState, context)
 				SeasonDetailsContent(
 					uiState = uiState,
 					contentFocusRequester = contentFocusRequester,
-					showBackdrop = false,
 					api = api,
-					blurAmount = blurAmount,
+					actionCallbacks = actionCallbacks,
 					onNavigateToItem = playbackCallbacks.onNavigateToItem,
-					onPlayEpisode = { episode ->
-						playbackCallbacks.onPlay(episode, 0, false)
-					},
-					onToggleWatched = { viewModel.toggleWatched() },
-					onToggleFavorite = { viewModel.toggleFavorite() },
 				)
+			}
 
 			BaseItemKind.SERIES -> {
 				val actionCallbacks = createActionCallbacks(item, uiState, context)

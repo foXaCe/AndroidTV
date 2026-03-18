@@ -9,7 +9,6 @@ android-minSdk = "23"
 android-targetSdk = "36"
 androidx-activity = "1.12.4"
 androidx-appcompat = "1.7.1"
-androidx-cardview = "1.0.0"
 androidx-compose-foundation = "1.10.4"
 androidx-compose-material3 = "1.4.0"
 androidx-compose-ui = "1.10.4"
@@ -35,10 +34,11 @@ jellyfin-sdk = "1.8.6"
 koin = "4.1.1"
 koin-compose = "4.1.1"
 kotest = "6.1.5"
-kotlin = "2.3.10"
+kotlin = "2.3.20"
 kotlinx-coroutines = "1.10.2"
 kotlinx-serialization = "1.10.0"
 ktor = "3.4.1"
+libass = "0.4.0"
 markwon = "4.6.2"
 mockk = "1.14.9"
 pipeextractor = "v0.26.0"
@@ -77,7 +77,6 @@ android-gradle = { module = "com.android.tools.build:gradle", version.ref = "and
 androidx-activity = { module = "androidx.activity:activity", version.ref = "androidx-activity" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
-androidx-cardview = { module = "androidx.cardview:cardview", version.ref = "androidx-cardview" }
 androidx-compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "androidx-compose-foundation" }
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version = "1.7.8" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "androidx-compose-material3" }
@@ -112,6 +111,10 @@ androidx-media3-exoplayer-hls = { module = "androidx.media3:media3-exoplayer-hls
 androidx-media3-session = { module = "androidx.media3:media3-session", version.ref = "androidx-media3" }
 androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "androidx-media3" }
 jellyfin-androidx-media3-ffmpeg-decoder = { module = "org.jellyfin.media3:media3-ffmpeg-decoder", version.ref = "jellyfin-androidx-media" }
+
+# ASS/SSA subtitle rendering
+libass-media = { module = "io.github.peerless2012:ass-media", version.ref = "libass" }
+libass-kt = { module = "io.github.peerless2012:ass-kt", version.ref = "libass" }
 
 # Markwon
 markwon-core = { module = "io.noties.markwon:core", version.ref = "markwon" }

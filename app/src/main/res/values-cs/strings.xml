@@ -173,8 +173,6 @@
     <string name="watch_now">Sledovat nyní</string>
     <string name="pref_next_up_timeout_title">Doba před přehráním další na řadě</string>
     <string name="pref_next_up_timeout_summary">Jak dlouho čekat před přehráním další položky</string>
-    <string name="pref_app_theme">Motiv aplikace</string>
-    <string name="pref_theme_dark">Tmavý (Výchozí)</string>
     <string name="grid_direction_vertical">Svisle</string>
     <string name="grid_direction_horizontal">Vodorovně</string>
     <string name="grid_direction">Směr mřížky</string>
@@ -193,7 +191,6 @@
     <string name="lbl_audio_track">Vybrat zvukovou stopu</string>
     <string name="lbl_pause">Pozastavit</string>
     <string name="lbl_playback_control_ends">Končí v %1$s</string>
-<string name="watch_count_overflow">99+</string>
     <string name="pref_clock_display_playback">Během přehrávání</string>
     <string name="pref_clock_display_browsing">Při prohlížení</string>
     <string name="lbl_always">Vždy</string>
@@ -301,7 +298,6 @@
 <string name="pref_login">Přihlášení</string>
 <string name="pref_libraries">Knihovny</string>
 <string name="pref_browsing">Procházení</string>
-    <string name="pref_behavior">Chování</string>
     <string name="pref_accounts">Účty</string>
     <string name="sort_accounts_by">Seřadit účty podle</string>
     <string name="pref_customization">Přizpůsobení</string>
@@ -369,7 +365,6 @@
     <string name="item_deletion_failed">Nelze odstranit %1$s</string>
 <string name="pref_screensaver_inapp_enabled_description">Zobrazit spořič obrazovky Jellfin, když je aplikace otevřená</string>
     <string name="lbl_album_artists">Umělci alba</string>
-    <string name="not_set">Nenastaveno</string>
     <string name="disable_ui_mode_warning">Zakázat upozornění na typ zařízení</string>
     <string name="because_you_watched">Protože jste sledovali %1$s</string>
     <string name="photo_albums">Fotoalba</string>

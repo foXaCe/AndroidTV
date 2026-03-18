@@ -194,7 +194,6 @@
     <string name="lbl_my_media">Моята медия</string>
     <string name="pref_next_up_timeout_disabled">∞</string>
     <string name="watch_now">Гледай сега</string>
-    <string name="pref_app_theme">Тена на приложението</string>
     <string name="grid_direction_horizontal">Хоризонтално</string>
     <string name="bitrate_mbit">%1$,.0f Mbit/s</string>
     <string name="bitrate_kbit">%1$,.0f Kbit/s</string>
@@ -211,12 +210,10 @@
     <string name="lbl_remove">Премахни</string>
     <string name="pref_about_title">Отностно</string>
     <string name="episode_missing">Епизода липсва</string>
-<string name="watch_count_overflow">99+</string>
 <string name="lbl_hidden">Скрит</string>
     <string name="lbl_new_episodes">Нови епизоди</string>
     <string name="lbl_live_broadcasts">Предаване на живо</string>
     <string name="lbl_repeat_episodes">Повтори епизодите</string>
-    <string name="pref_theme_dark">Тъмна (по подразбиране)</string>
     <string name="pref_next_up_behavior_title">Покажи информацията на следващото видео</string>
     <string name="grid_direction_vertical">Вертикално</string>
 <string name="episode_missing_message">Този епизод липсва от вашата библеотека.Искате ли да го пропуснете, и да продължите със следващия?</string>

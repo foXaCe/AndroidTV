@@ -1,5 +1,6 @@
 package org.jellyfin.androidtv.util.apiclient
 
+import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.ImageType
 
@@ -51,3 +52,25 @@ fun BaseItemDto.getPrimaryImageWithFallback() = itemImages[ImageType.PRIMARY] ?:
  * @return The thumb image from the item or its parent, or null if neither exists
  */
 fun BaseItemDto.getThumbImageWithFallback() = itemImages[ImageType.THUMB] ?: parentImages[ImageType.THUMB]
+
+/**
+ * Get the best landscape image URL for card display.
+ * Priority: THUMB → BACKDROP → parent THUMB → parent BACKDROP → PRIMARY → parent PRIMARY.
+ * @param api The API client to build the URL
+ * @param fillWidth Requested image width in pixels (default 440)
+ * @param quality JPEG quality (default 96)
+ * @return The image URL, or null if no image is available
+ */
+fun BaseItemDto.getCardImageUrl(
+	api: ApiClient,
+	fillWidth: Int = 440,
+	quality: Int = 96,
+): String? {
+	itemImages[ImageType.THUMB]?.let { return it.getUrl(api, fillWidth = fillWidth, quality = quality) }
+	itemBackdropImages.firstOrNull()?.let { return it.getUrl(api, fillWidth = fillWidth, quality = quality) }
+	parentImages[ImageType.THUMB]?.let { return it.getUrl(api, fillWidth = fillWidth, quality = quality) }
+	parentBackdropImages.firstOrNull()?.let { return it.getUrl(api, fillWidth = fillWidth, quality = quality) }
+	itemImages[ImageType.PRIMARY]?.let { return it.getUrl(api, fillWidth = fillWidth, quality = quality) }
+	parentImages[ImageType.PRIMARY]?.let { return it.getUrl(api, fillWidth = fillWidth, quality = quality) }
+	return null
+}

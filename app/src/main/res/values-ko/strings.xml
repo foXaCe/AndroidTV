@@ -133,7 +133,6 @@
     <string name="pref_next_up_timeout_title">다음 편 재생 대기 시간</string>
     <string name="pref_next_up_timeout_summary">다음 편을 재생할 때 까지 기다리는 시간</string>
     <string name="pref_about_title">정보</string>
-    <string name="pref_theme_dark">다크 (기본값)</string>
     <string name="lbl_my_media">내 미디어</string>
     <string name="lbl_image_size">이미지 크기</string>
     <string name="lbl_image_type">이미지 종류</string>
@@ -149,7 +148,6 @@
     <string name="grid_direction_horizontal">수평</string>
     <string name="grid_direction">격자 방향</string>
     <string name="pref_device_model">디바이스 모델</string>
-    <string name="pref_app_theme">앱 테마</string>
     <string name="lbl_news">신규</string>
 <string name="lbl_in_x_days">%d 일 후</string>
 <string name="lbl_show_backdrop">배경 표시</string>
@@ -231,7 +229,6 @@
     <string name="licenses_link">라이선스</string>
     <string name="color_red">빨간색</string>
     <string name="color_green">초록색</string>
-    <string name="pref_behavior">행동</string>
     <string name="pref_libraries">라이브러리</string>
 <string name="input_password">비밀번호</string>
     <string name="pref_crash_report_logs_enabled">충돌 보고서에 로그를 포함합니다</string>
@@ -327,7 +324,6 @@
     <string name="app_notification_uimode_invalid">이 앱은 텔레비전에 최적화 되어 있습니다. 다른 기기에서는 모바일 앱을 사용하는 것을 권장 드립니다.</string>
 <string name="pref_crash_reports_disabled">충돌 보고서를 전송하지 않습니다</string>
     <string name="pref_crash_report_logs">로그 포함</string>
-<string name="not_set">미설정</string>
     <string name="dolby_vision">Dolby Vision</string>
     <string name="indicator_subtitles">CC</string>
     <string name="dts_hd">DTS:HD</string>
@@ -364,7 +360,6 @@
 <string name="lbl_runtime">상영 시간</string>
     <string name="lbl_auto_crop">자동 잘라내기</string>
     <string name="lbl_playback_speed">재생 속도</string>
-    <string name="watch_count_overflow">99+</string>
     <string name="pref_clock_display_browsing">둘러보는 중에</string>
     <string name="server_field_empty">주소는 비어 있을 수 없습니다</string>
     <string name="lbl_sign_out_content">다음 사용시 로그인 필요</string>

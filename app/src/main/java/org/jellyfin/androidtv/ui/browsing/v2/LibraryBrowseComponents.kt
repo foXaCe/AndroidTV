@@ -61,7 +61,6 @@ import coil3.compose.AsyncImage
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.preference.constant.WatchedIndicatorBehavior
-import org.jellyfin.androidtv.ui.base.AnimationDefaults
 import org.jellyfin.androidtv.ui.base.Badge
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
@@ -73,6 +72,7 @@ import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.theme.BrowseDimensions
 import org.jellyfin.androidtv.ui.base.theme.DialogDimensions
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
+import org.jellyfin.androidtv.ui.base.tv.TvFocusCard
 import org.jellyfin.androidtv.ui.browsing.composable.inforow.InfoRowColors
 import org.jellyfin.androidtv.ui.browsing.composable.inforow.InfoRowCompactRatings
 import org.jellyfin.androidtv.ui.composable.rememberErrorPlaceholder
@@ -165,168 +165,146 @@ fun LibraryPosterCard(
 	showBadge: Boolean = false,
 	modifier: Modifier = Modifier,
 ) {
-	val interactionSource = remember { MutableInteractionSource() }
-	val isFocused by interactionSource.collectIsFocusedAsState()
-
-	LaunchedEffect(isFocused) {
-		if (isFocused) onFocused()
-	}
-
-	val scale by animateFloatAsState(
-		targetValue = if (isFocused) AnimationDefaults.FOCUS_SCALE else 1f,
-		animationSpec = AnimationDefaults.focusSpec(),
-		label = "CardFocusScale",
-	)
-	Column(
+	TvFocusCard(
+		onClick = onClick,
 		modifier =
 			modifier
 				.width(cardWidth.dp)
-				.graphicsLayer {
-					scaleX = scale
-					scaleY = scale
-				}.drawBehind {
-					if (isFocused) {
-						drawRoundRect(
-							brush =
-								Brush.radialGradient(
-									colors =
-										listOf(
-											VegafoXColors.OrangePrimary.copy(alpha = 0.25f),
-											Color.Transparent,
-										),
-									radius = size.maxDimension * 0.8f,
-								),
-							cornerRadius = CornerRadius(8.dp.toPx()),
+				.onFocusChanged { state ->
+					if (state.isFocused) onFocused()
+				},
+	) {
+		Column(
+			horizontalAlignment = Alignment.Start,
+		) {
+			// Poster image with type badge overlay
+			Box(
+				modifier =
+					Modifier
+						.size(width = cardWidth.dp, height = cardHeight.dp)
+						.clip(JellyfinTheme.shapes.medium)
+						.background(JellyfinTheme.colorScheme.surfaceDim),
+			) {
+				if (imageUrl != null) {
+					val placeholder = rememberGradientPlaceholder()
+					val errorFallback = rememberErrorPlaceholder()
+					AsyncImage(
+						model = imageUrl,
+						contentDescription = item.name,
+						modifier = Modifier.fillMaxSize(),
+						contentScale = ContentScale.Crop,
+						placeholder = placeholder,
+						error = errorFallback,
+					)
+				} else {
+					Box(
+						modifier = Modifier.fillMaxSize(),
+						contentAlignment = Alignment.Center,
+					) {
+						Icon(
+							imageVector = VegafoXIcons.Movie,
+							contentDescription = null,
+							modifier = Modifier.size(48.dp),
+							tint = JellyfinTheme.colorScheme.textDisabled,
 						)
 					}
-				}.clickable(
-					interactionSource = interactionSource,
-					indication = null,
-					onClick = onClick,
-				),
-		horizontalAlignment = Alignment.Start,
-	) {
-		// Poster image with type badge overlay
-		Box(
-			modifier =
-				Modifier
-					.size(width = cardWidth.dp, height = cardHeight.dp)
-					.clip(JellyfinTheme.shapes.extraSmall)
-					.then(
-						if (isFocused) {
-							Modifier.border(2.dp, VegafoXColors.OrangePrimary, JellyfinTheme.shapes.extraSmall)
-						} else {
-							Modifier
-						},
-					).background(JellyfinTheme.colorScheme.onSurface.copy(alpha = 0.06f)),
-		) {
-			if (imageUrl != null) {
-				val placeholder = rememberGradientPlaceholder()
-				val errorFallback = rememberErrorPlaceholder()
-				AsyncImage(
-					model = imageUrl,
-					contentDescription = item.name,
-					modifier = Modifier.fillMaxSize(),
-					contentScale = ContentScale.Crop,
-					placeholder = placeholder,
-					error = errorFallback,
-				)
-			}
+				}
 
-			// Type badge — top-left corner
-			if (showBadge) {
-				val badgeLabel = getTypeBadgeLabel(item.type)
-				if (badgeLabel != null) {
-					Box(
+				// Type badge — top-left corner
+				if (showBadge) {
+					val badgeLabel = getTypeBadgeLabel(item.type)
+					if (badgeLabel != null) {
+						Box(
+							modifier =
+								Modifier
+									.align(Alignment.TopStart)
+									.padding(5.dp)
+									.background(getTypeBadgeColor(item.type), JellyfinTheme.shapes.extraSmall)
+									.padding(horizontal = 5.dp, vertical = 2.dp),
+						) {
+							Text(
+								text = badgeLabel,
+								style = JellyfinTheme.typography.labelSmall,
+								fontWeight = FontWeight.Bold,
+								color = JellyfinTheme.colorScheme.onSurface,
+							)
+						}
+					}
+				}
+
+				if (item.userData?.isFavorite == true) {
+					Icon(
+						imageVector = VegafoXIcons.Favorite,
+						contentDescription = null,
+						tint = VegafoXColors.Error,
 						modifier =
 							Modifier
 								.align(Alignment.TopStart)
-								.padding(5.dp)
-								.background(getTypeBadgeColor(item.type), JellyfinTheme.shapes.extraSmall)
-								.padding(horizontal = 5.dp, vertical = 2.dp),
+								.padding(4.dp)
+								.size(20.dp),
+					)
+				}
+
+				PosterWatchIndicator(
+					item = item,
+					modifier =
+						Modifier
+							.align(Alignment.TopEnd)
+							.padding(4.dp),
+				)
+
+				val playedPercentage =
+					item.userData
+						?.playedPercentage
+						?.toFloat()
+						?.div(100f)
+						?.coerceIn(0f, 1f)
+						?.takeIf { it > 0f && it < 1f }
+				if (playedPercentage != null) {
+					Box(
+						modifier =
+							Modifier
+								.align(Alignment.BottomCenter)
+								.fillMaxWidth()
+								.padding(Tokens.Space.spaceXs),
 					) {
-						Text(
-							text = badgeLabel,
-							style = JellyfinTheme.typography.labelSmall,
-							fontWeight = FontWeight.Bold,
-							color = JellyfinTheme.colorScheme.onSurface,
+						Seekbar(
+							progress = playedPercentage,
+							enabled = false,
+							modifier =
+								Modifier
+									.fillMaxWidth()
+									.height(4.dp),
 						)
 					}
 				}
 			}
 
-			if (item.userData?.isFavorite == true) {
-				Icon(
-					imageVector = VegafoXIcons.Favorite,
-					contentDescription = null,
-					tint = VegafoXColors.Error,
-					modifier =
-						Modifier
-							.align(Alignment.TopStart)
-							.padding(4.dp)
-							.size(20.dp),
-				)
-			}
+			Spacer(modifier = Modifier.height(5.dp))
 
-			PosterWatchIndicator(
-				item = item,
-				modifier =
-					Modifier
-						.align(Alignment.TopEnd)
-						.padding(4.dp),
-			)
-
-			val playedPercentage =
-				item.userData
-					?.playedPercentage
-					?.toFloat()
-					?.div(100f)
-					?.coerceIn(0f, 1f)
-					?.takeIf { it > 0f && it < 1f }
-			if (playedPercentage != null) {
-				Box(
-					modifier =
-						Modifier
-							.align(Alignment.BottomCenter)
-							.fillMaxWidth()
-							.padding(Tokens.Space.spaceXs),
-				) {
-					Seekbar(
-						progress = playedPercentage,
-						enabled = false,
-						modifier =
-							Modifier
-								.fillMaxWidth()
-								.height(4.dp),
-					)
-				}
-			}
-		}
-
-		Spacer(modifier = Modifier.height(5.dp))
-
-		if (showLabels) {
-			// Title
-			Text(
-				text = item.name ?: "",
-				style = JellyfinTheme.typography.bodyMedium,
-				fontWeight = FontWeight.Medium,
-				color = JellyfinTheme.colorScheme.onSurface,
-				maxLines = 1,
-				overflow = TextOverflow.Ellipsis,
-			)
-
-			// Metadata: year, officialRating, runtime, ★ communityRating
-			val context = androidx.compose.ui.platform.LocalContext.current
-			val meta = buildMetadataString(item, context)
-			if (meta.isNotEmpty()) {
+			if (showLabels) {
+				// Title
 				Text(
-					text = meta,
-					style = JellyfinTheme.typography.bodySmall,
-					color = JellyfinTheme.colorScheme.textSecondary,
+					text = item.name ?: "",
+					style = JellyfinTheme.typography.bodyMedium,
+					fontWeight = FontWeight.Medium,
+					color = JellyfinTheme.colorScheme.onSurface,
 					maxLines = 1,
 					overflow = TextOverflow.Ellipsis,
 				)
+
+				// Metadata: year, officialRating, runtime, ★ communityRating
+				val context = androidx.compose.ui.platform.LocalContext.current
+				val meta = buildMetadataString(item, context)
+				if (meta.isNotEmpty()) {
+					Text(
+						text = meta,
+						style = JellyfinTheme.typography.bodySmall,
+						color = JellyfinTheme.colorScheme.textSecondary,
+						maxLines = 1,
+						overflow = TextOverflow.Ellipsis,
+					)
+				}
 			}
 		}
 	}

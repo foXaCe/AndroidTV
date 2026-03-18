@@ -122,10 +122,8 @@
     <string name="msg_settings_updated">Eelistused uuendatud</string>
 <string name="episode_missing_message">See episood puudub su meediakogust. Kas soovid selle vahele jätta ja jätkata järgmisega?</string>
     <string name="pref_next_up_timeout_summary">Ooteaeg enne järgmise üksuse esitamist</string>
-    <string name="pref_app_theme">Rakenduse teema</string>
 <string name="lbl_new_episodes">Uued episoodid</string>
     <string name="lbl_colored_backgrounds">Värvikoodiga taustad</string>
-    <string name="pref_theme_dark">Tume (Vaikimisi)</string>
     <string name="lbl_image_size">Pildi suurus</string>
     <string name="pref_about_title">Teave</string>
     <string name="watch_now">Vaata nüüd</string>
@@ -248,7 +246,6 @@
     <string name="pref_subtitles_size">Teksti suurus</string>
     <string name="server_issue_outdated_version">Server kasutab toetamata versiooni %1$s. Värskendage versioonile %2$s või uuemale</string>
     <string name="pref_customization">Kohandamine</string>
-    <string name="pref_behavior">Käitumine</string>
     <string name="pref_accounts">Kontod</string>
     <string name="pref_browsing">Sirvimine</string>
 <string name="pref_screensaver">Ekraanisäästja</string>
@@ -272,7 +269,6 @@
     <string name="action_login">Logi sisse</string>
 <string name="pref_crash_report_logs_disabled">Logisid krahhiaruannetesse ei kaasata</string>
     <string name="lbl_special">Eriepisoodid</string>
-<string name="watch_count_overflow">99+</string>
     <string name="pref_clock_display">Kuva kell</string>
     <string name="lbl_user_last_used">Viimati kasutatud %1$s kell %2$s</string>
 <string name="server_field_empty">Aadress ei tohi olla tühi</string>
@@ -313,7 +309,6 @@
 <string name="app_notification_uimode_invalid">See rakendus on optimeeritud telerite jaoks. Soovitame kasutada meie mobiilirakendust teistes seadmetes.</string>
     <string name="pref_crash_report_logs">Kaasa logid</string>
     <string name="pref_crash_reports">Saada serverisse krahhiaruanded</string>
-    <string name="not_set">Pole määratud</string>
     <string name="pref_crash_report_logs_enabled">Logid kaasatakse krahhiaruannetesse</string>
     <string name="crash_report_toast">Oih! Midagi läks valesti, sinu Jellyfini serverisse saadeti krahhiaruanne.</string>
 <string name="pref_screensaver_inapp_timeout">Käivita ekraanisäästja pärast</string>

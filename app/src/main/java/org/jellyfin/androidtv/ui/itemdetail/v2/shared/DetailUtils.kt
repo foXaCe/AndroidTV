@@ -1,6 +1,13 @@
+@file:Suppress("DEPRECATION")
+
 package org.jellyfin.androidtv.ui.itemdetail.v2.shared
 
 import android.content.Context
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.relocation.BringIntoViewResponder
+import androidx.compose.foundation.relocation.bringIntoViewResponder
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.util.apiclient.getLogoImage
 import org.jellyfin.androidtv.util.apiclient.getUrl
@@ -13,6 +20,29 @@ import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.BaseItemKind
 import org.jellyfin.sdk.model.api.ImageType
 
+private val NoOpBringIntoViewResponder =
+	object : BringIntoViewResponder {
+		override fun calculateRectForParent(localRect: Rect): Rect = Rect.Zero
+
+		override suspend fun bringChildIntoView(localRect: () -> Rect?) {
+			// Intentionally empty — neutralizes the automatic "bring into view" scroll
+			// that Compose triggers when an element receives focus via requestFocus().
+		}
+	}
+
+fun Modifier.disableBringIntoView(): Modifier = this.bringIntoViewResponder(NoOpBringIntoViewResponder)
+
+fun Modifier.smoothScrollToTop(listState: LazyListState): Modifier =
+	this.bringIntoViewResponder(
+		object : BringIntoViewResponder {
+			override fun calculateRectForParent(localRect: Rect): Rect = Rect.Zero
+
+			override suspend fun bringChildIntoView(localRect: () -> Rect?) {
+				listState.animateScrollToItem(0)
+			}
+		},
+	)
+
 fun getBackdropUrl(
 	item: BaseItemDto,
 	api: ApiClient,
@@ -20,7 +50,7 @@ fun getBackdropUrl(
 	val backdropImage =
 		item.itemBackdropImages.firstOrNull()
 			?: item.parentBackdropImages.firstOrNull()
-	return backdropImage?.getUrl(api, maxWidth = 3840, quality = 96)
+	return backdropImage?.getUrl(api, maxWidth = 1920, quality = 96)
 }
 
 fun getPosterUrl(
@@ -29,9 +59,9 @@ fun getPosterUrl(
 ): String? =
 	when {
 		item.type == BaseItemKind.EPISODE -> {
-			val thumbImage = item.itemImages[ImageType.THUMB]
-			val primaryImage = item.itemImages[ImageType.PRIMARY]
-			(thumbImage ?: primaryImage)?.getUrl(api, maxWidth = 500)
+			val seriesPoster = item.seriesPrimaryImage
+			val episodePrimary = item.itemImages[ImageType.PRIMARY]
+			(seriesPoster ?: episodePrimary)?.getUrl(api, maxHeight = 600)
 		}
 		item.type == BaseItemKind.SEASON -> {
 			val seasonImage = item.itemImages[ImageType.PRIMARY]

@@ -50,11 +50,13 @@ import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.composable.rememberPlayerPositionInfo
 import org.jellyfin.androidtv.ui.playback.VideoSpeedController
+import org.jellyfin.androidtv.ui.playback.overlay.SeekProvider
 import org.jellyfin.androidtv.ui.playback.overlay.compose.QualityOption
 import org.jellyfin.androidtv.ui.playback.overlay.compose.SpeedOption
 import org.jellyfin.androidtv.ui.playback.overlay.compose.TrackOption
 import org.jellyfin.androidtv.ui.playback.overlay.compose.ZoomOption
 import org.jellyfin.androidtv.ui.player.base.PlayerSeekbar
+import org.jellyfin.androidtv.ui.player.base.TrickplayThumbnail
 import org.jellyfin.playback.core.PlaybackManager
 import org.jellyfin.playback.core.model.PlayState
 import org.jellyfin.playback.core.queue.queue
@@ -65,15 +67,27 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
+// ── Seek feedback types ──────────────────────────────────────────────────
+
+enum class SeekFeedbackDirection { FORWARD, REWIND }
+
+data class SeekFeedback(
+	val direction: SeekFeedbackDirection,
+	val deltaSeconds: Int,
+)
+
 @Composable
 fun VideoPlayerControls(
 	playbackManager: PlaybackManager = koinInject(),
 	userPreferences: UserPreferences = koinInject(),
+	seekProvider: SeekProvider = koinInject(),
 	item: BaseItemDto? = null,
+	onSeekFeedback: ((SeekFeedbackDirection, Int) -> Unit)? = null,
 ) {
 	val playState by playbackManager.state.playState.collectAsState()
 	val currentSpeed by playbackManager.state.speed.collectAsState()
 	var dialogType by remember { mutableStateOf<VideoPlayerDialogType?>(null) }
+	val trickPlayEnabled = userPreferences[UserPreferences.trickPlayEnabled]
 
 	Column(
 		verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.Bottom),
@@ -97,6 +111,20 @@ fun VideoPlayerControls(
 
 		PlayerSeekbar(
 			playbackManager = playbackManager,
+			onScrubPosition =
+				if (trickPlayEnabled) {
+					{ posMs ->
+						if (posMs >= 0) seekProvider.updatePosition(posMs) else seekProvider.clearThumbnail()
+					}
+				} else {
+					null
+				},
+			thumbnailContent =
+				if (trickPlayEnabled) {
+					{ _ -> TrickplayThumbnail(seekProvider) }
+				} else {
+					null
+				},
 			modifier =
 				Modifier
 					.fillMaxWidth()
@@ -139,14 +167,20 @@ fun VideoPlayerControls(
 			PlayerActionBtn(
 				icon = VegafoXIcons.Replay10,
 				label = stringResource(R.string.rewind),
-				onClick = { playbackManager.state.rewind() },
+				onClick = {
+					playbackManager.state.rewind()
+					onSeekFeedback?.invoke(SeekFeedbackDirection.REWIND, 10)
+				},
 			)
 
 			// Forward +30s
 			PlayerActionBtn(
 				icon = VegafoXIcons.Forward30,
 				label = stringResource(R.string.fast_forward),
-				onClick = { playbackManager.state.fastForward() },
+				onClick = {
+					playbackManager.state.fastForward()
+					onSeekFeedback?.invoke(SeekFeedbackDirection.FORWARD, 30)
+				},
 			)
 
 			// Previous (conditional)

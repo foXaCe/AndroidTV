@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.components.VegafoXButton
+import org.jellyfin.androidtv.ui.base.components.VegafoXButtonVariant
 import org.jellyfin.androidtv.ui.base.theme.BebasNeue
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 
@@ -255,24 +256,23 @@ object PinEntryDialog {
 					// Forgot PIN button
 					if (onForgotPin != null) {
 						Spacer(modifier = Modifier.height(12.dp))
-						TextButton(onClick = onForgotPin) {
-							Text(
-								text = stringResource(R.string.lbl_forgot_pin),
-								color = VegafoXColors.TextSecondary,
-								fontSize = 12.sp,
-							)
-						}
+						VegafoXButton(
+							text = stringResource(R.string.lbl_forgot_pin),
+							onClick = onForgotPin,
+							variant = VegafoXButtonVariant.Ghost,
+							compact = true,
+						)
 					}
 				}
 			},
 			confirmButton = {},
 			dismissButton = {
-				TextButton(onClick = onDismiss) {
-					Text(
-						text = stringResource(R.string.btn_cancel),
-						color = VegafoXColors.TextSecondary,
-					)
-				}
+				VegafoXButton(
+					text = stringResource(R.string.btn_cancel),
+					onClick = onDismiss,
+					variant = VegafoXButtonVariant.Ghost,
+					compact = true,
+				)
 			},
 		)
 	}

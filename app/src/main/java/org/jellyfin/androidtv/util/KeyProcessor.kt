@@ -3,6 +3,7 @@ package org.jellyfin.androidtv.util
 import android.view.Gravity
 import android.view.KeyEvent
 import android.widget.PopupMenu
+import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import org.jellyfin.androidtv.R
@@ -303,7 +304,7 @@ class KeyProcessor(
 
 						override fun onError(exception: Exception) {
 							if (!isActive) return
-							Utils.showToast(activity, R.string.msg_cannot_play_time)
+							Toast.makeText(activity, R.string.msg_cannot_play_time, Toast.LENGTH_LONG).show()
 						}
 					},
 				)

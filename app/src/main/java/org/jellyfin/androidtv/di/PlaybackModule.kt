@@ -82,6 +82,9 @@ fun Scope.createPlaybackManager() =
 				enableLibAssRenderer = userPreferences[UserPreferences.assDirectPlay],
 				assSubtitleFontScale = userPreferences[UserPreferences.subtitlesTextSize] / 24f,
 				baseDataSourceFactory = get<HttpDataSource.Factory>(),
+				disableFrameRateMatching =
+					userPreferences[UserPreferences.refreshRateSwitchingBehavior] ==
+						org.jellyfin.androidtv.preference.constant.RefreshRateSwitchingBehavior.DISABLED,
 			)
 		install(exoPlayerPlugin(get(), exoPlayerOptions))
 

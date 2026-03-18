@@ -12,6 +12,7 @@ import org.jellyfin.playback.core.model.PositionInfo
 import org.jellyfin.playback.core.model.RepeatMode
 import org.jellyfin.playback.core.model.VideoSize
 import org.jellyfin.playback.core.queue.QueueService
+import timber.log.Timber
 import kotlin.time.Duration
 
 interface PlayerState {
@@ -124,12 +125,21 @@ class MutablePlayerState(
 	}
 
 	override fun play() {
-		backendService.backend?.play()
+		val backend = backendService.backend
+		if (backend == null) {
+			Timber.w("PlayerState: backend is null, ignoring play()")
+			return
+		}
+		backend.play()
 	}
 
 	override fun pause() {
-		// TODO: enqueue action when backend is not set
-		backendService.backend?.pause()
+		val backend = backendService.backend
+		if (backend == null) {
+			Timber.w("PlayerState: backend is null, ignoring pause()")
+			return
+		}
+		backend.pause()
 	}
 
 	override fun unpause() {
@@ -148,7 +158,12 @@ class MutablePlayerState(
 	}
 
 	override fun seek(to: Duration) {
-		backendService.backend?.seekTo(to)
+		val backend = backendService.backend
+		if (backend == null) {
+			Timber.w("PlayerState: backend is null, ignoring seek($to)")
+			return
+		}
+		backend.seekTo(to)
 	}
 
 	private fun seekRelative(amount: Duration) {

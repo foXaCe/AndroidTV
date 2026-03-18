@@ -173,8 +173,6 @@
 <string name="lbl_end_padding">Starpinājuma beigas</string>
     <string name="lbl_begin_padding">Starpinājuma sākums</string>
     <string name="lbl_on">Ieslēgts</string>
-    <string name="pref_theme_dark">Tumšais (Noklusējums)</string>
-    <string name="pref_app_theme">Lietotnes motīvs</string>
 <string name="grid_direction_vertical">Vertikāls</string>
     <string name="grid_direction_horizontal">Horizontāls</string>
     <string name="pref_device_model">Ierīces modelis</string>
@@ -239,7 +237,6 @@
     <string name="too_many_errors">Pārāk daudz kļūdu. Mēģinajums pabeigts</string>
     <string name="msg_no_items">Nav vienumu, ko atskaņot</string>
     <string name="lbl_playback_control_ends">Beidzās %1$s</string>
-    <string name="watch_count_overflow">99+</string>
 <string name="server_field_empty">Adrese nevar būt tukša</string>
     <string name="image_size_small">Mazs</string>
     <string name="image_size_xlarge">Ļoti liels</string>
@@ -264,7 +261,6 @@
     <string name="license_description">Apraksts</string>
 <string name="home_section_latest_media">Nesen pievienotā multivide</string>
     <string name="home_section_library_small">Mana multivide (mazs)</string>
-    <string name="pref_behavior">Uzvedība</string>
     <string name="lbl_runtime">Atskaņošanas laiks</string>
     <string name="pref_audio_night_mode">Audio nakts režīms (eksperimentāls)</string>
     <string name="lbl_community_rating">Kopienas vērtējums</string>
@@ -382,7 +378,6 @@
     </plurals>
     <string name="disable_ui_mode_warning">Atspējot ierīces tipa brīdinājumu</string>
     <string name="photo_albums">Fotoalbumi</string>
-    <string name="not_set">Nav iestatīts</string>
     <string name="dolby_atmos">Dolby Atmos</string>
     <string name="ac3">DD</string>
     <string name="eac3">DD+</string>

@@ -25,6 +25,9 @@ android {
 		applicationId = "com.vegafox.androidtv"
 		versionName = project.getVersionName()
 		versionCode = getVersionCode(versionName!!)
+
+		// Only keep French and English resources from dependencies (shrinks resources.arsc)
+		resourceConfigurations += setOf("fr", "en")
 	}
 
 	buildFeatures {
@@ -109,6 +112,9 @@ android {
 			isShrinkResources = true
 			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro", "proguard-debug.pro")
 
+			// Skip lintVitalAnalyze in debug builds (~100s saved)
+			lint.checkReleaseBuilds = false
+
 			// Set package names used in various XML files (must match applicationId for provider authorities)
 			val debugAppId = defaultConfig.applicationId + applicationIdSuffix
 			resValue("string", "app_id", debugAppId)
@@ -137,6 +143,15 @@ android {
 		unitTests.isReturnDefaultValues = true
 		unitTests.all {
 			it.useJUnitPlatform()
+		}
+	}
+
+	splits {
+		abi {
+			isEnable = true
+			reset()
+			include("arm64-v8a", "armeabi-v7a")
+			isUniversalApk = true
 		}
 	}
 }
@@ -237,7 +252,6 @@ dependencies {
 	implementation(libs.androidx.recyclerview)
 	implementation(libs.androidx.work.runtime)
 	implementation(libs.bundles.androidx.lifecycle)
-	implementation(libs.androidx.cardview)
 	implementation(libs.androidx.startup)
 	implementation(libs.bundles.androidx.compose)
 	implementation(libs.accompanist.permissions)

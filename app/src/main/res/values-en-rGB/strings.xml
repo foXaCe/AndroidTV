@@ -174,8 +174,6 @@
     <string name="watch_now">Watch now</string>
     <string name="pref_next_up_timeout_title">Next up timer duration</string>
     <string name="pref_next_up_timeout_summary">How long to wait before playing the next item</string>
-    <string name="pref_app_theme">App theme</string>
-    <string name="pref_theme_dark">Dark (Default)</string>
     <string name="grid_direction_vertical">Vertical</string>
     <string name="grid_direction_horizontal">Horizontal</string>
     <string name="grid_direction">Grid direction</string>
@@ -190,7 +188,6 @@
     <string name="episode_missing_message">This episode is missing from your library. Would you like to skip it and continue to the next one\?</string>
     <string name="episode_missing">Episode missing</string>
     <string name="no_player_message">It doesn\'t appear you have a video capable app installed. This option requires you install a 3rd party application for playing video content.</string>
-<string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">Ends at %1$s</string>
 <string name="lbl_subtitle_track">Select subtitle track</string>
     <string name="lbl_audio_track">Select audio track</string>
@@ -302,7 +299,6 @@
 <string name="pref_login">Login</string>
 <string name="pref_libraries">Libraries</string>
 <string name="pref_browsing">Browsing</string>
-    <string name="pref_behavior">Behaviour</string>
     <string name="pref_accounts">Accounts</string>
     <string name="sort_accounts_by">Sort accounts by</string>
     <string name="pref_customization">Customisation</string>
@@ -364,7 +360,6 @@
         <item quantity="other">%1$s tracks</item>
     </plurals>
     <string name="pref_screensaver_inapp_enabled_description">Show the Jellyfin screensaver while the app is open</string>
-<string name="not_set">Not set</string>
     <string name="lbl_album_artists">Album artists</string>
     <string name="disable_ui_mode_warning">Disable device type warning</string>
     <string name="because_you_watched">Because you watched %1$s</string>

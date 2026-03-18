@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -22,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
@@ -72,19 +74,19 @@ fun <T> TvRowList(
 			bottom = Tokens.Space.spaceLg,
 		),
 	modifier: Modifier = Modifier,
+	columnState: LazyListState = rememberLazyListState(),
 	staggerEntrance: Boolean = false,
 	prefetchContent: ((items: List<T>) -> Unit)? = null,
 	itemKey: ((T) -> Any)? = null,
 	itemContent: @Composable (T) -> Unit,
 ) {
-	val columnState = rememberLazyListState()
 	var entrancePlayed by rememberSaveable { mutableStateOf(!staggerEntrance) }
 	val shouldAnimate = staggerEntrance && !entrancePlayed
 
 	LazyColumn(
 		state = columnState,
 		contentPadding = contentPadding,
-		modifier = modifier,
+		modifier = modifier.focusRestorer(),
 	) {
 		rows.forEachIndexed { rowIndex, row ->
 			item(key = row.key) {
@@ -137,6 +139,7 @@ fun <T> TvRowList(
 					)
 
 					LazyRow(
+						modifier = Modifier.focusRestorer(),
 						state = rememberLazyListState(),
 						horizontalArrangement = Arrangement.spacedBy(Tokens.Space.spaceMd),
 						contentPadding =

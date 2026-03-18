@@ -46,7 +46,6 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.constant.ImageType
 import org.jellyfin.androidtv.constant.PosterSize
@@ -60,10 +59,9 @@ import org.jellyfin.androidtv.ui.base.state.DisplayState
 import org.jellyfin.androidtv.ui.base.state.EmptyState
 import org.jellyfin.androidtv.ui.base.state.ErrorState
 import org.jellyfin.androidtv.ui.base.state.StateContainer
-import org.jellyfin.androidtv.ui.base.theme.BebasNeue
 import org.jellyfin.androidtv.ui.base.theme.BrowseDimensions
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
-import org.jellyfin.androidtv.ui.base.tv.TvScaffold
+import org.jellyfin.androidtv.ui.base.tv.TvSafeArea
 import org.jellyfin.androidtv.ui.browsing.v2.FilterSortDialog
 import org.jellyfin.androidtv.ui.browsing.v2.FocusedItemHud
 import org.jellyfin.androidtv.ui.browsing.v2.LibraryBrowseUiState
@@ -72,13 +70,14 @@ import org.jellyfin.androidtv.ui.browsing.v2.LibraryPosterCard
 import org.jellyfin.androidtv.ui.browsing.v2.LibraryToolbarButton
 import org.jellyfin.androidtv.ui.browsing.v2.PlayedStatusFilter
 import org.jellyfin.androidtv.ui.browsing.v2.SeriesStatusFilter
-import org.jellyfin.androidtv.util.apiclient.getUrl
-import org.jellyfin.androidtv.util.apiclient.itemImages
-import org.jellyfin.sdk.api.client.ApiClient
+import org.jellyfin.androidtv.ui.shared.components.BrowseHeader
+import org.jellyfin.androidtv.ui.shared.components.DarkGridNoiseBackground
+import org.jellyfin.androidtv.ui.shared.components.VegafoXScaffold
+import org.jellyfin.androidtv.util.apiclient.getCardImageUrl
+import org.jellyfin.design.Tokens
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.CollectionType
 import org.jellyfin.sdk.model.api.ItemSortBy
-import org.jellyfin.sdk.model.api.ImageType as JellyfinImageType
 
 /**
  * Compose TV screen for the library browser.
@@ -111,99 +110,84 @@ fun LibraryBrowseScreen(
 			else -> DisplayState.CONTENT
 		}
 
-	TvScaffold {
-		Column(
-			modifier =
-				Modifier
-					.fillMaxSize()
-					.background(VegafoXColors.BackgroundDeep),
-		) {
-			// VegafoX library header
-			Row(
+	Box(modifier = Modifier.fillMaxSize()) {
+		DarkGridNoiseBackground(modifier = Modifier.fillMaxSize())
+		VegafoXScaffold {
+			Column(
 				modifier =
 					Modifier
-						.fillMaxWidth()
-						.padding(top = 32.dp, start = BrowseDimensions.gridPaddingHorizontal, end = BrowseDimensions.gridPaddingHorizontal),
-				verticalAlignment = Alignment.CenterVertically,
+						.fillMaxSize()
+						.padding(horizontal = TvSafeArea.horizontal, vertical = TvSafeArea.vertical),
 			) {
-				Column(modifier = Modifier.weight(1f)) {
-					Text(
-						text = uiState.libraryName,
-						style =
-							JellyfinTheme.typography.headlineLarge.copy(
-								fontSize = 40.sp,
-								fontWeight = FontWeight.Bold,
-								fontFamily = BebasNeue,
-								letterSpacing = 2.sp,
-							),
-						color = VegafoXColors.TextPrimary,
+				// VegafoX library header
+				BrowseHeader(
+					title = uiState.libraryName,
+					subtitle =
+						if (uiState.totalItems > 0) {
+							pluralStringResource(R.plurals.items, uiState.totalItems, uiState.totalItems)
+						} else {
+							null
+						},
+				) {
+					LibraryToolbarButton(
+						icon = VegafoXIcons.Home,
+						contentDescription = stringResource(R.string.home),
+						onClick = onHomeClick,
 					)
-					if (uiState.totalItems > 0) {
-						Text(
-							text = pluralStringResource(R.plurals.items, uiState.totalItems, uiState.totalItems),
-							style = JellyfinTheme.typography.bodyMedium.copy(fontSize = 14.sp),
-							color = VegafoXColors.TextSecondary,
-						)
-					}
+					LibraryToolbarButton(
+						icon = VegafoXIcons.Settings,
+						contentDescription = stringResource(R.string.lbl_settings),
+						onClick = onSettingsClick,
+					)
 				}
-				LibraryToolbarButton(
-					icon = VegafoXIcons.Home,
-					contentDescription = stringResource(R.string.home),
-					onClick = onHomeClick,
+
+				FocusedItemHud(
+					item = uiState.focusedItem,
+					modifier = Modifier.fillMaxWidth(),
 				)
-				LibraryToolbarButton(
-					icon = VegafoXIcons.Settings,
-					contentDescription = stringResource(R.string.lbl_settings),
-					onClick = onSettingsClick,
+
+				Spacer(modifier = Modifier.height(BrowseDimensions.chipSpacing))
+
+				// Filter chips row
+				FilterChipsRow(
+					uiState = uiState,
+					onSortClick = { showFilterDialog = true },
+					onToggleFavorites = { viewModel.toggleFavorites() },
+					onPlayedStatusClick = { viewModel.setPlayedFilter(it) },
+					onSeriesStatusClick = { viewModel.setSeriesStatusFilter(it) },
+					onLetterSelected = { viewModel.setStartLetter(it) },
+				)
+
+				Spacer(modifier = Modifier.height(BrowseDimensions.rowTopPadding))
+
+				StateContainer(
+					state = displayState,
+					modifier = Modifier.weight(1f),
+					loadingContent = {
+						SkeletonCardGrid()
+					},
+					emptyContent = {
+						EmptyState(
+							title = stringResource(R.string.state_empty_library),
+							message = stringResource(R.string.state_empty_library_message),
+						)
+					},
+					errorContent = {
+						ErrorState(
+							message = stringResource(uiState.error?.messageRes ?: R.string.state_error_generic),
+							onRetry = { viewModel.retry() },
+						)
+					},
+					content = {
+						LibraryContentGrid(
+							uiState = uiState,
+							viewModel = viewModel,
+							onItemClick = onItemClick,
+							onItemFocus = onItemFocus,
+						)
+					},
 				)
 			}
-
-			FocusedItemHud(
-				item = uiState.focusedItem,
-				modifier = Modifier.fillMaxWidth(),
-			)
-
-			Spacer(modifier = Modifier.height(8.dp))
-
-			// Filter chips row
-			FilterChipsRow(
-				uiState = uiState,
-				onSortClick = { showFilterDialog = true },
-				onToggleFavorites = { viewModel.toggleFavorites() },
-				onPlayedStatusClick = { viewModel.setPlayedFilter(it) },
-				onSeriesStatusClick = { viewModel.setSeriesStatusFilter(it) },
-				onLetterSelected = { viewModel.setStartLetter(it) },
-			)
-
-			Spacer(modifier = Modifier.height(12.dp))
-
-			StateContainer(
-				state = displayState,
-				modifier = Modifier.weight(1f),
-				loadingContent = {
-					SkeletonCardGrid()
-				},
-				emptyContent = {
-					EmptyState(
-						title = stringResource(R.string.state_empty_library),
-						message = stringResource(R.string.state_empty_library_message),
-					)
-				},
-				errorContent = {
-					ErrorState(
-						message = stringResource(uiState.error?.messageRes ?: R.string.state_error_generic),
-						onRetry = { viewModel.retry() },
-					)
-				},
-				content = {
-					LibraryContentGrid(
-						uiState = uiState,
-						viewModel = viewModel,
-						onItemClick = onItemClick,
-						onItemFocus = onItemFocus,
-					)
-				},
-			)
 		}
 	}
 
@@ -243,7 +227,7 @@ private fun FilterChipsRow(
 	onLetterSelected: (String?) -> Unit,
 ) {
 	LazyRow(
-		horizontalArrangement = Arrangement.spacedBy(8.dp),
+		horizontalArrangement = Arrangement.spacedBy(BrowseDimensions.chipSpacing),
 		verticalAlignment = Alignment.CenterVertically,
 	) {
 		// Sort chip
@@ -372,32 +356,32 @@ private fun FilterChip(
 				.graphicsLayer {
 					scaleX = scale
 					scaleY = scale
-				}.border(1.dp, borderColor, RoundedCornerShape(50.dp))
-				.clip(RoundedCornerShape(50.dp))
+				}.border(1.dp, borderColor, RoundedCornerShape(BrowseDimensions.chipCornerRadius))
+				.clip(RoundedCornerShape(BrowseDimensions.chipCornerRadius))
 				.background(bgColor)
 				.clickable(
 					interactionSource = interactionSource,
 					indication = null,
 					onClick = onClick,
 				).focusable(interactionSource = interactionSource)
-				.padding(horizontal = 16.dp, vertical = 8.dp),
+				.padding(horizontal = BrowseDimensions.chipPaddingHorizontal, vertical = BrowseDimensions.chipPaddingVertical),
 		contentAlignment = Alignment.Center,
 	) {
 		Row(
 			verticalAlignment = Alignment.CenterVertically,
-			horizontalArrangement = Arrangement.spacedBy(6.dp),
+			horizontalArrangement = Arrangement.spacedBy(BrowseDimensions.chipIconTextGap),
 		) {
 			if (icon != null) {
 				Icon(
 					imageVector = icon,
 					contentDescription = null,
-					modifier = Modifier.size(16.dp),
+					modifier = Modifier.size(Tokens.Space.spaceMd),
 					tint = contentColor,
 				)
 			}
 			Text(
 				text = label,
-				style = JellyfinTheme.typography.bodySmall.copy(fontSize = 13.sp),
+				style = JellyfinTheme.typography.bodySmall.copy(fontSize = BrowseDimensions.chipFontSize),
 				fontWeight = if (isActive) FontWeight.W600 else FontWeight.W400,
 				color = contentColor,
 				maxLines = 1,
@@ -450,9 +434,9 @@ private fun LetterChip(
 				.graphicsLayer {
 					scaleX = scale
 					scaleY = scale
-				}.size(32.dp)
-				.border(1.dp, borderColor, RoundedCornerShape(50.dp))
-				.clip(RoundedCornerShape(50.dp))
+				}.size(BrowseDimensions.letterChipSize)
+				.border(1.dp, borderColor, RoundedCornerShape(BrowseDimensions.chipCornerRadius))
+				.clip(RoundedCornerShape(BrowseDimensions.chipCornerRadius))
 				.background(bgColor)
 				.clickable(
 					interactionSource = interactionSource,
@@ -463,7 +447,7 @@ private fun LetterChip(
 	) {
 		Text(
 			text = letter,
-			style = JellyfinTheme.typography.bodySmall.copy(fontSize = 13.sp),
+			style = JellyfinTheme.typography.bodySmall.copy(fontSize = BrowseDimensions.chipFontSize),
 			fontWeight = if (isSelected || isFocused) FontWeight.Bold else FontWeight.Normal,
 			color = textColor,
 		)
@@ -515,9 +499,9 @@ private fun LibraryContentGrid(
 		columns = columns,
 		state = gridState,
 		modifier = Modifier.fillMaxSize(),
-		contentPadding = PaddingValues(bottom = 27.dp),
-		horizontalArrangement = Arrangement.spacedBy(12.dp),
-		verticalArrangement = Arrangement.spacedBy(16.dp),
+		contentPadding = PaddingValues(bottom = BrowseDimensions.gridBottomPadding),
+		horizontalArrangement = Arrangement.spacedBy(BrowseDimensions.cardGap),
+		verticalArrangement = Arrangement.spacedBy(BrowseDimensions.cardGap),
 	) {
 		itemsIndexed(
 			items = uiState.items,
@@ -526,7 +510,7 @@ private fun LibraryContentGrid(
 			LibraryPosterCard(
 				item = item,
 				modifier = if (index == 0) Modifier.focusRequester(firstItemFocusRequester) else Modifier,
-				imageUrl = getItemImageUrl(item, uiState.imageType, viewModel.effectiveApi),
+				imageUrl = item.getCardImageUrl(viewModel.effectiveApi),
 				cardWidth = cardWidth,
 				cardHeight = cardHeight,
 				onClick = { onItemClick(item) },
@@ -551,22 +535,6 @@ private fun LibraryContentGrid(
 // ──────────────────────────────────────────────
 // Helpers
 // ──────────────────────────────────────────────
-
-private fun getItemImageUrl(
-	item: BaseItemDto,
-	imageType: ImageType,
-	api: ApiClient,
-): String? {
-	val jellyfinType =
-		when (imageType) {
-			ImageType.POSTER -> JellyfinImageType.PRIMARY
-			ImageType.THUMB -> JellyfinImageType.THUMB
-			ImageType.BANNER -> JellyfinImageType.BANNER
-			ImageType.SQUARE -> JellyfinImageType.PRIMARY
-		}
-	val image = item.itemImages[jellyfinType] ?: item.itemImages[JellyfinImageType.PRIMARY]
-	return image?.getUrl(api, maxHeight = 400)
-}
 
 private fun imageTypeToCardDimensions(
 	posterSize: PosterSize,

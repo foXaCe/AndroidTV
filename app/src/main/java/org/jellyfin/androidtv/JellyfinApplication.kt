@@ -3,7 +3,6 @@ package org.jellyfin.androidtv
 import android.app.Application
 import android.content.Context
 import android.os.StrictMode
-import android.util.Log
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.work.BackoffPolicy
@@ -96,7 +95,9 @@ class JellyfinApplication :
 	 * All tasks are fire-and-forget — navigation to MainActivity is not blocked.
 	 */
 	fun onSessionStart() {
-		Log.d("STARTUP", "onSessionStart: ${System.currentTimeMillis()}")
+		timber.log.Timber
+			.tag("VFX_PERF")
+			.i("VFX_PERF onSessionStart at ${System.currentTimeMillis()}")
 
 		val scope = ProcessLifecycleOwner.get().lifecycleScope
 		val workManager by inject<WorkManager>()

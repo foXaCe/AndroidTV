@@ -3,10 +3,12 @@ package org.jellyfin.androidtv.ui.browsing.compose
 import android.view.KeyEvent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -21,30 +23,28 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
-import coil3.request.CachePolicy
-import coil3.request.ImageRequest
-import coil3.request.crossfade
-import coil3.size.Scale
-import coil3.size.Size
 import kotlinx.coroutines.delay
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.Icon
@@ -54,15 +54,10 @@ import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.theme.CardDimensions
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
 import org.jellyfin.androidtv.ui.base.tv.TvFocusCard
-import org.jellyfin.androidtv.ui.composable.rememberErrorPlaceholder
-import org.jellyfin.androidtv.util.apiclient.getUrl
-import org.jellyfin.androidtv.util.apiclient.itemBackdropImages
-import org.jellyfin.androidtv.util.apiclient.itemImages
-import org.jellyfin.androidtv.util.apiclient.parentBackdropImages
-import org.jellyfin.androidtv.util.apiclient.parentImages
+import org.jellyfin.androidtv.ui.shared.components.CachedAsyncImage
+import org.jellyfin.androidtv.util.apiclient.getCardImageUrl
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.model.api.BaseItemDto
-import org.jellyfin.sdk.model.api.ImageType
 import timber.log.Timber
 
 /** Card image size in pixels — matches 220dp x 124dp at ~2x density. */
@@ -98,6 +93,19 @@ fun BrowseMediaCard(
 	var isFocused by remember { mutableStateOf(false) }
 	var showOverlay by remember { mutableStateOf(false) }
 	var longPressConsumed by remember { mutableStateOf(false) }
+
+	// 3D relief animation
+	val cardShape = JellyfinTheme.shapes.medium
+	val animatedElevation by animateFloatAsState(
+		targetValue = if (isFocused) 28f else 16f,
+		animationSpec = tween(200, easing = EaseOutCubic),
+		label = "cardElevation",
+	)
+	val animatedTranslationY by animateFloatAsState(
+		targetValue = if (isFocused) -3f else 0f,
+		animationSpec = tween(200, easing = EaseOutCubic),
+		label = "cardTranslationY",
+	)
 
 	// Show play overlay after 5s of stable focus
 	LaunchedEffect(isFocused) {
@@ -161,40 +169,35 @@ fun BrowseMediaCard(
 				Modifier
 					.fillMaxWidth()
 					.height(cardImageHeight)
-					.clip(RoundedCornerShape(10.dp))
+					.graphicsLayer {
+						shadowElevation = animatedElevation.dp.toPx()
+						translationY = animatedTranslationY
+						shape = cardShape
+						clip = true
+						spotShadowColor = Color.Black
+						ambientShadowColor = VegafoXColors.PosterShadowDark
+					}.border(
+						width = 1.dp,
+						brush =
+							Brush.linearGradient(
+								colors =
+									listOf(
+										VegafoXColors.PosterBorderLight,
+										VegafoXColors.PosterBorderDark,
+									),
+							),
+						shape = cardShape,
+					).clip(cardShape)
 					.background(JellyfinTheme.colorScheme.surfaceDim),
 		) {
-			val imageUrl = getItemImageUrl(item, api, cardWidth.value.toInt())
+			val imageUrl = item.getCardImageUrl(api)
 			if (imageUrl != null) {
-				val composeTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
-				val context = LocalContext.current
-				val imageRequest =
-					ImageRequest
-						.Builder(context)
-						.data(imageUrl)
-						.size(Size(CARD_IMAGE_WIDTH_PX, CARD_IMAGE_HEIGHT_PX))
-						.scale(Scale.FILL)
-						.memoryCachePolicy(CachePolicy.ENABLED)
-						.diskCachePolicy(CachePolicy.ENABLED)
-						.crossfade(false)
-						.build()
-				val errorFallback = rememberErrorPlaceholder()
-				AsyncImage(
-					model = imageRequest,
+				CachedAsyncImage(
+					model = imageUrl,
 					contentDescription = item.name,
 					modifier = Modifier.fillMaxSize(),
-					contentScale = ContentScale.Crop,
-					error = errorFallback,
-					onLoading = {
-						Timber.tag("VFX_IMG").d("VFX_IMG image_load_start: ${item.name}")
-					},
-					onSuccess = {
-						val delta = System.currentTimeMillis() - composeTime
-						Timber.tag("VFX_IMG").d("VFX_IMG image_load_done: ${delta}ms ${item.name}")
-					},
-					onError = {
-						Timber.tag("VFX_IMG").w("VFX_IMG image_load_error: ${item.name} ${it.result.throwable}")
-					},
+					maxWidth = CARD_IMAGE_WIDTH_PX,
+					maxHeight = CARD_IMAGE_HEIGHT_PX,
 				)
 			} else {
 				LaunchedEffect(item.id) {
@@ -213,24 +216,97 @@ fun BrowseMediaCard(
 				}
 			}
 
+			// Relief: left edge reflection
+			Box(
+				modifier =
+					Modifier
+						.fillMaxSize()
+						.background(
+							Brush.horizontalGradient(
+								0f to VegafoXColors.PosterReflectLight,
+								0.15f to Color.Transparent,
+								1f to Color.Transparent,
+							),
+						),
+			)
+
+			// Relief: right edge shadow
+			Box(
+				modifier =
+					Modifier
+						.fillMaxSize()
+						.background(
+							Brush.horizontalGradient(
+								0f to Color.Transparent,
+								0.8f to Color.Transparent,
+								1f to VegafoXColors.PosterShadowDark,
+							),
+						),
+			)
+
 			// Progress bar for partially watched items
 			val playedPercentage = item.userData?.playedPercentage
 			if (playedPercentage != null && playedPercentage > 0) {
+				val progressHeight by animateFloatAsState(
+					targetValue = if (isFocused) 5f else 3f,
+					animationSpec = tween(200, easing = EaseOutCubic),
+					label = "progressHeight",
+				)
+				val trackAlpha by animateFloatAsState(
+					targetValue = if (isFocused) 0.40f else 0.25f,
+					animationSpec = tween(200, easing = EaseOutCubic),
+					label = "trackAlpha",
+				)
+				val glowAlpha by animateFloatAsState(
+					targetValue = if (isFocused) 1f else 0f,
+					animationSpec = tween(200, easing = EaseOutCubic),
+					label = "progressGlow",
+				)
+				val progressShape = RoundedCornerShape(2.dp)
+				val fraction = (playedPercentage / 100.0).toFloat()
+
 				Box(
 					modifier =
 						Modifier
 							.align(Alignment.BottomCenter)
 							.fillMaxWidth()
-							.padding(bottom = 3.dp)
-							.height(2.dp)
-							.background(VegafoXColors.Divider),
+							.padding(start = 8.dp, end = 8.dp, bottom = 6.dp)
+							.height(progressHeight.dp)
+							.background(
+								Color.White.copy(alpha = trackAlpha),
+								progressShape,
+							),
 				) {
 					Box(
 						modifier =
 							Modifier
 								.fillMaxHeight()
-								.fillMaxWidth(fraction = (playedPercentage / 100.0).toFloat())
-								.background(VegafoXColors.BlueAccent),
+								.fillMaxWidth(fraction = fraction)
+								.drawBehind {
+									if (glowAlpha > 0f) {
+										val cr = CornerRadius(2.dp.toPx())
+										listOf(
+											4f to 0.10f,
+											2.5f to 0.15f,
+											1f to 0.25f,
+										).forEach { (spreadDp, alpha) ->
+											val spread = spreadDp.dp.toPx()
+											drawRoundRect(
+												color =
+													VegafoXColors.BlueAccent.copy(
+														alpha = alpha * glowAlpha,
+													),
+												topLeft = Offset(-spread, -spread),
+												size =
+													Size(
+														size.width + spread * 2,
+														size.height + spread * 2,
+													),
+												cornerRadius = cr,
+											)
+										}
+									}
+								}.background(VegafoXColors.BlueAccent, progressShape),
 					)
 				}
 			}
@@ -299,55 +375,4 @@ fun BrowseMediaCard(
 			}
 		}
 	}
-}
-
-internal fun getItemImageUrl(
-	item: BaseItemDto,
-	api: ApiClient,
-	maxWidth: Int,
-): String? {
-	// Priority: THUMB → BACKDROP → PRIMARY (item), then parent fallbacks.
-	// THUMB = optimized 16:9 thumbnail, sharper and better framed for grids.
-	// BACKDROP = native 16:9, avoids destructive crop from portrait PRIMARY.
-
-	val thumb = item.itemImages[ImageType.THUMB]
-	if (thumb != null) {
-		Timber.tag("VFX_IMG").d("VFX_IMG image_type=THUMB item=${item.name} type=${item.type}")
-		return thumb.getUrl(api, fillWidth = CARD_IMAGE_WIDTH_PX, quality = 96)
-	}
-
-	val backdrop = item.itemBackdropImages.firstOrNull()
-	if (backdrop != null) {
-		Timber.tag("VFX_IMG").d("VFX_IMG image_type=BACKDROP item=${item.name} type=${item.type}")
-		return backdrop.getUrl(api, fillWidth = CARD_IMAGE_WIDTH_PX, quality = 96)
-	}
-
-	// Before falling to PRIMARY (possibly portrait), try parent landscape images
-	val parentThumb = item.parentImages[ImageType.THUMB]
-	if (parentThumb != null) {
-		Timber.tag("VFX_IMG").d("VFX_IMG image_type=PARENT_THUMB item=${item.name} type=${item.type}")
-		return parentThumb.getUrl(api, fillWidth = CARD_IMAGE_WIDTH_PX, quality = 96)
-	}
-
-	val parentBackdrop = item.parentBackdropImages.firstOrNull()
-	if (parentBackdrop != null) {
-		Timber.tag("VFX_IMG").d("VFX_IMG image_type=PARENT_BACKDROP item=${item.name} type=${item.type}")
-		return parentBackdrop.getUrl(api, fillWidth = CARD_IMAGE_WIDTH_PX, quality = 96)
-	}
-
-	// Last resort: PRIMARY (may be portrait poster — will be cropped in 16:9 card)
-	val primary = item.itemImages[ImageType.PRIMARY]
-	if (primary != null) {
-		val aspect = item.primaryImageAspectRatio
-		Timber.tag("VFX_IMG").w("VFX_IMG image_type=PRIMARY(portrait?) item=${item.name} type=${item.type} aspect=$aspect")
-		return primary.getUrl(api, fillWidth = CARD_IMAGE_WIDTH_PX, quality = 96)
-	}
-
-	val parentPrimary = item.parentImages[ImageType.PRIMARY]
-	if (parentPrimary != null) {
-		Timber.tag("VFX_IMG").w("VFX_IMG image_type=PARENT_PRIMARY item=${item.name} type=${item.type}")
-		return parentPrimary.getUrl(api, fillWidth = CARD_IMAGE_WIDTH_PX, quality = 96)
-	}
-
-	return null
 }

@@ -146,7 +146,6 @@
     <string name="pref_show_backdrop_description">Pakeiti dabar pasirinktų failų užsklandos paveikslelį</string>
 <string name="lbl_hd_programs">HD programos</string>
     <string name="watch_now">Žiūrėti dabar</string>
-    <string name="pref_app_theme">Aplikacijos išvaizda</string>
     <string name="lbl_sort_by">Rikiuoti pagal</string>
     <string name="lbl_auto_crop">Automatiškai apkirpti</string>
     <string name="lbl_stretch">Ištempti</string>
@@ -164,7 +163,6 @@
     <string name="lbl_guide_option_number">Kanalo numeris</string>
 <string name="lbl_premieres">Premjeros</string>
     <string name="lbl_image_type">Paveikslėlio tipas</string>
-    <string name="pref_theme_dark">Tamsus (numatytas)</string>
 <string name="grid_direction_horizontal">Horizontaliai</string>
     <string name="lbl_my_media">Mano medija</string>
     <string name="lbl_episode_not_record">Šis įrašas NEBUS įrašytas</string>
@@ -252,7 +250,6 @@
 <string name="lbl_time_range">%1$s–%2$s</string>
     <string name="pref_accounts">Naudotojai</string>
 <string name="home_section_active_recordings">Aktyvūs įrašai</string>
-    <string name="pref_behavior">Elgsena</string>
     <string name="input_username">Prisijungimo vardas</string>
 <string name="lbl_sign_out_content">Reikės priisjungti kitą kartą bandant naudotis</string>
     <string name="pref_developer_link">Programuotojo pasirinkimai</string>
@@ -264,7 +261,6 @@
 <string name="episode_missing_message_2">Šios serijos nėra jūsų bibliotekoje. Atkūrimas bus sustabdytas.</string>
     <string name="no_player_message">Atrodo, kad neįdiegėte vaizdo įrašų palaikančios programos. Šiai parinkčiai reikia įdiegti trečiosios šalies programą, skirtą vaizdo turiniui leisti.</string>
 <string name="too_many_errors">Per daug klaidų. Pasiduodu</string>
-<string name="watch_count_overflow">99+</string>
     <string name="pref_clock_display">Rodyti laiką</string>
     <string name="lbl_remove_users">Tai taip pat pašalins visus susijusius naudotojus</string>
     <string name="lbl_sign_out">Atsijungti</string>
@@ -353,7 +349,6 @@
 <string name="item_deleted">%1$s ištrintas</string>
     <string name="unreleased">Neišleista</string>
     <string name="segment_action_ask_to_skip">Prašyti praleisti</string>
-    <string name="not_set">Nenustatyta</string>
     <string name="dolby_vision">Dolby Vision</string>
     <string name="indicator_subtitles">CC</string>
     <string name="pref_screensaver_inapp_timeout">Įjungti ekrano užsklandą po</string>

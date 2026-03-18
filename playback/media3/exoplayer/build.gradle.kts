@@ -39,8 +39,8 @@ dependencies {
 	implementation(libs.androidx.media3.ui)
 	
 	// libass for ASS/SSA subtitle rendering
-	implementation("io.github.peerless2012:ass-media:0.4.0")
-	implementation("io.github.peerless2012:ass-kt:0.4.0")
+	implementation(libs.libass.media)
+	implementation(libs.libass.kt)
 
 	// Logging
 	implementation(libs.timber)

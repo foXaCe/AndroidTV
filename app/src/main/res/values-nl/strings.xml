@@ -172,9 +172,7 @@
     <string name="watch_now">Nu kijken</string>
     <string name="pref_next_up_timeout_summary">Hoe lang te wachten voordat het volgende item wordt afgespeeld</string>
     <string name="pref_about_title">Over</string>
-    <string name="pref_app_theme">App-thema</string>
     <string name="pref_next_up_timeout_title">Tijdsduur timer \'als volgende\'</string>
-    <string name="pref_theme_dark">Donker (standaard)</string>
     <string name="grid_direction_vertical">Verticaal</string>
     <string name="grid_direction_horizontal">Horizontaal</string>
     <string name="grid_direction">Rasterrichting</string>
@@ -192,7 +190,6 @@
     <string name="lbl_audio_track">Geluidsspoor selecteren</string>
     <string name="lbl_pause">Pauzeren</string>
     <string name="seek_error">Kan niet zoeken</string>
-<string name="watch_count_overflow">99+</string>
     <string name="lbl_playback_control_ends">Afgelopen om %1$s</string>
 <string name="pref_clock_display_playback">Tijdens afspelen</string>
     <string name="pref_clock_display_browsing">Tijdens bladeren</string>
@@ -298,7 +295,6 @@
 <string name="pref_login">Aanmelden</string>
 <string name="pref_libraries">Bibliotheken</string>
 <string name="pref_browsing">Bladeren</string>
-    <string name="pref_behavior">Gedrag</string>
     <string name="pref_accounts">Accounts</string>
     <string name="sort_accounts_by">Accounts sorteren op</string>
     <string name="pref_customization">Personalisatie</string>
@@ -364,7 +360,6 @@
         <item quantity="other">%1$s nummers</item>
     </plurals>
 <string name="lbl_album_artists">Albumartiesten</string>
-    <string name="not_set">Niet ingesteld</string>
     <string name="disable_ui_mode_warning">Waarschuwing voor apparaattype uitschakelen</string>
     <string name="because_you_watched">Omdat je %1$s hebt gekeken</string>
     <string name="photo_albums">Fotoalbums</string>

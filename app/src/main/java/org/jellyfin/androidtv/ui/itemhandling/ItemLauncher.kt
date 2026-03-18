@@ -43,7 +43,7 @@ class ItemLauncher(
 			CollectionType.TVSHOWS,
 			-> Destinations.libraryBrowser(baseItem)
 			CollectionType.MUSIC -> Destinations.musicBrowser(baseItem)
-			CollectionType.LIVETV -> Destinations.liveTvBrowser(baseItem)
+			CollectionType.LIVETV -> Destinations.liveTvGuide
 			else -> Destinations.libraryBrowser(baseItem)
 		}
 	}

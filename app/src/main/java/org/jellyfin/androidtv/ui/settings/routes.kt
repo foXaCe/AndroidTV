@@ -30,7 +30,6 @@ object Routes {
 	const val LIBRARIES_DISPLAY_IMAGE_TYPE = "/libraries/display/{itemId}/{displayPreferencesId}/{serverId}/{userId}/image-type"
 	const val LIBRARIES_DISPLAY_GRID = "/libraries/display/{itemId}/{displayPreferencesId}/{serverId}/{userId}/grid"
 	const val HOME = "/home"
-	const val HOME_SECTION = "/home/section/{index}"
 	const val HOME_POSTER_SIZE = "/home/poster-size"
 	const val HOME_ROWS_IMAGE_TYPE = "/home/rows-image-type"
 	const val LIVETV_GUIDE_FILTERS = "/livetv/guide/filters"
@@ -62,8 +61,6 @@ object Routes {
 	const val VEGAFOX_MEDIA_BAR_COLOR = "/vegafox/media-bar-color"
 	const val VEGAFOX_THEME_MUSIC_VOLUME = "/vegafox/theme-music-volume"
 
-	@Deprecated("Moved to HOME_ROWS_IMAGE_TYPE", replaceWith = ReplaceWith("HOME_ROWS_IMAGE_TYPE"))
-	const val VEGAFOX_HOME_ROWS_IMAGE = "/vegafox/home-rows-image"
 	const val VEGAFOX_DETAILS_BLUR = "/vegafox/details-blur"
 	const val VEGAFOX_BROWSING_BLUR = "/vegafox/browsing-blur"
 	const val VEGAFOX_PARENTAL_CONTROLS = "/vegafox/parental-controls"
@@ -73,8 +70,6 @@ object Routes {
 	const val VEGAFOX_SYNCPLAY_DURATION = "/vegafox/syncplay/speed-to-sync-duration"
 	const val VEGAFOX_SYNCPLAY_MIN_DELAY_SKIP = "/vegafox/syncplay/min-delay-skip-to-sync"
 	const val VEGAFOX_SYNCPLAY_EXTRA_OFFSET = "/vegafox/syncplay/extra-time-offset"
-	const val SYNCPLAY = "/syncplay"
-	const val TELEMETRY = "/telemetry"
 	const val DEVELOPER = "/developer"
 	const val ABOUT = "/about"
 	const val LICENSES = "/licenses"

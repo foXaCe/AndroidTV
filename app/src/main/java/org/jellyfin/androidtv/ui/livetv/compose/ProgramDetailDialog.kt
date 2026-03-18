@@ -1,6 +1,6 @@
 package org.jellyfin.androidtv.ui.livetv.compose
 
-import android.app.AlertDialog
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,6 +53,7 @@ import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.SeriesTimerInfoDto
 import org.koin.compose.koinInject
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.util.UUID
@@ -79,6 +80,7 @@ fun ProgramDetailDialog(
 	var showRecordDialog by remember { mutableStateOf(false) }
 	var recordDialogSeries by remember { mutableStateOf(false) }
 	var seriesTimerInfo by remember { mutableStateOf<SeriesTimerInfoDto?>(null) }
+	var showCancelSeriesConfirm by remember { mutableStateOf(false) }
 
 	val now = LocalDateTime.now()
 	val canManageRecordings = Utils.canManageRecordings(userRepository.currentUser.value)
@@ -98,6 +100,70 @@ fun ProgramDetailDialog(
 			onDismiss = { showRecordDialog = false },
 			onRecordingUpdated = onRecordingChanged,
 		)
+	}
+
+	// Cancel series confirmation dialog (Compose — replaces native AlertDialog.Builder)
+	if (showCancelSeriesConfirm) {
+		DialogBase(
+			visible = true,
+			onDismissRequest = { showCancelSeriesConfirm = false },
+		) {
+			Column(
+				modifier =
+					Modifier
+						.width(LiveTvDimensions.recordDialogWidth)
+						.background(
+							VegafoXColors.DialogSurface,
+							androidx.compose.foundation.shape
+								.RoundedCornerShape(16.dp),
+						).padding(24.dp),
+				horizontalAlignment = Alignment.CenterHorizontally,
+			) {
+				Text(
+					text = stringResource(R.string.lbl_cancel_series),
+					fontFamily = BebasNeue,
+					fontSize = 22.sp,
+					fontWeight = FontWeight.Bold,
+					color = VegafoXColors.TextPrimary,
+				)
+				Spacer(Modifier.height(12.dp))
+				Text(
+					text = stringResource(R.string.msg_cancel_entire_series),
+					fontSize = 14.sp,
+					color = VegafoXColors.TextSecondary,
+				)
+				Spacer(Modifier.height(20.dp))
+				FlowRow(
+					horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+				) {
+					VegafoXButton(
+						text = stringResource(R.string.lbl_yes),
+						compact = true,
+						autoFocus = true,
+						onClick = {
+							showCancelSeriesConfirm = false
+							scope.launch {
+								runCatching {
+									cancelLiveTvSeriesTimer(api, currentProgram.seriesTimerId!!)
+								}.onSuccess {
+									selectedProgramView?.setRecSeriesTimer(null)
+									currentProgram = currentProgram.copyWithSeriesTimerId(null)
+									onDismiss()
+									Toast.makeText(context, R.string.msg_recording_cancelled, Toast.LENGTH_LONG).show()
+									onRecordingChanged()
+								}
+							}
+						},
+					)
+					VegafoXButton(
+						text = stringResource(R.string.lbl_no),
+						variant = VegafoXButtonVariant.Ghost,
+						compact = true,
+						onClick = { showCancelSeriesConfirm = false },
+					)
+				}
+			}
+		}
 	}
 
 	DialogBase(
@@ -194,6 +260,28 @@ fun ProgramDetailDialog(
 				modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
 				horizontalAlignment = Alignment.CenterHorizontally,
 			) {
+				// Duration + Rating row
+				val durationAndRating =
+					buildList {
+						val pStart = currentProgram.startDate
+						val pEnd = currentProgram.endDate
+						if (pStart != null && pEnd != null) {
+							val dur = Duration.between(pStart, pEnd)
+							val hours = dur.toHours()
+							val minutes = dur.toMinutes() % 60
+							if (hours > 0) add("${hours}h ${minutes}min") else add("${minutes}min")
+						}
+						currentProgram.officialRating?.let { if (it.isNotBlank() && it != "0") add(it) }
+					}
+				if (durationAndRating.isNotEmpty()) {
+					Text(
+						text = durationAndRating.joinToString(" | "),
+						fontSize = 13.sp,
+						color = VegafoXColors.TextHint,
+					)
+					Spacer(Modifier.height(8.dp))
+				}
+
 				// Synopsis
 				if (!currentProgram.overview.isNullOrEmpty()) {
 					Text(
@@ -265,7 +353,7 @@ fun ProgramDetailDialog(
 											selectedProgramView?.setRecTimer(null)
 											currentProgram = currentProgram.copyWithTimerId(null)
 											onDismiss()
-											Utils.showToast(context, R.string.msg_recording_cancelled)
+											Toast.makeText(context, R.string.msg_recording_cancelled, Toast.LENGTH_LONG).show()
 											onRecordingChanged()
 										}
 									}
@@ -286,7 +374,7 @@ fun ProgramDetailDialog(
 											currentProgram = updatedProgram
 											selectedProgramView?.setRecSeriesTimer(updatedProgram.seriesTimerId)
 											selectedProgramView?.setRecTimer(updatedProgram.timerId)
-											Utils.showToast(context, R.string.msg_set_to_record)
+											Toast.makeText(context, R.string.msg_set_to_record, Toast.LENGTH_LONG).show()
 											onDismiss()
 											onRecordingChanged()
 										}
@@ -304,26 +392,7 @@ fun ProgramDetailDialog(
 									text = stringResource(R.string.lbl_cancel_series),
 									variant = VegafoXButtonVariant.Outlined,
 									compact = true,
-									onClick = {
-										AlertDialog
-											.Builder(context)
-											.setTitle(R.string.lbl_cancel_series)
-											.setMessage(R.string.msg_cancel_entire_series)
-											.setNegativeButton(R.string.lbl_no, null)
-											.setPositiveButton(R.string.lbl_yes) { _, _ ->
-												scope.launch {
-													runCatching {
-														cancelLiveTvSeriesTimer(api, currentProgram.seriesTimerId!!)
-													}.onSuccess {
-														selectedProgramView?.setRecSeriesTimer(null)
-														currentProgram = currentProgram.copyWithSeriesTimerId(null)
-														onDismiss()
-														Utils.showToast(context, R.string.msg_recording_cancelled)
-														onRecordingChanged()
-													}
-												}
-											}.show()
-									},
+									onClick = { showCancelSeriesConfirm = true },
 								)
 
 								// Series settings
@@ -357,7 +426,7 @@ fun ProgramDetailDialog(
 												currentProgram = updatedProgram
 												selectedProgramView?.setRecSeriesTimer(updatedProgram.seriesTimerId)
 												selectedProgramView?.setRecTimer(updatedProgram.timerId)
-												Utils.showToast(context, R.string.msg_set_to_record)
+												Toast.makeText(context, R.string.msg_set_to_record, Toast.LENGTH_LONG).show()
 												onDismiss()
 												onRecordingChanged()
 											}

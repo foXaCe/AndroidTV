@@ -1,14 +1,21 @@
 package org.jellyfin.androidtv.ui.base
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -22,9 +29,13 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.jellyfin.androidtv.ui.player.base.calculateSeekMultiplier
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.times
@@ -66,6 +77,7 @@ fun Seekbar(
 	onSeek: ((progress: Duration) -> Unit)? = null,
 	enabled: Boolean = true,
 	colors: SeekbarColors = SeekbarDefaults.colors(),
+	thumbnailContent: (@Composable (fraction: Float) -> Unit)? = null,
 ) {
 	val durationMs = duration.inWholeMilliseconds.toFloat().coerceAtLeast(1f)
 	val progressPercentage = progress.inWholeMilliseconds.toFloat() / durationMs
@@ -80,10 +92,12 @@ fun Seekbar(
 		buffer = bufferPercentage,
 		seekForwardAmount = seekForwardPercentage,
 		seekRewindAmount = seekRewindPercentage,
+		contentDurationMinutes = duration.inWholeMinutes,
 		onScrubbing = onScrubbing,
 		onSeek = if (onSeek == null) null else { progress -> onSeek(progress.toDouble() * duration) },
 		enabled = enabled,
 		colors = colors,
+		thumbnailContent = thumbnailContent,
 	)
 }
 
@@ -95,10 +109,12 @@ fun Seekbar(
 	buffer: Float = 0f,
 	seekForwardAmount: Float = 0.01f,
 	seekRewindAmount: Float = 0.01f,
+	contentDurationMinutes: Long = 0L,
 	onScrubbing: ((scrubbing: Boolean) -> Unit)? = null,
 	onSeek: ((progress: Float) -> Unit)? = null,
 	enabled: Boolean = true,
 	colors: SeekbarColors = SeekbarDefaults.colors(),
+	thumbnailContent: (@Composable (fraction: Float) -> Unit)? = null,
 ) {
 	val coroutineScope = rememberCoroutineScope()
 	val focused by interactionSource.collectIsFocusedAsState()
@@ -106,91 +122,138 @@ fun Seekbar(
 	val visibleProgress = progressOverride ?: progress
 	val knobAlpha by animateFloatAsState(if (focused) 1f else 0f)
 	var scrubCancelJob by remember { mutableStateOf<Job?>(null) }
+	val isScrubbing = progressOverride != null
+	var seekbarWidth by remember { mutableIntStateOf(0) }
+	val density = LocalDensity.current
+	var holdRepeatCount by remember { mutableStateOf(0) }
 
 	Box(
-		modifier =
-			modifier
-				.onKeyEvent {
-					if (!enabled) return@onKeyEvent false
+		modifier = modifier.onSizeChanged { seekbarWidth = it.width },
+	) {
+		// Seekbar drawing
+		Box(
+			modifier =
+				Modifier
+					.matchParentSize()
+					.onKeyEvent {
+						if (!enabled) return@onKeyEvent false
 
-					val isForward = it.key == Key.DirectionRight
-					val isRewind = it.key == Key.DirectionLeft
-					val isScrubbing = isForward || isRewind
-					val isKeyUp = it.type == KeyEventType.KeyUp
-					val isKeyDown = it.type == KeyEventType.KeyDown
+						val isForward = it.key == Key.DirectionRight
+						val isRewind = it.key == Key.DirectionLeft
+						val isScrubKey = isForward || isRewind
+						val isKeyUp = it.type == KeyEventType.KeyUp
+						val isKeyDown = it.type == KeyEventType.KeyDown
 
-					val newProgress =
-						when {
-							isKeyDown && isForward -> (visibleProgress + seekForwardAmount).coerceAtMost(1f)
-							isKeyDown && isRewind -> (visibleProgress - seekRewindAmount).coerceAtLeast(0f)
-							else -> visibleProgress
+						if (isScrubKey && isKeyDown) holdRepeatCount++
+						if (isScrubKey && isKeyUp) holdRepeatCount = 0
+
+						val multiplier = calculateSeekMultiplier(holdRepeatCount, contentDurationMinutes)
+						val newProgress =
+							when {
+								isKeyDown && isForward -> (visibleProgress + seekForwardAmount * multiplier).coerceAtMost(1f)
+								isKeyDown && isRewind -> (visibleProgress - seekRewindAmount * multiplier).coerceAtLeast(0f)
+								else -> visibleProgress
+							}
+
+						if (isScrubKey && isKeyDown && onScrubbing != null) {
+							scrubCancelJob?.cancel()
+							onScrubbing(true)
 						}
 
-					if (isScrubbing && isKeyDown && onScrubbing != null) {
-						scrubCancelJob?.cancel()
-						onScrubbing(true)
-					}
+						if (visibleProgress != newProgress) {
+							progressOverride = newProgress
+							if (onSeek != null) onSeek(newProgress)
+						}
 
-					if (visibleProgress != newProgress) {
-						progressOverride = newProgress
-						if (onSeek != null) onSeek(newProgress)
-					}
+						if (isScrubKey && isKeyUp && onScrubbing != null) {
+							scrubCancelJob?.cancel()
+							scrubCancelJob =
+								coroutineScope.launch {
+									delay(300.milliseconds)
+									onScrubbing(false)
+									progressOverride = null
+								}
+						}
 
-					if (isScrubbing && isKeyUp && onScrubbing != null) {
-						scrubCancelJob?.cancel()
-						scrubCancelJob =
-							coroutineScope.launch {
-								delay(300.milliseconds)
-								onScrubbing(false)
-								progressOverride = null
-							}
-					}
+						return@onKeyEvent isScrubKey
+					}.focusable(interactionSource = interactionSource, enabled = enabled)
+					.drawWithContent {
+						val barCornerRadius = CornerRadius(size.minDimension, size.minDimension)
 
-					return@onKeyEvent isScrubbing
-				}.focusable(interactionSource = interactionSource, enabled = enabled)
-				.drawWithContent {
-					val barCornerRadius = CornerRadius(size.minDimension, size.minDimension)
-
-					// Background bar
-					drawRoundRect(
-						color = colors.backgroundColor,
-						cornerRadius = barCornerRadius,
-					)
-
-					// Buffer bar
-					if (buffer > 0f) {
+						// Background bar
 						drawRoundRect(
-							color = colors.bufferColor,
-							size =
-								size.copy(
-									width = buffer * size.width,
-								),
+							color = colors.backgroundColor,
 							cornerRadius = barCornerRadius,
 						)
-					}
 
-					// Progress bar
-					if (visibleProgress > 0f) {
-						drawRoundRect(
-							color = colors.progressColor,
-							size =
-								size.copy(
-									width = visibleProgress * size.width,
+						// Buffer bar
+						if (buffer > 0f) {
+							drawRoundRect(
+								color = colors.bufferColor,
+								size =
+									size.copy(
+										width = buffer * size.width,
+									),
+								cornerRadius = barCornerRadius,
+							)
+						}
+
+						// Progress bar
+						if (visibleProgress > 0f) {
+							drawRoundRect(
+								color = colors.progressColor,
+								size =
+									size.copy(
+										width = visibleProgress * size.width,
+									),
+								cornerRadius = barCornerRadius,
+							)
+						}
+
+						// Progress knob
+						drawCircle(
+							color = colors.knobColor,
+							alpha = knobAlpha,
+							center =
+								center.copy(
+									x = visibleProgress * size.width,
 								),
-							cornerRadius = barCornerRadius,
+							radius = size.minDimension * 2,
 						)
+					},
+		)
+
+		// Trickplay thumbnail preview above the seekbar
+		if (thumbnailContent != null) {
+			val thumbnailWidthDp = 178.dp
+			val thumbnailHeightDp = 100.dp
+
+			AnimatedVisibility(
+				visible = isScrubbing,
+				enter = fadeIn(tween(150)),
+				exit = fadeOut(tween(150)),
+			) {
+				val thumbnailWidthPx = with(density) { thumbnailWidthDp.toPx() }
+				val xOffsetDp =
+					with(density) {
+						if (seekbarWidth > 0) {
+							(visibleProgress * seekbarWidth - thumbnailWidthPx / 2f)
+								.coerceIn(0f, (seekbarWidth - thumbnailWidthPx).coerceAtLeast(0f))
+								.toDp()
+						} else {
+							0.dp
+						}
 					}
 
-					// Progress knob
-					drawCircle(
-						color = colors.knobColor,
-						alpha = knobAlpha,
-						center =
-							center.copy(
-								x = visibleProgress * size.width,
-							),
-						radius = size.minDimension * 2,
-					)
-				},
-	)
+				Box(
+					modifier =
+						Modifier
+							.absoluteOffset(x = xOffsetDp, y = -(thumbnailHeightDp + 12.dp))
+							.size(thumbnailWidthDp, thumbnailHeightDp),
+				) {
+					thumbnailContent(visibleProgress)
+				}
+			}
+		}
+	}
 }

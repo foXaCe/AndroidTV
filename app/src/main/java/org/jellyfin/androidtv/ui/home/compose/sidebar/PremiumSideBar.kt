@@ -25,13 +25,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
@@ -40,7 +41,6 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import kotlinx.coroutines.delay
@@ -60,39 +60,55 @@ import org.jellyfin.sdk.model.api.CollectionType
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinActivityViewModel
 
+/** Three visual states of the premium sidebar. */
+enum class SidebarState {
+	/** Sidebar invisible (0dp width) — default at launch and after navigation. */
+	HIDDEN,
+
+	/** Sidebar shows icons only (72dp width). */
+	COMPACT,
+
+	/** Sidebar fully open with icons and labels (220dp width). */
+	EXPANDED,
+}
+
 /** Width of the premium sidebar in collapsed state — used by callers to know the reserved space. */
 val PREMIUM_SIDEBAR_WIDTH_COLLAPSED = SidebarDimensions.widthCollapsed
 
 /** Width of the premium sidebar in expanded state. */
 private val PREMIUM_SIDEBAR_WIDTH_EXPANDED = SidebarDimensions.widthExpanded
 
-@Deprecated("Use PREMIUM_SIDEBAR_WIDTH_COLLAPSED", ReplaceWith("PREMIUM_SIDEBAR_WIDTH_COLLAPSED"))
-val PREMIUM_SIDEBAR_WIDTH = PREMIUM_SIDEBAR_WIDTH_COLLAPSED
-
-private val SidebarBackgroundCollapsed = Color(0xFF060A0F).copy(alpha = 0.95f)
-private val SidebarBackgroundExpanded = Color(0xFF060A0F)
+private val SidebarBackgroundColor = Color(0xFF060A0F)
 private val SeparatorColor = VegafoXColors.OrangePrimary.copy(alpha = 0.40f)
 private val EaseOutCubic = CubicBezierEasing(0.33f, 1f, 0.68f, 1f)
+private val EaseInCubic = CubicBezierEasing(0.32f, 0f, 0.67f, 0f)
 private const val NAV_ITEM_COUNT = 10
 private const val SHIMMER_RESUME_DELAY_MS = 3000L
 private const val SHIMMER_CYCLE_MS = 1500
 private const val SHIMMER_STAGGER_MS = 300
-private const val ENTRANCE_ANIM_MS = 400
-private const val DOUBLE_TAP_THRESHOLD_MS = 400L
+private const val ANIM_HIDDEN_TO_COMPACT_MS = 180
+private const val ANIM_COMPACT_TO_EXPANDED_MS = 220
+private const val ANIM_TO_HIDDEN_MS = 150
 
 /**
- * Premium sidebar — fixed left-side navigation for the home screen.
+ * Premium sidebar — left-side navigation for the home screen.
  *
- * Behaviours:
- * - **Expand/collapse** — toggle via double-tap D-pad Left; close via Back or D-pad Right
- * - **Per-item indicator** — orange bar on each selected NavItem, positioned via align(CenterStart)
- * - **Shimmer at rest** — inactive icons pulse opacity 0.40–0.55, staggered 300 ms per item
- * - **Entrance slide** — sidebar slides in from left with fade on first display (400 ms, once)
+ * Three states: [SidebarState.HIDDEN] (0dp), [SidebarState.COMPACT] (72dp icons only),
+ * [SidebarState.EXPANDED] (220dp icons + labels).
+ *
+ * Transitions:
+ * - D-pad Left from content → HIDDEN→COMPACT (handled by caller via [onStateChange])
+ * - D-pad Left in sidebar → COMPACT→EXPANDED
+ * - D-pad Right / Back / item navigation → any→HIDDEN
  */
 @Composable
-fun PremiumSideBar(modifier: Modifier = Modifier) {
+fun PremiumSideBar(
+	state: SidebarState,
+	onStateChange: (SidebarState) -> Unit,
+	homeFocusRequester: FocusRequester,
+	modifier: Modifier = Modifier,
+) {
 	var selectedIndex by remember { mutableIntStateOf(0) }
-	val density = LocalDensity.current
 	val context = LocalContext.current
 	val activity = context as? Activity
 	val sessionRepository = koinInject<SessionRepository>()
@@ -110,7 +126,7 @@ fun PremiumSideBar(modifier: Modifier = Modifier) {
 		}
 	}
 
-	// ── Focus tracking (for shimmer + expand control) ────────────────────
+	// ── Focus tracking (for shimmer control) ──────────────────────────
 	var focusCount by remember { mutableIntStateOf(0) }
 	val anyItemFocused by remember { derivedStateOf { focusCount > 0 } }
 
@@ -121,24 +137,55 @@ fun PremiumSideBar(modifier: Modifier = Modifier) {
 			}
 		}
 
-	// ── Expand / collapse (double-tap D-pad Left to toggle) ───────────
-	var isExpanded by remember { mutableStateOf(false) }
-	var lastLeftPressTime by remember { mutableLongStateOf(0L) }
+	// ── Derived flags ─────────────────────────────────────────────────
+	val isExpanded = state == SidebarState.EXPANDED
+	val isVisible = state != SidebarState.HIDDEN
 
+	// ── Width animation (different specs per transition) ──────────────
 	val sidebarWidth by animateDpAsState(
-		targetValue = if (isExpanded) PREMIUM_SIDEBAR_WIDTH_EXPANDED else PREMIUM_SIDEBAR_WIDTH_COLLAPSED,
-		animationSpec = tween(250, easing = EaseOutCubic),
+		targetValue =
+			when (state) {
+				SidebarState.HIDDEN -> 0.dp
+				SidebarState.COMPACT -> PREMIUM_SIDEBAR_WIDTH_COLLAPSED
+				SidebarState.EXPANDED -> PREMIUM_SIDEBAR_WIDTH_EXPANDED
+			},
+		animationSpec =
+			when (state) {
+				SidebarState.HIDDEN -> tween(ANIM_TO_HIDDEN_MS, easing = EaseInCubic)
+				SidebarState.COMPACT -> tween(ANIM_HIDDEN_TO_COMPACT_MS, easing = EaseOutCubic)
+				SidebarState.EXPANDED -> tween(ANIM_COMPACT_TO_EXPANDED_MS, easing = EaseOutCubic)
+			},
 		label = "sidebarWidth",
 	)
 
-	// ── Background alpha ───────────────────────────────────────────────
+	// ── Background alpha ──────────────────────────────────────────────
 	val bgAlpha by animateFloatAsState(
 		targetValue = if (isExpanded) 1f else 0.95f,
 		animationSpec = tween(200),
 		label = "bgAlpha",
 	)
 
-	// ── Shimmer animation ──────────────────────────────────────────────
+	// ── Separator alpha ───────────────────────────────────────────────
+	val separatorAlpha by animateFloatAsState(
+		targetValue = if (isVisible) 1f else 0f,
+		animationSpec = tween(if (isVisible) ANIM_HIDDEN_TO_COMPACT_MS else ANIM_TO_HIDDEN_MS),
+		label = "separatorAlpha",
+	)
+
+	// ── Focus on Home item when sidebar appears from hidden ───────────
+	var previousState by remember { mutableStateOf(SidebarState.HIDDEN) }
+	LaunchedEffect(state) {
+		if (state == SidebarState.COMPACT && previousState == SidebarState.HIDDEN) {
+			delay(50)
+			try {
+				homeFocusRequester.requestFocus()
+			} catch (_: Exception) {
+			}
+		}
+		previousState = state
+	}
+
+	// ── Shimmer animation ─────────────────────────────────────────────
 	var shimmerActive by remember { mutableStateOf(true) }
 
 	LaunchedEffect(anyItemFocused) {
@@ -172,19 +219,15 @@ fun PremiumSideBar(modifier: Modifier = Modifier) {
 			)
 		}
 
-	// ── Entrance animation (once) ──────────────────────────────────────
-	var hasAppeared by remember { mutableStateOf(false) }
-	LaunchedEffect(Unit) { hasAppeared = true }
+	// ── Navigate and hide sidebar ─────────────────────────────────────
+	val navigateAndHide: (() -> Unit) -> (() -> Unit) = { action ->
+		{
+			action()
+			onStateChange(SidebarState.HIDDEN)
+		}
+	}
 
-	val sidebarTotalWidthPx = with(density) { (PREMIUM_SIDEBAR_WIDTH_COLLAPSED + 1.dp).toPx() }
-
-	val slideProgress by animateFloatAsState(
-		targetValue = if (hasAppeared) 1f else 0f,
-		animationSpec = tween(ENTRANCE_ANIM_MS),
-		label = "sidebarSlide",
-	)
-
-	// ── Layout ─────────────────────────────────────────────────────────
+	// ── Layout ────────────────────────────────────────────────────────
 	Row(
 		modifier =
 			modifier
@@ -193,38 +236,34 @@ fun PremiumSideBar(modifier: Modifier = Modifier) {
 					if (event.type == KeyEventType.KeyDown) {
 						when (event.key) {
 							Key.DirectionLeft -> {
-								val now = System.currentTimeMillis()
-								if (now - lastLeftPressTime < DOUBLE_TAP_THRESHOLD_MS) {
-									isExpanded = !isExpanded
-									lastLeftPressTime = 0L
-									true // consume second tap
-								} else {
-									lastLeftPressTime = now
-									false
+								when (state) {
+									SidebarState.COMPACT -> {
+										onStateChange(SidebarState.EXPANDED)
+										true
+									}
+									SidebarState.EXPANDED -> true // consume, already at max
+									SidebarState.HIDDEN -> false
 								}
 							}
 							Key.Back -> {
-								if (isExpanded) {
-									isExpanded = false
+								if (isVisible) {
+									onStateChange(SidebarState.HIDDEN)
 									true
 								} else {
 									false
 								}
 							}
 							Key.DirectionRight -> {
-								if (isExpanded) {
-									isExpanded = false
+								if (isVisible) {
+									onStateChange(SidebarState.HIDDEN)
 								}
-								false // let focus move right
+								false // let focus move right naturally
 							}
 							else -> false
 						}
 					} else {
 						false
 					}
-				}.graphicsLayer {
-					translationX = -(1f - slideProgress) * sidebarTotalWidthPx
-					alpha = slideProgress
 				},
 	) {
 		Box(
@@ -232,11 +271,12 @@ fun PremiumSideBar(modifier: Modifier = Modifier) {
 				Modifier
 					.width(sidebarWidth)
 					.fillMaxHeight()
+					.clipToBounds()
 					.then(
 						if (isExpanded) Modifier.shadow(elevation = 8.dp) else Modifier,
-					).background(Color(0xFF060A0F).copy(alpha = bgAlpha)),
+					).background(SidebarBackgroundColor.copy(alpha = bgAlpha)),
 		) {
-			// ── Navigation items ───────────────────────────────────────
+			// ── Navigation items ──────────────────────────────────────
 			Column(
 				modifier = Modifier.fillMaxSize(),
 				horizontalAlignment = Alignment.CenterHorizontally,
@@ -248,13 +288,15 @@ fun PremiumSideBar(modifier: Modifier = Modifier) {
 					icon = VegafoXIcons.Home,
 					label = "Accueil",
 					isSelected = selectedIndex == 0,
-					onSelect = {
-						selectedIndex = 0
-						navigationRepository.navigate(Destinations.home)
-					},
+					onSelect =
+						navigateAndHide {
+							selectedIndex = 0
+							navigationRepository.navigate(Destinations.home)
+						},
 					isExpanded = isExpanded,
 					shimmerAlpha = lerp(1f, shimmerRawAlphas[0].value, shimmerStrength),
 					onFocusChanged = onItemFocusChanged,
+					focusRequester = homeFocusRequester,
 				)
 				Spacer(modifier = Modifier.height(6.dp))
 
@@ -262,10 +304,11 @@ fun PremiumSideBar(modifier: Modifier = Modifier) {
 					icon = VegafoXIcons.Search,
 					label = "Recherche",
 					isSelected = selectedIndex == 1,
-					onSelect = {
-						selectedIndex = 1
-						navigationRepository.navigate(Destinations.search())
-					},
+					onSelect =
+						navigateAndHide {
+							selectedIndex = 1
+							navigationRepository.navigate(Destinations.search())
+						},
 					isExpanded = isExpanded,
 					shimmerAlpha = lerp(1f, shimmerRawAlphas[1].value, shimmerStrength),
 					onFocusChanged = onItemFocusChanged,
@@ -276,13 +319,14 @@ fun PremiumSideBar(modifier: Modifier = Modifier) {
 					icon = VegafoXIcons.Movie,
 					label = "Films",
 					isSelected = selectedIndex == 2,
-					onSelect = {
-						selectedIndex = 2
-						val library = userViews.firstOrNull { it.collectionType == CollectionType.MOVIES }
-						if (library != null) {
-							navigationRepository.navigate(itemLauncher.getUserViewDestination(library))
-						}
-					},
+					onSelect =
+						navigateAndHide {
+							selectedIndex = 2
+							val library = userViews.firstOrNull { it.collectionType == CollectionType.MOVIES }
+							if (library != null) {
+								navigationRepository.navigate(itemLauncher.getUserViewDestination(library))
+							}
+						},
 					isExpanded = isExpanded,
 					shimmerAlpha = lerp(1f, shimmerRawAlphas[2].value, shimmerStrength),
 					onFocusChanged = onItemFocusChanged,
@@ -293,13 +337,14 @@ fun PremiumSideBar(modifier: Modifier = Modifier) {
 					icon = VegafoXIcons.Tv,
 					label = "Séries",
 					isSelected = selectedIndex == 3,
-					onSelect = {
-						selectedIndex = 3
-						val library = userViews.firstOrNull { it.collectionType == CollectionType.TVSHOWS }
-						if (library != null) {
-							navigationRepository.navigate(itemLauncher.getUserViewDestination(library))
-						}
-					},
+					onSelect =
+						navigateAndHide {
+							selectedIndex = 3
+							val library = userViews.firstOrNull { it.collectionType == CollectionType.TVSHOWS }
+							if (library != null) {
+								navigationRepository.navigate(itemLauncher.getUserViewDestination(library))
+							}
+						},
 					isExpanded = isExpanded,
 					shimmerAlpha = lerp(1f, shimmerRawAlphas[3].value, shimmerStrength),
 					onFocusChanged = onItemFocusChanged,
@@ -310,13 +355,14 @@ fun PremiumSideBar(modifier: Modifier = Modifier) {
 					icon = VegafoXIcons.MusicLibrary,
 					label = "Musique",
 					isSelected = selectedIndex == 4,
-					onSelect = {
-						selectedIndex = 4
-						val library = userViews.firstOrNull { it.collectionType == CollectionType.MUSIC }
-						if (library != null) {
-							navigationRepository.navigate(itemLauncher.getUserViewDestination(library))
-						}
-					},
+					onSelect =
+						navigateAndHide {
+							selectedIndex = 4
+							val library = userViews.firstOrNull { it.collectionType == CollectionType.MUSIC }
+							if (library != null) {
+								navigationRepository.navigate(itemLauncher.getUserViewDestination(library))
+							}
+						},
 					isExpanded = isExpanded,
 					shimmerAlpha = lerp(1f, shimmerRawAlphas[4].value, shimmerStrength),
 					onFocusChanged = onItemFocusChanged,
@@ -327,13 +373,14 @@ fun PremiumSideBar(modifier: Modifier = Modifier) {
 					icon = VegafoXIcons.LiveTv,
 					label = "Live TV",
 					isSelected = selectedIndex == 5,
-					onSelect = {
-						selectedIndex = 5
-						val library = userViews.firstOrNull { it.collectionType == CollectionType.LIVETV }
-						if (library != null) {
-							navigationRepository.navigate(itemLauncher.getUserViewDestination(library))
-						}
-					},
+					onSelect =
+						navigateAndHide {
+							selectedIndex = 5
+							val library = userViews.firstOrNull { it.collectionType == CollectionType.LIVETV }
+							if (library != null) {
+								navigationRepository.navigate(itemLauncher.getUserViewDestination(library))
+							}
+						},
 					isExpanded = isExpanded,
 					shimmerAlpha = lerp(1f, shimmerRawAlphas[5].value, shimmerStrength),
 					onFocusChanged = onItemFocusChanged,
@@ -344,10 +391,11 @@ fun PremiumSideBar(modifier: Modifier = Modifier) {
 					icon = VegafoXIcons.Genres,
 					label = "Genres",
 					isSelected = selectedIndex == 6,
-					onSelect = {
-						selectedIndex = 6
-						navigationRepository.navigate(Destinations.allGenres)
-					},
+					onSelect =
+						navigateAndHide {
+							selectedIndex = 6
+							navigationRepository.navigate(Destinations.allGenres)
+						},
 					isExpanded = isExpanded,
 					shimmerAlpha = lerp(1f, shimmerRawAlphas[6].value, shimmerStrength),
 					onFocusChanged = onItemFocusChanged,
@@ -358,10 +406,11 @@ fun PremiumSideBar(modifier: Modifier = Modifier) {
 					icon = VegafoXIcons.Favorite,
 					label = "Favoris",
 					isSelected = selectedIndex == 7,
-					onSelect = {
-						selectedIndex = 7
-						navigationRepository.navigate(Destinations.allFavorites)
-					},
+					onSelect =
+						navigateAndHide {
+							selectedIndex = 7
+							navigationRepository.navigate(Destinations.allFavorites)
+						},
 					isExpanded = isExpanded,
 					shimmerAlpha = lerp(1f, shimmerRawAlphas[7].value, shimmerStrength),
 					onFocusChanged = onItemFocusChanged,
@@ -375,10 +424,11 @@ fun PremiumSideBar(modifier: Modifier = Modifier) {
 					icon = VegafoXIcons.Settings,
 					label = "Paramètres",
 					isSelected = selectedIndex == 8,
-					onSelect = {
-						selectedIndex = 8
-						settingsViewModel.show()
-					},
+					onSelect =
+						navigateAndHide {
+							selectedIndex = 8
+							settingsViewModel.show()
+						},
 					isExpanded = isExpanded,
 					shimmerAlpha = lerp(1f, shimmerRawAlphas[8].value, shimmerStrength),
 					onFocusChanged = onItemFocusChanged,
@@ -388,6 +438,7 @@ fun PremiumSideBar(modifier: Modifier = Modifier) {
 
 				ProfileItem(
 					onSelect = {
+						onStateChange(SidebarState.HIDDEN)
 						mediaManager.clearAudioQueue()
 						sessionRepository.destroyCurrentSession()
 						activity?.startActivity(ActivityDestinations.startup(context))
@@ -407,6 +458,7 @@ fun PremiumSideBar(modifier: Modifier = Modifier) {
 				Modifier
 					.width(1.5.dp)
 					.fillMaxHeight()
+					.graphicsLayer { alpha = separatorAlpha }
 					.background(SeparatorColor),
 		)
 	}

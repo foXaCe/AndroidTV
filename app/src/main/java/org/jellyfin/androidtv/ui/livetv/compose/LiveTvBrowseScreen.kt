@@ -51,6 +51,7 @@ import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.theme.BebasNeue
 import org.jellyfin.androidtv.ui.base.theme.LiveTvDimensions
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
+import org.jellyfin.androidtv.ui.shared.components.VegafoXScaffold
 
 private val TileShape = RoundedCornerShape(16.dp)
 private const val ANIM_MS = 150
@@ -63,81 +64,83 @@ fun LiveTvBrowseScreen(
 	onNavigateSchedule: () -> Unit,
 	onNavigateSeriesRecordings: () -> Unit,
 ) {
-	Box(
-		modifier =
-			Modifier
-				.fillMaxSize()
-				.background(VegafoXColors.BackgroundDeep),
-	) {
-		Column(
+	VegafoXScaffold {
+		Box(
 			modifier =
 				Modifier
 					.fillMaxSize()
-					.padding(horizontal = LiveTvDimensions.browseScreenPadding, vertical = 48.dp),
+					.background(VegafoXColors.BackgroundDeep),
 		) {
-			// Header
-			Text(
-				text = stringResource(R.string.pref_live_tv_cat),
-				style =
-					TextStyle(
-						fontFamily = BebasNeue,
-						fontSize = 40.sp,
-						color = VegafoXColors.TextPrimary,
-						letterSpacing = 2.sp,
-					),
-			)
+			Column(
+				modifier =
+					Modifier
+						.fillMaxSize()
+						.padding(horizontal = LiveTvDimensions.browseScreenPadding, vertical = 48.dp),
+			) {
+				// Header
+				Text(
+					text = stringResource(R.string.pref_live_tv_cat),
+					style =
+						TextStyle(
+							fontFamily = BebasNeue,
+							fontSize = 40.sp,
+							color = VegafoXColors.TextPrimary,
+							letterSpacing = 2.sp,
+						),
+				)
 
-			Spacer(modifier = Modifier.height(4.dp))
+				Spacer(modifier = Modifier.height(4.dp))
 
-			Text(
-				text = stringResource(R.string.lbl_choose_section),
-				style =
-					TextStyle(
-						fontSize = 14.sp,
-						color = VegafoXColors.TextSecondary,
-					),
-			)
+				Text(
+					text = stringResource(R.string.lbl_choose_section),
+					style =
+						TextStyle(
+							fontSize = 14.sp,
+							color = VegafoXColors.TextSecondary,
+						),
+				)
 
-			Spacer(modifier = Modifier.height(32.dp))
+				Spacer(modifier = Modifier.height(32.dp))
 
-			// Tile 1 — Guide
-			NavigationTile(
-				icon = VegafoXIcons.Schedule,
-				title = stringResource(R.string.lbl_live_tv_guide),
-				subtitle = stringResource(R.string.lbl_epg_grid),
-				onClick = onNavigateGuide,
-			)
-
-			TileDivider()
-
-			// Tile 2 — Recordings
-			NavigationTile(
-				icon = VegafoXIcons.Trailer,
-				title = stringResource(R.string.lbl_recorded_tv),
-				subtitle = stringResource(R.string.lbl_your_recordings),
-				onClick = onNavigateRecordings,
-			)
-
-			if (canManageRecordings) {
-				TileDivider()
-
-				// Tile 3 — Schedule
+				// Tile 1 — Guide
 				NavigationTile(
-					icon = VegafoXIcons.Calendar,
-					title = stringResource(R.string.lbl_schedule),
-					subtitle = stringResource(R.string.lbl_coming_up),
-					onClick = onNavigateSchedule,
+					icon = VegafoXIcons.Schedule,
+					title = stringResource(R.string.lbl_live_tv_guide),
+					subtitle = stringResource(R.string.lbl_epg_grid),
+					onClick = onNavigateGuide,
 				)
 
 				TileDivider()
 
-				// Tile 4 — Series recordings
+				// Tile 2 — Recordings
 				NavigationTile(
-					icon = VegafoXIcons.VideoLibrary,
-					title = stringResource(R.string.lbl_series),
-					subtitle = stringResource(R.string.lbl_series_recordings),
-					onClick = onNavigateSeriesRecordings,
+					icon = VegafoXIcons.Trailer,
+					title = stringResource(R.string.lbl_recorded_tv),
+					subtitle = stringResource(R.string.lbl_your_recordings),
+					onClick = onNavigateRecordings,
 				)
+
+				if (canManageRecordings) {
+					TileDivider()
+
+					// Tile 3 — Schedule
+					NavigationTile(
+						icon = VegafoXIcons.Calendar,
+						title = stringResource(R.string.lbl_schedule),
+						subtitle = stringResource(R.string.lbl_coming_up),
+						onClick = onNavigateSchedule,
+					)
+
+					TileDivider()
+
+					// Tile 4 — Series recordings
+					NavigationTile(
+						icon = VegafoXIcons.VideoLibrary,
+						title = stringResource(R.string.lbl_series),
+						subtitle = stringResource(R.string.lbl_series_recordings),
+						onClick = onNavigateSeriesRecordings,
+					)
+				}
 			}
 		}
 	}
@@ -150,7 +153,7 @@ private fun TileDivider() {
 			Modifier
 				.fillMaxWidth()
 				.height(1.dp)
-				.background(Color.White.copy(alpha = 0.06f)),
+				.background(VegafoXColors.Divider),
 	)
 }
 

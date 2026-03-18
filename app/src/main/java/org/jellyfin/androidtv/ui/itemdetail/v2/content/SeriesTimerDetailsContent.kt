@@ -1,7 +1,6 @@
 package org.jellyfin.androidtv.ui.itemdetail.v2.content
 
 import androidx.compose.foundation.MutatePriority
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,10 +31,11 @@ import kotlinx.coroutines.delay
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.Text
+import org.jellyfin.androidtv.ui.base.components.VegafoXButton
+import org.jellyfin.androidtv.ui.base.components.VegafoXButtonVariant
 import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.theme.DetailDimensions
 import org.jellyfin.androidtv.ui.base.theme.HeroDimensions
-import org.jellyfin.androidtv.ui.itemdetail.v2.DetailActionButton
 import org.jellyfin.androidtv.ui.itemdetail.v2.ItemDetailsUiState
 import org.jellyfin.androidtv.ui.itemdetail.v2.shared.DetailSectionWithCards
 import org.jellyfin.androidtv.util.apiclient.getSeriesOverview
@@ -83,7 +83,6 @@ fun SeriesTimerDetailsContent(
 						Modifier
 							.fillMaxWidth()
 							.focusRequester(titleFocusRequester)
-							.focusable()
 							.onKeyEvent { keyEvent ->
 								if (keyEvent.nativeKeyEvent.action == android.view.KeyEvent.ACTION_DOWN) {
 									when (keyEvent.key) {
@@ -135,19 +134,17 @@ fun SeriesTimerDetailsContent(
 						Modifier
 							.fillMaxWidth()
 							.focusRestorer(cancelButtonFocusRequester),
-					horizontalArrangement = Arrangement.Center,
+					horizontalArrangement = Arrangement.spacedBy(12.dp),
 				) {
-					Row(
-						horizontalArrangement = Arrangement.spacedBy(16.dp),
-					) {
-						// Cancel Series
-						DetailActionButton(
-							label = stringResource(R.string.lbl_cancel_series),
-							icon = VegafoXIcons.Delete,
-							onClick = onCancelSeriesTimer,
-							modifier = Modifier.focusRequester(cancelButtonFocusRequester),
-						)
-					}
+					// Cancel Series
+					VegafoXButton(
+						text = stringResource(R.string.lbl_cancel_series),
+						onClick = onCancelSeriesTimer,
+						variant = VegafoXButtonVariant.Outlined,
+						icon = VegafoXIcons.Delete,
+						iconEnd = false,
+						modifier = Modifier.focusRequester(cancelButtonFocusRequester),
+					)
 				}
 			}
 

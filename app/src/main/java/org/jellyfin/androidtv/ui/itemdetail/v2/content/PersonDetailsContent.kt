@@ -4,7 +4,6 @@ import android.view.KeyEvent
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -110,6 +109,7 @@ fun PersonDetailsContent(
 								.fillMaxSize()
 								.graphicsLayer { alpha = 0.6f },
 						contentScale = ContentScale.Crop,
+						placeholder = rememberGradientPlaceholder(),
 					)
 					Box(
 						modifier =
@@ -164,7 +164,6 @@ fun PersonDetailsContent(
 						Modifier
 							.fillMaxWidth()
 							.focusRequester(titleFocusRequester)
-							.focusable()
 							.onKeyEvent { keyEvent ->
 								if (keyEvent.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
 									when (keyEvent.key) {
@@ -313,6 +312,10 @@ fun PersonDetailsContent(
 				break
 			} catch (_: Exception) {
 			}
+		}
+		for (i in 0 until 5) {
+			delay(50)
+			listState.scrollToItem(0, 0)
 		}
 	}
 }

@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import org.jellyfin.androidtv.ui.base.JellyfinTheme
+import org.jellyfin.androidtv.ui.base.theme.ButtonDimensions
 
 object ButtonDefaults {
 	val Shape: Shape = CircleShape
@@ -111,7 +112,7 @@ private fun ButtonRow(
 			.fillMaxWidth()
 			.defaultMinSize(
 				minWidth = 58.dp,
-				minHeight = 40.dp,
+				minHeight = ButtonDimensions.heightCompact,
 			).padding(contentPadding),
 	horizontalArrangement = Arrangement.Center,
 	verticalAlignment = Alignment.CenterVertically,

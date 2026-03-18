@@ -13,8 +13,9 @@ import org.jellyfin.androidtv.ui.base.JellyfinTheme
 import org.jellyfin.androidtv.ui.base.button.ButtonColors
 import org.jellyfin.androidtv.ui.base.button.ButtonDefaults
 import org.jellyfin.androidtv.ui.base.button.IconButton
+import org.jellyfin.androidtv.ui.base.theme.ButtonDimensions
 
-private val TvButtonMinHeight = 48.dp
+private val TvButtonMinHeight = ButtonDimensions.height
 private val TvIconButtonContentPadding = PaddingValues(12.dp)
 
 @Composable

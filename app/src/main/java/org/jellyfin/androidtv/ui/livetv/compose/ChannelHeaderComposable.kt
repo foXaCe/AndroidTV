@@ -24,10 +24,8 @@ import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.icons.VegafoXIcons
 import org.jellyfin.androidtv.ui.base.theme.VegafoXColors
-import org.jellyfin.androidtv.ui.composable.AsyncImage
+import org.jellyfin.androidtv.ui.shared.components.CachedAsyncImage
 import org.jellyfin.sdk.model.api.BaseItemDto
-
-private val separatorColor = Color.White.copy(alpha = 0.08f)
 
 @Composable
 fun ChannelHeader(
@@ -57,7 +55,7 @@ fun ChannelHeader(
 					.align(Alignment.CenterEnd)
 					.width(1.dp)
 					.fillMaxHeight()
-					.background(separatorColor),
+					.background(VegafoXColors.PanelBorder),
 		)
 
 		// Focus: right border accent (grid side)
@@ -82,8 +80,9 @@ fun ChannelHeader(
 		) {
 			if (imageUrl != null) {
 				// Channel logo
-				AsyncImage(
-					url = imageUrl,
+				CachedAsyncImage(
+					model = imageUrl,
+					contentDescription = channel.name,
 					modifier =
 						Modifier
 							.size(width = 90.dp, height = 44.dp)
